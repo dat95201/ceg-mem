@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-CACHE = pathlib.Path("cache"); CACHE.mkdir(exist_ok=True)
-LOG = pathlib.Path("data/calls.jsonl"); LOG.parent.mkdir(exist_ok=True)
+CACHE = pathlib.Path(os.environ.get("CACHE_DIR", "cache")); CACHE.mkdir(exist_ok=True)
+LOG = pathlib.Path(os.environ.get("CALLS_LOG", "data/calls.jsonl")); LOG.parent.mkdir(exist_ok=True)
 
 MODEL = os.environ.get("MODEL", "")
 PRICE_IN = float(os.environ.get("PRICE_IN_PER_MTOK", 0))
