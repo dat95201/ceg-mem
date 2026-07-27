@@ -4,7 +4,6 @@ __pycache__/
 .env
 cache/*
 !cache/.gitkeep
-data/*
 !data/.gitkeep
 external/
 NOTES.md
