@@ -13,7 +13,7 @@ from typing import Any
 
 from hypothesis import HealthCheck, given, reject, seed as hyp_seed, settings
 
-from src.adapter import Task
+from src.adapter import QuixBugsProgram, Task
 from src.sandbox import DEFAULT_TIMEOUT, Outcome, run_call
 
 DEFAULT_MAX_EXAMPLES = 100
@@ -119,6 +119,42 @@ def differential_test(
             examples_tried=tried["n"],
         )
     return OracleResult(accept=True, examples_tried=tried["n"])
+
+
+def is_truly_correct(
+    task: Task,
+    program: QuixBugsProgram,
+    candidate_source: str,
+    *,
+    big_n: int = 2000,
+    seed: int = 1_000_000_007,
+    timeout: float = DEFAULT_TIMEOUT,
+) -> bool:
+    """Stronger correctness check for a patch the (sampling-based) oracle
+    already accepted - used only for the E2 overfitting audit, never as the
+    repair loop's acceptance criterion (that stays differential_test with
+    max_examples=100, the oracle Algorithm 1 actually calls).
+
+    Two independent checks, both must pass:
+      1. Re-run differential_test with a much larger example budget and a
+         different seed, to catch inputs the original narrower search missed.
+      2. Every QuixBugs-shipped fixed testcase for this task (program.testcases()),
+         checked exactly - an independent, human-curated check. 9 of the 40
+         tasks (graph/linked-list) ship none, so step 1 alone covers those.
+    """
+    big = differential_test(
+        task, candidate_source, program.correct_source,
+        max_examples=big_n, seed=seed, timeout=timeout,
+    )
+    if not big.accept:
+        return False
+
+    full_source = candidate_source + task.harness
+    for args, expected in program.testcases():
+        outcome = run_call(full_source, task.entry_point, list(args), timeout=timeout)
+        if not outcome.ok or not values_equal(outcome.value, expected):
+            return False
+    return True
 
 
 if __name__ == "__main__":
