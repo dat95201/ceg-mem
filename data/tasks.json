@@ -1,0 +1,365 @@
+{
+  "frozen": true,
+  "criterion": "a task is selected if it catches >= 2/3 mutants caught; the corpus is frozen only if >= 30/40 tasks passing",
+  "n_selected": 40,
+  "n_total": 40,
+  "seed": 20260717,
+  "tasks": [
+    {
+      "name": "bitcount",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "breadth_first_search",
+      "mutants_caught": 2,
+      "fault_types_caught": [
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "bucketsort",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "depth_first_search",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "detect_cycle",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "find_first_in_sorted",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "find_in_sorted",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "flatten",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "gcd",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "get_factors",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "hanoi",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "is_valid_parenthesization",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "kheapsort",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "knapsack",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "kth",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "lcs_length",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "levenshtein",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "lis",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "longest_common_subsequence",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "max_sublist_sum",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "mergesort",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "minimum_spanning_tree",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "next_palindrome",
+      "mutants_caught": 2,
+      "fault_types_caught": [
+        "off_by_one",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "next_permutation",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "pascal",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "possible_change",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "powerset",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "quicksort",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "reverse_linked_list",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "rpn_eval",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "shortest_path_length",
+      "mutants_caught": 2,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison"
+      ]
+    },
+    {
+      "name": "shortest_path_lengths",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "shortest_paths",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "shunting_yard",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "sieve",
+      "mutants_caught": 2,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison"
+      ]
+    },
+    {
+      "name": "sqrt",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "subsequences",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "to_base",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "topological_ordering",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    },
+    {
+      "name": "wrap",
+      "mutants_caught": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ]
+    }
+  ]
+}

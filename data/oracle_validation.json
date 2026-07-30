@@ -1,0 +1,1792 @@
+{
+  "task_pass_threshold": ">= 2/3 mutants caught",
+  "corpus_pass_threshold": ">= 30/40 tasks passing",
+  "n_tasks_passing": 40,
+  "n_tasks_total": 40,
+  "frozen": true,
+  "max_examples": 80,
+  "seed": 20260717,
+  "elapsed_sec": 2518.5,
+  "tasks": {
+    "bitcount": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "double-counts every cleared bit instead of counting it once",
+          "caught": true,
+          "examples_tried": 13,
+          "counterexample_args": [
+            1
+          ],
+          "reason": "expected 1, got 2"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "stops one iteration early, undercounting the last bit",
+          "caught": true,
+          "examples_tried": 66,
+          "counterexample_args": [
+            1
+          ],
+          "reason": "expected 1, got 0"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the loop-termination guard (hangs once n hits 0)",
+          "caught": true,
+          "examples_tried": 64,
+          "counterexample_args": [
+            0
+          ],
+          "reason": "candidate timed out after 5.0s (reference returned 0)"
+        }
+      ]
+    },
+    "breadth_first_search": {
+      "mutants_caught": 2,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "pops from the wrong end, turning BFS order into DFS order",
+          "caught": false,
+          "examples_tried": 80,
+          "counterexample_args": null,
+          "reason": null
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "inverts the goal-match check",
+          "caught": true,
+          "examples_tried": 11,
+          "counterexample_args": [
+            [
+              []
+            ],
+            0,
+            0
+          ],
+          "reason": "expected True, got False"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the seen-node dedup guard",
+          "caught": true,
+          "examples_tried": 77,
+          "counterexample_args": [
+            [
+              [
+                0
+              ],
+              []
+            ],
+            0,
+            1
+          ],
+          "reason": "candidate timed out after 5.0s (reference returned False)"
+        }
+      ]
+    },
+    "bucketsort": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "undersizes the count array by one bucket",
+          "caught": true,
+          "examples_tried": 25,
+          "counterexample_args": [
+            [
+              0
+            ],
+            1
+          ],
+          "reason": "candidate raised IndexError: list index out of range"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "silently drops counts for the last bucket",
+          "caught": true,
+          "examples_tried": 25,
+          "counterexample_args": [
+            [
+              0
+            ],
+            1
+          ],
+          "reason": "expected [0], got []"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the last bucket from the output entirely",
+          "caught": true,
+          "examples_tried": 25,
+          "counterexample_args": [
+            [
+              0
+            ],
+            1
+          ],
+          "reason": "expected [0], got []"
+        }
+      ]
+    },
+    "depth_first_search": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "skips the last successor of every node",
+          "caught": true,
+          "examples_tried": 143,
+          "counterexample_args": [
+            [
+              [
+                0,
+                1,
+                2,
+                3
+              ],
+              [],
+              [],
+              [],
+              []
+            ],
+            0,
+            3
+          ],
+          "reason": "expected True, got False"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "inverts the goal-match check",
+          "caught": true,
+          "examples_tried": 11,
+          "counterexample_args": [
+            [
+              []
+            ],
+            0,
+            0
+          ],
+          "reason": "expected True, got False"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the visited guard (infinite recursion on any cycle)",
+          "caught": true,
+          "examples_tried": 113,
+          "counterexample_args": [
+            [
+              [
+                0
+              ],
+              []
+            ],
+            0,
+            1
+          ],
+          "reason": "candidate raised RecursionError: maximum recursion depth exceeded"
+        }
+      ]
+    },
+    "detect_cycle": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "hare no longer advances at twice tortoise's pace",
+          "caught": true,
+          "examples_tried": 13,
+          "counterexample_args": [
+            [
+              0,
+              1
+            ],
+            null
+          ],
+          "reason": "expected False, got True"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "inverts the cycle-detection check",
+          "caught": true,
+          "examples_tried": 13,
+          "counterexample_args": [
+            [
+              0,
+              1
+            ],
+            null
+          ],
+          "reason": "expected False, got True"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the null-successor guard (crashes on any acyclic list)",
+          "caught": true,
+          "examples_tried": 12,
+          "counterexample_args": [
+            [
+              0
+            ],
+            null
+          ],
+          "reason": "candidate raised AttributeError: 'NoneType' object has no attribute 'successor'"
+        }
+      ]
+    },
+    "find_first_in_sorted": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "narrows one index too far, can skip the target",
+          "caught": true,
+          "examples_tried": 43,
+          "counterexample_args": [
+            [
+              0,
+              0
+            ],
+            0
+          ],
+          "reason": "expected 0, got -1"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "mishandles the exact-match boundary",
+          "caught": true,
+          "examples_tried": 94,
+          "counterexample_args": [
+            [
+              0,
+              0
+            ],
+            0
+          ],
+          "reason": "expected 0, got -1"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the first-occurrence guard, may return a later duplicate",
+          "caught": true,
+          "examples_tried": 94,
+          "counterexample_args": [
+            [
+              0,
+              0
+            ],
+            0
+          ],
+          "reason": "expected 0, got 1"
+        }
+      ]
+    },
+    "find_in_sorted": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "drops the +1 advance, can recurse without shrinking",
+          "caught": true,
+          "examples_tried": 22,
+          "counterexample_args": [
+            [
+              0
+            ],
+            1
+          ],
+          "reason": "candidate raised RecursionError: maximum recursion depth exceeded"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "misroutes exact matches into the left half",
+          "caught": true,
+          "examples_tried": 12,
+          "counterexample_args": [
+            [
+              0
+            ],
+            0
+          ],
+          "reason": "expected 0, got -1"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the empty-range base case (infinite recursion)",
+          "caught": true,
+          "examples_tried": 97,
+          "counterexample_args": [
+            [],
+            0
+          ],
+          "reason": "candidate raised IndexError: list index out of range"
+        }
+      ]
+    },
+    "flatten": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "drops the last top-level element",
+          "caught": true,
+          "examples_tried": 11,
+          "counterexample_args": [
+            [
+              0
+            ]
+          ],
+          "reason": "expected [0], got []"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "inverts which elements get recursed into",
+          "caught": true,
+          "examples_tried": 11,
+          "counterexample_args": [
+            [
+              0
+            ]
+          ],
+          "reason": "candidate raised TypeError: 'int' object is not iterable"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "never recurses into nested lists",
+          "caught": true,
+          "examples_tried": 11,
+          "counterexample_args": [
+            [
+              []
+            ]
+          ],
+          "reason": "expected [], got [[]]"
+        }
+      ]
+    },
+    "gcd": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "adds one to the remainder passed down each step",
+          "caught": true,
+          "examples_tried": 103,
+          "counterexample_args": [
+            0,
+            1
+          ],
+          "reason": "candidate raised RecursionError: maximum recursion depth exceeded"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "inverts the base case",
+          "caught": true,
+          "examples_tried": 218,
+          "counterexample_args": [
+            0,
+            0
+          ],
+          "reason": "candidate raised ZeroDivisionError: integer modulo by zero"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the base case (infinite recursion for every input)",
+          "caught": true,
+          "examples_tried": 112,
+          "counterexample_args": [
+            0,
+            0
+          ],
+          "reason": "candidate raised ZeroDivisionError: integer modulo by zero"
+        }
+      ]
+    },
+    "get_factors": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "never tests the exact integer-sqrt factor",
+          "caught": true,
+          "examples_tried": 18,
+          "counterexample_args": [
+            169
+          ],
+          "reason": "expected [13, 13], got [169]"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "inverts the divisibility check",
+          "caught": true,
+          "examples_tried": 20,
+          "counterexample_args": [
+            4
+          ],
+          "reason": "expected [2, 2], got [4]"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the n==1 base case",
+          "caught": true,
+          "examples_tried": 12,
+          "counterexample_args": [
+            1
+          ],
+          "reason": "expected [], got [1]"
+        }
+      ]
+    },
+    "hanoi": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "skips a disk level on the first recursive call",
+          "caught": true,
+          "examples_tried": 12,
+          "counterexample_args": [
+            2
+          ],
+          "reason": "expected [[1, 2], [1, 3], [2, 3]], got [[1, 3], [2, 3]]"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "drops the single-disk base move",
+          "caught": true,
+          "examples_tried": 12,
+          "counterexample_args": [
+            1
+          ],
+          "reason": "expected [[1, 3]], got []"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the recursion base case (infinite recursion)",
+          "caught": true,
+          "examples_tried": 13,
+          "counterexample_args": [
+            0
+          ],
+          "reason": "candidate raised RecursionError: maximum recursion depth exceeded"
+        }
+      ]
+    },
+    "is_valid_parenthesization": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "miscounts each closing paren by one extra",
+          "caught": true,
+          "examples_tried": 15,
+          "counterexample_args": [
+            "()"
+          ],
+          "reason": "expected True, got False"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "flags balanced prefixes like '()' as invalid",
+          "caught": true,
+          "examples_tried": 15,
+          "counterexample_args": [
+            "()"
+          ],
+          "reason": "expected True, got False"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the negative-depth guard, accepts e.g. ')('",
+          "caught": true,
+          "examples_tried": 38,
+          "counterexample_args": [
+            ")("
+          ],
+          "reason": "expected False, got True"
+        }
+      ]
+    },
+    "kheapsort": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "undersizes the initial heap window by one",
+          "caught": true,
+          "examples_tried": 52,
+          "counterexample_args": [
+            [
+              0,
+              0
+            ],
+            0
+          ],
+          "reason": "expected [0, 0], got [0, 0, 0]"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "leaves the last element undrained",
+          "caught": true,
+          "examples_tried": 23,
+          "counterexample_args": [
+            [
+              0
+            ],
+            1
+          ],
+          "reason": "expected [0], got []"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the drain-loop termination guard",
+          "caught": true,
+          "examples_tried": 104,
+          "counterexample_args": [
+            [],
+            0
+          ],
+          "reason": "candidate raised IndexError: index out of range"
+        }
+      ]
+    },
+    "knapsack": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "never fills the exact-capacity column",
+          "caught": true,
+          "examples_tried": 29,
+          "counterexample_args": [
+            1,
+            [
+              [
+                1,
+                1
+              ]
+            ]
+          ],
+          "reason": "expected 1, got 0"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "excludes items that exactly fit the remaining capacity",
+          "caught": true,
+          "examples_tried": 39,
+          "counterexample_args": [
+            1,
+            [
+              [
+                1,
+                1
+              ]
+            ]
+          ],
+          "reason": "expected 1, got 0"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the fits-in-capacity guard",
+          "caught": true,
+          "examples_tried": 67,
+          "counterexample_args": [
+            1,
+            [
+              [
+                2,
+                1
+              ]
+            ]
+          ],
+          "reason": "expected 0, got 1"
+        }
+      ]
+    },
+    "kth": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "shifts the recursive rank index by one",
+          "caught": true,
+          "examples_tried": 37,
+          "counterexample_args": [
+            [
+              0,
+              1
+            ],
+            1
+          ],
+          "reason": "candidate raised IndexError: list index out of range"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "mishandles the exact rank boundary",
+          "caught": true,
+          "examples_tried": 37,
+          "counterexample_args": [
+            [
+              0,
+              1
+            ],
+            1
+          ],
+          "reason": "expected 1, got 0"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "never recurses into the below-pivot partition",
+          "caught": true,
+          "examples_tried": 50,
+          "counterexample_args": [
+            [
+              0,
+              -1
+            ],
+            0
+          ],
+          "reason": "expected -1, got 0"
+        }
+      ]
+    },
+    "lcs_length": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "doubles the length increment on every match",
+          "caught": true,
+          "examples_tried": 17,
+          "counterexample_args": [
+            "a",
+            "a"
+          ],
+          "reason": "expected 1, got 2"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "inverts the character-match check",
+          "caught": true,
+          "examples_tried": 17,
+          "counterexample_args": [
+            "a",
+            "a"
+          ],
+          "reason": "expected 1, got 0"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the empty-input guard (crashes instead of returning 0)",
+          "caught": true,
+          "examples_tried": 143,
+          "counterexample_args": [
+            "",
+            ""
+          ],
+          "reason": "candidate raised ValueError: max() iterable argument is empty"
+        }
+      ]
+    },
+    "levenshtein": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "overcounts every edit step by one",
+          "caught": true,
+          "examples_tried": 36,
+          "counterexample_args": [
+            "a",
+            "b"
+          ],
+          "reason": "expected 1, got 2"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "inverts the matching-prefix shortcut",
+          "caught": true,
+          "examples_tried": 28,
+          "counterexample_args": [
+            "a",
+            "a"
+          ],
+          "reason": "expected 0, got 1"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the empty-string base case (infinite recursion)",
+          "caught": true,
+          "examples_tried": 104,
+          "counterexample_args": [
+            "",
+            ""
+          ],
+          "reason": "candidate raised IndexError: string index out of range"
+        }
+      ]
+    },
+    "lis": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "never checks the current longest-known chain",
+          "caught": true,
+          "examples_tried": 39,
+          "counterexample_args": [
+            [
+              0,
+              1
+            ]
+          ],
+          "reason": "expected 2, got 1"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "lets equal values extend a chain, overcounting with duplicates",
+          "caught": true,
+          "examples_tried": 35,
+          "counterexample_args": [
+            [
+              0,
+              0
+            ]
+          ],
+          "reason": "expected 1, got 2"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the smaller-tail chain-improvement branch",
+          "caught": true,
+          "examples_tried": 39,
+          "counterexample_args": [
+            [
+              0,
+              -1,
+              0
+            ]
+          ],
+          "reason": "expected 2, got 1"
+        }
+      ]
+    },
+    "longest_common_subsequence": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "skips an extra character of `a` on every match",
+          "caught": true,
+          "examples_tried": 24,
+          "counterexample_args": [
+            "aa",
+            "aa"
+          ],
+          "reason": "expected 'aa', got 'a'"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "inverts the matching-prefix check",
+          "caught": true,
+          "examples_tried": 14,
+          "counterexample_args": [
+            "a",
+            "a"
+          ],
+          "reason": "expected 'a', got ''"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the empty-sequence base case (infinite recursion)",
+          "caught": true,
+          "examples_tried": 104,
+          "counterexample_args": [
+            "",
+            ""
+          ],
+          "reason": "candidate raised IndexError: string index out of range"
+        }
+      ]
+    },
+    "max_sublist_sum": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "ignores the last element of the list",
+          "caught": true,
+          "examples_tried": 15,
+          "counterexample_args": [
+            [
+              1
+            ]
+          ],
+          "reason": "expected 1, got 0"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "changes the reset floor from 0, corrupting sums near zero",
+          "caught": true,
+          "examples_tried": 31,
+          "counterexample_args": [
+            [
+              -1,
+              1
+            ]
+          ],
+          "reason": "expected 1, got 0"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the running-best guard, forgets prior maxima",
+          "caught": true,
+          "examples_tried": 49,
+          "counterexample_args": [
+            [
+              1,
+              -1
+            ]
+          ],
+          "reason": "expected 1, got 0"
+        }
+      ]
+    },
+    "mergesort": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "shifts the split point, can recurse without shrinking",
+          "caught": true,
+          "examples_tried": 15,
+          "counterexample_args": [
+            [
+              0,
+              0
+            ]
+          ],
+          "reason": "candidate raised RecursionError: maximum recursion depth exceeded"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "keeps indexing past the end of the shorter half",
+          "caught": true,
+          "examples_tried": 15,
+          "counterexample_args": [
+            [
+              0,
+              0
+            ]
+          ],
+          "reason": "candidate raised IndexError: list index out of range"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the base case (infinite recursion on empty input)",
+          "caught": true,
+          "examples_tried": 90,
+          "counterexample_args": [
+            []
+          ],
+          "reason": "candidate raised RecursionError: maximum recursion depth exceeded"
+        }
+      ]
+    },
+    "minimum_spanning_tree": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "drops the heaviest edge from consideration entirely",
+          "caught": true,
+          "examples_tried": 193,
+          "counterexample_args": [
+            [
+              [
+                0,
+                1,
+                1
+              ]
+            ]
+          ],
+          "reason": "expected [[0, 1]], got []"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "inverts the union-find cycle check",
+          "caught": true,
+          "examples_tried": 187,
+          "counterexample_args": [
+            [
+              [
+                0,
+                1,
+                1
+              ]
+            ]
+          ],
+          "reason": "expected [[0, 1]], got []"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the cycle guard, admits every edge",
+          "caught": true,
+          "examples_tried": 187,
+          "counterexample_args": [
+            [
+              [
+                0,
+                1,
+                1
+              ]
+            ]
+          ],
+          "reason": "candidate raised KeyError: 0"
+        }
+      ]
+    },
+    "next_palindrome": {
+      "mutants_caught": 2,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "shifts the low mirror index by one",
+          "caught": true,
+          "examples_tried": 11,
+          "counterexample_args": [
+            [
+              0
+            ]
+          ],
+          "reason": "expected [1], got [1, 1]"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "reads one past the end of digit_list",
+          "caught": false,
+          "examples_tried": 80,
+          "counterexample_args": null,
+          "reason": null
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "double-increments the middle digit of odd-length palindromes",
+          "caught": true,
+          "examples_tried": 11,
+          "counterexample_args": [
+            [
+              0
+            ]
+          ],
+          "reason": "expected [1], got [2]"
+        }
+      ]
+    },
+    "next_permutation": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "never checks the first possible pivot position",
+          "caught": true,
+          "examples_tried": 13,
+          "counterexample_args": [
+            [
+              0,
+              1
+            ]
+          ],
+          "reason": "expected [1, 0], got None"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "searches for a descending pivot instead of ascending",
+          "caught": true,
+          "examples_tried": 13,
+          "counterexample_args": [
+            [
+              0,
+              1
+            ]
+          ],
+          "reason": "expected [1, 0], got None"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the smallest-greater-element guard",
+          "caught": true,
+          "examples_tried": 30,
+          "counterexample_args": [
+            [
+              1,
+              2,
+              0
+            ]
+          ],
+          "reason": "expected [2, 0, 1], got [0, 1, 2]"
+        }
+      ]
+    },
+    "pascal": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "drops the last column of every row",
+          "caught": true,
+          "examples_tried": 13,
+          "counterexample_args": [
+            2
+          ],
+          "reason": "expected [[1], [1, 1]], got [[1], [1]]"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "reads one past the end of the previous row",
+          "caught": true,
+          "examples_tried": 13,
+          "counterexample_args": [
+            2
+          ],
+          "reason": "candidate raised IndexError: list index out of range"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the first-column guard (wraps to the last element instead of 0)",
+          "caught": true,
+          "examples_tried": 13,
+          "counterexample_args": [
+            2
+          ],
+          "reason": "expected [[1], [1, 1]], got [[1], [2, 1]]"
+        }
+      ]
+    },
+    "possible_change": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "shifts the total==0 base case by one",
+          "caught": true,
+          "examples_tried": 135,
+          "counterexample_args": [
+            [],
+            0
+          ],
+          "reason": "expected 1, got 0"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "treats negative totals as a valid solution",
+          "caught": true,
+          "examples_tried": 22,
+          "counterexample_args": [
+            [
+              2
+            ],
+            1
+          ],
+          "reason": "expected 0, got 1"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the no-coins-left guard (crashes on empty coins)",
+          "caught": true,
+          "examples_tried": 128,
+          "counterexample_args": [
+            [],
+            1
+          ],
+          "reason": "candidate raised ValueError: not enough values to unpack (expected at least 1, got 0)"
+        }
+      ]
+    },
+    "powerset": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "drops one subset from the without-first half",
+          "caught": true,
+          "examples_tried": 11,
+          "counterexample_args": [
+            [
+              0
+            ]
+          ],
+          "reason": "expected [[], [0]], got [[0]]"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "inverts the base-case check",
+          "caught": true,
+          "examples_tried": 93,
+          "counterexample_args": [
+            []
+          ],
+          "reason": "candidate raised ValueError: not enough values to unpack (expected at least 1, got 0)"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "always returns the empty powerset regardless of input",
+          "caught": true,
+          "examples_tried": 11,
+          "counterexample_args": [
+            [
+              0
+            ]
+          ],
+          "reason": "expected [[], [0]], got [[]]"
+        }
+      ]
+    },
+    "quicksort": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "skips checking the second element against the pivot",
+          "caught": true,
+          "examples_tried": 21,
+          "counterexample_args": [
+            [
+              0,
+              -1
+            ]
+          ],
+          "reason": "expected [-1, 0], got [0]"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "drops elements equal to the pivot from the output",
+          "caught": true,
+          "examples_tried": 30,
+          "counterexample_args": [
+            [
+              0,
+              0
+            ]
+          ],
+          "reason": "expected [0, 0], got [0]"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the empty-list base case (crashes on empty input)",
+          "caught": true,
+          "examples_tried": 90,
+          "counterexample_args": [
+            []
+          ],
+          "reason": "candidate raised IndexError: list index out of range"
+        }
+      ]
+    },
+    "reverse_linked_list": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "skips every other node while walking the list",
+          "caught": true,
+          "examples_tried": 20,
+          "counterexample_args": [
+            [
+              0,
+              0
+            ]
+          ],
+          "reason": "expected [0, 0], got [0]"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "loop body never runs for any non-empty list",
+          "caught": true,
+          "examples_tried": 89,
+          "counterexample_args": [
+            []
+          ],
+          "reason": "candidate raised AttributeError: 'NoneType' object has no attribute 'successor'"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the loop-termination guard (crashes past the tail)",
+          "caught": true,
+          "examples_tried": 89,
+          "counterexample_args": [
+            []
+          ],
+          "reason": "candidate raised AttributeError: 'NoneType' object has no attribute 'successor'"
+        }
+      ]
+    },
+    "rpn_eval": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "corrupts every literal operand by one",
+          "caught": true,
+          "examples_tried": 19,
+          "counterexample_args": [
+            [
+              1.0
+            ]
+          ],
+          "reason": "expected 1.0, got 2.0"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "swaps operand order for non-commutative operators",
+          "caught": true,
+          "examples_tried": 66,
+          "counterexample_args": [
+            [
+              1.0,
+              2.0,
+              "-"
+            ]
+          ],
+          "reason": "expected -1.0, got 1.0"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "corrupts the value-vs-operator dispatch guard",
+          "caught": true,
+          "examples_tried": 110,
+          "counterexample_args": [
+            [
+              1.0
+            ]
+          ],
+          "reason": "candidate raised IndexError: pop from empty list"
+        }
+      ]
+    },
+    "shortest_path_length": {
+      "mutants_caught": 2,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "adds a constant penalty to every edge traversal",
+          "caught": true,
+          "examples_tried": 209,
+          "counterexample_args": [
+            2,
+            [
+              [
+                1,
+                0,
+                1
+              ]
+            ],
+            1,
+            0
+          ],
+          "reason": "expected 1, got 2"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "inverts the goal-reached check",
+          "caught": true,
+          "examples_tried": 80,
+          "counterexample_args": [
+            1,
+            [],
+            0,
+            0
+          ],
+          "reason": "expected 0, got inf"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the visited guard",
+          "caught": false,
+          "examples_tried": 82,
+          "counterexample_args": null,
+          "reason": null
+        }
+      ]
+    },
+    "shortest_path_lengths": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "adds a constant penalty per intermediate hop",
+          "caught": true,
+          "examples_tried": 275,
+          "counterexample_args": [
+            2,
+            [
+              [
+                0,
+                1,
+                0
+              ],
+              [
+                1,
+                0,
+                -1
+              ]
+            ]
+          ],
+          "reason": "expected [[0, 0, -1], [0, 1, -1], [1, 0, -2], [1, 1, -2]], got [[0, 0, 0], [0, 1, 0], [1, 0, -1], [1, 1, 0]]"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "turns the shortest-path relaxation into a longest-path one",
+          "caught": true,
+          "examples_tried": 23,
+          "counterexample_args": [
+            2,
+            []
+          ],
+          "reason": "expected [[0, 0, 0], [0, 1, inf], [1, 0, inf], [1, 1, 0]], got [[0, 0, inf], [0, 1, inf], [1, 0, inf], [1, 1, inf]]"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the zero-self-distance initialization",
+          "caught": true,
+          "examples_tried": 98,
+          "counterexample_args": [
+            1,
+            []
+          ],
+          "reason": "expected [[0, 0, 0]], got [[0, 0, inf]]"
+        }
+      ]
+    },
+    "shortest_paths": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "runs one fewer Bellman-Ford relaxation pass",
+          "caught": true,
+          "examples_tried": 253,
+          "counterexample_args": [
+            0,
+            [
+              [
+                0,
+                1,
+                0
+              ]
+            ]
+          ],
+          "reason": "expected [[0, 0], [1, 0]], got [[0, 0], [1, inf]]"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "turns the relaxation step into a longest-path one",
+          "caught": true,
+          "examples_tried": 253,
+          "counterexample_args": [
+            0,
+            [
+              [
+                0,
+                1,
+                0
+              ]
+            ]
+          ],
+          "reason": "expected [[0, 0], [1, 0]], got [[0, 0], [1, inf]]"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the unvisited-is-infinity guard",
+          "caught": true,
+          "examples_tried": 218,
+          "counterexample_args": [
+            0,
+            [
+              [
+                0,
+                1,
+                1
+              ]
+            ]
+          ],
+          "reason": "expected [[0, 0], [1, 1]], got [[0, 0], [1, 0]]"
+        }
+      ]
+    },
+    "shunting_yard": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "leaves the last operator undrained",
+          "caught": true,
+          "examples_tried": 21,
+          "counterexample_args": [
+            [
+              "+"
+            ]
+          ],
+          "reason": "expected ['+'], got []"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "mishandles equal-precedence operators",
+          "caught": true,
+          "examples_tried": 30,
+          "counterexample_args": [
+            [
+              "+",
+              "+",
+              0
+            ]
+          ],
+          "reason": "expected ['+', 0, '+'], got [0, '+', '+']"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "corrupts the value-vs-operator dispatch guard",
+          "caught": true,
+          "examples_tried": 18,
+          "counterexample_args": [
+            [
+              0,
+              0
+            ]
+          ],
+          "reason": "candidate raised KeyError: 0"
+        }
+      ]
+    },
+    "sieve": {
+      "mutants_caught": 2,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "never tests `max` itself",
+          "caught": true,
+          "examples_tried": 21,
+          "counterexample_args": [
+            2
+          ],
+          "reason": "expected [2], got []"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "the new condition is always true, so every n is kept",
+          "caught": true,
+          "examples_tried": 17,
+          "counterexample_args": [
+            4
+          ],
+          "reason": "expected [2, 3], got [2, 3, 4]"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "never checks against the most-recently-found prime",
+          "caught": false,
+          "examples_tried": 80,
+          "counterexample_args": null,
+          "reason": null
+        }
+      ]
+    },
+    "sqrt": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "checks convergence against the wrong power",
+          "caught": true,
+          "examples_tried": 71,
+          "counterexample_args": [
+            4.0,
+            1.0
+          ],
+          "reason": "candidate timed out after 5.0s (reference returned 2.0)"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "inverts the convergence check, so it barely iterates",
+          "caught": true,
+          "examples_tried": 113,
+          "counterexample_args": [
+            0.0,
+            1.0
+          ],
+          "reason": "candidate raised ZeroDivisionError: float division by zero"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the convergence guard (hangs)",
+          "caught": true,
+          "examples_tried": 69,
+          "counterexample_args": [
+            0.0,
+            1.0
+          ],
+          "reason": "candidate raised ZeroDivisionError: float division by zero"
+        }
+      ]
+    },
+    "subsequences": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "drops the last valid starting index",
+          "caught": true,
+          "examples_tried": 17,
+          "counterexample_args": [
+            0,
+            1,
+            1
+          ],
+          "reason": "expected [[0]], got []"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "shifts the k==0 base case by one",
+          "caught": true,
+          "examples_tried": 13,
+          "counterexample_args": [
+            0,
+            0,
+            0
+          ],
+          "reason": "candidate raised RecursionError: maximum recursion depth exceeded"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the k==0 base case",
+          "caught": true,
+          "examples_tried": 13,
+          "counterexample_args": [
+            0,
+            0,
+            0
+          ],
+          "reason": "candidate raised RecursionError: maximum recursion depth exceeded"
+        }
+      ]
+    },
+    "to_base": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "shifts every digit's alphabet index by one",
+          "caught": true,
+          "examples_tried": 112,
+          "counterexample_args": [
+            1,
+            2
+          ],
+          "reason": "expected '1', got '2'"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "adds a spurious final iteration once num hits 0 (hangs)",
+          "caught": true,
+          "examples_tried": 64,
+          "counterexample_args": [
+            1,
+            2
+          ],
+          "reason": "candidate timed out after 5.0s (reference returned '1')"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the loop-termination guard (hangs)",
+          "caught": true,
+          "examples_tried": 64,
+          "counterexample_args": [
+            1,
+            2
+          ],
+          "reason": "candidate timed out after 5.0s (reference returned '1')"
+        }
+      ]
+    },
+    "topological_ordering": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "drops one root node from the initial frontier",
+          "caught": true,
+          "examples_tried": 14,
+          "counterexample_args": [
+            1,
+            []
+          ],
+          "reason": "expected [0], got []"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "admits nodes before all their prerequisites are ready",
+          "caught": true,
+          "examples_tried": 257,
+          "counterexample_args": [
+            3,
+            [
+              [
+                0,
+                2
+              ],
+              [
+                1,
+                2
+              ]
+            ]
+          ],
+          "reason": "expected [0, 1, 2], got [0, 1, 2, 2]"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the all-prerequisites-ready guard",
+          "caught": true,
+          "examples_tried": 181,
+          "counterexample_args": [
+            3,
+            [
+              [
+                0,
+                1
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                2,
+                0
+              ]
+            ]
+          ],
+          "reason": "expected [2], got [2, 0, 1]"
+        }
+      ]
+    },
+    "wrap": {
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "passes": true,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "note": "narrows the break-point search window by one column",
+          "caught": true,
+          "examples_tried": 115,
+          "counterexample_args": [
+            "  ",
+            1
+          ],
+          "reason": "candidate timed out after 5.0s (reference returned [' ', ' '])"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "note": "splits one line earlier than necessary",
+          "caught": true,
+          "examples_tried": 14,
+          "counterexample_args": [
+            "a",
+            1
+          ],
+          "reason": "expected ['a'], got ['a', '']"
+        },
+        {
+          "fault_type": "missing_guard",
+          "note": "drops the no-space-found fallback (silently drops a character)",
+          "caught": true,
+          "examples_tried": 18,
+          "counterexample_args": [
+            "aaa",
+            1
+          ],
+          "reason": "expected ['a', 'a', 'a'], got ['aa', 'a']"
+        }
+      ]
+    }
+  }
+}
