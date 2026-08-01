@@ -57,7 +57,12 @@ def _changed_hunks(buggy_source: str, candidate_source: str) -> list[tuple[int, 
     ]
 
 
-def _edit_location(buggy_source: str, candidate_source: str) -> str:
+def edit_location(buggy_source: str, candidate_source: str) -> str:
+    """Where a candidate edits the buggy source - the location half of theta.
+
+    Execution-free (pure diff), so a guard can call this on a fresh candidate
+    to guess its type *before* paying for a sandbox run (src.memory.TypedMemory).
+    """
     hunks = _changed_hunks(buggy_source, candidate_source)
     if not hunks:
         return WHOLESALE  # no diff at all; shouldn't happen for a refuted patch, but don't fabricate a line
@@ -67,6 +72,9 @@ def _edit_location(buggy_source: str, candidate_source: str) -> str:
         return WHOLESALE
     start, end = (hunks[0][0], hunks[-1][1]) if len(hunks) > 1 else hunks[0]
     return f"L{start}" if start == end else f"L{start}-L{end}"
+
+
+_edit_location = edit_location  # internal alias, kept so the rest of this module reads unchanged
 
 
 def _divergence_shape(candidate: Any, reference: Any) -> str:

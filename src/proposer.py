@@ -132,14 +132,19 @@ def build_prompt(
     history: list[Attempt],
     *,
     granularity: str = "fine",
+    disable_exclusion: bool = False,
 ) -> str:
+    """disable_exclusion: steering ablation (E3, "guard-only") - keep the typed
+    evidence_block but suppress exclusion_block, so the proposer sees what was
+    refuted without being told to avoid it.
+    """
     if mode not in MODES:
         raise ValueError(f"mode must be one of {MODES}, got {mode!r}")
     if granularity not in GRANULARITIES:
         raise ValueError(f"granularity must be one of {GRANULARITIES}, got {granularity!r}")
 
     evidence_block = _evidence_block(mode, history, granularity)
-    exclusion_block = _exclusion_block(mode, history, granularity)
+    exclusion_block = "" if disable_exclusion else _exclusion_block(mode, history, granularity)
 
     sections = [
         "You are repairing a single buggy Python function.",
@@ -172,9 +177,13 @@ def propose(
     model: str | None = None,
     granularity: str = "fine",
     max_tokens: int = 1024,
+    disable_exclusion: bool = False,
 ) -> str:
     """Build the mode-appropriate prompt, call the LLM, and extract the patch source."""
-    prompt = build_prompt(task_name, buggy_source, entry_point, mode, history, granularity=granularity)
+    prompt = build_prompt(
+        task_name, buggy_source, entry_point, mode, history,
+        granularity=granularity, disable_exclusion=disable_exclusion,
+    )
     text = complete(prompt, model=model, max_tokens=max_tokens)
     return _extract_code(text)
 

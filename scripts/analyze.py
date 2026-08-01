@@ -1,0 +1,170 @@
+"""Statistics: bootstrap CIs, Wilcoxon signed-rank, Vargha-Delaney A12,
+Benjamini-Hochberg correction - the protocol the paper already specifies
+(Section 5), applied to data/results_real.json instead of the synthetic
+model. Produces the Table-2/3-style comparison (oracle calls to repair,
+redundant attempts) across the three memory conditions, per stratum and
+overall, paired by task.
+
+The four statistical primitives below are pure functions (no file I/O), kept
+separate from compare_conditions() so scripts/check_consistency.py can call
+the same functions directly on freshly-loaded data instead of trusting this
+script's own output file.
+"""
+from __future__ import annotations
+
+import argparse
+import itertools
+import json
+import pathlib
+import sys
+
+import numpy as np
+from scipy import stats as scipy_stats
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+
+DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+MODES = ("no_memory", "untyped", "typed")
+STRATA = ("easy", "medium", "hard")
+
+
+def bootstrap_ci(values: list[float], *, n_resamples: int = 10_000, alpha: float = 0.05, seed: int = 0) -> dict:
+    """95% CI on the mean, resampling `values` (one value per task) with replacement."""
+    arr = np.asarray(values, dtype=float)
+    if arr.size == 0:
+        return {"mean": None, "lo": None, "hi": None, "n": 0}
+    rng = np.random.default_rng(seed)
+    idx = rng.integers(0, arr.size, size=(n_resamples, arr.size))
+    resample_means = arr[idx].mean(axis=1)
+    lo, hi = np.percentile(resample_means, [100 * alpha / 2, 100 * (1 - alpha / 2)])
+    return {"mean": float(arr.mean()), "lo": float(lo), "hi": float(hi), "n": int(arr.size)}
+
+
+def vargha_delaney_a12(xs: list[float], ys: list[float]) -> float:
+    """P(X > Y) + 0.5*P(X == Y). 0.5 = no effect; >0.5 means xs tends larger."""
+    xs, ys = np.asarray(xs, dtype=float), np.asarray(ys, dtype=float)
+    if xs.size == 0 or ys.size == 0:
+        return float("nan")
+    gt = (xs[:, None] > ys[None, :]).sum()
+    eq = (xs[:, None] == ys[None, :]).sum()
+    return float((gt + 0.5 * eq) / (xs.size * ys.size))
+
+
+def wilcoxon_paired(xs: list[float], ys: list[float]) -> dict:
+    """scipy's paired Wilcoxon signed-rank test; degenerates to p=1.0 when
+    every pair is tied (scipy raises on an all-zero difference vector)."""
+    xs, ys = np.asarray(xs, dtype=float), np.asarray(ys, dtype=float)
+    if xs.size == 0 or np.allclose(xs, ys):
+        return {"statistic": None, "pvalue": 1.0, "n": int(xs.size)}
+    stat, p = scipy_stats.wilcoxon(xs, ys)
+    return {"statistic": float(stat), "pvalue": float(p), "n": int(xs.size)}
+
+
+def benjamini_hochberg(pvalues: list[float], *, alpha: float = 0.05) -> list[bool]:
+    """Standard BH step-up procedure. Returns a reject/accept flag per input
+    p-value, in the original order (not the sorted order used internally)."""
+    m = len(pvalues)
+    if m == 0:
+        return []
+    order = sorted(range(m), key=lambda i: pvalues[i])
+    max_rank_ok = -1
+    for rank, i in enumerate(order):
+        if pvalues[i] <= (rank + 1) / m * alpha:
+            max_rank_ok = rank
+    reject = [False] * m
+    for rank in range(max_rank_ok + 1):
+        reject[order[rank]] = True
+    return reject
+
+
+def _is_main_grid(ep: dict) -> bool:
+    return ep["guard_on"] and ep["steer_on"] and ep["max_examples"] == 100 and ep["typing_noise_c"] == 1.0
+
+
+def _per_task_means(episodes: list[dict], mode: str, stratum: str | None, metric: str) -> dict[str, float]:
+    """task -> mean of `metric` over that task's seeds, for one mode/stratum.
+
+    metric == "oracle_calls_to_accept": averaged only over accepted episodes
+    (unrepaired episodes have no verification-round count to report, exactly
+    as Table 2's "oracle calls to repair" column is defined).
+    metric == "redundant_attempts": averaged over every episode.
+    """
+    by_task: dict[str, list[float]] = {}
+    for ep in episodes:
+        if ep["mode"] != mode or not _is_main_grid(ep):
+            continue
+        if stratum is not None and ep.get("stratum") != stratum:
+            continue
+        if metric == "oracle_calls_to_accept" and not ep["accepted"]:
+            continue
+        value = ep[metric]
+        if value is None:
+            continue
+        by_task.setdefault(ep["task"], []).append(value)
+    return {t: float(np.mean(v)) for t, v in by_task.items() if v}
+
+
+def compare_conditions(episodes: list[dict], metric: str) -> dict:
+    out: dict = {"metric": metric, "strata": {}}
+    pending_bh: dict[tuple[str, str], list[tuple[str, float]]] = {}  # (comparison) -> [(stratum, pvalue)]
+
+    for stratum_label in (*STRATA, "overall"):
+        stratum = None if stratum_label == "overall" else stratum_label
+        per_mode = {mode: _per_task_means(episodes, mode, stratum, metric) for mode in MODES}
+
+        summary = {}
+        for mode in MODES:
+            summary[mode] = bootstrap_ci(list(per_mode[mode].values()))
+
+        comparisons = {}
+        for a, b in itertools.combinations(MODES, 2):
+            shared_tasks = sorted(set(per_mode[a]) & set(per_mode[b]))
+            xs = [per_mode[a][t] for t in shared_tasks]
+            ys = [per_mode[b][t] for t in shared_tasks]
+            wilcoxon = wilcoxon_paired(xs, ys)
+            a12 = vargha_delaney_a12(xs, ys)
+            comparisons[f"{a}_vs_{b}"] = {"n_tasks": len(shared_tasks), "a12": a12, **wilcoxon}
+            if stratum_label != "overall":
+                pending_bh.setdefault((a, b), []).append((stratum_label, wilcoxon["pvalue"]))
+
+        out["strata"][stratum_label] = {"summary": summary, "comparisons": comparisons}
+
+    for (a, b), entries in pending_bh.items():
+        strata_labels = [s for s, _ in entries]
+        pvalues = [p for _, p in entries]
+        rejected = benjamini_hochberg(pvalues)
+        for stratum_label, is_significant in zip(strata_labels, rejected):
+            out["strata"][stratum_label]["comparisons"][f"{a}_vs_{b}"]["bh_significant"] = is_significant
+
+    return out
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--results-path", type=pathlib.Path, default=DATA_DIR / "results_real.json")
+    parser.add_argument("--out", type=pathlib.Path, default=DATA_DIR / "analysis.json")
+    args = parser.parse_args()
+
+    if not args.results_path.exists():
+        raise SystemExit(f"{args.results_path} missing - run scripts/freeze_results.py first")
+    episodes = json.loads(args.results_path.read_text())["episodes"]
+
+    report = {
+        "results_path": str(args.results_path),
+        "metrics": {
+            "oracle_calls_to_accept": compare_conditions(episodes, "oracle_calls_to_accept"),
+            "redundant_attempts": compare_conditions(episodes, "redundant_attempts"),
+        },
+    }
+    args.out.write_text(json.dumps(report, indent=2) + "\n")
+
+    for metric, result in report["metrics"].items():
+        print(f"\n=== {metric} ===")
+        for stratum, data in result["strata"].items():
+            means = {m: data["summary"][m]["mean"] for m in MODES}
+            print(f"  [{stratum:8s}] " + "  ".join(f"{m}={v}" for m, v in means.items() if v is not None))
+    print(f"\nwrote {args.out}")
+
+
+if __name__ == "__main__":
+    main()

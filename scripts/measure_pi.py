@@ -20,7 +20,7 @@ import time
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from src.adapter import TASKS, load
+from src.adapter import SUPPORTED_PROGRAMS, TASKS, load
 from src.oracle import differential_test
 from src.proposer import propose
 
@@ -28,6 +28,21 @@ DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 
 DEFAULT_PROGRAMS = ("gcd", "bucketsort", "mergesort", "detect_cycle", "topological_ordering")
 DEFAULT_CALLS_PER_PROGRAM = 40
+
+
+def _resolve_programs(names: list[str]) -> tuple[str, ...]:
+    """"--programs all" -> the frozen task list (data/tasks.json) if present,
+    else every task adapter.py supports. Needed to run pi_hat over all 40
+    tasks for stratification (scripts/build_strata.py), not just the 5-task
+    pilot sample."""
+    if names != ["all"]:
+        return tuple(names)
+    tasks_json = DATA_DIR / "tasks.json"
+    if tasks_json.exists():
+        data = json.loads(tasks_json.read_text())
+        if data.get("frozen"):
+            return tuple(t["name"] for t in data["tasks"])
+    return SUPPORTED_PROGRAMS
 
 
 def measure(
@@ -90,12 +105,13 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=20260717)
     args = parser.parse_args()
 
-    unknown = [p for p in args.programs if p not in TASKS]
+    programs = _resolve_programs(args.programs)
+    unknown = [p for p in programs if p not in TASKS]
     if unknown:
         raise SystemExit(f"unknown program(s): {unknown}")
 
     report = measure(
-        tuple(args.programs), args.calls_per_program,
+        programs, args.calls_per_program,
         model=args.model, max_examples=args.max_examples, seed=args.seed,
     )
 
