@@ -38,6 +38,15 @@ class RoundRecord:
     steer_on: bool = True        # ablation (E3): exclusion_block suppressed when False
     max_examples: int = 100      # oracle informativeness sweep (E4)
     typing_noise_c: float = 1.0  # typing coherence sweep (E5)
+    granularity: str = "fine"    # which theta() the memory indexed by
+    # E1 ran the no-memory arm past its first accept on purpose, for an unbiased
+    # pi_hat/q_hat corpus. That changes what a round *means*, so it belongs in
+    # the cell identity (scripts/run_eval.py, scripts/freeze_results.py) and in
+    # summarize_episode's decision about which rounds are comparable.
+    force_full_budget: bool = False
+    # Set when the oracle could not reach a verdict (src.oracle.OracleResult):
+    # the round consumed budget but is not a refutation and carries no type.
+    oracle_error: str | None = None
 
     def to_json(self) -> dict[str, Any]:
         return dataclasses.asdict(self)
@@ -49,10 +58,27 @@ def append_round(record: RoundRecord, path: pathlib.Path = DEFAULT_METRICS_LOG) 
         f.write(json.dumps(record.to_json()) + "\n")
 
 
-def load_rounds(path: pathlib.Path = DEFAULT_METRICS_LOG) -> list[dict[str, Any]]:
+def load_rounds(path: pathlib.Path = DEFAULT_METRICS_LOG, *, dedupe: bool = True) -> list[dict[str, Any]]:
+    """Read the round log, last write wins per (episode_id, round_index).
+
+    src.loop derives episode_id deterministically from the experiment cell, so a
+    cell that died halfway and was re-run appends a *second* copy of its early
+    rounds under the same id. Collapsing on read is what makes that rewrite mean
+    what it looks like; without it those rounds would be counted twice and the
+    re-run would look like a longer episode than it was.
+
+    Order is deterministic: first appearance of each key, carrying the last
+    value written for it.
+    """
     if not path.exists():
         return []
-    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+    rows = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+    if not dedupe:
+        return rows
+    by_round: dict[tuple[str, int], dict[str, Any]] = {}
+    for row in rows:
+        by_round[(row["episode_id"], row["round_index"])] = row
+    return list(by_round.values())
 
 
 def group_by_episode(rows: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
@@ -80,16 +106,28 @@ def summarize_episode(rows: list[dict[str, Any]]) -> dict[str, Any]:
         i.e. a round the guard should have caught but its cheap a-priori
         type guess (src.typer.edit_location) missed.
     redundant_attempts = n_guarded + guard_miss follows from that directly.
+
+    **Rounds after the first accept are excluded from every one of those
+    counts.** E1 runs the no-memory arm to the full budget on purpose
+    (force_full_budget, so pi_hat/q_hat are estimated from an unbiased corpus -
+    see scripts/fit_theory.py) and E2 reuses those same episodes as its
+    no-memory arm. The memory arms stop at their first accept. Counting the
+    no-memory arm's extra rounds would inflate exactly the redundancy metric
+    Table 2/3 compares the arms on - a purely procedural difference showing up
+    as an effect. So the summary reports what a loop that stopped at the first
+    accept would have done; the untruncated counts stay available as
+    n_rounds_logged / n_oracle_calls_logged for audit. For an episode that
+    already stopped at its first accept the two are identical.
     """
     rows = sorted(rows, key=lambda r: r["round_index"])
-    oracle_rows = [r for r in rows if not r.get("guarded", False)]
-    accepted_rows = [r for r in oracle_rows if r["accept"]]
+    oracle_rows_logged = [r for r in rows if not r.get("guarded", False)]
+    accepted_rows = [r for r in oracle_rows_logged if r["accept"]]
     accepted = bool(accepted_rows)
     first_accept_round = accepted_rows[0]["round_index"] if accepted else None
 
-    oracle_calls_to_accept = None
-    if accepted:
-        oracle_calls_to_accept = sum(1 for r in oracle_rows if r["round_index"] <= first_accept_round)
+    effective = rows if not accepted else [r for r in rows if r["round_index"] <= first_accept_round]
+    oracle_rows = [r for r in effective if not r.get("guarded", False)]
+    oracle_calls_to_accept = len(oracle_rows) if accepted else None
 
     guard_miss = 0
     eliminated_before: set[str] = set()
@@ -98,20 +136,24 @@ def summarize_episode(rows: list[dict[str, Any]]) -> dict[str, Any]:
             continue
         tkey = r.get("fine_type")
         if tkey is None:
-            continue
+            continue  # accepted, or an inconclusive round: no type to repeat
         if tkey in eliminated_before:
             guard_miss += 1
         eliminated_before.add(tkey)
 
-    n_guarded = len(rows) - len(oracle_rows)
+    n_guarded = len(effective) - len(oracle_rows)
     first = rows[0]
     return {
         "episode_id": first["episode_id"], "task": first["task"], "mode": first["mode"],
         "seed": first.get("seed", 0),
         "guard_on": first.get("guard_on", True), "steer_on": first.get("steer_on", True),
         "max_examples": first.get("max_examples", 100), "typing_noise_c": first.get("typing_noise_c", 1.0),
-        "n_rounds": len(rows), "n_oracle_calls": len(oracle_rows), "n_guarded": n_guarded,
-        "guard_evaluations": sum(r.get("guard_evaluations", 0) for r in rows),
+        "granularity": first.get("granularity", "fine"),
+        "force_full_budget": first.get("force_full_budget", False),
+        "n_rounds": len(effective), "n_oracle_calls": len(oracle_rows), "n_guarded": n_guarded,
+        "n_rounds_logged": len(rows), "n_oracle_calls_logged": len(oracle_rows_logged),
+        "guard_evaluations": sum(r.get("guard_evaluations", 0) for r in effective),
+        "n_inconclusive": sum(1 for r in effective if r.get("oracle_error")),
         "accepted": accepted, "first_accept_round": first_accept_round,
         "oracle_calls_to_accept": oracle_calls_to_accept,
         "guard_miss": guard_miss, "redundant_attempts": n_guarded + guard_miss,

@@ -67,32 +67,39 @@ def _stratum_by_task() -> dict[str, str]:
 
 
 def expected_cells(programs: list[str], sweep_programs: list[str], experiment: str) -> set[tuple]:
-    """(task, mode, seed, guard_on, steer_on, max_examples, typing_noise_c) tuples."""
+    """(task, mode, seed, guard_on, steer_on, max_examples, typing_noise_c,
+    force_full_budget) tuples."""
     cells: set[tuple] = set()
 
     if experiment in ("all", "main"):
         for task in programs:
             for mode in MODES:
+                # The no-memory arm is E1's full-budget corpus, reused: running
+                # it past the first accept is what makes pi_hat/q_hat unbiased
+                # (scripts/fit_theory.py), and src.metrics.summarize_episode
+                # truncates the extra rounds back out so the arms stay
+                # comparable. The memory arms stop at their first accept.
+                full = mode == "no_memory"
                 for seed in DEFAULT_SEEDS_MAIN:
-                    cells.add((task, mode, seed, True, True, 100, 1.0))
+                    cells.add((task, mode, seed, True, True, 100, 1.0, full))
 
     if experiment in ("all", "ablation"):
         for task in programs:
             for seed in DEFAULT_SEEDS_MAIN:
-                cells.add((task, "typed", seed, False, True, 100, 1.0))  # steering-only
-                cells.add((task, "typed", seed, True, False, 100, 1.0))  # guard-only
+                cells.add((task, "typed", seed, False, True, 100, 1.0, False))  # steering-only
+                cells.add((task, "typed", seed, True, False, 100, 1.0, False))  # guard-only
 
     if experiment in ("all", "oracle_sweep"):
         for task in sweep_programs:
             for seed in DEFAULT_SEEDS_SWEEP:
                 for n in DEFAULT_MAX_EXAMPLES_SWEEP:
-                    cells.add((task, "typed", seed, True, True, n, 1.0))
+                    cells.add((task, "typed", seed, True, True, n, 1.0, False))
 
     if experiment in ("all", "typing_sweep"):
         for task in sweep_programs:
             for seed in DEFAULT_SEEDS_SWEEP:
                 for c in DEFAULT_TYPING_C_SWEEP:
-                    cells.add((task, "typed", seed, True, True, 100, c))
+                    cells.add((task, "typed", seed, True, True, 100, c, False))
 
     return cells
 
@@ -101,6 +108,7 @@ def _cell_key(summary: dict) -> tuple:
     return (
         summary["task"], summary["mode"], summary["seed"],
         summary["guard_on"], summary["steer_on"], summary["max_examples"], summary["typing_noise_c"],
+        summary.get("force_full_budget", False),
     )
 
 
@@ -139,7 +147,8 @@ def main() -> None:
         print(f"MISSING {len(missing)} cells, e.g.:")
         for cell in missing[:20]:
             print(f"  task={cell[0]!r} mode={cell[1]!r} seed={cell[2]} guard_on={cell[3]} "
-                  f"steer_on={cell[4]} max_examples={cell[5]} typing_noise_c={cell[6]}")
+                  f"steer_on={cell[4]} max_examples={cell[5]} typing_noise_c={cell[6]} "
+                  f"force_full_budget={cell[7]}")
         if len(missing) > 20:
             print(f"  ... and {len(missing) - 20} more")
         if not args.allow_partial:

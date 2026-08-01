@@ -45,6 +45,11 @@ class OracleResult:
     reference: Outcome | None = None
     reason: str | None = None       # human-readable divergence description
     examples_tried: int = 0
+    # Set when the search itself failed rather than the patch: the round is
+    # inconclusive, not a refutation. accept is False (never claim correctness
+    # we did not establish) but there is no counterexample, so candidate/args
+    # stay None and src.typer.theta assigns no failure type.
+    oracle_error: str | None = None
 
 
 def _combined_source(task: Task, program_source: str) -> str:
@@ -108,6 +113,23 @@ def differential_test(
         _run()
     except AssertionError:
         pass
+    except (KeyboardInterrupt, SystemExit):
+        raise
+    except BaseException as exc:
+        # Hypothesis raises for reasons that are not "the candidate is wrong":
+        # Unsatisfiable when the reference rejects nearly every draw, Flaky when
+        # a candidate sitting on the sandbox's wall-clock timeout fails once and
+        # passes on the shrinking replay. Neither is evidence about the patch,
+        # and neither should take down a multi-hour sweep. If a counterexample
+        # was already found before the error (a Flaky mid-shrink, say), keep it
+        # and fall through; otherwise report the round as inconclusive.
+        if "args" not in found:
+            return OracleResult(
+                accept=False,
+                reason=f"oracle error: {type(exc).__name__}: {exc}",
+                oracle_error=f"{type(exc).__module__}.{type(exc).__name__}",
+                examples_tried=tried["n"],
+            )
 
     if "args" in found:
         return OracleResult(
@@ -141,6 +163,9 @@ def is_truly_correct(
       2. Every QuixBugs-shipped fixed testcase for this task (program.testcases()),
          checked exactly - an independent, human-curated check. 9 of the 40
          tasks (graph/linked-list) ship none, so step 1 alone covers those.
+
+    An inconclusive step 1 (OracleResult.oracle_error) fails the check: this is
+    the overfitting audit, so "could not establish" is treated as "not clean".
     """
     big = differential_test(
         task, candidate_source, program.correct_source,

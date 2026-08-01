@@ -9,12 +9,17 @@ the budget cap is hit.
 
 One driver, many experiments - all of E1-E5 are this same grid with
 different flags:
-  E1 (no-memory pi_hat corpus):  --modes no_memory --force-full-budget
-  E2 (main 3-condition run):     defaults (guard on, steer on) + --check-overfit
+  E1 (no-memory arm + pi_hat corpus):  --modes no_memory --force-full-budget
+  E2 (memory arms):              --modes untyped typed --check-overfit
   E3 (ablation):                 --modes typed --guard off   (steering-only)
                                   --modes typed --steer off  (guard-only)
   E4 (oracle-informativeness sweep):  --max-examples 300|100|30|10
   E5 (typing-coherence sweep):        --typing-noise-c 1.0|0.9|0.75|0.5
+
+E1 *is* the main grid's no-memory arm - run it, then run E2 over the two
+memory modes only. Running no_memory a second time without
+--force-full-budget would buy a whole second arm that scripts/analyze.py
+deliberately refuses to pool with the first (see its _is_main_grid).
 """
 from __future__ import annotations
 
@@ -51,6 +56,7 @@ def _cell_key(row: dict) -> tuple:
     return (
         row["task"], row["mode"], row["seed"],
         row["guard_on"], row["steer_on"], row["max_examples"], row["typing_noise_c"],
+        row.get("force_full_budget", False),
     )
 
 
@@ -100,7 +106,8 @@ def run_sweep(
         for mode in modes:
             for seed in seeds:
                 n += 1
-                cell = (task_name, mode, seed, guard_on, steer_on, max_examples, typing_noise_c)
+                cell = (task_name, mode, seed, guard_on, steer_on, max_examples,
+                        typing_noise_c, force_full_budget)
                 if cell in done:
                     print(f"[{n:4d}/{total}] {task_name:28s} {mode:10s} seed={seed} - already complete, skipping")
                     continue

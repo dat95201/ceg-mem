@@ -11,13 +11,20 @@ Guard and steer can each be switched off independently (guard_on/steer_on)
 for the E3 ablation (guard-only vs steering-only, Table 4 in the paper).
 force_full_budget keeps the loop running past the first accept - needed for
 E1's unbiased no-memory corpus ("run all 12 attempts even after a correct
-one, so pi_hat isn't biased by early stopping").
+one, so pi_hat isn't biased by early stopping"). It is part of the cell
+identity below, because it changes what a round means; src.metrics then
+truncates the extra rounds back out when summarizing, so the no-memory arm
+stays comparable to the memory arms it is tabulated against.
+
+Everything random about an episode is derived from its cell: the episode id,
+the typing-noise RNG, and each round's model-call nonce. Re-running a cell
+therefore reproduces it exactly and replays from cache for free.
 """
 from __future__ import annotations
 
 import dataclasses
+import hashlib
 import random
-import uuid
 
 from src.adapter import TASKS, load
 from src.memory import build_memory
@@ -26,6 +33,51 @@ from src.oracle import differential_test
 from src.proposer import Attempt, propose
 
 MODES = ("no_memory", "untyped", "typed")
+
+
+def cell_signature(
+    task_name: str,
+    mode: str,
+    *,
+    seed: int,
+    granularity: str,
+    max_examples: int,
+    typing_noise_c: float,
+    guard_on: bool,
+    steer_on: bool,
+    budget: int,
+    force_full_budget: bool,
+) -> str:
+    """Canonical string identity of one experiment cell.
+
+    Every knob that changes what the episode *is* goes in, so two runs of the
+    same cell agree and two different cells never collide. Used for both the
+    episode id and the typing-noise RNG below.
+    """
+    return "|".join((
+        task_name, mode, f"seed={seed}", f"gran={granularity}",
+        f"max_examples={max_examples}", f"c={typing_noise_c!r}",
+        f"guard={guard_on}", f"steer={steer_on}",
+        f"budget={budget}", f"full={force_full_budget}",
+    ))
+
+
+def proposal_nonce(task_name: str, seed: int, round_index: int) -> str:
+    """Cache nonce for one proposal draw (src.llm.complete).
+
+    Keyed on (task, seed, round) and deliberately *not* on mode or the ablation
+    flags. Two conditions whose prompt is byte-identical - every arm's round 1,
+    where the history is still empty - then share one draw, which pairs the arms
+    on common random numbers instead of buying the same completion three times.
+    The moment the prompts diverge (evidence/exclusion blocks appear) the prompt
+    itself separates the cache keys, so nothing is shared that shouldn't be.
+
+    Deterministic, so re-running a cell replays from cache for free; distinct per
+    round and per seed, so rounds meant to be independent draws are not served
+    the same cached completion - which is what happens with no memory, whose
+    prompt is the same every single round.
+    """
+    return f"{task_name}|seed{seed}|r{round_index}"
 
 
 @dataclasses.dataclass(frozen=True)
@@ -67,7 +119,22 @@ def run_episode(
 
     task = TASKS[task_name]
     program = load(task_name)
-    episode_id = uuid.uuid4().hex[:12]
+
+    cell = cell_signature(
+        task_name, mode, seed=seed, granularity=granularity, max_examples=max_examples,
+        typing_noise_c=typing_noise_c, guard_on=guard_on, steer_on=steer_on,
+        budget=budget, force_full_budget=force_full_budget,
+    )
+    # Deterministic, not uuid4: a cell that died halfway and is re-run rewrites
+    # its own rounds in data/episodes.jsonl (src.metrics.load_rounds collapses on
+    # (episode_id, round_index), last write wins) instead of appending a second,
+    # truncated episode that downstream means would silently average in.
+    episode_id = hashlib.sha256(cell.encode()).hexdigest()[:12]
+    # Seeded from the same identity: TypedMemory's mistyping coin (Def. 3.1's c)
+    # is the E5 sweep's independent variable, so an unseeded Random() would make
+    # that sweep unreproducible - and scripts/check_consistency.py fail on it.
+    if rng is None:
+        rng = random.Random("typing-noise|" + cell)
     memory = build_memory(mode, granularity=granularity, typing_noise_c=typing_noise_c, rng=rng)
 
     accepted_patch: str | None = None
@@ -80,6 +147,7 @@ def run_episode(
             episode_id=episode_id, task=task_name, mode=mode,
             model=model, seed=seed, guard_on=guard_on, steer_on=steer_on,
             max_examples=max_examples, typing_noise_c=typing_noise_c,
+            granularity=granularity, force_full_budget=force_full_budget,
         )
         base.update(overrides)
         return RoundRecord(**base)
@@ -89,6 +157,7 @@ def run_episode(
             task_name, program.buggy_source, task.entry_point,
             mode, memory.history, model=model, granularity=granularity,
             disable_exclusion=not steer_on,
+            nonce=proposal_nonce(task_name, seed, round_index),
         )
 
         guarded, guard_evaluations = False, 0
@@ -111,6 +180,22 @@ def run_episode(
             task, patch, program.correct_source,
             max_examples=max_examples, seed=seed + round_index,
         )
+
+        if result.oracle_error is not None:
+            # The search failed, not the patch (src.oracle): no counterexample to
+            # store, no type to steer with. Log it - the round did spend a
+            # proposal - and move on without touching memory, so an inconclusive
+            # round can never enter the evidence block or an eliminated bucket.
+            append_round(_record(
+                round_index=round_index, patch=patch, accept=False,
+                counterexample_args=None, reason=result.reason,
+                examples_tried=result.examples_tried,
+                coarse_type=None, fine_type=None,
+                guarded=False, guard_evaluations=guard_evaluations,
+                oracle_error=result.oracle_error,
+            ), **kwargs)
+            continue
+
         attempt = Attempt.from_result(task_name, program.buggy_source, patch, result)
 
         append_round(_record(
