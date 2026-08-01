@@ -61,9 +61,15 @@ def measure(
         program = load(name)
         calls = []
         for i in range(calls_per_program):
+            # Distinct nonce per call. The no-memory prompt is byte-identical
+            # across all `calls_per_program` calls (empty history, no feedback -
+            # that is the point of the measurement), so without it src.llm's
+            # cache would answer calls 2..N with call 1's completion and pi_hat
+            # could only ever come out 0.0 or 1.0.
             patch = propose(
                 name, program.buggy_source, task.entry_point,
                 mode="no_memory", history=[], model=model,
+                nonce=f"pi-pilot|{name}|seed{seed}|call{i}",
             )
             result = differential_test(
                 task, patch, program.correct_source,

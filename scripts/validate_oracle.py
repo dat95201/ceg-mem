@@ -49,7 +49,10 @@ def validate(max_examples: int, seed: int) -> dict:
                 task, mutant.source, program.correct_source,
                 max_examples=max_examples, seed=seed,
             )
-            caught = not result.accept
+            # "Caught" means a counterexample was produced, so an inconclusive
+            # search (src.oracle.OracleResult.oracle_error) counts as a miss
+            # rather than silently passing the mutant on a non-verdict.
+            caught = not result.accept and result.oracle_error is None
             mutant_results.append({
                 "fault_type": mutant.fault_type,
                 "note": mutant.note,
@@ -57,6 +60,7 @@ def validate(max_examples: int, seed: int) -> dict:
                 "examples_tried": result.examples_tried,
                 "counterexample_args": result.args if caught else None,
                 "reason": result.reason if caught else None,
+                "oracle_error": result.oracle_error,
             })
 
         n_caught = sum(m["caught"] for m in mutant_results)

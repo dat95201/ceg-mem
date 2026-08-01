@@ -42,7 +42,9 @@ def _attempt_id(row: dict) -> str:
 def _sample_rows(episodes_path: pathlib.Path) -> list[dict]:
     refuted = [
         r for r in load_rounds(episodes_path)
-        if not r["accept"] and not r.get("guarded", False)
+        # an inconclusive round (src.oracle) has no counterexample to show and no
+        # automatic type to compare a human label against - nothing to label
+        if not r["accept"] and not r.get("guarded", False) and not r.get("oracle_error")
     ]
     if not refuted:
         raise SystemExit(f"no refuted rounds in {episodes_path} - run scripts/run_eval.py first")

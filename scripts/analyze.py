@@ -29,8 +29,19 @@ STRATA = ("easy", "medium", "hard")
 
 
 def bootstrap_ci(values: list[float], *, n_resamples: int = 10_000, alpha: float = 0.05, seed: int = 0) -> dict:
-    """95% CI on the mean, resampling `values` (one value per task) with replacement."""
-    arr = np.asarray(values, dtype=float)
+    """95% CI on the mean, resampling `values` (one value per task) with replacement.
+
+    `values` is sorted first, and that is load-bearing, not tidiness. The
+    resampler draws *indices*, so permuting the input - a dict's .values() built
+    in a different insertion order, say - yields a different realization of the
+    same bootstrap distribution, and so an interval that differs in the 4th
+    decimal, even with the seed pinned. scripts/check_consistency.py recomputes
+    these numbers from episodes it re-sorted on the way in; without the sort the
+    frozen and recomputed CIs disagree and the consistency check fails on data
+    that is perfectly correct. Sorting picks a canonical realization; the
+    multiset, hence the distribution being sampled, is untouched.
+    """
+    arr = np.sort(np.asarray(values, dtype=float))
     if arr.size == 0:
         return {"mean": None, "lo": None, "hi": None, "n": 0}
     rng = np.random.default_rng(seed)
@@ -40,11 +51,16 @@ def bootstrap_ci(values: list[float], *, n_resamples: int = 10_000, alpha: float
     return {"mean": float(arr.mean()), "lo": float(lo), "hi": float(hi), "n": int(arr.size)}
 
 
-def vargha_delaney_a12(xs: list[float], ys: list[float]) -> float:
-    """P(X > Y) + 0.5*P(X == Y). 0.5 = no effect; >0.5 means xs tends larger."""
+def vargha_delaney_a12(xs: list[float], ys: list[float]) -> float | None:
+    """P(X > Y) + 0.5*P(X == Y). 0.5 = no effect; >0.5 means xs tends larger.
+
+    None, not NaN, when either side is empty: this value is written straight
+    into data/analysis.json, and json.dumps renders a NaN as a bare `NaN`
+    token that only Python's own parser will read back.
+    """
     xs, ys = np.asarray(xs, dtype=float), np.asarray(ys, dtype=float)
     if xs.size == 0 or ys.size == 0:
-        return float("nan")
+        return None
     gt = (xs[:, None] > ys[None, :]).sum()
     eq = (xs[:, None] == ys[None, :]).sum()
     return float((gt + 0.5 * eq) / (xs.size * ys.size))
@@ -78,7 +94,20 @@ def benjamini_hochberg(pvalues: list[float], *, alpha: float = 0.05) -> list[boo
 
 
 def _is_main_grid(ep: dict) -> bool:
-    return ep["guard_on"] and ep["steer_on"] and ep["max_examples"] == 100 and ep["typing_noise_c"] == 1.0
+    """The E2 comparison grid.
+
+    force_full_budget has to match the arm: the no-memory arm *is* E1's
+    full-budget corpus (see scripts/run_eval.py and scripts/fit_theory.py),
+    while the memory arms stop at their first accept. Pinning it here keeps a
+    stray second no-memory run - `run_eval.py --modes no_memory` without
+    --force-full-budget, say - out of the averages instead of quietly pooling
+    two arms that were produced under different stopping rules.
+    """
+    return (
+        ep["guard_on"] and ep["steer_on"]
+        and ep["max_examples"] == 100 and ep["typing_noise_c"] == 1.0
+        and ep.get("force_full_budget", False) == (ep["mode"] == "no_memory")
+    )
 
 
 def _per_task_means(episodes: list[dict], mode: str, stratum: str | None, metric: str) -> dict[str, float]:
@@ -114,7 +143,9 @@ def compare_conditions(episodes: list[dict], metric: str) -> dict:
 
         summary = {}
         for mode in MODES:
-            summary[mode] = bootstrap_ci(list(per_mode[mode].values()))
+            # by task name, so the input order does not depend on how the caller
+            # happened to order its episodes - see bootstrap_ci's docstring
+            summary[mode] = bootstrap_ci([per_mode[mode][t] for t in sorted(per_mode[mode])])
 
         comparisons = {}
         for a, b in itertools.combinations(MODES, 2):

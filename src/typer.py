@@ -122,6 +122,11 @@ def theta(
         raise ValueError(f"granularity must be one of {GRANULARITIES}, got {granularity!r}")
     if result.accept:
         return None
+    if result.candidate is None:
+        # Inconclusive round (src.oracle.OracleResult.oracle_error): the search
+        # failed, so no failure of the *patch* was observed and there is nothing
+        # to type. Same top element as accept - a memory must not file this.
+        return None
 
     location = "whole_function" if granularity == "coarse" else _edit_location(buggy_source, candidate_source)
     prop = _property(result.candidate, result.reference, granularity=granularity)

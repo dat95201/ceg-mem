@@ -75,7 +75,15 @@ def _format_counterexample(attempt: Attempt) -> str:
 
 
 def _refuted(history: list[Attempt]) -> list[Attempt]:
-    return [a for a in history if not a.result.accept]
+    """Past attempts the oracle actually refuted.
+
+    `result.candidate is None` marks an inconclusive round - the oracle itself
+    errored (src.oracle.OracleResult.oracle_error) rather than observing the
+    patch fail - so there is no counterexample to show and nothing to steer
+    away from. src.loop already declines to store those; filtering here too
+    keeps a hand-built history from putting a `None` into the prompt.
+    """
+    return [a for a in history if not a.result.accept and a.result.candidate is not None]
 
 
 def _evidence_block(mode: str, history: list[Attempt], granularity: str) -> str:
@@ -178,13 +186,20 @@ def propose(
     granularity: str = "fine",
     max_tokens: int = 1024,
     disable_exclusion: bool = False,
+    nonce: str = "",
+    temperature: float | None = None,
 ) -> str:
-    """Build the mode-appropriate prompt, call the LLM, and extract the patch source."""
+    """Build the mode-appropriate prompt, call the LLM, and extract the patch source.
+
+    `nonce` separates this draw from any other call that happens to build the
+    same prompt - mandatory for no_memory, whose prompt never changes from round
+    to round. src.loop.proposal_nonce is where the experiment's nonces come from.
+    """
     prompt = build_prompt(
         task_name, buggy_source, entry_point, mode, history,
         granularity=granularity, disable_exclusion=disable_exclusion,
     )
-    text = complete(prompt, model=model, max_tokens=max_tokens)
+    text = complete(prompt, model=model, max_tokens=max_tokens, nonce=nonce, temperature=temperature)
     return _extract_code(text)
 
 

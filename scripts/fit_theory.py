@@ -52,15 +52,34 @@ MODES = ("no_memory", "untyped", "typed")
 
 
 def _is_main_grid(ep: dict) -> bool:
-    return ep["guard_on"] and ep["steer_on"] and ep["max_examples"] == 100 and ep["typing_noise_c"] == 1.0
+    """The E2 comparison grid - see scripts/analyze.py's copy for why
+    force_full_budget is pinned to the arm."""
+    return (
+        ep["guard_on"] and ep["steer_on"]
+        and ep["max_examples"] == 100 and ep["typing_noise_c"] == 1.0
+        and ep.get("force_full_budget", False) == (ep["mode"] == "no_memory")
+    )
 
 
 # ---------------------------------------------------------------- E7 ------
 
 def estimate_pi_q(no_memory_rows_by_task: dict[str, list[dict]], granularity: str) -> dict[str, dict]:
+    """pi_hat and {q_hat_tau} per task, from the no-memory corpus.
+
+    Emitted in sorted task (then type) order: scripts/check_consistency.py
+    rebuilds this from data it re-sorted on the way in and deep-diffs the result
+    against the frozen file, so anything whose order tracks the caller's row
+    order would mismatch on correct data.
+    """
     out = {}
-    for task, rows in no_memory_rows_by_task.items():
-        rows = [r for r in rows if not r.get("guarded", False)]
+    for task in sorted(no_memory_rows_by_task):
+        # A round the oracle could not decide (src.oracle.OracleResult.oracle_error)
+        # is not a draw from (pi, {q_tau}) at all - drop it rather than let it
+        # count as a non-accept in the denominator.
+        rows = [
+            r for r in no_memory_rows_by_task[task]
+            if not r.get("guarded", False) and not r.get("oracle_error")
+        ]
         n = len(rows)
         if n == 0:
             continue
@@ -68,7 +87,7 @@ def estimate_pi_q(no_memory_rows_by_task: dict[str, list[dict]], granularity: st
         counts = collections.Counter(
             r[f"{granularity}_type"] for r in rows if not r["accept"] and r.get(f"{granularity}_type")
         )
-        q_hat = {t: c / n for t, c in counts.items()}
+        q_hat = {t: counts[t] / n for t in sorted(counts)}
         out[task] = {"pi_hat": pi_hat, "n_rounds": n, "K_hat": len(q_hat), "q_hat": q_hat}
     return out
 
@@ -105,26 +124,39 @@ def theory_fit(results_episodes: list[dict], pi_q_by_task: dict[str, dict]) -> d
     obs_no_memory = _observed(lambda m: m == "no_memory")
     obs_memory = _observed(lambda m: m in ("untyped", "typed"))  # pooled: Theorem 4.3(a) says they're equivalent here
 
+    # Sorted by task: check_consistency.py deep-diffs these point lists by index
+    # against the frozen file, and it feeds in episodes sorted by episode_id
+    # rather than in the order freeze_results wrote them. Iterating the dicts
+    # directly would pair task i's frozen point against task j's fresh one and
+    # report every entry as a mismatch.
     points_no_memory, points_memory = [], []
-    for task, obs in obs_no_memory.items():
+    for task in sorted(obs_no_memory):
         stats = pi_q_by_task.get(task)
         if stats is None or stats["pi_hat"] <= 0:
             continue
-        points_no_memory.append((task, obs, 1.0 / stats["pi_hat"]))
-    for task, obs in obs_memory.items():
+        points_no_memory.append((task, obs_no_memory[task], 1.0 / stats["pi_hat"]))
+    for task in sorted(obs_memory):
         stats = pi_q_by_task.get(task)
         if stats is None:
             continue
         d = expected_redundant_types(stats["pi_hat"], stats["q_hat"])
-        points_memory.append((task, obs, 1.0 + d))
+        points_memory.append((task, obs_memory[task], 1.0 + d))
 
     def _summarize(points):
         if len(points) < 2:
             return {"n_tasks": len(points), "r": None, "relative_mae": None, "points": points}
         obs = [p[1] for p in points]
         pred = [p[2] for p in points]
-        r = float(np.corrcoef(obs, pred)[0, 1])
-        return {"n_tasks": len(points), "r": r, "relative_mae": _relative_mae(obs, pred), "points": points}
+        with np.errstate(invalid="ignore"):  # constant arm -> 0/0; handled just below
+            r = float(np.corrcoef(obs, pred)[0, 1])
+        # corrcoef is NaN when one arm is constant; json.dumps would then write a
+        # bare NaN token, which is not valid JSON for anything but Python.
+        return {
+            "n_tasks": len(points),
+            "r": None if r != r else r,
+            "relative_mae": _relative_mae(obs, pred),
+            "points": points,
+        }
 
     return {"no_memory_arm": _summarize(points_no_memory), "memory_arm": _summarize(points_memory)}
 
@@ -156,9 +188,9 @@ def _accepted_no_memory_locations(no_memory_rows_by_task: dict[str, list[dict]],
     actually got accepted - the "did a correct fix exist near here" signal
     the anchoring proxy cross-references against."""
     out: dict[str, set[str]] = collections.defaultdict(set)
-    for task, rows in no_memory_rows_by_task.items():
+    for task in sorted(no_memory_rows_by_task):
         buggy_source = load(task).buggy_source
-        for r in rows:
+        for r in no_memory_rows_by_task[task]:
             if not r["accept"]:
                 continue
             out[task].add(edit_location(buggy_source, r["patch"]))
@@ -178,7 +210,9 @@ def failure_taxonomy(
     budget_exhaustion_rate = sum(1 for e in typed_main if not e["accepted"]) / len(typed_main)
     guard_miss_mean = float(np.mean([e["guard_miss"] for e in typed_main]))
 
-    failed = [e for e in typed_main if not e["accepted"]]
+    # sorted for the same reason estimate_pi_q is: check_consistency.py rebuilds
+    # this from re-sorted episodes and compares the id list element by element
+    failed = sorted((e for e in typed_main if not e["accepted"]), key=lambda e: e["episode_id"])
     anchoring_suspected = []
     for e in failed:
         rows = raw_rows_by_episode.get(e["episode_id"], [])
