@@ -1,13 +1,13 @@
 """Pilot: measure pi_hat = P[the LLM proposes a correct patch in one shot].
 
-40 independent calls per program, on 5 programs (200 calls total). Every
-call uses mode="no_memory" with an empty history - no error feedback, no
-conversation, no evidence or exclusion in the prompt - so each call is i.i.d,
-matching pi = P[G proposes a correct patch] from the proposal's notation
-(Table 1). This is a baseline measurement, not an episode: each call is
-scored independently by the oracle and discarded, not fed forward.
+N independent calls per fault. Every call uses mode="no_memory" with an empty
+history - no error feedback, no conversation, no evidence or exclusion in the
+prompt - so each call is i.i.d, matching pi = P[G proposes a correct patch]
+from the proposal's notation (Table 1). This is a baseline measurement, not an
+episode: each call is scored independently by the oracle and discarded, not
+fed forward.
 
-Writes data/pi_pilot.json: per-program success count/rate and the pooled
+Writes data/pi_pilot.json: per-fault success count/rate and the pooled
 estimate across all calls.
 """
 from __future__ import annotations
@@ -26,23 +26,32 @@ from src.proposer import propose
 
 DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 
-DEFAULT_PROGRAMS = ("gcd", "bucketsort", "mergesort", "detect_cycle", "topological_ordering")
 DEFAULT_CALLS_PER_PROGRAM = 40
 
 
-def _resolve_programs(names: list[str]) -> tuple[str, ...]:
-    """"--programs all" -> the frozen task list (data/tasks.json) if present,
-    else every task adapter.py supports. Needed to run pi_hat over all 40
-    tasks for stratification (scripts/build_strata.py), not just the 5-task
-    pilot sample."""
-    if names != ["all"]:
-        return tuple(names)
+def _frozen_programs() -> tuple[str, ...]:
     tasks_json = DATA_DIR / "tasks.json"
     if tasks_json.exists():
         data = json.loads(tasks_json.read_text())
         if data.get("frozen"):
             return tuple(t["name"] for t in data["tasks"])
-    return SUPPORTED_PROGRAMS
+    return ()
+
+
+def _resolve_programs(names: list[str] | None) -> tuple[str, ...]:
+    """No --programs, or "--programs all" -> the frozen corpus in
+    data/tasks.json. pi_hat has to cover every frozen task, not a hand-picked
+    subset, because scripts/build_strata.py stratifies on the whole
+    distribution it produces."""
+    if names and names != ["all"]:
+        return tuple(names)
+    frozen = _frozen_programs()
+    if not frozen:
+        raise SystemExit(
+            "data/tasks.json is missing or not frozen - run "
+            "scripts/validate_oracle.py first, or pass --programs explicitly"
+        )
+    return frozen
 
 
 def measure(
@@ -55,8 +64,11 @@ def measure(
 ) -> dict:
     per_program = {}
     t0 = time.monotonic()
+    n_tasks = len(programs)
+    task_w = len(str(n_tasks))
 
-    for name in programs:
+    for t_idx, name in enumerate(programs, start=1):
+        prefix = f"[task {t_idx:{task_w}d}/{n_tasks}]"
         task = TASKS[name]
         program = load(name)
         calls = []
@@ -67,16 +79,18 @@ def measure(
             # cache would answer calls 2..N with call 1's completion and pi_hat
             # could only ever come out 0.0 or 1.0.
             patch = propose(
-                name, program.buggy_source, task.entry_point,
+                name, program.buggy_source, task.name,
                 mode="no_memory", history=[], model=model,
                 nonce=f"pi-pilot|{name}|seed{seed}|call{i}",
+                spec_note=task.spec_note,
             )
             result = differential_test(
                 task, patch, program.correct_source,
                 max_examples=max_examples, seed=seed + i,
             )
             calls.append({"call": i + 1, "accept": result.accept, "reason": result.reason})
-            print(f"{name} [{i + 1:2d}/{calls_per_program}] {'accept' if result.accept else 'reject'}")
+            print(f"{prefix} {name} [{i + 1:2d}/{calls_per_program}] "
+                  f"{'accept' if result.accept else 'reject'}")
 
         successes = sum(c["accept"] for c in calls)
         per_program[name] = {
@@ -104,7 +118,8 @@ def measure(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--programs", nargs="+", default=list(DEFAULT_PROGRAMS))
+    parser.add_argument("--programs", nargs="+", default=None,
+                        help="default: the frozen corpus in data/tasks.json")
     parser.add_argument("--calls-per-program", type=int, default=DEFAULT_CALLS_PER_PROGRAM)
     parser.add_argument("--model", default=None)
     parser.add_argument("--max-examples", type=int, default=100)
@@ -127,7 +142,7 @@ def main() -> None:
     print()
     print(f"pooled pi_hat = {report['pi_hat_pooled']:.3f} over {report['total_calls']} calls")
     for name, p in report["per_program"].items():
-        print(f"  {name:25s} pi_hat={p['pi_hat']:.3f} ({p['successes']}/{p['calls']})")
+        print(f"  {name:30s} pi_hat={p['pi_hat']:.3f} ({p['successes']}/{p['calls']})")
     print("wrote data/pi_pilot.json")
 
 

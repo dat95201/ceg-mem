@@ -9,14 +9,20 @@ in the paper is written by hand.
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env          # then fill in your API key and model prices
-git clone https://github.com/jkoppel/QuixBugs external/QuixBugs
+python3 scripts/fetch_condefects.py    # clones the benchmark, checks the layout
 ```
+
+`fetch_condefects.py` can only clone the *code*. ConDefects ships its contest
+test data as a separate `Test.zip` (OneDrive or Baidu Drive — the script prints
+both links); drop that archive into `external/ConDefects/` and re-run the
+script to unpack and verify it. Without `Test/` there are no inputs, so there
+is no oracle.
 
 ## Reproduce
 
 ```bash
 python3 scripts/validate_oracle.py                        # freezes data/tasks.json
-python3 scripts/measure_pi.py --programs all              # -> data/pi_pilot.json
+python3 scripts/measure_pi.py                             # -> data/pi_pilot.json
 python3 scripts/build_strata.py                           # freezes data/strata.json
 
 python3 scripts/run_eval.py --modes no_memory --force-full-budget   # E1
@@ -46,9 +52,9 @@ and rewrites its own rows rather than appending a second copy.
 
 | Path | Contents |
 |---|---|
-| `src/tasks.py` | loads a QuixBugs program into a repair task |
-| `src/sandbox.py` | runs candidate code under a timeout, captures failures |
-| `src/oracle.py` | differential-testing counterexample oracle |
+| `src/adapter.py` | loads a ConDefects fault and its contest test pool |
+| `src/sandbox.py` | runs a candidate program on one input under a timeout |
+| `src/oracle.py` | counterexample oracle over the shipped test pool |
 | `src/typer.py` | failure-type function, two granularities |
 | `src/memory.py` | no-memory / untyped / typed stores |
 | `src/loop.py` | the repair loop (Algorithm 1) |
@@ -59,14 +65,33 @@ and rewrites its own rows rather than appending a second copy.
 
 ## Benchmark
 
-We evaluate on the Python subset of QuixBugs. QuixBugs ships a reference
-implementation alongside every buggy program, which is what makes a
-counterexample oracle possible: inputs are generated with Hypothesis and run
-against both versions, and the first divergence is returned as the
-counterexample. Benchmarks that expose only a fixed test suite yield a
-pass/fail bit rather than a counterexample, and cannot support the class-level
-refutation this work studies. The reference implementation is visible to the
-oracle only and is never placed in a model prompt.
+We evaluate on the Python subset of [ConDefects](https://github.com/appmlk/ConDefects):
+real faults from AtCoder submissions, each paired with the same author's
+accepted version, the annotated fault lines, and the contest's own test data.
+Two properties make it the right fit here.
+
+A counterexample oracle is possible at all. Every test input arrives with the
+output AtCoder accepted, so a refutation is a concrete input on which the
+candidate's stdout differs from the expected output — not the pass/fail bit a
+benchmark exposing only an opaque test suite would give, which cannot support
+the class-level refutation this work studies. The reference implementation is
+visible to the oracle only and is never placed in a model prompt; the sampled
+oracle used inside the loop is separated from the full-pool audit that decides
+whether an accepted patch was merely plausible (`is_truly_correct`).
+
+The faults postdate the benchmarks LLM training corpora were built from. That
+is ConDefects' reason for existing, and it is a *relative* guarantee, not an
+absolute one: the corpus covers October 2021 – June 2024, which sits inside the
+training window of any recent model. `scripts/validate_oracle.py --since/--until`
+selects a time slice, and the honest position for a model with a later cutoff is
+either to report contamination as a threat to validity or to re-mine AtCoder
+past that cutoff using ConDefects' own collection protocol.
+
+One further consequence of using real submissions: a program carries no problem
+statement, so its intended output format is underdetermined by the source
+alone. Each prompt therefore includes two worked input/output examples from the
+task's test data (`src.adapter.Task.spec_note`), identically in all three memory
+conditions.
 
 ## Cost
 

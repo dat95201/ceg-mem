@@ -1,461 +1,318 @@
-"""A3 - load a QuixBugs Python program and generate inputs for it.
+"""A3 - load one ConDefects faulty program and the test pool that judges it.
 
-Covers all 40 QuixBugs Python tasks. Each ships a Hypothesis strategy that
-draws a JSON-safe args list, because args cross into the sandbox subprocess
-(src/sandbox.py) as JSON over stdin - no live Python objects survive that
-trip.
+ConDefects (https://github.com/appmlk/ConDefects) is a corpus of real faults
+from AtCoder submissions. Every fault ships three things this project needs:
 
-31 tasks take only ints/floats/strings/lists, so their strategy's output is
-handed straight to the task's own top-level function. The other 9
-(breadth_first_search, depth_first_search, detect_cycle, reverse_linked_list,
-shortest_path_length, topological_ordering, minimum_spanning_tree,
-shortest_path_lengths, shortest_paths - QuixBugs' own `graph_based` list, see
-external/QuixBugs/tester.py) need either a `Node` object graph or a dict
-keyed by tuples, neither of which JSON can carry. For those, the strategy
-instead draws a serializable spec (adjacency lists / edge triples), and a
-small `__ceg_entry__` wrapper - appended to the program source as `harness`,
-never shipped to a model - rebuilds the real objects inside the sandboxed
-subprocess, calls the task function, and flattens the result back to JSON.
+  faultyVersion.py    the program to repair - a whole script, ~50 lines,
+                      reading stdin and writing stdout
+  correctVersion.py   the same author's accepted submission (the reference;
+                      visible to the oracle only, never to a model)
+  faultLocation.txt   1-indexed line numbers of the faulty statements
 
-Hypothesis-driven differential testing against the reference implementation
-lives in src/oracle.py; this module only produces (task, strategy, harness).
+and the contest's own test data, shipped separately as Test.zip:
+
+  Test/<contest>/<LETTER>/in/<case>     the input handed to the program
+  Test/<contest>/<LETTER>/out/<case>    the output AtCoder accepted
+
+So unlike a property-based setup there are no input *strategies* to write: the
+inputs already exist, and each comes with its expected output, which is what
+the counterexample oracle (src/oracle.py) diffs a candidate against. A
+counterexample is therefore a concrete test case, identified by name - the
+input text itself never has to travel through the metrics log.
+
+Task identity here is one *fault*, `"<task_id>/<program_id>"`: several
+submissions can fail the same coding task, and they are different programs
+with different bugs. scripts/validate_oracle.py keeps at most one per task_id
+so the frozen corpus stays independent.
+
+The reference implementation is visible to the oracle only. Never place
+`correct_source` in a model prompt - see src/proposer.py and the README.
 """
 from __future__ import annotations
 
 import dataclasses
-import json
+import functools
 import os
 import pathlib
-from typing import Any, Callable
 
 from dotenv import load_dotenv
-from hypothesis import strategies as st
 
-from src.sandbox import DEFAULT_TIMEOUT, Outcome, run_call
+from src.sandbox import DEFAULT_TIMEOUT, Outcome, run_program
 
 load_dotenv()
 
-QUIXBUGS_ROOT = pathlib.Path(os.environ.get("QUIXBUGS_ROOT", "external/QuixBugs"))
-BUGGY_DIR = QUIXBUGS_ROOT / "python_programs"
-CORRECT_DIR = QUIXBUGS_ROOT / "correct_python_programs"
-TESTCASE_DIR = QUIXBUGS_ROOT / "json_testcases"
+CONDEFECTS_ROOT = pathlib.Path(os.environ.get("CONDEFECTS_ROOT", "external/ConDefects"))
+CODE_DIR = CONDEFECTS_ROOT / "Code"
+TEST_DIR = CONDEFECTS_ROOT / "Test"
+LANGUAGE_DIR = "Python"
 
-SearchStrategy = st.SearchStrategy
+_SETUP_HINT = (
+    f"{CONDEFECTS_ROOT} is missing or incomplete - run "
+    "`python3 scripts/fetch_condefects.py` (it clones the code and tells you "
+    "where to get Test.zip, which is not in the git repository)."
+)
+
+# Worked examples put in front of the proposer (Task.spec_note). Contest
+# problems always show a couple of sample cases, and a submission stripped of
+# its problem statement is genuinely ambiguous without them - a patch would get
+# refuted for printing "Yes" where the judge wanted "YES", which is a
+# disagreement about the specification, not a bug. Applied identically in all
+# three memory conditions, so it cannot confound the comparison. The examples
+# stay in the oracle's pool: failing one the proposer was shown is still a
+# legitimate refutation.
+N_SPEC_EXAMPLES = 2
+SPEC_MAX_INPUT_CHARS = 400
+SPEC_MAX_OUTPUT_CHARS = 200
+
+
+@dataclasses.dataclass(frozen=True)
+class TestCase:
+    """One shipped contest test case."""
+
+    name: str
+    input_text: str
+    expected_output: str | None   # None if Test/ has no matching out/ file
+
+
+def _read(path: pathlib.Path) -> str:
+    return path.read_text(encoding="utf-8", errors="replace")
+
+
+def test_dir_for(task_id: str) -> pathlib.Path | None:
+    """Test/<contest>/<LETTER> for a task id like "abc221_f".
+
+    Mirrors the toolkit's own lookup (ConDefects Tool/RunTest.py): the letter
+    after the underscore, uppercased, with "Ex" as the fallback - AtCoder names
+    a Beginner Contest's eighth problem "Ex" rather than "H".
+    """
+    contest, _, suffix = task_id.partition("_")
+    for letter in (suffix.upper(), "Ex"):
+        candidate = TEST_DIR / contest / letter
+        if (candidate / "in").is_dir():
+            return candidate
+    return None
+
+
+@functools.lru_cache(maxsize=None)
+def test_cases_for(task_id: str) -> tuple[TestCase, ...]:
+    """Every shipped case for a coding task, in a deterministic order.
+
+    Cached per task_id rather than per fault: several faulty programs share one
+    coding task, and re-reading a few hundred input files for each of them
+    would dominate the oracle's cost.
+    """
+    root = test_dir_for(task_id)
+    if root is None:
+        return ()
+    out_dir = root / "out"
+    cases = []
+    for in_path in sorted((root / "in").iterdir()):
+        if not in_path.is_file() or in_path.name.startswith("."):
+            continue
+        out_path = out_dir / in_path.name
+        cases.append(TestCase(
+            name=in_path.name,
+            input_text=_read(in_path),
+            expected_output=_read(out_path) if out_path.is_file() else None,
+        ))
+    return tuple(cases)
+
+
+def _render_examples(cases: tuple[TestCase, ...]) -> str:
+    if not cases:
+        return ""
+    blocks = [
+        f"Example {i}\ninput:\n{c.input_text.rstrip()}\n"
+        f"expected output:\n{(c.expected_output or '').rstrip()}"
+        for i, c in enumerate(cases, 1)
+    ]
+    return (
+        "The program reads from standard input and writes to standard output. "
+        "Worked examples of the intended behaviour:\n\n" + "\n\n".join(blocks)
+    )
 
 
 @dataclasses.dataclass(frozen=True)
 class Task:
-    """Everything the oracle needs to run one QuixBugs program on live input."""
+    """Everything the oracle needs to judge one ConDefects fault."""
 
-    name: str
-    entry_point: str          # function name run_call should invoke
-    harness: str              # source appended after the program; "" if none
-    strategy: SearchStrategy  # draws a JSON-safe args list for entry_point
+    name: str          # "<task_id>/<program_id>" - the identity used everywhere
+    task_id: str       # AtCoder coding task, e.g. "abc221_f"
+    program_id: str    # submission id, e.g. "40898300"
+
+    @property
+    def dir(self) -> pathlib.Path:
+        return CODE_DIR / self.task_id / LANGUAGE_DIR / self.program_id
+
+    @property
+    def test_cases(self) -> tuple[TestCase, ...]:
+        return test_cases_for(self.task_id)
+
+    def case(self, name: str) -> TestCase | None:
+        """Look one case up by name - how a stored counterexample is replayed."""
+        for case in self.test_cases:
+            if case.name == name:
+                return case
+        return None
+
+    @property
+    def spec_note(self) -> str:
+        """Sample input/output pairs shown to the proposer. See N_SPEC_EXAMPLES."""
+        small = [
+            c for c in self.test_cases
+            if c.expected_output is not None
+            and len(c.input_text) <= SPEC_MAX_INPUT_CHARS
+            and len(c.expected_output) <= SPEC_MAX_OUTPUT_CHARS
+        ]
+        # AtCoder ships the problem statement's own samples under names like
+        # "sample_01"/"00_example_00"; prefer those, they are the ones a human
+        # solver would have seen. Otherwise fall back to the smallest inputs.
+        named = [c for c in small if "sample" in c.name.lower() or "example" in c.name.lower()]
+        chosen = named or sorted(small, key=lambda c: len(c.input_text))
+        return _render_examples(tuple(chosen[:N_SPEC_EXAMPLES]))
 
 
-# ── Node harness ──────────────────────────────────────────────────────────
-# Same shape as external/QuixBugs/python_testcases/node.py, but with None
-# defaults instead of mutable-default-argument lists: every harness below
-# builds many Node()s per call, and QuixBugs' shared-list default would alias
-# successors/predecessors across all of them.
-_NODE_CLASS = """
-class Node:
-    def __init__(self, value=None, successor=None, successors=None,
-                 predecessors=None, incoming_nodes=None, outgoing_nodes=None):
-        self.value = value
-        self.successor = successor
-        self.successors = list(successors) if successors else []
-        self.predecessors = list(predecessors) if predecessors else []
-        self.incoming_nodes = list(incoming_nodes) if incoming_nodes else []
-        self.outgoing_nodes = list(outgoing_nodes) if outgoing_nodes else []
-"""
+def discover() -> dict[str, Task]:
+    """Scan the checkout for faults. TASKS below is this, evaluated at import;
+    scripts/fetch_condefects.py calls it again after downloading, when the
+    import-time snapshot is stale by construction."""
+    if not CODE_DIR.is_dir():
+        return {}
+    tasks = {}
+    for faulty in CODE_DIR.glob(f"*/{LANGUAGE_DIR}/*/faultyVersion.py"):
+        program_dir = faulty.parent
+        if not (program_dir / "correctVersion.py").is_file():
+            continue
+        task_id = program_dir.parent.parent.name
+        name = f"{task_id}/{program_dir.name}"
+        tasks[name] = Task(name=name, task_id=task_id, program_id=program_dir.name)
+    return dict(sorted(tasks.items()))
 
-_BFS_HARNESS = _NODE_CLASS + """
-def __ceg_entry__(adj, start_idx, goal_idx):
-    nodes = [Node(i) for i in range(len(adj))]
-    for i, succs in enumerate(adj):
-        nodes[i].successors = [nodes[j] for j in succs]
-    return breadth_first_search(nodes[start_idx], nodes[goal_idx])
-"""
 
-_DFS_HARNESS = _NODE_CLASS + """
-def __ceg_entry__(adj, start_idx, goal_idx):
-    nodes = [Node(i) for i in range(len(adj))]
-    for i, succs in enumerate(adj):
-        nodes[i].successors = [nodes[j] for j in succs]
-    return depth_first_search(nodes[start_idx], nodes[goal_idx])
-"""
+TASKS: dict[str, Task] = discover()
+SUPPORTED_PROGRAMS: tuple[str, ...] = tuple(TASKS)
 
-_DETECT_CYCLE_HARNESS = _NODE_CLASS + """
-def __ceg_entry__(values, cycle_to):
-    nodes = [Node(v) for v in values]
-    for i in range(len(nodes) - 1):
-        nodes[i].successor = nodes[i + 1]
-    if nodes and cycle_to is not None:
-        nodes[-1].successor = nodes[cycle_to]
-    return detect_cycle(nodes[0])
-"""
 
-_REVERSE_LINKED_LIST_HARNESS = _NODE_CLASS + """
-def __ceg_entry__(values):
-    nodes = [Node(v) for v in values]
-    for i in range(len(nodes) - 1):
-        nodes[i].successor = nodes[i + 1]
-    head = nodes[0] if nodes else None
-    result = reverse_linked_list(head)
-    out = []
-    seen = 0
-    while result is not None and seen <= len(values) + 1:
-        out.append(result.value)
-        result = result.successor
-        seen += 1
+# ── Corpus metadata (root date.txt / difficulty.txt) ──────────────────────
+# "abc221_a 2021-10-02" and "abc221_a 10", one coding task per line. The dates
+# are what makes a contamination-controlled split possible - the whole reason
+# for preferring ConDefects to an older benchmark - and the difficulties are
+# reported alongside the measured pi_hat strata.
+
+def _metadata(filename: str) -> dict[str, str]:
+    path = CONDEFECTS_ROOT / filename
+    if not path.is_file():
+        return {}
+    out = {}
+    for line in _read(path).splitlines():
+        parts = line.split()
+        if len(parts) >= 2:
+            out[parts[0]] = parts[1]
     return out
-"""
-
-_SHORTEST_PATH_LENGTH_HARNESS = _NODE_CLASS + """
-def __ceg_entry__(n, edges, start_idx, goal_idx):
-    nodes = [Node(i) for i in range(n)]
-    adj = {i: [] for i in range(n)}
-    for a, b, _w in edges:
-        adj[a].append(b)
-    for i in range(n):
-        nodes[i].successors = [nodes[j] for j in adj[i]]
-    length_by_edge = {(nodes[a], nodes[b]): w for a, b, w in edges}
-    return shortest_path_length(length_by_edge, nodes[start_idx], nodes[goal_idx])
-"""
-
-_TOPOLOGICAL_ORDERING_HARNESS = _NODE_CLASS + """
-def __ceg_entry__(n, edges):
-    nodes = [Node(i) for i in range(n)]
-    for a, b in edges:
-        nodes[a].outgoing_nodes.append(nodes[b])
-        nodes[b].incoming_nodes.append(nodes[a])
-    result = topological_ordering(nodes)
-    return [node.value for node in result]
-"""
-
-# These three are QuixBugs "graph_based" too, but their signature is a dict
-# keyed by (node, node) tuples where a node is any hashable - no Node object
-# needed, just a wrapper to get past "JSON object keys must be strings".
-_MINIMUM_SPANNING_TREE_HARNESS = """
-def __ceg_entry__(edges):
-    weight_by_edge = {(a, b): w for a, b, w in edges}
-    result = minimum_spanning_tree(weight_by_edge)
-    return sorted(list(e) for e in result)
-"""
-
-_SHORTEST_PATH_LENGTHS_HARNESS = """
-def __ceg_entry__(n, edges):
-    weight_by_edge = {(a, b): w for a, b, w in edges}
-    result = shortest_path_lengths(n, weight_by_edge)
-    return sorted([a, b, w] for (a, b), w in result.items())
-"""
-
-_SHORTEST_PATHS_HARNESS = """
-def __ceg_entry__(source, edges):
-    weight_by_edge = {(a, b): w for a, b, w in edges}
-    result = shortest_paths(source, weight_by_edge)
-    return sorted([k, v] for k, v in result.items())
-"""
 
 
-# ── Strategies: 31 flat tasks ─────────────────────────────────────────────
-_ints = lambda lo, hi: st.integers(min_value=lo, max_value=hi)
-_small_ints = _ints(-100, 100)
+@functools.lru_cache(maxsize=1)
+def task_dates() -> dict[str, str]:
+    """task_id -> contest date, "YYYY-MM-DD"."""
+    return _metadata("date.txt")
 
 
-def _sorted_list_and_x():
-    arr = st.lists(_ints(-200, 200), max_size=30).map(sorted)
-    return arr.flatmap(lambda a: st.tuples(st.just(a), _ints(-200, 200))).map(list)
-
-
-def _bucketsort_args():
-    return _ints(1, 30).flatmap(
-        lambda k: st.tuples(st.lists(_ints(0, k - 1), max_size=30), st.just(k))
-    ).map(list)
-
-
-def _flatten_args():
-    leaves = _ints(-50, 50)
-    nested = st.recursive(leaves, lambda children: st.lists(children, max_size=5), max_leaves=20)
-    return st.lists(nested, max_size=8).map(lambda arr: [arr])
-
-
-def _kth_args():
-    return st.lists(_ints(-50, 50), min_size=1, max_size=15).flatmap(
-        lambda arr: st.tuples(st.just(arr), _ints(0, len(arr) - 1))
-    ).map(list)
-
-
-def _knapsack_args():
-    items = st.lists(st.tuples(_ints(1, 15), _ints(0, 50)), max_size=8)
-    return st.tuples(_ints(0, 30), items).map(list)
-
-
-def _next_permutation_args():
-    return _ints(0, 7).flatmap(lambda n: st.permutations(list(range(n)))).map(lambda perm: [perm])
-
-
-def _possible_change_args():
-    coins = st.lists(_ints(1, 25), min_size=0, max_size=4)
-    return st.tuples(coins, _ints(0, 20)).map(list)
-
-
-def _rpn_eval_args():
-    floats = st.floats(min_value=1, max_value=50, allow_nan=False, allow_infinity=False).map(lambda x: round(x, 2))
-    ops = st.sampled_from(["+", "-", "*"])
-
-    def _combine(children):
-        return st.one_of(
-            floats.map(lambda v: [v]),
-            st.tuples(children, children, ops).map(lambda t: t[0] + t[1] + [t[2]]),
-        )
-
-    expr = st.recursive(floats.map(lambda v: [v]), _combine, max_leaves=6)
-    return expr.map(lambda toks: [toks])
-
-
-def _shunting_yard_args():
-    tokens = st.one_of(_ints(-20, 20), st.sampled_from(["+", "-", "*", "/"]))
-    return st.lists(tokens, max_size=20).map(lambda toks: [toks])
-
-
-def _subsequences_args():
-    return _ints(0, 10).flatmap(
-        lambda a: _ints(a, a + 8).flatmap(
-            lambda b: st.tuples(st.just(a), st.just(b), _ints(0, b - a + 1))
-        )
-    ).map(list)
-
-
-_FLAT_STRATEGIES: dict[str, SearchStrategy] = {
-    "bitcount": _ints(0, 10_000).map(lambda n: [n]),
-    "bucketsort": _bucketsort_args(),
-    "find_first_in_sorted": _sorted_list_and_x(),
-    "find_in_sorted": _sorted_list_and_x(),
-    "flatten": _flatten_args(),
-    "gcd": st.tuples(_ints(0, 1000), _ints(0, 1000)).map(list),
-    "get_factors": _ints(1, 10_000).map(lambda n: [n]),
-    "hanoi": _ints(0, 10).map(lambda h: [h]),
-    "is_valid_parenthesization": st.text(alphabet="()", max_size=30).map(lambda s: [s]),
-    "kheapsort": st.tuples(st.lists(_ints(-100, 100), max_size=25), _ints(0, 20)).map(list),
-    "knapsack": _knapsack_args(),
-    "kth": _kth_args(),
-    "lcs_length": st.tuples(
-        st.text(alphabet="abcd", max_size=15), st.text(alphabet="abcd", max_size=15)
-    ).map(list),
-    # Both unbounded-recursion, no-memo implementations: exponential in
-    # string length, so keep these short or the sandbox timeout dominates.
-    "levenshtein": st.tuples(
-        st.text(alphabet="ab", max_size=7), st.text(alphabet="ab", max_size=7)
-    ).map(list),
-    "lis": st.lists(_ints(-50, 50), max_size=20).map(lambda arr: [arr]),
-    "longest_common_subsequence": st.tuples(
-        st.text(alphabet="ab", max_size=7), st.text(alphabet="ab", max_size=7)
-    ).map(list),
-    "max_sublist_sum": st.lists(_ints(-100, 100), max_size=30).map(lambda arr: [arr]),
-    "mergesort": st.lists(_small_ints, max_size=30).map(lambda arr: [arr]),
-    "next_palindrome": st.lists(_ints(0, 9), min_size=1, max_size=10).map(lambda ds: [ds]),
-    "next_permutation": _next_permutation_args(),
-    "pascal": _ints(0, 15).map(lambda n: [n]),
-    "possible_change": _possible_change_args(),
-    "powerset": st.lists(_ints(-20, 20), max_size=10).map(lambda arr: [arr]),
-    "quicksort": st.lists(_small_ints, max_size=30).map(lambda arr: [arr]),
-    "rpn_eval": _rpn_eval_args(),
-    "shunting_yard": _shunting_yard_args(),
-    "sieve": _ints(0, 100).map(lambda n: [n]),
-    "sqrt": st.tuples(
-        st.floats(min_value=0, max_value=10_000, allow_nan=False, allow_infinity=False),
-        st.floats(min_value=1e-3, max_value=1.0, allow_nan=False, allow_infinity=False),
-    ).map(list),
-    "subsequences": _subsequences_args(),
-    "to_base": st.tuples(_ints(1, 100_000), _ints(2, 36)).map(list),
-    "wrap": st.tuples(
-        st.text(alphabet="abcde ", max_size=60), _ints(1, 20)
-    ).map(list),
-}
-
-
-# ── Strategies: 9 graph/linked-list tasks (need a harness) ────────────────
-def _adjacency_args(max_nodes: int = 8):
-    return _ints(1, max_nodes).flatmap(lambda n: st.tuples(
-        st.lists(st.lists(_ints(0, n - 1), max_size=n, unique=True), min_size=n, max_size=n),
-        _ints(0, n - 1),
-        _ints(0, n - 1),
-    )).map(list)
-
-
-def _detect_cycle_args():
-    return _ints(1, 8).flatmap(lambda n: st.tuples(
-        st.just(list(range(n))), st.one_of(st.none(), _ints(0, n - 1))
-    )).map(list)
-
-
-def _weighted_edges(n_lo, n_hi, weight_lo, weight_hi, *, allow_self=False):
-    def edges_for(n):
-        edge = st.tuples(_ints(0, n - 1), _ints(0, n - 1), _ints(weight_lo, weight_hi))
-        if not allow_self:
-            edge = edge.filter(lambda e: e[0] != e[1])
-        return st.lists(edge, max_size=n * 2, unique_by=lambda e: (e[0], e[1]))
-    return _ints(n_lo, n_hi), edges_for
-
-
-def _shortest_path_length_args():
-    n_strategy, edges_for = _weighted_edges(1, 7, 1, 20)
-    return n_strategy.flatmap(lambda n: st.tuples(
-        st.just(n), edges_for(n), _ints(0, n - 1), _ints(0, n - 1)
-    )).map(list)
-
-
-def _topological_ordering_args():
-    return _ints(1, 7).flatmap(lambda n: st.tuples(
-        st.just(n),
-        st.lists(
-            st.tuples(_ints(0, n - 1), _ints(0, n - 1)).filter(lambda e: e[0] != e[1]),
-            max_size=n * 2, unique=True,
-        ),
-    )).map(list)
-
-
-def _minimum_spanning_tree_args():
-    return _ints(2, 7).flatmap(lambda n: st.lists(
-        st.tuples(_ints(0, n - 1), _ints(0, n - 1), _ints(1, 20)).filter(lambda e: e[0] < e[1]),
-        max_size=n * (n - 1) // 2, unique_by=lambda e: (e[0], e[1]),
-    )).map(lambda edges: [edges])
-
-
-def _shortest_path_lengths_args():
-    n_strategy, edges_for = _weighted_edges(1, 6, -10, 20)
-    return n_strategy.flatmap(lambda n: st.tuples(st.just(n), edges_for(n))).map(list)
-
-
-def _shortest_paths_args():
-    n_strategy, edges_for = _weighted_edges(2, 6, -10, 20)
-    return n_strategy.flatmap(lambda n: st.tuples(_ints(0, n - 1), edges_for(n))).map(list)
-
-
-_GRAPH_TASKS: dict[str, tuple[str, SearchStrategy]] = {
-    "breadth_first_search": (_BFS_HARNESS, _adjacency_args()),
-    "depth_first_search": (_DFS_HARNESS, _adjacency_args()),
-    "detect_cycle": (_DETECT_CYCLE_HARNESS, _detect_cycle_args()),
-    "reverse_linked_list": (
-        _REVERSE_LINKED_LIST_HARNESS,
-        st.lists(_ints(-50, 50), max_size=10).map(lambda values: [values]),
-    ),
-    "shortest_path_length": (_SHORTEST_PATH_LENGTH_HARNESS, _shortest_path_length_args()),
-    "topological_ordering": (_TOPOLOGICAL_ORDERING_HARNESS, _topological_ordering_args()),
-    "minimum_spanning_tree": (_MINIMUM_SPANNING_TREE_HARNESS, _minimum_spanning_tree_args()),
-    "shortest_path_lengths": (_SHORTEST_PATH_LENGTHS_HARNESS, _shortest_path_lengths_args()),
-    "shortest_paths": (_SHORTEST_PATHS_HARNESS, _shortest_paths_args()),
-}
-
-
-def _build_tasks() -> dict[str, Task]:
-    tasks = {
-        name: Task(name=name, entry_point=name, harness="", strategy=strategy)
-        for name, strategy in _FLAT_STRATEGIES.items()
-    }
-    for name, (harness, strategy) in _GRAPH_TASKS.items():
-        tasks[name] = Task(name=name, entry_point="__ceg_entry__", harness=harness, strategy=strategy)
-    return tasks
-
-
-TASKS: dict[str, Task] = _build_tasks()
-SUPPORTED_PROGRAMS: tuple[str, ...] = tuple(sorted(TASKS))
+@functools.lru_cache(maxsize=1)
+def task_difficulties() -> dict[str, int]:
+    """task_id -> AtCoder difficulty rating."""
+    return {k: int(v) for k, v in _metadata("difficulty.txt").items() if v.lstrip("-").isdigit()}
 
 
 @dataclasses.dataclass(frozen=True)
-class QuixBugsProgram:
+class ConDefectsProgram:
     name: str
     buggy_source: str
     correct_source: str
+    fault_lines: tuple[int, ...]   # 1-indexed, from faultLocation.txt
 
-    def testcases(self) -> list[tuple[list, Any]]:
-        """Shipped `[args, expected]` rows, args always normalised to a list.
-
-        Only the 31 non-graph tasks ship one of these files (see
-        external/QuixBugs/json_testcases); the other 9 have none.
-        """
-        path = TESTCASE_DIR / f"{self.name}.json"
-        if not path.exists():
-            return []
-        rows = []
-        for line in path.read_text().splitlines():
-            if not line.strip():
-                continue
-            args, expected = json.loads(line)
-            if not isinstance(args, list):
-                args = [args]
-            rows.append((args, expected))
-        return rows
+    def testcases(self) -> tuple[TestCase, ...]:
+        return TASKS[self.name].test_cases
 
 
-def load(name: str) -> QuixBugsProgram:
-    """Read the buggy and reference sources for one QuixBugs program."""
+def load(name: str) -> ConDefectsProgram:
+    """Read the faulty and reference sources for one ConDefects fault."""
     if name not in TASKS:
-        raise ValueError(f"{name!r} not in TASKS {SUPPORTED_PROGRAMS}")
-    buggy_path = BUGGY_DIR / f"{name}.py"
-    correct_path = CORRECT_DIR / f"{name}.py"
-    if not buggy_path.exists() or not correct_path.exists():
-        raise FileNotFoundError(
-            f"{buggy_path} or {correct_path} missing - did you "
-            "`git clone https://github.com/jkoppel/QuixBugs external/QuixBugs`?"
-        )
-    return QuixBugsProgram(
+        if not TASKS:
+            raise FileNotFoundError(_SETUP_HINT)
+        raise ValueError(f"{name!r} is not a known fault ({len(TASKS)} available)")
+    task = TASKS[name]
+    faulty = task.dir / "faultyVersion.py"
+    correct = task.dir / "correctVersion.py"
+    if not faulty.is_file() or not correct.is_file():
+        raise FileNotFoundError(f"{faulty} or {correct} missing - {_SETUP_HINT}")
+
+    location = task.dir / "faultLocation.txt"
+    fault_lines: tuple[int, ...] = ()
+    if location.is_file():
+        fault_lines = tuple(int(t) for t in _read(location).split() if t.lstrip("-").isdigit())
+
+    return ConDefectsProgram(
         name=name,
-        buggy_source=buggy_path.read_text(),
-        correct_source=correct_path.read_text(),
+        buggy_source=_read(faulty),
+        correct_source=_read(correct),
+        fault_lines=fault_lines,
     )
 
 
-def load_all() -> list[QuixBugsProgram]:
+def load_all() -> list[ConDefectsProgram]:
     return [load(name) for name in SUPPORTED_PROGRAMS]
 
 
-def run_buggy(program: QuixBugsProgram, args: list, *, timeout: float = DEFAULT_TIMEOUT) -> Outcome:
-    task = TASKS[program.name]
-    return run_call(program.buggy_source + task.harness, task.entry_point, args, timeout=timeout)
+def run_buggy(program: ConDefectsProgram, case: TestCase, *, timeout: float = DEFAULT_TIMEOUT) -> Outcome:
+    return run_program(program.buggy_source, case.input_text, timeout=timeout)
 
 
-def run_reference(program: QuixBugsProgram, args: list, *, timeout: float = DEFAULT_TIMEOUT) -> Outcome:
-    task = TASKS[program.name]
-    return run_call(program.correct_source + task.harness, task.entry_point, args, timeout=timeout)
+def run_reference(program: ConDefectsProgram, case: TestCase, *, timeout: float = DEFAULT_TIMEOUT) -> Outcome:
+    return run_program(program.correct_source, case.input_text, timeout=timeout)
 
 
 @dataclasses.dataclass(frozen=True)
 class CaseResult:
-    args: list
-    expected: Any
+    case: TestCase
     outcome: Outcome
     passed: bool
 
 
-def smoke_test(name: str, *, timeout: float = DEFAULT_TIMEOUT) -> list[CaseResult]:
-    """Run every shipped testcase for `name` against the *buggy* program.
+def smoke_test(name: str, *, limit: int | None = 10, timeout: float = DEFAULT_TIMEOUT) -> list[CaseResult]:
+    """Run the first `limit` shipped cases against the *faulty* program.
 
     This only exercises loading + sandboxed execution; it is not the
-    counterexample oracle (no Hypothesis, no reference diffing beyond the
-    literal expected value QuixBugs ships). Tasks with no shipped testcases
-    (the 9 graph/linked-list ones) yield an empty list.
+    counterexample oracle (src/oracle.py owns that). A fault none of whose
+    cases fail here is one the shipped pool does not expose -
+    scripts/validate_oracle.py drops those from the corpus.
     """
+    from src.oracle import outputs_equal   # local: src.oracle imports this module
+
     program = load(name)
+    cases = program.testcases()
     results = []
-    for args, expected in program.testcases():
-        outcome = run_buggy(program, list(args), timeout=timeout)
-        passed = outcome.ok and outcome.value == expected
-        results.append(CaseResult(args=args, expected=expected, outcome=outcome, passed=passed))
+    for case in (cases[:limit] if limit else cases):
+        outcome = run_buggy(program, case, timeout=timeout)
+        passed = (
+            outcome.ok
+            and case.expected_output is not None
+            and outputs_equal(outcome.value, case.expected_output)
+        )
+        results.append(CaseResult(case=case, outcome=outcome, passed=passed))
     return results
 
 
 if __name__ == "__main__":
-    for name in SUPPORTED_PROGRAMS:
-        cases = smoke_test(name)
-        if not cases:
-            print(f"{name}: no shipped json_testcases (graph/linked-list task)")
+    print(f"{len(TASKS)} ConDefects Python faults under {CONDEFECTS_ROOT}")
+    if not TASKS:
+        raise SystemExit(_SETUP_HINT)
+    for name in SUPPORTED_PROGRAMS[:5]:
+        task = TASKS[name]
+        if not task.test_cases:
+            print(f"{name}: no test data (Test.zip not unpacked for {task.task_id}?)")
             continue
+        cases = smoke_test(name, limit=5)
         n_pass = sum(c.passed for c in cases)
-        print(f"{name}: {n_pass}/{len(cases)} testcases pass on the buggy version")
-        for c in cases:
-            if not c.passed:
-                reason = c.outcome.error_message if not c.outcome.ok else f"got {c.outcome.value!r}"
-                print(f"    FAIL args={c.args} expected={c.expected!r}: {reason}")
+        print(f"{name}: {n_pass}/{len(cases)} of the first cases pass on the faulty version "
+              f"({len(task.test_cases)} cases total, "
+              f"difficulty {task_difficulties().get(task.task_id, '?')})")

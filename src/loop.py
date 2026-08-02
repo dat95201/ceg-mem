@@ -154,10 +154,11 @@ def run_episode(
 
     for round_index in range(1, budget + 1):
         patch = propose(
-            task_name, program.buggy_source, task.entry_point,
+            task_name, program.buggy_source, task.name,
             mode, memory.history, model=model, granularity=granularity,
             disable_exclusion=not steer_on,
             nonce=proposal_nonce(task_name, seed, round_index),
+            spec_note=task.spec_note,
         )
 
         guarded, guard_evaluations = False, 0
@@ -228,7 +229,11 @@ def run_episode(
 if __name__ == "__main__":
     import sys
 
-    task_name = sys.argv[1] if len(sys.argv) > 1 else "gcd"
+    from src.adapter import SUPPORTED_PROGRAMS
+
+    if not SUPPORTED_PROGRAMS:
+        raise SystemExit("no ConDefects faults found - see scripts/fetch_condefects.py")
+    task_name = sys.argv[1] if len(sys.argv) > 1 else SUPPORTED_PROGRAMS[0]
     mode = sys.argv[2] if len(sys.argv) > 2 else "typed"
     result = run_episode(task_name, mode, budget=5)
     status = f"repaired in {result.rounds} rounds" if result.accepted_patch else "budget exhausted"
