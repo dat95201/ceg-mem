@@ -176,6 +176,7 @@ def stratify_by_difficulty(names: list[str]) -> tuple[dict[str, str], dict]:
 def _check_reference(program, task, *, n_cases: int, timeout: float) -> tuple[bool, str]:
     """Criterion 2 + half of 4: does correctVersion.py answer its own tests?"""
     cases = task.test_cases[:n_cases]
+    checked = 0
     for case in cases:
         if case.expected_output is None:
             continue
@@ -186,6 +187,16 @@ def _check_reference(program, task, *, n_cases: int, timeout: float) -> tuple[bo
             return False, f"reference raised {outcome.error_type} on {case.name}"
         if not outputs_equal(outcome.value, case.expected_output):
             return False, f"reference disagrees with the shipped output on {case.name}"
+        checked += 1
+    if checked == 0:
+        # Every case was skipped for want of an out/ file, so the loop above
+        # proved nothing and returning True would assert criterion 2 without a
+        # single piece of evidence. Some Test.zip directories ship in/ without
+        # out/ - the oracle can still fall back to executing the reference
+        # (src/oracle.py::_expected_outcome), but then the reference is the
+        # only authority in the loop and nothing ever cross-checks it against
+        # what AtCoder actually accepted. Not a corpus we want.
+        return False, "no case in the pool ships an expected output - criterion 2 is unverifiable"
     return True, ""
 
 
