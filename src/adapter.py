@@ -43,7 +43,12 @@ load_dotenv()
 
 CONDEFECTS_ROOT = pathlib.Path(os.environ.get("CONDEFECTS_ROOT", "external/ConDefects"))
 CODE_DIR = CONDEFECTS_ROOT / "Code"
-TEST_DIR = CONDEFECTS_ROOT / "Test"
+# Normally <root>/Test. Overridable because Test.zip is a 6.4 GB out-of-band
+# download that can arrive incomplete: a partial tree can be salvaged to a
+# separate directory and pointed at from here, which keeps Test/ meaning "the
+# complete archive" and keeps a truncated download from being frozen into a
+# corpus by accident (see scripts/fetch_condefects.py).
+TEST_DIR = pathlib.Path(os.environ.get("CONDEFECTS_TEST_DIR", "")) or CONDEFECTS_ROOT / "Test"
 LANGUAGE_DIR = "Python"
 
 _SETUP_HINT = (

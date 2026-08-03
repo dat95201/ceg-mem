@@ -41,6 +41,31 @@ def clone(root: pathlib.Path, *, depth: int) -> None:
     subprocess.run(cmd, check=True)
 
 
+def _diagnose_truncation(archive: pathlib.Path) -> None:
+    """Explain a zip that has no central directory rather than just failing.
+
+    Test.zip is a ~6.4 GB out-of-band download from a consumer file host, and
+    the way it goes wrong is that the transfer stops early: the file looks
+    plausible, `file(1)` still calls it a zip archive because the first local
+    header is intact, and only the end-of-central-directory record is missing.
+    Saying so is worth more than re-raising BadZipFile.
+    """
+    size = archive.stat().st_size
+    with archive.open("rb") as f:
+        f.seek(max(0, size - 100_000))
+        tail = f.read()
+    if b"PK\x05\x06" in tail or b"PK\x06\x06" in tail:
+        return   # the directory is there; the archive is broken some other way
+    print(f"\n{archive} has no end-of-central-directory record: the download is")
+    print(f"incomplete. It stopped at {size:,} bytes"
+          + (f" ({size / 1048576:.0f} MiB exactly, a telltale cut)" if size % 1048576 == 0 else "")
+          + ". Re-download it from one of:")
+    for source in TEST_ZIP_SOURCES:
+        print(f"  {source}")
+    print("A browser download that resumes, or a client that verifies length, is worth")
+    print("using here - this archive is large enough that a silent truncation is likely.")
+
+
 def unpack_test_zip(root: pathlib.Path) -> bool:
     """Unpack a Test.zip sitting in the ConDefects root, if there is one."""
     archive = root / "Test.zip"
@@ -50,7 +75,12 @@ def unpack_test_zip(root: pathlib.Path) -> bool:
         print(f"{root / 'Test'} already unpacked - leaving it alone")
         return True
     print(f"unpacking {archive} ...")
-    with zipfile.ZipFile(archive) as zf:
+    try:
+        zf = zipfile.ZipFile(archive)
+    except zipfile.BadZipFile:
+        _diagnose_truncation(archive)
+        return False
+    with zf:
         zf.extractall(root)
     # Some mirrors wrap the tree one level deeper (Test/Test/abc221/...).
     nested = root / "Test" / "Test"
