@@ -88,6 +88,17 @@ def measure(
                 task, patch, program.correct_source,
                 max_examples=max_examples, seed=seed + i,
             )
+            if result.oracle_error is not None:
+                # accept=False here means "the oracle could not run", not "the
+                # patch is wrong" - counting it as a failed draw would report
+                # pi_hat=0.0 for a misconfiguration and keep spending to do it.
+                raise SystemExit(
+                    f"\n{name}: the oracle could not judge this patch - {result.reason}\n"
+                    f"({result.oracle_error}). pi_hat would be measured against nothing, "
+                    f"so this run stops here rather than billing for zeros.\n"
+                    f"Check CONDEFECTS_TEST_DIR / that Test.zip is unpacked: "
+                    f"`python3 scripts/fetch_condefects.py --check-only`."
+                )
             calls.append({"call": i + 1, "accept": result.accept, "reason": result.reason})
             print(f"{prefix} {name} [{i + 1:2d}/{calls_per_program}] "
                   f"{'accept' if result.accept else 'reject'}")
@@ -130,6 +141,20 @@ def main() -> None:
     unknown = [p for p in programs if p not in TASKS]
     if unknown:
         raise SystemExit(f"unknown program(s): {unknown}")
+
+    # Cheapest possible check, run before the first billable call. Without test
+    # data every draw is scored by an oracle with nothing to test against, and
+    # the whole pilot reports pi_hat=0.0 - a number indistinguishable from a
+    # model that simply never succeeds.
+    empty = [p for p in programs if not TASKS[p].test_cases]
+    if empty:
+        from src.adapter import TEST_DIR
+        raise SystemExit(
+            f"{len(empty)}/{len(programs)} programs have no test cases under {TEST_DIR} "
+            f"(e.g. {empty[0]}).\nSet CONDEFECTS_TEST_DIR or unpack Test.zip - "
+            f"`python3 scripts/fetch_condefects.py --check-only` reports what is visible.\n"
+            f"Refusing to spend the budget measuring pi against an empty test pool."
+        )
 
     report = measure(
         programs, args.calls_per_program,

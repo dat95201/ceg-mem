@@ -168,6 +168,20 @@ def main() -> None:
     if unknown:
         raise SystemExit(f"unknown program(s): {unknown}")
 
+    # Free, and run before the first billable call. src.loop handles an
+    # unusable oracle correctly per round - it logs the round and leaves memory
+    # untouched - but with no test data *every* round is inconclusive, so the
+    # sweep would spend its whole budget producing episodes in which nothing
+    # was ever refuted and no memory was ever written.
+    empty = [p for p in programs if not TASKS[p].test_cases]
+    if empty:
+        from src.adapter import TEST_DIR
+        raise SystemExit(
+            f"{len(empty)}/{len(programs)} programs have no test cases under {TEST_DIR} "
+            f"(e.g. {empty[0]}).\nSet CONDEFECTS_TEST_DIR or unpack Test.zip - "
+            f"`python3 scripts/fetch_condefects.py --check-only` reports what is visible."
+        )
+
     run_sweep(
         programs, args.modes, args.seeds,
         budget=args.budget, model=args.model, granularity=args.granularity,

@@ -48,7 +48,11 @@ CODE_DIR = CONDEFECTS_ROOT / "Code"
 # separate directory and pointed at from here, which keeps Test/ meaning "the
 # complete archive" and keeps a truncated download from being frozen into a
 # corpus by accident (see scripts/fetch_condefects.py).
-TEST_DIR = pathlib.Path(os.environ.get("CONDEFECTS_TEST_DIR", "")) or CONDEFECTS_ROOT / "Test"
+# `or` would not work here: pathlib.Path("") is PosixPath("."), which is
+# truthy, so an unset variable would silently resolve the test tree to the
+# current working directory instead of falling back.
+_TEST_DIR_ENV = os.environ.get("CONDEFECTS_TEST_DIR", "").strip()
+TEST_DIR = pathlib.Path(_TEST_DIR_ENV) if _TEST_DIR_ENV else CONDEFECTS_ROOT / "Test"
 LANGUAGE_DIR = "Python"
 
 _SETUP_HINT = (
