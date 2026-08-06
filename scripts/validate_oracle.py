@@ -43,32 +43,58 @@ estimate of the pass rate, and the corpus is then topped up past the cohort
 until it holds `--corpus-size` *passing* programs. Reporting a pass rate over
 a set that was itself filtered on passing would make the gate vacuous.
 
-Selection (--stratify difficulty, the default)
-----------------------------------------------
-The corpus is balanced across the paper's three levels, an equal quota each,
-rather than taken as one unstratified sample that might land 45 easy programs
-and 3 hard ones. The levels are bands of pi, which is *measured* and therefore
-unknown at selection time, so the balance is struck on the AtCoder difficulty
-rating ConDefects ships instead - see the STRATA comment below for why that
-substitution is sound and where it stops being sound.
+Selection (--select hard, the default)
+--------------------------------------
+The corpus is 120 *hard* faults and nothing else. The earlier design balanced
+easy/medium/hard quotas, and the pilot (data/pi_pilot.json) is what retired
+it: median pi_hat came out 0.300 easy, 0.275 medium, 0.038 hard, so two thirds
+of that corpus sat at a pi where the proposer usually succeeds on the first
+try and no memory condition can separate from another. The discriminating
+cells were all in one band, so the budget now buys 120 of those instead of 40
+of them plus 80 that mostly answer themselves.
+
+"Hard" is an absolute AtCoder rating floor (--hard-floor, default 1600), not a
+tercile of whatever happens to be on disk. Terciles moved with the test tree -
+on the partial tree salvaged from a truncated Test.zip the cut landed at 1577,
+on the full tree it lands at 1639 - so the same seed named a different corpus
+depending on how much of the download had survived, which is not a property a
+frozen corpus may have. 1600 is AtCoder's own blue boundary, fixed outside
+this project, and the pilot puts the band it selects at pi_hat ~ 0.04, inside
+the paper's Hard range of 0.02-0.08.
+
+The upper tail is deliberately left uncapped but is worth watching: a task at
+pi ~ 0 is as uninformative as one at pi ~ 1, because every condition fails it
+and nothing is separated. --hard-ceiling exists for when measured pi_hat says
+a rating band has gone dead; it is not set from a guess.
 
 Reproducibility. Everything the seed touches is a pure function evaluated
 before any program is run:
 
-  1. filter the ~2,900 Python faults to those whose coding task ships test
-     data (~931 here) - a fault without test data can never clear stage 1, and
-     leaving it in would drag the strata boundaries towards a population that
-     cannot be selected from;
-  2. cut that pool's difficulty ratings into terciles - a function of
-     difficulty.txt and the pool, with no randomness in it at all;
-  3. shuffle with random.Random(--seed), the single source of randomness;
-  4. interleave the three strata round-robin, so all three fill at the same
-     rate instead of spending the whole candidate budget on "easy" before
-     discovering whether "hard" can be filled.
+  1. take the faults in adapter order (discover() sorts them), so the input to
+     the shuffle does not depend on filesystem iteration order;
+  2. drop those whose coding task ships no test data - a fault without test
+     data can never clear stage 1;
+  3. drop those whose coding task is rated below --hard-floor (or above
+     --hard-ceiling) - a filter on difficulty.txt, no randomness in it;
+  4. shuffle with random.Random(--seed), the single source of randomness;
+  5. walk that order, one fault per coding task, until 120 have passed.
 
-Same seed and same test tree therefore give the same candidate order, and the
-walk down that order is deterministic. --jobs only changes how many candidates
-are in flight at once, never which ones are chosen.
+Same seed, same floor and same test tree therefore give the same corpus, and
+data/tasks.json records all three plus a digest of the candidate order so a
+re-run can be checked against the freeze rather than trusted. --jobs only
+changes how many candidates are in flight at once, never which ones are
+chosen.
+
+Selecting 120 passing faults needs a pool with room for them: the walk claims
+a coding task the moment one of its faults enters stage 2, so a task whose fault
+fails the mutation gate is spent. main() refuses to start when the hard pool
+holds fewer than POOL_HEADROOM x 120 coding tasks rather than discovering it
+hours in. The salvaged partial tree holds 123 - just short of the corpus size
+itself - which is the concrete reason the full Test.zip has to be unpacked
+before this runs.
+
+--select terciles restores the old easy/medium/hard behaviour; --select none
+takes one unstratified sample across every rating.
 
 Writes:
     data/oracle_validation.json - full per-fault detail and every mutant, for audit
@@ -78,6 +104,7 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures
+import hashlib
 import itertools
 import json
 import math
@@ -90,20 +117,34 @@ import time
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from data.mutants import FAULT_TYPES, candidate_mutants, mutant_capacity
-from src.adapter import (TEST_DIR, SUPPORTED_PROGRAMS, TASKS, load, task_dates,
-                         task_difficulties, test_dir_for)
+from src.adapter import (CONDEFECTS_ROOT, TEST_DIR, SUPPORTED_PROGRAMS, TASKS, load,
+                         task_dates, task_difficulties, test_dir_for)
 from src.oracle import differential_test, outputs_equal
 from src.sandbox import DEFAULT_TIMEOUT, run_program
 
 DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 
-DEFAULT_CORPUS_SIZE = 40
+DEFAULT_CORPUS_SIZE = 120
 DEFAULT_REFERENCE_CASES = 20   # cases the reference must pass to count as one
 MUTANTS_TO_CATCH = 2           # of 3, for a program to pass stage 2
-# The proposal's corpus gate is 30 of 40. Held as a fraction so that a smaller
-# --corpus-size (a smoke run) is gated at the same strictness rather than at a
-# threshold it could never reach; at the default 40 it is exactly 30.
-CORPUS_PASS_FRACTION = 30 / DEFAULT_CORPUS_SIZE
+# The proposal's corpus gate is 30 of 40, held as a fraction so that any
+# --corpus-size is gated at the same strictness rather than at a threshold it
+# could never reach: 90 of 120 at the default, 30 of 40 on the old corpus, and
+# a smoke run at 12 still has to clear 9. Written as the literal ratio and not
+# as 30/DEFAULT_CORPUS_SIZE, which would have quietly become 25% strict when
+# the default corpus grew.
+CORPUS_PASS_FRACTION = 30 / 40
+
+# Hard band: AtCoder's blue boundary. Absolute so that the same seed names the
+# same corpus whatever fraction of Test.zip is on disk - see the module
+# docstring for why terciles could not be.
+DEFAULT_HARD_FLOOR = 1600
+# Coding tasks per corpus slot the hard pool must hold before the walk starts.
+# The pilot spent 102 candidates to pass 64 faults, ~1.6 examined per pass, and
+# each examined fault claims its coding task for good; 2.0 leaves margin for a
+# tree whose usable rate is worse than the pilot's without demanding a pool
+# that the full benchmark cannot supply (337 hard coding tasks, floor 1600).
+POOL_HEADROOM = 2.0
 
 
 def corpus_threshold(corpus_size: int) -> int:
@@ -117,7 +158,7 @@ def corpus_threshold(corpus_size: int) -> int:
 DEFAULT_JOBS = max(1, (os.cpu_count() or 4) - 2)
 
 
-# ── selection strata: the paper's three difficulty levels ────────────────
+# ── selection: the hard band ─────────────────────────────────────────────
 # The paper's Easy/Medium/Hard are bands of pi = P[the proposer gets it right
 # in one shot], and scripts/build_strata.py assigns them from *measured*
 # pi_hat. That measurement costs a model call per sample, so it cannot drive
@@ -125,17 +166,71 @@ DEFAULT_JOBS = max(1, (os.cpu_count() or 4) - 2)
 # paying for it on candidates that go on to fail the mutation gate would burn
 # budget on programs nobody keeps.
 #
-# So selection balances on a free a-priori proxy instead - the AtCoder
-# difficulty rating ConDefects ships in difficulty.txt - and the proxy's bands
-# are terciles of the *candidate pool's own* rating distribution rather than
-# thresholds imposed from outside. A harder contest problem is harder to
-# repair in one shot, so the rating runs opposite to pi: the lowest tercile is
-# "easy" (high pi), the highest is "hard" (low pi).
-#
-# This is a proxy and is labelled as one. It buys a corpus with 20 programs in
-# each band instead of one that happens to land 45 easy and 3 hard;
-# build_strata.py remains the authority on the strata the paper reports, and
+# Selection therefore filters on the free a-priori proxy - the AtCoder rating
+# ConDefects ships in difficulty.txt - and the pilot licenses the substitution
+# rather than an assumption about it doing so: the band above the pilot's top
+# tercile measured pi_hat ~ 0.038, against 0.275 and 0.300 for the two bands
+# below it, so a rating floor really does isolate the low-pi regime the
+# experiment is about. It remains a proxy; build_strata.py, working from
+# measured pi_hat, stays the authority on the strata the paper reports, and
 # the agreement between the two is itself worth reporting.
+#
+# A coding task with no line in difficulty.txt is dropped rather than assumed
+# hard. Six of the benchmark's 985 tasks are unrated, and including them would
+# put faults in a hard-only corpus on no evidence that they belong there.
+
+def hard_pool(names: list[str], *, floor: int, ceiling: int | None = None) -> list[str]:
+    """The faults whose coding task is rated in [floor, ceiling]. Pure."""
+    difficulties = task_difficulties()
+    kept = []
+    for name in names:
+        rating = difficulties.get(TASKS[name].task_id)
+        if rating is None or rating < floor:
+            continue
+        if ceiling is not None and rating > ceiling:
+            continue
+        kept.append(name)
+    return kept
+
+
+def hard_selection_meta(names: list[str], *, floor: int, ceiling: int | None,
+                        seed: int) -> dict:
+    """What the corpus was drawn from, and the fingerprint of the draw.
+
+    The digest covers the shuffled candidate order, which is the one thing the
+    seed produces and the whole corpus follows from. Two freezes that agree on
+    it were drawn from the same pool in the same order; two that disagree were
+    not, and that is worth knowing before their numbers are compared.
+    """
+    difficulties = task_difficulties()
+    ratings = sorted(difficulties[TASKS[n].task_id] for n in names)
+    n = len(ratings)
+    return {
+        "mode": "hard",
+        "proxy": "atcoder_difficulty_rating",
+        "note": ("an absolute rating floor, not a tercile of the pool: the same "
+                 "seed must name the same corpus whatever fraction of Test.zip is "
+                 "unpacked. Licensed by the pilot's pi_hat ~ 0.04 for this band - "
+                 "a proxy for the paper's pi bands, not a measurement of pi, see "
+                 "scripts/build_strata.py"),
+        "hard_floor": floor,
+        "hard_ceiling": ceiling,
+        "n_candidate_faults": n,
+        "n_candidate_coding_tasks": len({TASKS[x].task_id for x in names}),
+        "rating_quantiles": ({"min": ratings[0], "q1": ratings[n // 4],
+                              "median": ratings[n // 2], "q3": ratings[3 * n // 4],
+                              "max": ratings[-1]} if n else {}),
+        "seed": seed,
+        "candidate_order_sha256": hashlib.sha256("\n".join(names).encode()).hexdigest(),
+    }
+
+
+# ── selection: the retired easy/medium/hard quotas (--select terciles) ────
+# Kept because the pilot corpus was frozen this way and re-deriving it has to
+# stay possible. Terciles of the candidate pool's own ratings, an equal quota
+# each, interleaved round-robin so all three fill at the same rate. The flaw
+# the hard band exists to avoid is visible right here: the cuts are a function
+# of the pool, so a different test tree silently redefines the bands.
 
 STRATA = ("easy", "medium", "hard")   # ascending AtCoder rating
 
@@ -324,7 +419,8 @@ def check_mutants(name: str, *, max_examples: int, seed: int, timeout: float,
 def run(names: list[str], *, corpus_size: int, max_examples: int, mutant_examples: int,
         reference_cases: int, seed: int, timeout: float, full_pool_cap: int,
         retries: int, top_up: bool, jobs: int,
-        band_of: dict[str, str] | None = None, per_stratum: int = 0) -> dict:
+        band_of: dict[str, str] | None = None, bands: tuple[str, ...] = STRATA,
+        per_stratum: int = 0, unstratified_label: str = "all") -> dict:
     """Stage 1 then stage 2, walking `names` until the corpus is full.
 
     Stage 2 is the expensive half (3+ mutants x a sampled oracle run each), so
@@ -346,7 +442,9 @@ def run(names: list[str], *, corpus_size: int, max_examples: int, mutant_example
     seen_task_ids: set[str] = set()
     # One quota per stratum when stratifying, otherwise a single "all" bucket
     # holding the whole corpus - the rest of the loop does not branch on which.
-    bands = STRATA if band_of else ("all",)
+    # The hard band is the second case: 120 slots, no sub-quotas, so the walk
+    # is a plain seeded sample of the pool.
+    bands = tuple(bands) if band_of else (unstratified_label,)
     quota = per_stratum if band_of else corpus_size
     cohort_by: dict[str, list[str]] = {b: [] for b in bands}
     passing_by: dict[str, list[str]] = {b: [] for b in bands}
@@ -356,7 +454,7 @@ def run(names: list[str], *, corpus_size: int, max_examples: int, mutant_example
     done = False
 
     def band(name: str) -> str:
-        return band_of.get(name, STRATA[-1]) if band_of else "all"
+        return band_of.get(name, bands[-1]) if band_of else unstratified_label
 
     def band_full(b: str) -> bool:
         return len(cohort_by[b]) >= quota and (not top_up or len(passing_by[b]) >= quota)
@@ -496,6 +594,17 @@ def run(names: list[str], *, corpus_size: int, max_examples: int, mutant_example
 def write_tasks_json(report: dict, selected: list[str], *, corpus_size: int, seed: int,
                      data_dir: pathlib.Path = DATA_DIR) -> None:
     frozen = report["corpus_gate_ok"] and bool(selected)
+    meta = report.get("strata_selection") or {}
+    # The one sentence a reader of the frozen file needs about *which* faults
+    # these are, ahead of the mechanics of how many survived what.
+    if meta.get("mode") == "hard":
+        band = (f"every task is drawn from the hard band alone - AtCoder rating "
+                f">= {meta['hard_floor']}"
+                + (f" and <= {meta['hard_ceiling']}" if meta.get("hard_ceiling") else "")
+                + f", {meta['n_candidate_coding_tasks']} coding tasks in the pool, "
+                  f"shuffled with seed {seed}; ")
+    else:
+        band = ""
     tasks_json = {
         "frozen": frozen,
         "benchmark": "ConDefects (Python)",
@@ -507,7 +616,7 @@ def write_tasks_json(report: dict, selected: list[str], *, corpus_size: int, see
         ),
         "usability_criterion": report["usability_criterion"],
         "selection": (
-            f"at most one fault per coding task; the gate is measured on the "
+            f"{band}at most one fault per coding task; the gate is measured on the "
             f"first {report['n_cohort']} stage-1 survivors "
             f"({report['n_cohort_passing']} passed), and the corpus is topped up "
             f"past that cohort until {corpus_size} passing programs are held"
@@ -561,22 +670,62 @@ def _candidates(args) -> tuple[list[str], dict[str, str], dict]:
     # population that cannot be selected from. test_dir_for only stats a
     # directory; test_cases_for would read every input file on disk.
     names = [n for n in names if test_dir_for(TASKS[n].task_id) is not None]
+    # Say so here rather than letting a later filter report an empty pool and
+    # blame its own criterion for what is really a missing download.
+    if not names:
+        raise SystemExit(
+            f"no fault has test data: nothing under {TEST_DIR}\n"
+            f"Unpack Test.zip with `python3 scripts/fetch_condefects.py`, or point "
+            f"CONDEFECTS_TEST_DIR at a tree that exists "
+            f"(e.g. {CONDEFECTS_ROOT / 'Test_partial'})."
+        )
+    with_test_data = len(names)
 
-    # Validating all ~2900 faults costs real wall time and the corpus only
-    # needs a few dozen, so shuffle first and stop once enough have passed.
-    # The shuffle is the only randomness in selection: same seed, same corpus.
+    if args.select == "hard":
+        # The whole strategy, in one line: keep the faults whose coding task
+        # is rated hard, then draw from that pool alone. Applied before the
+        # shuffle so the seed indexes the hard pool and not the benchmark -
+        # raising --hard-floor changes which faults exist, not just where they
+        # sit in a shared order.
+        names = hard_pool(names, floor=args.hard_floor, ceiling=args.hard_ceiling)
+        if not names:
+            raise SystemExit(
+                f"none of the {with_test_data} faults with test data under {TEST_DIR} "
+                f"has a coding task rated >= {args.hard_floor}"
+                + (f" and <= {args.hard_ceiling}" if args.hard_ceiling else "")
+                + " - lower --hard-floor, or check that difficulty.txt covers this tree"
+            )
+
+    # Validating all ~2900 faults costs real wall time and the corpus needs a
+    # bounded number of them, so shuffle first and stop once enough have
+    # passed. The shuffle is the only randomness in selection: same seed, same
+    # pool, same corpus.
     random.Random(args.seed).shuffle(names)
-    if args.stratify != "difficulty":
-        return names, {}, {}
+
+    if args.select == "hard":
+        return names, {}, hard_selection_meta(
+            names, floor=args.hard_floor, ceiling=args.hard_ceiling, seed=args.seed)
+    if args.select == "none":
+        return names, {}, {
+            "mode": "none",
+            "note": "one unstratified sample across every rating",
+            "n_candidate_faults": len(names),
+            "seed": args.seed,
+            "candidate_order_sha256": hashlib.sha256("\n".join(names).encode()).hexdigest(),
+        }
 
     band_of, meta = stratify_by_difficulty(names)
     if not band_of:
-        raise SystemExit("no difficulty ratings available - cannot stratify; use --stratify none")
+        raise SystemExit("no difficulty ratings available - cannot stratify; use --select none")
     # Interleave the strata round-robin so all three fill at the same rate.
     # Walking them one after another would spend the whole candidate budget on
     # "easy" before ever testing whether "hard" can be filled at all.
     per_band = [[n for n in names if band_of.get(n) == b] for b in STRATA]
     interleaved = [n for row in itertools.zip_longest(*per_band) for n in row if n is not None]
+    # The digest covers the interleaved order, which is the order actually
+    # walked - the shuffled order is only an input to it.
+    meta = {"mode": "terciles", **meta, "seed": args.seed,
+            "candidate_order_sha256": hashlib.sha256("\n".join(interleaved).encode()).hexdigest()}
     return interleaved, band_of, meta
 
 
@@ -597,10 +746,18 @@ def main() -> None:
                         help="cases the reference must answer correctly")
     parser.add_argument("--no-top-up", action="store_true",
                         help="freeze only the passing members of the cohort, do not look further")
-    parser.add_argument("--stratify", choices=("difficulty", "none"), default="difficulty",
-                        help="balance the corpus across the paper's three levels using "
-                             "AtCoder difficulty terciles as an a-priori proxy for pi "
-                             "(default), or take one unstratified sample")
+    parser.add_argument("--select", choices=("hard", "terciles", "none"), default="hard",
+                        help="hard (default): draw the whole corpus from faults rated "
+                             "at or above --hard-floor, the low-pi band the experiment "
+                             "is about; terciles: the retired easy/medium/hard equal "
+                             "quotas; none: one unstratified sample")
+    parser.add_argument("--hard-floor", type=int, default=DEFAULT_HARD_FLOOR,
+                        help=f"--select hard keeps coding tasks rated >= this "
+                             f"(default: {DEFAULT_HARD_FLOOR}, AtCoder's blue boundary)")
+    parser.add_argument("--hard-ceiling", type=int, default=None,
+                        help="drop coding tasks rated above this; for excluding a tail "
+                             "that measured pi_hat shows is dead (no default - do not "
+                             "set it from a guess)")
     parser.add_argument("--jobs", type=int, default=DEFAULT_JOBS,
                         help=f"candidates to evaluate concurrently (default: {DEFAULT_JOBS}); "
                              "1 is the serial path, immune to timeout jitter under load")
@@ -620,12 +777,12 @@ def main() -> None:
     if not SUPPORTED_PROGRAMS:
         raise SystemExit("no ConDefects faults found - run scripts/fetch_condefects.py first")
 
-    stratified = args.stratify == "difficulty" and args.programs is None
+    stratified = args.select == "terciles" and args.programs is None
     if stratified and args.corpus_size % len(STRATA):
         raise SystemExit(
             f"--corpus-size {args.corpus_size} is not divisible by {len(STRATA)}; a "
             f"stratified corpus holds an equal quota per level (try "
-            f"{args.corpus_size - args.corpus_size % len(STRATA)}) or pass --stratify none"
+            f"{args.corpus_size - args.corpus_size % len(STRATA)}) or pass --select none"
         )
 
     names, band_of, strata_meta = _candidates(args)
@@ -635,6 +792,22 @@ def main() -> None:
     if args.programs is None:
         names = names[:args.max_candidates or (max(args.corpus_size, 1) * 12)]
         band_of = {n: b for n, b in band_of.items() if n in set(names)}
+
+    # Refuse a walk that cannot finish, before it spends hours proving it.
+    # Only distinct coding tasks count: the corpus holds one fault each, and a
+    # task is spent as soon as one of its faults reaches stage 2, pass or fail.
+    if args.select == "hard" and args.programs is None:
+        n_tasks = len({TASKS[n].task_id for n in names})
+        needed = math.ceil(POOL_HEADROOM * args.corpus_size)
+        if n_tasks < needed:
+            raise SystemExit(
+                f"the hard pool holds {n_tasks} coding tasks (floor {args.hard_floor}, "
+                f"test tree {TEST_DIR}); a {args.corpus_size}-task corpus needs about "
+                f"{needed} to absorb the faults that fail the gate.\n"
+                f"Unpack the full Test.zip - a partial tree is a prefix of the contest "
+                f"range, not a sample of it - or lower --hard-floor / --corpus-size, "
+                f"knowing that lowering the floor moves the corpus out of the low-pi band."
+            )
 
     report = run(
         names,
@@ -649,7 +822,11 @@ def main() -> None:
         top_up=not args.no_top_up,
         jobs=max(1, args.jobs),
         band_of=band_of or None,
+        bands=STRATA,
         per_stratum=args.corpus_size // len(STRATA) if stratified else 0,
+        # Every task in a hard-only corpus is labelled "hard", not "all": the
+        # label travels into data/tasks.json and has to say what the task is.
+        unstratified_label="hard" if args.select == "hard" else "all",
     )
     report["strata_selection"] = strata_meta or None
     if band_of:
@@ -678,10 +855,20 @@ def main() -> None:
           f"(threshold {corpus_threshold(args.corpus_size)}/{args.corpus_size}) "
           f"-- {'MET' if report['corpus_gate_ok'] else 'NOT MET'}")
     print(f"         {n_missed} mutants missed by the sample, {n_equiv} conceded equivalent")
-    if report.get("strata_selection"):
-        cuts = report["strata_selection"]["cuts"]
+    meta = report.get("strata_selection") or {}
+    if meta.get("mode") == "hard":
+        ratings = sorted(report["faults"][n]["difficulty"] for n in selected)
+        span = (f"{ratings[0]}..{ratings[-1]}, median {ratings[len(ratings) // 2]}"
+                if ratings else "-")
+        print(f"select:  hard only, AtCoder rating >= {meta['hard_floor']}"
+              + (f" and <= {meta['hard_ceiling']}" if meta.get("hard_ceiling") else "")
+              + f" -- pool {meta['n_candidate_faults']} faults over "
+                f"{meta['n_candidate_coding_tasks']} coding tasks")
+        print(f"         selected ratings {span}; "
+              f"order {meta['candidate_order_sha256'][:12]} (seed {args.seed})")
+    elif meta.get("cuts"):
         per = {b: report["strata"][b]["n_passing"] for b in STRATA}
-        print(f"strata:  AtCoder difficulty terciles, cuts at {cuts} -> "
+        print(f"strata:  AtCoder difficulty terciles, cuts at {meta['cuts']} -> "
               + ", ".join(f"{b} {per[b]}" for b in STRATA)
               + f" passing (quota {report['per_stratum']} each)")
     print(f"corpus {'FROZEN' if report['corpus_gate_ok'] and selected else 'NOT FROZEN'}: "

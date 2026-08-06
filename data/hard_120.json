@@ -1,0 +1,2391 @@
+{
+  "frozen": true,
+  "kind": "pre-gate hard draw (selection only: no program run, no model called)",
+  "benchmark": "ConDefects (Python)",
+  "test_data_source": "external/ConDefects/Test.zip (central directory)",
+  "seed": 20260717,
+  "hard_floor": 1600,
+  "hard_ceiling": null,
+  "corpus_size": 120,
+  "rule": [
+    "faults in adapter order",
+    "drop coding tasks with no test data",
+    "drop coding tasks rated outside [1600, inf]",
+    "shuffle with random.Random(20260717)",
+    "keep the first fault of each coding task",
+    "first 120 of that walk = corpus; the rest = reserve"
+  ],
+  "pool": {
+    "faults_in_benchmark": 2864,
+    "faults_in_hard_pool": 793,
+    "coding_tasks_in_hard_pool": 336,
+    "headroom_vs_corpus": 2.8
+  },
+  "rating": {
+    "min": 1601,
+    "median": 2218,
+    "max": 3466
+  },
+  "candidate_order_sha256": "d9908a3167688ff8147ee6ec9bee58b8b5ae589299cde652ad95afba28b6b064",
+  "gates_not_yet_applied": [
+    "stage 1 usability (reference passes; fault exposed; no timeout)",
+    "stage 1.5 fault-taxonomy capacity",
+    "stage 2 mutation gate (>= 2/3 mutants caught)"
+  ],
+  "selected": [
+    {
+      "name": "abc222_g/45118973",
+      "task_id": "abc222_g",
+      "program_id": "45118973",
+      "difficulty": 2242,
+      "date": "2021-10-09"
+    },
+    {
+      "name": "abc303_f/48933165",
+      "task_id": "abc303_f",
+      "program_id": "48933165",
+      "difficulty": 2381,
+      "date": "2023-05-27"
+    },
+    {
+      "name": "abc254_g/32287222",
+      "task_id": "abc254_g",
+      "program_id": "32287222",
+      "difficulty": 2890,
+      "date": "2022-06-04"
+    },
+    {
+      "name": "arc145_c/40098177",
+      "task_id": "arc145_c",
+      "program_id": "40098177",
+      "difficulty": 1697,
+      "date": "2022-07-30"
+    },
+    {
+      "name": "arc138_d/31059522",
+      "task_id": "arc138_d",
+      "program_id": "31059522",
+      "difficulty": 2083,
+      "date": "2022-04-09"
+    },
+    {
+      "name": "arc131_e/27727642",
+      "task_id": "arc131_e",
+      "program_id": "27727642",
+      "difficulty": 2314,
+      "date": "2021-12-05"
+    },
+    {
+      "name": "abc233_h/29975845",
+      "task_id": "abc233_h",
+      "program_id": "29975845",
+      "difficulty": 2530,
+      "date": "2021-12-25"
+    },
+    {
+      "name": "abc247_g/39496981",
+      "task_id": "abc247_g",
+      "program_id": "39496981",
+      "difficulty": 2159,
+      "date": "2022-04-10"
+    },
+    {
+      "name": "arc148_d/40705107",
+      "task_id": "arc148_d",
+      "program_id": "40705107",
+      "difficulty": 2009,
+      "date": "2022-09-11"
+    },
+    {
+      "name": "arc129_c/43964198",
+      "task_id": "arc129_c",
+      "program_id": "43964198",
+      "difficulty": 1687,
+      "date": "2021-11-21"
+    },
+    {
+      "name": "abc347_f/51970859",
+      "task_id": "abc347_f",
+      "program_id": "51970859",
+      "difficulty": 2179,
+      "date": "2024-03-30"
+    },
+    {
+      "name": "abc233_f/50214757",
+      "task_id": "abc233_f",
+      "program_id": "50214757",
+      "difficulty": 2038,
+      "date": "2021-12-25"
+    },
+    {
+      "name": "abc300_g/45084922",
+      "task_id": "abc300_g",
+      "program_id": "45084922",
+      "difficulty": 2343,
+      "date": "2023-04-29"
+    },
+    {
+      "name": "arc151_c/36785462",
+      "task_id": "arc151_c",
+      "program_id": "36785462",
+      "difficulty": 1940,
+      "date": "2022-10-16"
+    },
+    {
+      "name": "abc269_g/43509672",
+      "task_id": "abc269_g",
+      "program_id": "43509672",
+      "difficulty": 2440,
+      "date": "2022-09-17"
+    },
+    {
+      "name": "arc155_c/38489822",
+      "task_id": "arc155_c",
+      "program_id": "38489822",
+      "difficulty": 2219,
+      "date": "2023-01-29"
+    },
+    {
+      "name": "abc271_h/54716396",
+      "task_id": "abc271_h",
+      "program_id": "54716396",
+      "difficulty": 2908,
+      "date": "2022-10-01"
+    },
+    {
+      "name": "arc139_b/38643909",
+      "task_id": "arc139_b",
+      "program_id": "38643909",
+      "difficulty": 1719,
+      "date": "2022-04-24"
+    },
+    {
+      "name": "abc326_f/54719711",
+      "task_id": "abc326_f",
+      "program_id": "54719711",
+      "difficulty": 1870,
+      "date": "2023-10-28"
+    },
+    {
+      "name": "abc320_f/51972231",
+      "task_id": "abc320_f",
+      "program_id": "51972231",
+      "difficulty": 2042,
+      "date": "2023-09-16"
+    },
+    {
+      "name": "abc243_e/49785483",
+      "task_id": "abc243_e",
+      "program_id": "49785483",
+      "difficulty": 1637,
+      "date": "2022-03-12"
+    },
+    {
+      "name": "abc322_f/52703822",
+      "task_id": "abc322_f",
+      "program_id": "52703822",
+      "difficulty": 1806,
+      "date": "2023-09-30"
+    },
+    {
+      "name": "abc321_e/54658110",
+      "task_id": "abc321_e",
+      "program_id": "54658110",
+      "difficulty": 1627,
+      "date": "2023-09-23"
+    },
+    {
+      "name": "abc311_g/43899768",
+      "task_id": "abc311_g",
+      "program_id": "43899768",
+      "difficulty": 2265,
+      "date": "2023-07-22"
+    },
+    {
+      "name": "agc061_a/38853475",
+      "task_id": "agc061_a",
+      "program_id": "38853475",
+      "difficulty": 1643,
+      "date": "2023-02-12"
+    },
+    {
+      "name": "abc334_f/54979078",
+      "task_id": "abc334_f",
+      "program_id": "54979078",
+      "difficulty": 1813,
+      "date": "2023-12-23"
+    },
+    {
+      "name": "abc358_f/54701655",
+      "task_id": "abc358_f",
+      "program_id": "54701655",
+      "difficulty": 2098,
+      "date": "2024-06-15"
+    },
+    {
+      "name": "abc295_g/40825469",
+      "task_id": "abc295_g",
+      "program_id": "40825469",
+      "difficulty": 2091,
+      "date": "2023-03-25"
+    },
+    {
+      "name": "abc258_f/53486241",
+      "task_id": "abc258_f",
+      "program_id": "53486241",
+      "difficulty": 2306,
+      "date": "2022-07-02"
+    },
+    {
+      "name": "abc272_f/53512226",
+      "task_id": "abc272_f",
+      "program_id": "53512226",
+      "difficulty": 2238,
+      "date": "2022-10-08"
+    },
+    {
+      "name": "abc346_f/53286789",
+      "task_id": "abc346_f",
+      "program_id": "53286789",
+      "difficulty": 1840,
+      "date": "2024-03-23"
+    },
+    {
+      "name": "abc310_f/50729164",
+      "task_id": "abc310_f",
+      "program_id": "50729164",
+      "difficulty": 1938,
+      "date": "2023-07-15"
+    },
+    {
+      "name": "abc245_h/30480849",
+      "task_id": "abc245_h",
+      "program_id": "30480849",
+      "difficulty": 3057,
+      "date": "2022-03-26"
+    },
+    {
+      "name": "abc250_g/51402169",
+      "task_id": "abc250_g",
+      "program_id": "51402169",
+      "difficulty": 2219,
+      "date": "2022-05-08"
+    },
+    {
+      "name": "abc221_h/26785022",
+      "task_id": "abc221_h",
+      "program_id": "26785022",
+      "difficulty": 2793,
+      "date": "2021-10-02"
+    },
+    {
+      "name": "arc131_d/27771010",
+      "task_id": "arc131_d",
+      "program_id": "27771010",
+      "difficulty": 2271,
+      "date": "2021-12-05"
+    },
+    {
+      "name": "abc297_f/47953762",
+      "task_id": "abc297_f",
+      "program_id": "47953762",
+      "difficulty": 1990,
+      "date": "2023-04-09"
+    },
+    {
+      "name": "abc325_f/49397229",
+      "task_id": "abc325_f",
+      "program_id": "49397229",
+      "difficulty": 1769,
+      "date": "2023-10-21"
+    },
+    {
+      "name": "arc150_e/37666166",
+      "task_id": "arc150_e",
+      "program_id": "37666166",
+      "difficulty": 3466,
+      "date": "2022-10-09"
+    },
+    {
+      "name": "abc347_g/51866544",
+      "task_id": "abc347_g",
+      "program_id": "51866544",
+      "difficulty": 2876,
+      "date": "2024-03-30"
+    },
+    {
+      "name": "abc225_e/45312408",
+      "task_id": "abc225_e",
+      "program_id": "45312408",
+      "difficulty": 1678,
+      "date": "2021-10-30"
+    },
+    {
+      "name": "arc157_d/39194356",
+      "task_id": "arc157_d",
+      "program_id": "39194356",
+      "difficulty": 2435,
+      "date": "2023-02-25"
+    },
+    {
+      "name": "abc274_f/50475104",
+      "task_id": "abc274_f",
+      "program_id": "50475104",
+      "difficulty": 2212,
+      "date": "2022-10-22"
+    },
+    {
+      "name": "arc154_c/39123866",
+      "task_id": "arc154_c",
+      "program_id": "39123866",
+      "difficulty": 1881,
+      "date": "2023-01-22"
+    },
+    {
+      "name": "abc342_f/50697688",
+      "task_id": "abc342_f",
+      "program_id": "50697688",
+      "difficulty": 2141,
+      "date": "2024-02-24"
+    },
+    {
+      "name": "abc276_h/36291832",
+      "task_id": "abc276_h",
+      "program_id": "36291832",
+      "difficulty": 3087,
+      "date": "2022-11-05"
+    },
+    {
+      "name": "arc147_c/43399411",
+      "task_id": "arc147_c",
+      "program_id": "43399411",
+      "difficulty": 1704,
+      "date": "2022-09-04"
+    },
+    {
+      "name": "arc136_d/33407252",
+      "task_id": "arc136_d",
+      "program_id": "33407252",
+      "difficulty": 1908,
+      "date": "2022-02-27"
+    },
+    {
+      "name": "arc152_d/36684114",
+      "task_id": "arc152_d",
+      "program_id": "36684114",
+      "difficulty": 2381,
+      "date": "2022-11-20"
+    },
+    {
+      "name": "arc173_d/52512786",
+      "task_id": "arc173_d",
+      "program_id": "52512786",
+      "difficulty": 2598,
+      "date": "2024-03-10"
+    },
+    {
+      "name": "abc354_g/53647241",
+      "task_id": "abc354_g",
+      "program_id": "53647241",
+      "difficulty": 2665,
+      "date": "2024-05-18"
+    },
+    {
+      "name": "abc345_e/52899692",
+      "task_id": "abc345_e",
+      "program_id": "52899692",
+      "difficulty": 2356,
+      "date": "2024-03-16"
+    },
+    {
+      "name": "abc288_f/54492440",
+      "task_id": "abc288_f",
+      "program_id": "54492440",
+      "difficulty": 2024,
+      "date": "2023-02-04"
+    },
+    {
+      "name": "abc300_f/45948997",
+      "task_id": "abc300_f",
+      "program_id": "45948997",
+      "difficulty": 1846,
+      "date": "2023-04-29"
+    },
+    {
+      "name": "abc270_g/49178986",
+      "task_id": "abc270_g",
+      "program_id": "49178986",
+      "difficulty": 2220,
+      "date": "2022-09-24"
+    },
+    {
+      "name": "arc152_b/36775118",
+      "task_id": "arc152_b",
+      "program_id": "36775118",
+      "difficulty": 1628,
+      "date": "2022-11-20"
+    },
+    {
+      "name": "abc356_f/54486041",
+      "task_id": "abc356_f",
+      "program_id": "54486041",
+      "difficulty": 2152,
+      "date": "2024-06-01"
+    },
+    {
+      "name": "arc166_d/46393620",
+      "task_id": "arc166_d",
+      "program_id": "46393620",
+      "difficulty": 2192,
+      "date": "2023-10-08"
+    },
+    {
+      "name": "abc304_h/48697427",
+      "task_id": "abc304_h",
+      "program_id": "48697427",
+      "difficulty": 2642,
+      "date": "2023-06-03"
+    },
+    {
+      "name": "abc264_g/42294250",
+      "task_id": "abc264_g",
+      "program_id": "42294250",
+      "difficulty": 2348,
+      "date": "2022-08-13"
+    },
+    {
+      "name": "arc165_d/45683063",
+      "task_id": "arc165_d",
+      "program_id": "45683063",
+      "difficulty": 2589,
+      "date": "2023-09-17"
+    },
+    {
+      "name": "abc253_f/45527428",
+      "task_id": "abc253_f",
+      "program_id": "45527428",
+      "difficulty": 1756,
+      "date": "2022-05-28"
+    },
+    {
+      "name": "abc308_g/43737866",
+      "task_id": "abc308_g",
+      "program_id": "43737866",
+      "difficulty": 2008,
+      "date": "2023-07-01"
+    },
+    {
+      "name": "abc296_f/45226037",
+      "task_id": "abc296_f",
+      "program_id": "45226037",
+      "difficulty": 1811,
+      "date": "2023-04-01"
+    },
+    {
+      "name": "arc156_d/41134585",
+      "task_id": "arc156_d",
+      "program_id": "41134585",
+      "difficulty": 2568,
+      "date": "2023-02-18"
+    },
+    {
+      "name": "abc356_g/54232515",
+      "task_id": "abc356_g",
+      "program_id": "54232515",
+      "difficulty": 3022,
+      "date": "2024-06-01"
+    },
+    {
+      "name": "abc309_f/51247653",
+      "task_id": "abc309_f",
+      "program_id": "51247653",
+      "difficulty": 1619,
+      "date": "2023-07-08"
+    },
+    {
+      "name": "agc063_b/44136745",
+      "task_id": "agc063_b",
+      "program_id": "44136745",
+      "difficulty": 1663,
+      "date": "2023-07-30"
+    },
+    {
+      "name": "abc294_f/53961424",
+      "task_id": "abc294_f",
+      "program_id": "53961424",
+      "difficulty": 1891,
+      "date": "2023-03-19"
+    },
+    {
+      "name": "abc226_g/52807136",
+      "task_id": "abc226_g",
+      "program_id": "52807136",
+      "difficulty": 2373,
+      "date": "2021-11-07"
+    },
+    {
+      "name": "arc161_c/42743947",
+      "task_id": "arc161_c",
+      "program_id": "42743947",
+      "difficulty": 1746,
+      "date": "2023-05-28"
+    },
+    {
+      "name": "abc286_f/45090669",
+      "task_id": "abc286_f",
+      "program_id": "45090669",
+      "difficulty": 1841,
+      "date": "2023-01-21"
+    },
+    {
+      "name": "abc238_f/41446414",
+      "task_id": "abc238_f",
+      "program_id": "41446414",
+      "difficulty": 2058,
+      "date": "2022-02-05"
+    },
+    {
+      "name": "abc286_g/41126621",
+      "task_id": "abc286_g",
+      "program_id": "41126621",
+      "difficulty": 2135,
+      "date": "2023-01-21"
+    },
+    {
+      "name": "arc139_c/31247940",
+      "task_id": "arc139_c",
+      "program_id": "31247940",
+      "difficulty": 2406,
+      "date": "2022-04-24"
+    },
+    {
+      "name": "arc145_d/39783538",
+      "task_id": "arc145_d",
+      "program_id": "39783538",
+      "difficulty": 2297,
+      "date": "2022-07-30"
+    },
+    {
+      "name": "abc232_h/28052217",
+      "task_id": "abc232_h",
+      "program_id": "28052217",
+      "difficulty": 2780,
+      "date": "2021-12-19"
+    },
+    {
+      "name": "arc173_e/51138423",
+      "task_id": "arc173_e",
+      "program_id": "51138423",
+      "difficulty": 2869,
+      "date": "2024-03-10"
+    },
+    {
+      "name": "abc350_f/53750325",
+      "task_id": "abc350_f",
+      "program_id": "53750325",
+      "difficulty": 1601,
+      "date": "2024-04-20"
+    },
+    {
+      "name": "arc130_f/27576444",
+      "task_id": "arc130_f",
+      "program_id": "27576444",
+      "difficulty": 3211,
+      "date": "2021-11-28"
+    },
+    {
+      "name": "abc353_f/53517874",
+      "task_id": "abc353_f",
+      "program_id": "53517874",
+      "difficulty": 2201,
+      "date": "2024-05-11"
+    },
+    {
+      "name": "arc134_d/32125806",
+      "task_id": "arc134_d",
+      "program_id": "32125806",
+      "difficulty": 1998,
+      "date": "2022-01-29"
+    },
+    {
+      "name": "abc255_f/53267275",
+      "task_id": "abc255_f",
+      "program_id": "53267275",
+      "difficulty": 1797,
+      "date": "2022-06-11"
+    },
+    {
+      "name": "abc288_g/38755910",
+      "task_id": "abc288_g",
+      "program_id": "38755910",
+      "difficulty": 2606,
+      "date": "2023-02-04"
+    },
+    {
+      "name": "arc154_d/38556628",
+      "task_id": "arc154_d",
+      "program_id": "38556628",
+      "difficulty": 2265,
+      "date": "2023-01-22"
+    },
+    {
+      "name": "arc146_c/34191586",
+      "task_id": "arc146_c",
+      "program_id": "34191586",
+      "difficulty": 2428,
+      "date": "2022-08-20"
+    },
+    {
+      "name": "arc180_b/55029920",
+      "task_id": "arc180_b",
+      "program_id": "55029920",
+      "difficulty": 1797,
+      "date": "2024-06-29"
+    },
+    {
+      "name": "abc288_d/45491325",
+      "task_id": "abc288_d",
+      "program_id": "45491325",
+      "difficulty": 1757,
+      "date": "2023-02-04"
+    },
+    {
+      "name": "abc293_f/45665153",
+      "task_id": "abc293_f",
+      "program_id": "45665153",
+      "difficulty": 2038,
+      "date": "2023-03-11"
+    },
+    {
+      "name": "abc284_g/37908236",
+      "task_id": "abc284_g",
+      "program_id": "37908236",
+      "difficulty": 2218,
+      "date": "2023-01-07"
+    },
+    {
+      "name": "abc275_g/37220565",
+      "task_id": "abc275_g",
+      "program_id": "37220565",
+      "difficulty": 2522,
+      "date": "2022-10-29"
+    },
+    {
+      "name": "abc235_h/29171105",
+      "task_id": "abc235_h",
+      "program_id": "29171105",
+      "difficulty": 2967,
+      "date": "2022-01-15"
+    },
+    {
+      "name": "abc263_g/34500524",
+      "task_id": "abc263_g",
+      "program_id": "34500524",
+      "difficulty": 2261,
+      "date": "2022-08-06"
+    },
+    {
+      "name": "abc279_g/37231890",
+      "task_id": "abc279_g",
+      "program_id": "37231890",
+      "difficulty": 2431,
+      "date": "2022-11-26"
+    },
+    {
+      "name": "arc152_c/38915283",
+      "task_id": "arc152_c",
+      "program_id": "38915283",
+      "difficulty": 2081,
+      "date": "2022-11-20"
+    },
+    {
+      "name": "abc321_f/52979507",
+      "task_id": "abc321_f",
+      "program_id": "52979507",
+      "difficulty": 1645,
+      "date": "2023-09-23"
+    },
+    {
+      "name": "arc143_d/32782502",
+      "task_id": "arc143_d",
+      "program_id": "32782502",
+      "difficulty": 2229,
+      "date": "2022-06-26"
+    },
+    {
+      "name": "abc278_g/36887453",
+      "task_id": "abc278_g",
+      "program_id": "36887453",
+      "difficulty": 2533,
+      "date": "2022-11-19"
+    },
+    {
+      "name": "agc059_b/37027269",
+      "task_id": "agc059_b",
+      "program_id": "37027269",
+      "difficulty": 1887,
+      "date": "2022-12-04"
+    },
+    {
+      "name": "arc171_d/51665861",
+      "task_id": "arc171_d",
+      "program_id": "51665861",
+      "difficulty": 2377,
+      "date": "2024-02-04"
+    },
+    {
+      "name": "abc246_g/49874325",
+      "task_id": "abc246_g",
+      "program_id": "49874325",
+      "difficulty": 2313,
+      "date": "2022-04-02"
+    },
+    {
+      "name": "abc272_g/52009362",
+      "task_id": "abc272_g",
+      "program_id": "52009362",
+      "difficulty": 2187,
+      "date": "2022-10-08"
+    },
+    {
+      "name": "abc333_g/50750395",
+      "task_id": "abc333_g",
+      "program_id": "50750395",
+      "difficulty": 2536,
+      "date": "2023-12-16"
+    },
+    {
+      "name": "abc265_g/46700668",
+      "task_id": "abc265_g",
+      "program_id": "46700668",
+      "difficulty": 2436,
+      "date": "2022-08-21"
+    },
+    {
+      "name": "arc140_d/31727307",
+      "task_id": "arc140_d",
+      "program_id": "31727307",
+      "difficulty": 2443,
+      "date": "2022-05-15"
+    },
+    {
+      "name": "abc268_h/49241806",
+      "task_id": "abc268_h",
+      "program_id": "49241806",
+      "difficulty": 2560,
+      "date": "2022-09-10"
+    },
+    {
+      "name": "abc255_g/32458462",
+      "task_id": "abc255_g",
+      "program_id": "32458462",
+      "difficulty": 2734,
+      "date": "2022-06-11"
+    },
+    {
+      "name": "abc268_e/46000676",
+      "task_id": "abc268_e",
+      "program_id": "46000676",
+      "difficulty": 1927,
+      "date": "2022-09-10"
+    },
+    {
+      "name": "abc251_g/40927285",
+      "task_id": "abc251_g",
+      "program_id": "40927285",
+      "difficulty": 2468,
+      "date": "2022-05-14"
+    },
+    {
+      "name": "abc281_h/41260093",
+      "task_id": "abc281_h",
+      "program_id": "41260093",
+      "difficulty": 3180,
+      "date": "2022-12-10"
+    },
+    {
+      "name": "abc301_f/51429838",
+      "task_id": "abc301_f",
+      "program_id": "51429838",
+      "difficulty": 2548,
+      "date": "2023-05-13"
+    },
+    {
+      "name": "abc221_f/45225814",
+      "task_id": "abc221_f",
+      "program_id": "45225814",
+      "difficulty": 2093,
+      "date": "2021-10-02"
+    },
+    {
+      "name": "abc256_g/32688484",
+      "task_id": "abc256_g",
+      "program_id": "32688484",
+      "difficulty": 2250,
+      "date": "2022-06-18"
+    },
+    {
+      "name": "abc338_f/52776877",
+      "task_id": "abc338_f",
+      "program_id": "52776877",
+      "difficulty": 1835,
+      "date": "2024-01-27"
+    },
+    {
+      "name": "agc058_b/34060327",
+      "task_id": "agc058_b",
+      "program_id": "34060327",
+      "difficulty": 2053,
+      "date": "2022-08-14"
+    },
+    {
+      "name": "abc256_f/42749759",
+      "task_id": "abc256_f",
+      "program_id": "42749759",
+      "difficulty": 2067,
+      "date": "2022-06-18"
+    },
+    {
+      "name": "abc221_g/26339941",
+      "task_id": "abc221_g",
+      "program_id": "26339941",
+      "difficulty": 2914,
+      "date": "2021-10-02"
+    },
+    {
+      "name": "abc225_f/29050129",
+      "task_id": "abc225_f",
+      "program_id": "29050129",
+      "difficulty": 2612,
+      "date": "2021-10-30"
+    },
+    {
+      "name": "abc249_e/47998431",
+      "task_id": "abc249_e",
+      "program_id": "47998431",
+      "difficulty": 1970,
+      "date": "2022-04-23"
+    },
+    {
+      "name": "abc360_f/55118906",
+      "task_id": "abc360_f",
+      "program_id": "55118906",
+      "difficulty": 2563,
+      "date": "2024-06-30"
+    }
+  ],
+  "reserve": [
+    {
+      "name": "arc135_d/29316406",
+      "task_id": "arc135_d",
+      "program_id": "29316406",
+      "difficulty": 2750,
+      "date": "2022-02-13"
+    },
+    {
+      "name": "arc133_d/44249322",
+      "task_id": "arc133_d",
+      "program_id": "44249322",
+      "difficulty": 2658,
+      "date": "2022-01-22"
+    },
+    {
+      "name": "abc271_g/37700812",
+      "task_id": "abc271_g",
+      "program_id": "37700812",
+      "difficulty": 2323,
+      "date": "2022-10-01"
+    },
+    {
+      "name": "abc259_g/33161543",
+      "task_id": "abc259_g",
+      "program_id": "33161543",
+      "difficulty": 2428,
+      "date": "2022-07-09"
+    },
+    {
+      "name": "arc159_d/45445288",
+      "task_id": "arc159_d",
+      "program_id": "45445288",
+      "difficulty": 2056,
+      "date": "2023-04-08"
+    },
+    {
+      "name": "abc358_g/54747596",
+      "task_id": "abc358_g",
+      "program_id": "54747596",
+      "difficulty": 1737,
+      "date": "2024-06-15"
+    },
+    {
+      "name": "abc223_f/45728797",
+      "task_id": "abc223_f",
+      "program_id": "45728797",
+      "difficulty": 1641,
+      "date": "2021-10-17"
+    },
+    {
+      "name": "arc151_e/35732545",
+      "task_id": "arc151_e",
+      "program_id": "35732545",
+      "difficulty": 2713,
+      "date": "2022-10-16"
+    },
+    {
+      "name": "arc139_d/31251082",
+      "task_id": "arc139_d",
+      "program_id": "31251082",
+      "difficulty": 2816,
+      "date": "2022-04-24"
+    },
+    {
+      "name": "arc148_e/35713028",
+      "task_id": "arc148_e",
+      "program_id": "35713028",
+      "difficulty": 2785,
+      "date": "2022-09-11"
+    },
+    {
+      "name": "arc162_c/45802611",
+      "task_id": "arc162_c",
+      "program_id": "45802611",
+      "difficulty": 1655,
+      "date": "2023-06-18"
+    },
+    {
+      "name": "abc307_g/42981473",
+      "task_id": "abc307_g",
+      "program_id": "42981473",
+      "difficulty": 2330,
+      "date": "2023-06-24"
+    },
+    {
+      "name": "arc153_c/38524622",
+      "task_id": "arc153_c",
+      "program_id": "38524622",
+      "difficulty": 1960,
+      "date": "2023-01-14"
+    },
+    {
+      "name": "agc059_a/37116120",
+      "task_id": "agc059_a",
+      "program_id": "37116120",
+      "difficulty": 1970,
+      "date": "2022-12-04"
+    },
+    {
+      "name": "arc174_c/51488503",
+      "task_id": "arc174_c",
+      "program_id": "51488503",
+      "difficulty": 1706,
+      "date": "2024-03-17"
+    },
+    {
+      "name": "arc177_d/53453584",
+      "task_id": "arc177_d",
+      "program_id": "53453584",
+      "difficulty": 2299,
+      "date": "2024-05-12"
+    },
+    {
+      "name": "arc175_c/51756772",
+      "task_id": "arc175_c",
+      "program_id": "51756772",
+      "difficulty": 2116,
+      "date": "2024-03-24"
+    },
+    {
+      "name": "abc332_f/51643425",
+      "task_id": "abc332_f",
+      "program_id": "51643425",
+      "difficulty": 1786,
+      "date": "2023-12-10"
+    },
+    {
+      "name": "agc065_a/49045953",
+      "task_id": "agc065_a",
+      "program_id": "49045953",
+      "difficulty": 1701,
+      "date": "2023-12-17"
+    },
+    {
+      "name": "abc291_h/50116430",
+      "task_id": "abc291_h",
+      "program_id": "50116430",
+      "difficulty": 2097,
+      "date": "2023-02-26"
+    },
+    {
+      "name": "abc262_f/48961945",
+      "task_id": "abc262_f",
+      "program_id": "48961945",
+      "difficulty": 2334,
+      "date": "2022-07-31"
+    },
+    {
+      "name": "abc289_h/43246591",
+      "task_id": "abc289_h",
+      "program_id": "43246591",
+      "difficulty": 3246,
+      "date": "2023-02-11"
+    },
+    {
+      "name": "abc268_g/34968864",
+      "task_id": "abc268_g",
+      "program_id": "34968864",
+      "difficulty": 2311,
+      "date": "2022-09-10"
+    },
+    {
+      "name": "abc302_g/41876580",
+      "task_id": "abc302_g",
+      "program_id": "41876580",
+      "difficulty": 1891,
+      "date": "2023-05-20"
+    },
+    {
+      "name": "abc236_h/28807713",
+      "task_id": "abc236_h",
+      "program_id": "28807713",
+      "difficulty": 2898,
+      "date": "2022-01-23"
+    },
+    {
+      "name": "abc235_g/48493148",
+      "task_id": "abc235_g",
+      "program_id": "48493148",
+      "difficulty": 2462,
+      "date": "2022-01-15"
+    },
+    {
+      "name": "abc350_g/52999831",
+      "task_id": "abc350_g",
+      "program_id": "52999831",
+      "difficulty": 2058,
+      "date": "2024-04-20"
+    },
+    {
+      "name": "abc346_g/51994914",
+      "task_id": "abc346_g",
+      "program_id": "51994914",
+      "difficulty": 2166,
+      "date": "2024-03-23"
+    },
+    {
+      "name": "abc314_g/45264890",
+      "task_id": "abc314_g",
+      "program_id": "45264890",
+      "difficulty": 2301,
+      "date": "2023-08-12"
+    },
+    {
+      "name": "abc266_h/34423081",
+      "task_id": "abc266_h",
+      "program_id": "34423081",
+      "difficulty": 2865,
+      "date": "2022-08-27"
+    },
+    {
+      "name": "arc167_e/46643252",
+      "task_id": "arc167_e",
+      "program_id": "46643252",
+      "difficulty": 3271,
+      "date": "2023-10-15"
+    },
+    {
+      "name": "abc294_g/50893680",
+      "task_id": "abc294_g",
+      "program_id": "50893680",
+      "difficulty": 1702,
+      "date": "2023-03-19"
+    },
+    {
+      "name": "abc267_g/35931814",
+      "task_id": "abc267_g",
+      "program_id": "35931814",
+      "difficulty": 2561,
+      "date": "2022-09-03"
+    },
+    {
+      "name": "arc165_c/45733476",
+      "task_id": "arc165_c",
+      "program_id": "45733476",
+      "difficulty": 1743,
+      "date": "2023-09-17"
+    },
+    {
+      "name": "abc260_f/46046400",
+      "task_id": "abc260_f",
+      "program_id": "46046400",
+      "difficulty": 1995,
+      "date": "2022-07-17"
+    },
+    {
+      "name": "abc334_g/50711635",
+      "task_id": "abc334_g",
+      "program_id": "50711635",
+      "difficulty": 2242,
+      "date": "2023-12-23"
+    },
+    {
+      "name": "abc307_f/51485146",
+      "task_id": "abc307_f",
+      "program_id": "51485146",
+      "difficulty": 2139,
+      "date": "2023-06-24"
+    },
+    {
+      "name": "abc224_g/32872217",
+      "task_id": "abc224_g",
+      "program_id": "32872217",
+      "difficulty": 2374,
+      "date": "2021-10-23"
+    },
+    {
+      "name": "arc129_d/27941784",
+      "task_id": "arc129_d",
+      "program_id": "27941784",
+      "difficulty": 2300,
+      "date": "2021-11-21"
+    },
+    {
+      "name": "abc260_g/33361937",
+      "task_id": "abc260_g",
+      "program_id": "33361937",
+      "difficulty": 2339,
+      "date": "2022-07-17"
+    },
+    {
+      "name": "arc170_d/49562273",
+      "task_id": "arc170_d",
+      "program_id": "49562273",
+      "difficulty": 2279,
+      "date": "2024-01-21"
+    },
+    {
+      "name": "abc355_e/54059945",
+      "task_id": "abc355_e",
+      "program_id": "54059945",
+      "difficulty": 2299,
+      "date": "2024-05-25"
+    },
+    {
+      "name": "abc342_g/50668241",
+      "task_id": "abc342_g",
+      "program_id": "50668241",
+      "difficulty": 2107,
+      "date": "2024-02-24"
+    },
+    {
+      "name": "abc263_e/44902374",
+      "task_id": "abc263_e",
+      "program_id": "44902374",
+      "difficulty": 1659,
+      "date": "2022-08-06"
+    },
+    {
+      "name": "abc236_g/55003330",
+      "task_id": "abc236_g",
+      "program_id": "55003330",
+      "difficulty": 2438,
+      "date": "2022-01-23"
+    },
+    {
+      "name": "abc292_h/40600464",
+      "task_id": "abc292_h",
+      "program_id": "40600464",
+      "difficulty": 2248,
+      "date": "2023-03-04"
+    },
+    {
+      "name": "abc332_g/52980637",
+      "task_id": "abc332_g",
+      "program_id": "52980637",
+      "difficulty": 2775,
+      "date": "2023-12-10"
+    },
+    {
+      "name": "abc237_f/35962547",
+      "task_id": "abc237_f",
+      "program_id": "35962547",
+      "difficulty": 1857,
+      "date": "2022-01-30"
+    },
+    {
+      "name": "abc261_g/33560185",
+      "task_id": "abc261_g",
+      "program_id": "33560185",
+      "difficulty": 2803,
+      "date": "2022-07-23"
+    },
+    {
+      "name": "arc140_e/32291548",
+      "task_id": "arc140_e",
+      "program_id": "32291548",
+      "difficulty": 2739,
+      "date": "2022-05-15"
+    },
+    {
+      "name": "abc309_g/43412855",
+      "task_id": "abc309_g",
+      "program_id": "43412855",
+      "difficulty": 2372,
+      "date": "2023-07-08"
+    },
+    {
+      "name": "abc281_f/45472060",
+      "task_id": "abc281_f",
+      "program_id": "45472060",
+      "difficulty": 1714,
+      "date": "2022-12-10"
+    },
+    {
+      "name": "agc062_c/41651640",
+      "task_id": "agc062_c",
+      "program_id": "41651640",
+      "difficulty": 2320,
+      "date": "2023-05-21"
+    },
+    {
+      "name": "arc164_d/43435953",
+      "task_id": "arc164_d",
+      "program_id": "43435953",
+      "difficulty": 1963,
+      "date": "2023-07-09"
+    },
+    {
+      "name": "abc241_g/46189922",
+      "task_id": "abc241_g",
+      "program_id": "46189922",
+      "difficulty": 2422,
+      "date": "2022-02-26"
+    },
+    {
+      "name": "abc288_e/41523056",
+      "task_id": "abc288_e",
+      "program_id": "41523056",
+      "difficulty": 2000,
+      "date": "2023-02-04"
+    },
+    {
+      "name": "abc253_g/32996849",
+      "task_id": "abc253_g",
+      "program_id": "32996849",
+      "difficulty": 2051,
+      "date": "2022-05-28"
+    },
+    {
+      "name": "abc336_f/54952831",
+      "task_id": "abc336_f",
+      "program_id": "54952831",
+      "difficulty": 2018,
+      "date": "2024-01-14"
+    },
+    {
+      "name": "arc175_d/51694704",
+      "task_id": "arc175_d",
+      "program_id": "51694704",
+      "difficulty": 2276,
+      "date": "2024-03-24"
+    },
+    {
+      "name": "abc306_g/45483518",
+      "task_id": "abc306_g",
+      "program_id": "45483518",
+      "difficulty": 2563,
+      "date": "2023-06-17"
+    },
+    {
+      "name": "abc303_g/41795359",
+      "task_id": "abc303_g",
+      "program_id": "41795359",
+      "difficulty": 2736,
+      "date": "2023-05-27"
+    },
+    {
+      "name": "abc258_h/33045301",
+      "task_id": "abc258_h",
+      "program_id": "33045301",
+      "difficulty": 2708,
+      "date": "2022-07-02"
+    },
+    {
+      "name": "arc128_c/33842964",
+      "task_id": "arc128_c",
+      "program_id": "33842964",
+      "difficulty": 1810,
+      "date": "2021-10-16"
+    },
+    {
+      "name": "abc315_f/46136201",
+      "task_id": "abc315_f",
+      "program_id": "46136201",
+      "difficulty": 1674,
+      "date": "2023-08-19"
+    },
+    {
+      "name": "abc307_h/43030329",
+      "task_id": "abc307_h",
+      "program_id": "43030329",
+      "difficulty": 2754,
+      "date": "2023-06-24"
+    },
+    {
+      "name": "arc137_c/33142482",
+      "task_id": "arc137_c",
+      "program_id": "33142482",
+      "difficulty": 2043,
+      "date": "2022-03-19"
+    },
+    {
+      "name": "abc299_f/40872561",
+      "task_id": "abc299_f",
+      "program_id": "40872561",
+      "difficulty": 2366,
+      "date": "2023-04-22"
+    },
+    {
+      "name": "abc251_f/47833391",
+      "task_id": "abc251_f",
+      "program_id": "47833391",
+      "difficulty": 1703,
+      "date": "2022-05-14"
+    },
+    {
+      "name": "arc164_e/43438224",
+      "task_id": "arc164_e",
+      "program_id": "43438224",
+      "difficulty": 2651,
+      "date": "2023-07-09"
+    },
+    {
+      "name": "abc230_g/27770752",
+      "task_id": "abc230_g",
+      "program_id": "27770752",
+      "difficulty": 2516,
+      "date": "2021-12-03"
+    },
+    {
+      "name": "arc157_e/39201856",
+      "task_id": "arc157_e",
+      "program_id": "39201856",
+      "difficulty": 2877,
+      "date": "2023-02-25"
+    },
+    {
+      "name": "agc057_b/41271287",
+      "task_id": "agc057_b",
+      "program_id": "41271287",
+      "difficulty": 1952,
+      "date": "2022-05-07"
+    },
+    {
+      "name": "abc229_f/46038453",
+      "task_id": "abc229_f",
+      "program_id": "46038453",
+      "difficulty": 1917,
+      "date": "2021-11-27"
+    },
+    {
+      "name": "abc283_h/37533124",
+      "task_id": "abc283_h",
+      "program_id": "37533124",
+      "difficulty": 2682,
+      "date": "2022-12-24"
+    },
+    {
+      "name": "abc234_g/43173883",
+      "task_id": "abc234_g",
+      "program_id": "43173883",
+      "difficulty": 2306,
+      "date": "2022-01-08"
+    },
+    {
+      "name": "arc171_c/50019081",
+      "task_id": "arc171_c",
+      "program_id": "50019081",
+      "difficulty": 2244,
+      "date": "2024-02-04"
+    },
+    {
+      "name": "abc263_h/33881482",
+      "task_id": "abc263_h",
+      "program_id": "33881482",
+      "difficulty": 3041,
+      "date": "2022-08-06"
+    },
+    {
+      "name": "abc277_h/41713007",
+      "task_id": "abc277_h",
+      "program_id": "41713007",
+      "difficulty": 2917,
+      "date": "2022-11-12"
+    },
+    {
+      "name": "abc290_g/39047205",
+      "task_id": "abc290_g",
+      "program_id": "39047205",
+      "difficulty": 2407,
+      "date": "2023-02-19"
+    },
+    {
+      "name": "arc180_c/55021276",
+      "task_id": "arc180_c",
+      "program_id": "55021276",
+      "difficulty": 2221,
+      "date": "2024-06-29"
+    },
+    {
+      "name": "abc262_h/40953311",
+      "task_id": "abc262_h",
+      "program_id": "40953311",
+      "difficulty": 2957,
+      "date": "2022-07-31"
+    },
+    {
+      "name": "agc066_b/53808375",
+      "task_id": "agc066_b",
+      "program_id": "53808375",
+      "difficulty": 2162,
+      "date": "2024-03-31"
+    },
+    {
+      "name": "arc138_c/31643804",
+      "task_id": "arc138_c",
+      "program_id": "31643804",
+      "difficulty": 1728,
+      "date": "2022-04-09"
+    },
+    {
+      "name": "abc326_g/49041438",
+      "task_id": "abc326_g",
+      "program_id": "49041438",
+      "difficulty": 2470,
+      "date": "2023-10-28"
+    },
+    {
+      "name": "arc147_e/34616740",
+      "task_id": "arc147_e",
+      "program_id": "34616740",
+      "difficulty": 2553,
+      "date": "2022-09-04"
+    },
+    {
+      "name": "abc335_f/53563069",
+      "task_id": "abc335_f",
+      "program_id": "53563069",
+      "difficulty": 1690,
+      "date": "2024-01-06"
+    },
+    {
+      "name": "abc318_g/53538516",
+      "task_id": "abc318_g",
+      "program_id": "53538516",
+      "difficulty": 2260,
+      "date": "2023-09-02"
+    },
+    {
+      "name": "arc160_c/41463787",
+      "task_id": "arc160_c",
+      "program_id": "41463787",
+      "difficulty": 1861,
+      "date": "2023-05-14"
+    },
+    {
+      "name": "abc257_h/32762821",
+      "task_id": "abc257_h",
+      "program_id": "32762821",
+      "difficulty": 3461,
+      "date": "2022-06-25"
+    },
+    {
+      "name": "abc313_g/46134579",
+      "task_id": "abc313_g",
+      "program_id": "46134579",
+      "difficulty": 2454,
+      "date": "2023-08-05"
+    },
+    {
+      "name": "abc325_g/46914169",
+      "task_id": "abc325_g",
+      "program_id": "46914169",
+      "difficulty": 2388,
+      "date": "2023-10-21"
+    },
+    {
+      "name": "agc065_c/49687882",
+      "task_id": "agc065_c",
+      "program_id": "49687882",
+      "difficulty": 2414,
+      "date": "2023-12-17"
+    },
+    {
+      "name": "arc166_c/49538058",
+      "task_id": "arc166_c",
+      "program_id": "49538058",
+      "difficulty": 1813,
+      "date": "2023-10-08"
+    },
+    {
+      "name": "abc349_g/52509388",
+      "task_id": "abc349_g",
+      "program_id": "52509388",
+      "difficulty": 2655,
+      "date": "2024-04-13"
+    },
+    {
+      "name": "abc245_g/49870441",
+      "task_id": "abc245_g",
+      "program_id": "49870441",
+      "difficulty": 2270,
+      "date": "2022-03-26"
+    },
+    {
+      "name": "abc260_e/44419168",
+      "task_id": "abc260_e",
+      "program_id": "44419168",
+      "difficulty": 1692,
+      "date": "2022-07-17"
+    },
+    {
+      "name": "arc132_c/35435888",
+      "task_id": "arc132_c",
+      "program_id": "35435888",
+      "difficulty": 1616,
+      "date": "2021-12-26"
+    },
+    {
+      "name": "arc174_e/51394983",
+      "task_id": "arc174_e",
+      "program_id": "51394983",
+      "difficulty": 2336,
+      "date": "2024-03-17"
+    },
+    {
+      "name": "abc330_f/48207650",
+      "task_id": "abc330_f",
+      "program_id": "48207650",
+      "difficulty": 1718,
+      "date": "2023-11-25"
+    },
+    {
+      "name": "abc261_h/37948163",
+      "task_id": "abc261_h",
+      "program_id": "37948163",
+      "difficulty": 2531,
+      "date": "2022-07-23"
+    },
+    {
+      "name": "abc244_g/32985131",
+      "task_id": "abc244_g",
+      "program_id": "32985131",
+      "difficulty": 2117,
+      "date": "2022-03-20"
+    },
+    {
+      "name": "abc282_e/45514577",
+      "task_id": "abc282_e",
+      "program_id": "45514577",
+      "difficulty": 1604,
+      "date": "2022-12-17"
+    },
+    {
+      "name": "abc297_g/44405855",
+      "task_id": "abc297_g",
+      "program_id": "44405855",
+      "difficulty": 1834,
+      "date": "2023-04-09"
+    },
+    {
+      "name": "abc262_g/33776994",
+      "task_id": "abc262_g",
+      "program_id": "33776994",
+      "difficulty": 3114,
+      "date": "2022-07-31"
+    },
+    {
+      "name": "arc136_c/29773426",
+      "task_id": "arc136_c",
+      "program_id": "29773426",
+      "difficulty": 2137,
+      "date": "2022-02-27"
+    },
+    {
+      "name": "abc313_f/45736506",
+      "task_id": "abc313_f",
+      "program_id": "45736506",
+      "difficulty": 3100,
+      "date": "2023-08-05"
+    },
+    {
+      "name": "arc143_c/37392747",
+      "task_id": "arc143_c",
+      "program_id": "37392747",
+      "difficulty": 1805,
+      "date": "2022-06-26"
+    },
+    {
+      "name": "abc243_h/30174663",
+      "task_id": "abc243_h",
+      "program_id": "30174663",
+      "difficulty": 3884,
+      "date": "2022-03-12"
+    },
+    {
+      "name": "abc234_h/49361492",
+      "task_id": "abc234_h",
+      "program_id": "49361492",
+      "difficulty": 2505,
+      "date": "2022-01-08"
+    },
+    {
+      "name": "abc266_g/44683031",
+      "task_id": "abc266_g",
+      "program_id": "44683031",
+      "difficulty": 2045,
+      "date": "2022-08-27"
+    },
+    {
+      "name": "abc257_f/45055612",
+      "task_id": "abc257_f",
+      "program_id": "45055612",
+      "difficulty": 1775,
+      "date": "2022-06-25"
+    },
+    {
+      "name": "arc178_d/53680716",
+      "task_id": "arc178_d",
+      "program_id": "53680716",
+      "difficulty": 2498,
+      "date": "2024-05-19"
+    },
+    {
+      "name": "agc060_b/41598368",
+      "task_id": "agc060_b",
+      "program_id": "41598368",
+      "difficulty": 1996,
+      "date": "2022-12-25"
+    },
+    {
+      "name": "abc240_h/29809348",
+      "task_id": "abc240_h",
+      "program_id": "29809348",
+      "difficulty": 3184,
+      "date": "2022-02-20"
+    },
+    {
+      "name": "abc247_h/30891102",
+      "task_id": "abc247_h",
+      "program_id": "30891102",
+      "difficulty": 2664,
+      "date": "2022-04-10"
+    },
+    {
+      "name": "agc066_a/53570827",
+      "task_id": "agc066_a",
+      "program_id": "53570827",
+      "difficulty": 2086,
+      "date": "2024-03-31"
+    },
+    {
+      "name": "abc301_e/45949713",
+      "task_id": "abc301_e",
+      "program_id": "45949713",
+      "difficulty": 1673,
+      "date": "2023-05-13"
+    },
+    {
+      "name": "abc343_g/50999715",
+      "task_id": "abc343_g",
+      "program_id": "50999715",
+      "difficulty": 2114,
+      "date": "2024-03-02"
+    },
+    {
+      "name": "abc241_f/41657280",
+      "task_id": "abc241_f",
+      "program_id": "41657280",
+      "difficulty": 1888,
+      "date": "2022-02-26"
+    },
+    {
+      "name": "arc163_c/43286713",
+      "task_id": "arc163_c",
+      "program_id": "43286713",
+      "difficulty": 1711,
+      "date": "2023-07-02"
+    },
+    {
+      "name": "abc313_d/45654990",
+      "task_id": "abc313_d",
+      "program_id": "45654990",
+      "difficulty": 1630,
+      "date": "2023-08-05"
+    },
+    {
+      "name": "abc248_f/53199737",
+      "task_id": "abc248_f",
+      "program_id": "53199737",
+      "difficulty": 1828,
+      "date": "2022-04-16"
+    },
+    {
+      "name": "arc128_e/27510550",
+      "task_id": "arc128_e",
+      "program_id": "27510550",
+      "difficulty": 3049,
+      "date": "2021-10-16"
+    },
+    {
+      "name": "abc319_g/46211313",
+      "task_id": "abc319_g",
+      "program_id": "46211313",
+      "difficulty": 2185,
+      "date": "2023-09-09"
+    },
+    {
+      "name": "arc137_d/36174552",
+      "task_id": "arc137_d",
+      "program_id": "36174552",
+      "difficulty": 2191,
+      "date": "2022-03-19"
+    },
+    {
+      "name": "arc145_e/33700497",
+      "task_id": "arc145_e",
+      "program_id": "33700497",
+      "difficulty": 3581,
+      "date": "2022-07-30"
+    },
+    {
+      "name": "arc179_d/54184092",
+      "task_id": "arc179_d",
+      "program_id": "54184092",
+      "difficulty": 2717,
+      "date": "2024-06-02"
+    },
+    {
+      "name": "abc224_h/48473722",
+      "task_id": "abc224_h",
+      "program_id": "48473722",
+      "difficulty": 2887,
+      "date": "2021-10-23"
+    },
+    {
+      "name": "abc313_e/45766127",
+      "task_id": "abc313_e",
+      "program_id": "45766127",
+      "difficulty": 1672,
+      "date": "2023-08-05"
+    },
+    {
+      "name": "abc339_f/52982584",
+      "task_id": "abc339_f",
+      "program_id": "52982584",
+      "difficulty": 1716,
+      "date": "2024-02-03"
+    },
+    {
+      "name": "abc332_e/52500433",
+      "task_id": "abc332_e",
+      "program_id": "52500433",
+      "difficulty": 1883,
+      "date": "2023-12-10"
+    },
+    {
+      "name": "abc262_e/44831745",
+      "task_id": "abc262_e",
+      "program_id": "44831745",
+      "difficulty": 1719,
+      "date": "2022-07-31"
+    },
+    {
+      "name": "abc287_h/38508416",
+      "task_id": "abc287_h",
+      "program_id": "38508416",
+      "difficulty": 2639,
+      "date": "2023-01-28"
+    },
+    {
+      "name": "abc295_e/42176175",
+      "task_id": "abc295_e",
+      "program_id": "42176175",
+      "difficulty": 2157,
+      "date": "2023-03-25"
+    },
+    {
+      "name": "abc320_g/45748637",
+      "task_id": "abc320_g",
+      "program_id": "45748637",
+      "difficulty": 2575,
+      "date": "2023-09-16"
+    },
+    {
+      "name": "arc128_d/26708943",
+      "task_id": "arc128_d",
+      "program_id": "26708943",
+      "difficulty": 2554,
+      "date": "2021-10-16"
+    },
+    {
+      "name": "abc298_g/41059627",
+      "task_id": "abc298_g",
+      "program_id": "41059627",
+      "difficulty": 2418,
+      "date": "2023-04-15"
+    },
+    {
+      "name": "abc314_e/45808089",
+      "task_id": "abc314_e",
+      "program_id": "45808089",
+      "difficulty": 1722,
+      "date": "2023-08-12"
+    },
+    {
+      "name": "abc360_g/55112153",
+      "task_id": "abc360_g",
+      "program_id": "55112153",
+      "difficulty": 1982,
+      "date": "2024-06-30"
+    },
+    {
+      "name": "arc158_c/40365558",
+      "task_id": "arc158_c",
+      "program_id": "40365558",
+      "difficulty": 1875,
+      "date": "2023-03-12"
+    },
+    {
+      "name": "abc247_f/52972964",
+      "task_id": "abc247_f",
+      "program_id": "52972964",
+      "difficulty": 1697,
+      "date": "2022-04-10"
+    },
+    {
+      "name": "abc236_e/45576293",
+      "task_id": "abc236_e",
+      "program_id": "45576293",
+      "difficulty": 1893,
+      "date": "2022-01-23"
+    },
+    {
+      "name": "arc178_c/53727508",
+      "task_id": "arc178_c",
+      "program_id": "53727508",
+      "difficulty": 1990,
+      "date": "2024-05-19"
+    },
+    {
+      "name": "abc238_g/44443541",
+      "task_id": "abc238_g",
+      "program_id": "44443541",
+      "difficulty": 2254,
+      "date": "2022-02-05"
+    },
+    {
+      "name": "abc232_g/28189928",
+      "task_id": "abc232_g",
+      "program_id": "28189928",
+      "difficulty": 2550,
+      "date": "2021-12-19"
+    },
+    {
+      "name": "abc299_g/43242154",
+      "task_id": "abc299_g",
+      "program_id": "43242154",
+      "difficulty": 2088,
+      "date": "2023-04-22"
+    },
+    {
+      "name": "arc173_c/51137292",
+      "task_id": "arc173_c",
+      "program_id": "51137292",
+      "difficulty": 2008,
+      "date": "2024-03-10"
+    },
+    {
+      "name": "abc321_g/45920869",
+      "task_id": "abc321_g",
+      "program_id": "45920869",
+      "difficulty": 2439,
+      "date": "2023-09-23"
+    },
+    {
+      "name": "abc243_f/40101065",
+      "task_id": "abc243_f",
+      "program_id": "40101065",
+      "difficulty": 2125,
+      "date": "2022-03-12"
+    },
+    {
+      "name": "arc176_d/52671232",
+      "task_id": "arc176_d",
+      "program_id": "52671232",
+      "difficulty": 2572,
+      "date": "2024-04-21"
+    },
+    {
+      "name": "abc353_g/53993648",
+      "task_id": "abc353_g",
+      "program_id": "53993648",
+      "difficulty": 1765,
+      "date": "2024-05-11"
+    },
+    {
+      "name": "abc340_g/50192467",
+      "task_id": "abc340_g",
+      "program_id": "50192467",
+      "difficulty": 2401,
+      "date": "2024-02-10"
+    },
+    {
+      "name": "abc319_f/45777946",
+      "task_id": "abc319_f",
+      "program_id": "45777946",
+      "difficulty": 2480,
+      "date": "2023-09-09"
+    },
+    {
+      "name": "arc132_d/28175955",
+      "task_id": "arc132_d",
+      "program_id": "28175955",
+      "difficulty": 2221,
+      "date": "2021-12-26"
+    },
+    {
+      "name": "abc352_f/54716291",
+      "task_id": "abc352_f",
+      "program_id": "54716291",
+      "difficulty": 2052,
+      "date": "2024-05-04"
+    },
+    {
+      "name": "abc337_f/49855272",
+      "task_id": "abc337_f",
+      "program_id": "49855272",
+      "difficulty": 2386,
+      "date": "2024-01-20"
+    },
+    {
+      "name": "abc223_g/45319303",
+      "task_id": "abc223_g",
+      "program_id": "45319303",
+      "difficulty": 2351,
+      "date": "2021-10-17"
+    },
+    {
+      "name": "arc170_c/52698796",
+      "task_id": "arc170_c",
+      "program_id": "52698796",
+      "difficulty": 2028,
+      "date": "2024-01-21"
+    },
+    {
+      "name": "abc233_g/38349532",
+      "task_id": "abc233_g",
+      "program_id": "38349532",
+      "difficulty": 2438,
+      "date": "2021-12-25"
+    },
+    {
+      "name": "abc249_f/45465070",
+      "task_id": "abc249_f",
+      "program_id": "45465070",
+      "difficulty": 1786,
+      "date": "2022-04-23"
+    },
+    {
+      "name": "arc141_e/32093401",
+      "task_id": "arc141_e",
+      "program_id": "32093401",
+      "difficulty": 3009,
+      "date": "2022-05-29"
+    },
+    {
+      "name": "abc225_h/40522843",
+      "task_id": "abc225_h",
+      "program_id": "40522843",
+      "difficulty": 3061,
+      "date": "2021-10-30"
+    },
+    {
+      "name": "arc141_c/34662508",
+      "task_id": "arc141_c",
+      "program_id": "34662508",
+      "difficulty": 2342,
+      "date": "2022-05-29"
+    },
+    {
+      "name": "abc257_g/45268157",
+      "task_id": "abc257_g",
+      "program_id": "45268157",
+      "difficulty": 2078,
+      "date": "2022-06-25"
+    },
+    {
+      "name": "abc267_h/35794099",
+      "task_id": "abc267_h",
+      "program_id": "35794099",
+      "difficulty": 2422,
+      "date": "2022-09-03"
+    },
+    {
+      "name": "abc223_h/26668974",
+      "task_id": "abc223_h",
+      "program_id": "26668974",
+      "difficulty": 2771,
+      "date": "2021-10-17"
+    },
+    {
+      "name": "abc283_e/45759088",
+      "task_id": "abc283_e",
+      "program_id": "45759088",
+      "difficulty": 1802,
+      "date": "2022-12-24"
+    },
+    {
+      "name": "abc250_h/31555605",
+      "task_id": "abc250_h",
+      "program_id": "31555605",
+      "difficulty": 2773,
+      "date": "2022-05-08"
+    },
+    {
+      "name": "abc299_h/40885357",
+      "task_id": "abc299_h",
+      "program_id": "40885357",
+      "difficulty": 2997,
+      "date": "2023-04-22"
+    },
+    {
+      "name": "abc296_h/40275095",
+      "task_id": "abc296_h",
+      "program_id": "40275095",
+      "difficulty": 2822,
+      "date": "2023-04-01"
+    },
+    {
+      "name": "abc273_g/35719660",
+      "task_id": "abc273_g",
+      "program_id": "35719660",
+      "difficulty": 2521,
+      "date": "2022-10-15"
+    },
+    {
+      "name": "arc149_d/35355978",
+      "task_id": "arc149_d",
+      "program_id": "35355978",
+      "difficulty": 2991,
+      "date": "2022-10-02"
+    },
+    {
+      "name": "abc335_g/49224063",
+      "task_id": "abc335_g",
+      "program_id": "49224063",
+      "difficulty": 2614,
+      "date": "2024-01-06"
+    },
+    {
+      "name": "abc286_h/38346885",
+      "task_id": "abc286_h",
+      "program_id": "38346885",
+      "difficulty": 2526,
+      "date": "2023-01-21"
+    },
+    {
+      "name": "arc162_e/43020372",
+      "task_id": "arc162_e",
+      "program_id": "43020372",
+      "difficulty": 2780,
+      "date": "2023-06-18"
+    },
+    {
+      "name": "abc287_g/50462471",
+      "task_id": "abc287_g",
+      "program_id": "50462471",
+      "difficulty": 2180,
+      "date": "2023-01-28"
+    },
+    {
+      "name": "abc343_e/54516497",
+      "task_id": "abc343_e",
+      "program_id": "54516497",
+      "difficulty": 1802,
+      "date": "2024-03-02"
+    },
+    {
+      "name": "abc240_g/35075785",
+      "task_id": "abc240_g",
+      "program_id": "35075785",
+      "difficulty": 2462,
+      "date": "2022-02-20"
+    },
+    {
+      "name": "abc283_g/51990912",
+      "task_id": "abc283_g",
+      "program_id": "51990912",
+      "difficulty": 2173,
+      "date": "2022-12-24"
+    },
+    {
+      "name": "arc168_e/47767454",
+      "task_id": "arc168_e",
+      "program_id": "47767454",
+      "difficulty": 3001,
+      "date": "2023-11-19"
+    },
+    {
+      "name": "abc349_f/53462819",
+      "task_id": "abc349_f",
+      "program_id": "53462819",
+      "difficulty": 2169,
+      "date": "2024-04-13"
+    },
+    {
+      "name": "abc359_f/54954031",
+      "task_id": "abc359_f",
+      "program_id": "54954031",
+      "difficulty": 1792,
+      "date": "2024-06-22"
+    },
+    {
+      "name": "abc345_f/52944760",
+      "task_id": "abc345_f",
+      "program_id": "52944760",
+      "difficulty": 2157,
+      "date": "2024-03-16"
+    },
+    {
+      "name": "abc288_h/38697040",
+      "task_id": "abc288_h",
+      "program_id": "38697040",
+      "difficulty": 3282,
+      "date": "2023-02-04"
+    },
+    {
+      "name": "arc146_d/34275405",
+      "task_id": "arc146_d",
+      "program_id": "34275405",
+      "difficulty": 2663,
+      "date": "2022-08-20"
+    },
+    {
+      "name": "arc159_c/40556226",
+      "task_id": "arc159_c",
+      "program_id": "40556226",
+      "difficulty": 2304,
+      "date": "2023-04-08"
+    },
+    {
+      "name": "abc254_f/49680019",
+      "task_id": "abc254_f",
+      "program_id": "49680019",
+      "difficulty": 1764,
+      "date": "2022-06-04"
+    },
+    {
+      "name": "abc232_f/54006538",
+      "task_id": "abc232_f",
+      "program_id": "54006538",
+      "difficulty": 1857,
+      "date": "2021-12-19"
+    },
+    {
+      "name": "abc327_g/47668625",
+      "task_id": "abc327_g",
+      "program_id": "47668625",
+      "difficulty": 2968,
+      "date": "2023-11-04"
+    },
+    {
+      "name": "abc314_h/44593278",
+      "task_id": "abc314_h",
+      "program_id": "44593278",
+      "difficulty": 2938,
+      "date": "2023-08-12"
+    },
+    {
+      "name": "abc224_f/51168884",
+      "task_id": "abc224_f",
+      "program_id": "51168884",
+      "difficulty": 1733,
+      "date": "2021-10-23"
+    },
+    {
+      "name": "agc056_c/27693193",
+      "task_id": "agc056_c",
+      "program_id": "27693193",
+      "difficulty": 2481,
+      "date": "2021-12-04"
+    },
+    {
+      "name": "arc158_d/39679022",
+      "task_id": "arc158_d",
+      "program_id": "39679022",
+      "difficulty": 2893,
+      "date": "2023-03-12"
+    },
+    {
+      "name": "abc354_f/54039651",
+      "task_id": "abc354_f",
+      "program_id": "54039651",
+      "difficulty": 1639,
+      "date": "2024-05-18"
+    },
+    {
+      "name": "abc315_h/44773178",
+      "task_id": "abc315_h",
+      "program_id": "44773178",
+      "difficulty": 2807,
+      "date": "2023-08-19"
+    },
+    {
+      "name": "abc242_g/52939949",
+      "task_id": "abc242_g",
+      "program_id": "52939949",
+      "difficulty": 1828,
+      "date": "2022-03-05"
+    },
+    {
+      "name": "abc239_g/45950802",
+      "task_id": "abc239_g",
+      "program_id": "45950802",
+      "difficulty": 2215,
+      "date": "2022-02-19"
+    },
+    {
+      "name": "abc251_h/31690776",
+      "task_id": "abc251_h",
+      "program_id": "31690776",
+      "difficulty": 3108,
+      "date": "2022-05-14"
+    },
+    {
+      "name": "abc237_h/29196395",
+      "task_id": "abc237_h",
+      "program_id": "29196395",
+      "difficulty": 2807,
+      "date": "2022-01-30"
+    },
+    {
+      "name": "abc304_g/41999726",
+      "task_id": "abc304_g",
+      "program_id": "41999726",
+      "difficulty": 3177,
+      "date": "2023-06-03"
+    },
+    {
+      "name": "agc063_c/44118621",
+      "task_id": "agc063_c",
+      "program_id": "44118621",
+      "difficulty": 2500,
+      "date": "2023-07-30"
+    },
+    {
+      "name": "abc336_g/49317983",
+      "task_id": "abc336_g",
+      "program_id": "49317983",
+      "difficulty": 3138,
+      "date": "2024-01-14"
+    },
+    {
+      "name": "agc066_c/52162543",
+      "task_id": "agc066_c",
+      "program_id": "52162543",
+      "difficulty": 3036,
+      "date": "2024-03-31"
+    },
+    {
+      "name": "abc357_f/54543446",
+      "task_id": "abc357_f",
+      "program_id": "54543446",
+      "difficulty": 1793,
+      "date": "2024-06-08"
+    },
+    {
+      "name": "abc275_f/45458655",
+      "task_id": "abc275_f",
+      "program_id": "45458655",
+      "difficulty": 1608,
+      "date": "2022-10-29"
+    },
+    {
+      "name": "abc304_f/45077270",
+      "task_id": "abc304_f",
+      "program_id": "45077270",
+      "difficulty": 1619,
+      "date": "2023-06-03"
+    },
+    {
+      "name": "abc265_f/43487741",
+      "task_id": "abc265_f",
+      "program_id": "43487741",
+      "difficulty": 2290,
+      "date": "2022-08-21"
+    },
+    {
+      "name": "arc168_d/47791112",
+      "task_id": "arc168_d",
+      "program_id": "47791112",
+      "difficulty": 2440,
+      "date": "2023-11-19"
+    },
+    {
+      "name": "abc282_f/45960750",
+      "task_id": "abc282_f",
+      "program_id": "45960750",
+      "difficulty": 1734,
+      "date": "2022-12-17"
+    },
+    {
+      "name": "abc267_f/45545460",
+      "task_id": "abc267_f",
+      "program_id": "45545460",
+      "difficulty": 1939,
+      "date": "2022-09-03"
+    },
+    {
+      "name": "abc283_f/46910621",
+      "task_id": "abc283_f",
+      "program_id": "46910621",
+      "difficulty": 1771,
+      "date": "2022-12-24"
+    },
+    {
+      "name": "abc287_f/51238563",
+      "task_id": "abc287_f",
+      "program_id": "51238563",
+      "difficulty": 2034,
+      "date": "2023-01-28"
+    },
+    {
+      "name": "abc359_g/54889351",
+      "task_id": "abc359_g",
+      "program_id": "54889351",
+      "difficulty": 2099,
+      "date": "2024-06-22"
+    },
+    {
+      "name": "arc175_e/51661723",
+      "task_id": "arc175_e",
+      "program_id": "51661723",
+      "difficulty": 3223,
+      "date": "2024-03-24"
+    },
+    {
+      "name": "arc156_c/38986255",
+      "task_id": "arc156_c",
+      "program_id": "38986255",
+      "difficulty": 2155,
+      "date": "2023-02-18"
+    },
+    {
+      "name": "abc324_g/52629689",
+      "task_id": "abc324_g",
+      "program_id": "52629689",
+      "difficulty": 2501,
+      "date": "2023-10-14"
+    }
+  ]
+}

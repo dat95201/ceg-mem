@@ -112,37 +112,53 @@ oracle could have caught it: it is an equivalent mutant, an artefact of
 mutation testing rather than evidence about the oracle, and the generator
 moves to the fault type's next candidate site.
 
-A program passes at ≥2 of 3 mutants caught; the corpus freezes at ≥30 of the
-40-program cohort passing. The gate is measured on the cohort and the corpus
+A program passes at ≥2 of 3 mutants caught; the corpus freezes at ≥75% of the
+cohort passing — the proposal's 30 of 40, held as a fraction, so 90 of 120 on
+the current corpus. The gate is measured on the cohort and the corpus
 is then topped up past it, because a pass rate computed over a set already
 filtered on passing would be vacuous. `data/oracle_validation.json` carries
 every mutant's diff, site and verdict.
 
 ## Selecting the corpus
 
-`validate_oracle.py --stratify difficulty` (the default) balances the corpus
-across the paper's three levels with an equal quota each, instead of taking one
-unstratified sample that might land 45 easy programs and 3 hard ones.
+`validate_oracle.py --select hard` (the default) freezes 120 faults drawn from
+the hard band and nothing else. The pilot is what retired the earlier
+easy/medium/hard quotas: median π̂ came out 0.300 easy, 0.275 medium, 0.038
+hard, so two thirds of that corpus sat where the proposer usually succeeds on
+the first try and no memory condition can separate from another. The budget now
+buys 120 of the discriminating cells rather than 40 of them plus 80 that mostly
+answer themselves.
 
-The levels are bands of π, and π is *measured* — `scripts/measure_pi.py` spends
-a model call per sample — so it is not knowable at selection time, and paying
-for it on candidates that go on to fail the mutation gate would burn budget on
-programs nobody keeps. Selection therefore balances on the AtCoder difficulty
-rating ConDefects ships in `difficulty.txt`, cut into terciles of the candidate
-pool's own distribution. A harder contest problem is harder to repair in one
-shot, so the rating runs opposite to π: lowest tercile is `easy`, highest is
-`hard`. This is a proxy, recorded as `strata_selection.proxy`;
-`scripts/build_strata.py` remains the authority on the strata the paper
-reports, and the agreement between the two is worth reporting in its own right.
+The band is an absolute AtCoder rating floor — `--hard-floor`, default 1600 —
+not a tercile of whatever is on disk. π is *measured* (`scripts/measure_pi.py`
+spends a model call per sample) so it cannot drive selection, and the rating
+ConDefects ships in `difficulty.txt` stands in for it: the pilot puts the band
+above 1600 at π̂ ≈ 0.04, inside the paper's Hard range of 0.02–0.08. Terciles
+moved with the test tree — 1577 on the salvaged partial tree, 1639 on the full
+one — so the same seed named a different corpus depending on how much of the
+download had survived, which is not a property a frozen corpus may have. 1600 is
+AtCoder's own blue boundary, fixed outside this project. The substitution is
+recorded as `strata_selection.proxy`; `scripts/build_strata.py` remains the
+authority on the strata the paper reports.
 
 Everything the seed touches is a pure function evaluated before any program
-runs: filter to faults whose coding task ships test data, cut that pool's
-ratings into terciles, shuffle with `random.Random(seed)`, interleave the three
-strata round-robin. Same seed and same test tree give the same candidate order.
-`--jobs` changes how many candidates are in flight, never which are chosen —
-though a program near the sandbox's wall-clock limit can time out under load
-when it would not have serially, so re-run a publication freeze with `--jobs 1`
-if that matters.
+runs: take the faults in adapter order, drop those whose coding task ships no
+test data, drop those rated below the floor, shuffle with `random.Random(seed)`,
+then walk that order one fault per coding task until 120 have passed.
+`data/tasks.json` records the floor, the seed, the pool size and a SHA-256 of
+the candidate order, so a re-run can be *checked* against the freeze rather than
+trusted. `--jobs` changes how many candidates are in flight, never which are
+chosen — though a program near the sandbox's wall-clock limit can time out under
+load when it would not have serially, so re-run a publication freeze with
+`--jobs 1` if that matters.
+
+The walk claims a coding task the moment one of its faults reaches stage 2, so a
+task whose fault fails the mutation gate is spent; the run refuses to start
+unless the hard pool holds ~2 coding tasks per corpus slot. The full benchmark
+supplies 337 at floor 1600, the salvaged partial tree only 123 — which is why
+the whole `Test.zip` has to be unpacked before a 120-task freeze. `--select
+terciles` restores the retired quota behaviour, `--select none` samples across
+every rating.
 
 `data/mutants.py` writes the *operators*, not the anchors. A ConDefects
 program is an anonymous AtCoder submission drawn from a pool of 2,864, and the

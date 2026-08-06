@@ -7,8 +7,10 @@ from the proposal's notation (Table 1). This is a baseline measurement, not an
 episode: each call is scored independently by the oracle and discarded, not
 fed forward.
 
-Writes data/pi_pilot.json: per-fault success count/rate and the pooled
-estimate across all calls.
+Writes data/pi_pilot.json: per-fault success count/rate, the pooled estimate
+across all calls, and `corpus_source` - which freeze the corpus came from, so a
+pi_hat measured before the mutation gate is never mistaken for one measured
+after it.
 """
 from __future__ import annotations
 
@@ -29,29 +31,52 @@ DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 DEFAULT_CALLS_PER_PROGRAM = 40
 
 
-def _frozen_programs() -> tuple[str, ...]:
-    tasks_json = DATA_DIR / "tasks.json"
-    if tasks_json.exists():
-        data = json.loads(tasks_json.read_text())
-        if data.get("frozen"):
-            return tuple(t["name"] for t in data["tasks"])
-    return ()
+# Two freezes can name a corpus, and they are not interchangeable:
+#
+#   tasks.json    the gated corpus - every fault in it has cleared stage 1
+#                 (usable) and stage 2 (mutation gate). Authoritative when it
+#                 exists.
+#   hard_120.json the pre-gate draw (scripts/select_hard_tasks.py): the right
+#                 120 faults, but none of them checked yet. Measuring pi on it
+#                 is legitimate - a pilot is allowed to run ahead of the gates
+#                 - as long as the report says so, because some of these faults
+#                 will turn out to be unusable and their pi_hat means nothing.
+#
+# The source is recorded in the report so a pi_hat measured before the gates
+# can never be mistaken for one measured after them.
+_CORPUS_SOURCES = (("tasks.json", "gated"), ("hard_120.json", "pre-gate draw"))
 
 
-def _resolve_programs(names: list[str] | None) -> tuple[str, ...]:
-    """No --programs, or "--programs all" -> the frozen corpus in
-    data/tasks.json. pi_hat has to cover every frozen task, not a hand-picked
-    subset, because scripts/build_strata.py stratifies on the whole
-    distribution it produces."""
+def _frozen_programs() -> tuple[tuple[str, ...], str]:
+    for filename, kind in _CORPUS_SOURCES:
+        path = DATA_DIR / filename
+        if not path.exists():
+            continue
+        data = json.loads(path.read_text())
+        if not data.get("frozen"):
+            continue
+        entries = data.get("tasks") or data.get("selected") or []
+        if entries:
+            return tuple(t["name"] for t in entries), f"data/{filename} ({kind})"
+    return (), ""
+
+
+def _resolve_programs(names: list[str] | None) -> tuple[tuple[str, ...], str]:
+    """No --programs, or "--programs all" -> the frozen corpus. pi_hat has to
+    cover every frozen task, not a hand-picked subset, because
+    scripts/build_strata.py stratifies on the whole distribution it
+    produces."""
     if names and names != ["all"]:
-        return tuple(names)
-    frozen = _frozen_programs()
+        return tuple(names), "--programs"
+    frozen, source = _frozen_programs()
     if not frozen:
         raise SystemExit(
-            "data/tasks.json is missing or not frozen - run "
-            "scripts/validate_oracle.py first, or pass --programs explicitly"
+            "no frozen corpus: neither data/tasks.json nor data/hard_120.json "
+            "exists.\nRun `python3 scripts/select_hard_tasks.py` for the draw, "
+            "or scripts/validate_oracle.py for the gated corpus, or pass "
+            "--programs explicitly"
         )
-    return frozen
+    return frozen, source
 
 
 def measure(
@@ -61,6 +86,7 @@ def measure(
     model: str | None,
     max_examples: int,
     seed: int,
+    corpus_source: str = "",
 ) -> dict:
     per_program = {}
     t0 = time.monotonic()
@@ -116,6 +142,7 @@ def measure(
 
     return {
         "programs": list(programs),
+        "corpus_source": corpus_source,
         "calls_per_program": calls_per_program,
         "model": model,
         "seed": seed,
@@ -130,14 +157,16 @@ def measure(
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--programs", nargs="+", default=None,
-                        help="default: the frozen corpus in data/tasks.json")
+                        help="default: the gated corpus in data/tasks.json, "
+                             "falling back to the draw in data/hard_120.json")
     parser.add_argument("--calls-per-program", type=int, default=DEFAULT_CALLS_PER_PROGRAM)
     parser.add_argument("--model", default=None)
     parser.add_argument("--max-examples", type=int, default=100)
     parser.add_argument("--seed", type=int, default=20260717)
     args = parser.parse_args()
 
-    programs = _resolve_programs(args.programs)
+    programs, corpus_source = _resolve_programs(args.programs)
+    print(f"corpus: {len(programs)} faults from {corpus_source}")
     unknown = [p for p in programs if p not in TASKS]
     if unknown:
         raise SystemExit(f"unknown program(s): {unknown}")
@@ -159,6 +188,7 @@ def main() -> None:
     report = measure(
         programs, args.calls_per_program,
         model=args.model, max_examples=args.max_examples, seed=args.seed,
+        corpus_source=corpus_source,
     )
 
     DATA_DIR.mkdir(exist_ok=True)
