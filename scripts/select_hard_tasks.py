@@ -15,10 +15,16 @@ The rule, in order. Every step is a pure function of (benchmark, floor, seed):
   3. drop those whose coding task is rated outside [floor, ceiling] in
      difficulty.txt — a task with no rating is dropped, not assumed hard;
   4. shuffle with random.Random(seed) — the single source of randomness;
-  5. walk that order and keep the first fault of each coding task, because
+  5. drop those with fewer than --min-siblings other wrong submissions to the
+     same coding task — those siblings are the natural mutants the oracle is
+     validated against, so a fault without one cannot be validated at all.
+     After the shuffle, deliberately: see the comment above draw();
+  6. drop those whose source is longer than --max-source-chars — the proposer
+     rewrites the whole program and could not emit a rewrite that long;
+  7. walk that order and keep the first fault of each coding task, because
      several submissions fail the same task and a corpus holding two of them
      would not have independent cells;
-  6. the first `corpus_size` of that walk are the corpus; the rest is reserve.
+  8. the first `corpus_size` of that walk are the corpus; the rest is reserve.
 
 Where "ships test data" is read from
 --------------------------------------
@@ -49,8 +55,8 @@ import zipfile
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from src.adapter import (CONDEFECTS_ROOT, TEST_DIR, TASKS, task_dates,
-                         task_difficulties)
+from src.adapter import (CONDEFECTS_ROOT, TEST_DIR, TASKS, sibling_faults,
+                         task_dates, task_difficulties)
 
 DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 
@@ -61,6 +67,25 @@ DEFAULT_SEED = 20260717
 # the band above it at median π̂ = 0.038, inside the paper's Hard range of
 # 0.02–0.08. See SELECTION.md §2 for why it is not higher.
 DEFAULT_HARD_FLOOR = 1600
+# Natural mutants a fault must bring for scripts/validate_oracle.py to be able
+# to validate the oracle against a real bug on that coding task. One, not
+# three: see hard_pool's docstring and SELECTION.md for why three does not fit
+# in the hard band.
+DEFAULT_MIN_SIBLINGS = 1
+# Longest program the draw will select, in source characters.
+#
+# The proposer rewrites the whole program, so its output budget is sized to the
+# source (src.proposer.budget_for_source); src.llm issues that as a
+# non-streaming request, and the SDK refuses one whose max_tokens it estimates
+# will outrun the HTTP timeout. A program past this length therefore cannot be
+# repaired by this harness at all - the model can never emit enough tokens - and
+# an episode on it would record pi_hat = 0 for a mechanical reason that has
+# nothing to do with how hard the fault is.
+#
+# 48,000 chars is _MAX_BUDGET (16,000 tokens) at the same 3.5 chars/token and
+# 15% margin the budget uses. It excludes one fault in the whole hard pool: a
+# 68 KB AtCoder submission carrying a precomputed lookup table.
+DEFAULT_MAX_SOURCE_CHARS = 48_000
 
 _ZIP_ENTRY = re.compile(r"^Test/([^/]+)/([^/]+)/in/")
 
@@ -117,8 +142,13 @@ def has_test_data(task_id: str, available: set[tuple[str, str]]) -> bool:
 
 def hard_pool(available: set[tuple[str, str]], *, floor: int,
               ceiling: int | None) -> list[str]:
-    """Faults that ship test data and whose coding task is rated in
-    [floor, ceiling]. Pure, and in adapter order."""
+    """The *population*: faults that ship test data and whose coding task is
+    rated in [floor, ceiling]. Pure, and in adapter order.
+
+    This is deliberately the whole of what the corpus is a sample of, and
+    nothing more. Eligibility constraints - can this fault serve as an
+    experimental unit at all - are applied later, after the shuffle; see draw().
+    """
     difficulties = task_difficulties()
     kept = []
     for name, task in TASKS.items():
@@ -133,13 +163,50 @@ def hard_pool(available: set[tuple[str, str]], *, floor: int,
     return kept
 
 
-def draw(pool: list[str], *, seed: int, corpus_size: int) -> tuple[list[str], list[str], str]:
-    """(selected, reserve, digest). The digest covers the shuffled order, which
-    is the one thing that determines both lists; comparing it is a stronger
-    check than comparing the 120 names, because it also catches a pool that
-    changed outside the selected prefix."""
+# Shuffle first, filter second. Both orders give a uniform sample - filtering a
+# uniformly shuffled list leaves the survivors uniformly ordered - but only this
+# one is *stable*: adding an eligibility constraint removes the faults that fail
+# it and leaves every other fault where it was, so a corpus keeps the members it
+# had rather than being re-indexed from scratch. Adding --min-siblings 1 to the
+# first draw this way keeps 91 of its 120 faults; filtering before the shuffle
+# kept 18, discarding tasks for no reason but a changed index - including three
+# of the five whose pi had already been paid for.
+#
+# The rating floor stays *before* the shuffle because it is not an eligibility
+# constraint: it defines which population the corpus is a sample of, so changing
+# it should redraw, and does.
+
+def source_chars(name: str) -> int:
+    """Length of the fault's faultyVersion.py, in characters."""
+    task = TASKS[name]
+    path = (CONDEFECTS_ROOT / "Code" / task.task_id / "Python" / task.program_id
+            / "faultyVersion.py")
+    return len(path.read_text(encoding="utf-8", errors="replace"))
+
+
+def draw(pool: list[str], *, seed: int, corpus_size: int,
+         min_siblings: int = 0, max_source_chars: int = 0) -> tuple[list[str], list[str], str]:
+    """(selected, reserve, digest).
+
+    `min_siblings` is the natural-mutant requirement: a fault must bring that
+    many other wrong submissions to its coding task, because those siblings are
+    what scripts/validate_oracle.py validates the oracle against. It costs pool
+    - the harder a contest problem, the fewer people submit to it and the fewer
+    wrong submissions exist, so at floor 1600 requiring one sibling takes the
+    pool from 336 coding tasks to 188, and requiring three would take it to 68,
+    short of the corpus itself. One is what fits; SELECTION.md records the trade.
+
+    The digest covers the shuffled, filtered order - the one thing that
+    determines both lists. Comparing it is a stronger check than comparing the
+    120 names, because it also catches a pool that changed outside the selected
+    prefix.
+    """
     order = list(pool)
     random.Random(seed).shuffle(order)
+    if min_siblings:
+        order = [n for n in order if len(sibling_faults(n)) >= min_siblings]
+    if max_source_chars:
+        order = [n for n in order if source_chars(n) <= max_source_chars]
     digest = hashlib.sha256("\n".join(order).encode()).hexdigest()
 
     walk, claimed = [], set()
@@ -154,17 +221,22 @@ def draw(pool: list[str], *, seed: int, corpus_size: int) -> tuple[list[str], li
 
 def describe(name: str, difficulties: dict[str, int], dates: dict[str, str]) -> dict:
     task = TASKS[name]
+    siblings = sibling_faults(name)
     return {
         "name": name,
         "task_id": task.task_id,
         "program_id": task.program_id,
         "difficulty": difficulties.get(task.task_id),
         "date": dates.get(task.task_id),
+        # The natural mutants this fault brings with it. Recorded at draw time
+        # so the freeze says how much oracle evidence it carries before a
+        # single program has been run.
+        "natural_mutants": list(siblings),
     }
 
 
 def build(*, floor: int, ceiling: int | None, seed: int, corpus_size: int,
-          allow_partial: bool) -> dict:
+          allow_partial: bool, min_siblings: int, max_source_chars: int) -> dict:
     available, source = test_data_manifest(allow_partial=allow_partial)
     pool = hard_pool(available, floor=floor, ceiling=ceiling)
     if len(pool) < corpus_size:
@@ -172,7 +244,9 @@ def build(*, floor: int, ceiling: int | None, seed: int, corpus_size: int,
             f"hard pool holds {len(pool)} faults, fewer than the {corpus_size} "
             f"asked for (floor {floor}). Lower --hard-floor or the corpus size."
         )
-    selected, reserve, digest = draw(pool, seed=seed, corpus_size=corpus_size)
+    selected, reserve, digest = draw(pool, seed=seed, corpus_size=corpus_size,
+                                     min_siblings=min_siblings,
+                                     max_source_chars=max_source_chars)
     if len(selected) < corpus_size:
         raise SystemExit(
             f"pool holds {len(pool)} faults but only {len(selected)} distinct "
@@ -189,20 +263,31 @@ def build(*, floor: int, ceiling: int | None, seed: int, corpus_size: int,
         "seed": seed,
         "hard_floor": floor,
         "hard_ceiling": ceiling,
+        "min_siblings": min_siblings,
+        "max_source_chars": max_source_chars,
         "corpus_size": corpus_size,
         "rule": [
             "faults in adapter order",
             "drop coding tasks with no test data",
             f"drop coding tasks rated outside [{floor}, {ceiling if ceiling is not None else 'inf'}]",
             f"shuffle with random.Random({seed})",
+            f"drop faults with fewer than {min_siblings} sibling wrong submissions "
+            f"(after the shuffle, so the constraint is additive)",
+            f"drop faults whose source exceeds {max_source_chars} characters "
+            f"(the proposer could not emit a rewrite that long)",
             "keep the first fault of each coding task",
             f"first {corpus_size} of that walk = corpus; the rest = reserve",
         ],
         "pool": {
             "faults_in_benchmark": len(TASKS),
-            "faults_in_hard_pool": len(pool),
-            "coding_tasks_in_hard_pool": len(selected) + len(reserve),
+            "faults_in_population": len(pool),
+            "coding_tasks_eligible": len(selected) + len(reserve),
             "headroom_vs_corpus": round((len(selected) + len(reserve)) / corpus_size, 2),
+        },
+        "natural_mutants": {
+            "total": sum(len(sibling_faults(n)) for n in selected),
+            "capped_at_3": sum(min(len(sibling_faults(n)), 3) for n in selected),
+            "min_per_task": min(len(sibling_faults(n)) for n in selected),
         },
         "rating": {
             "min": ratings[0],
@@ -212,8 +297,7 @@ def build(*, floor: int, ceiling: int | None, seed: int, corpus_size: int,
         "candidate_order_sha256": digest,
         "gates_not_yet_applied": [
             "stage 1 usability (reference passes; fault exposed; no timeout)",
-            "stage 1.5 fault-taxonomy capacity",
-            "stage 2 mutation gate (>= 2/3 mutants caught)",
+            "stage 2 natural-mutant gate (>= 2/3 of the scoreable siblings caught)",
         ],
         "selected": [describe(n, difficulties, dates) for n in selected],
         "reserve": [describe(n, difficulties, dates) for n in reserve],
@@ -227,6 +311,12 @@ def main() -> None:
                         help="AtCoder rating floor (default: %(default)s)")
     parser.add_argument("--hard-ceiling", type=int, default=None,
                         help="only if measured pi says a rating band has gone dead")
+    parser.add_argument("--max-source-chars", type=int, default=DEFAULT_MAX_SOURCE_CHARS,
+                        help="longest program the draw may select; 0 disables "
+                             "(default: %(default)s)")
+    parser.add_argument("--min-siblings", type=int, default=DEFAULT_MIN_SIBLINGS,
+                        help="natural mutants a fault must bring - other wrong "
+                             "submissions to its coding task (default: %(default)s)")
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--allow-partial", action="store_true",
                         help="draw against a salvaged partial tree; the freeze is provisional")
@@ -238,7 +328,9 @@ def main() -> None:
     args = parser.parse_args()
 
     freeze = build(floor=args.hard_floor, ceiling=args.hard_ceiling, seed=args.seed,
-                   corpus_size=args.corpus_size, allow_partial=args.allow_partial)
+                   corpus_size=args.corpus_size, allow_partial=args.allow_partial,
+                   min_siblings=args.min_siblings,
+                   max_source_chars=args.max_source_chars)
     names = [t["name"] for t in freeze["selected"]]
 
     if args.check:
@@ -246,7 +338,8 @@ def main() -> None:
             raise SystemExit(f"{args.out} does not exist — nothing to check against")
         old = json.loads(args.out.read_text())
         drift = [k for k in ("candidate_order_sha256", "seed", "hard_floor",
-                             "hard_ceiling", "corpus_size", "test_data_source")
+                             "hard_ceiling", "min_siblings", "max_source_chars", "corpus_size",
+                             "test_data_source")
                  if old.get(k) != freeze[k]]
         if [t["name"] for t in old["selected"]] != names:
             drift.append("selected")
@@ -266,12 +359,15 @@ def main() -> None:
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(freeze, indent=2) + "\n")
-    pool, rating = freeze["pool"], freeze["rating"]
+    pool, rating, nat = freeze["pool"], freeze["rating"], freeze["natural_mutants"]
     print(f"test data   {freeze['test_data_source']}")
-    print(f"hard pool   {pool['faults_in_hard_pool']} faults over "
-          f"{pool['coding_tasks_in_hard_pool']} coding tasks "
+    print(f"population  {pool['faults_in_population']} faults (floor {freeze['hard_floor']})")
+    print(f"eligible    {pool['coding_tasks_eligible']} coding tasks with "
+          f">={freeze['min_siblings']} natural mutant "
           f"({pool['headroom_vs_corpus']}x the corpus)")
     print(f"selected    {len(names)} faults, one per coding task")
+    print(f"mutants     {nat['capped_at_3']} natural (cap 3/task), "
+          f"min {nat['min_per_task']} per task")
     print(f"rating      min {rating['min']} · median {rating['median']} · max {rating['max']}")
     print(f"digest      {freeze['candidate_order_sha256']}")
     print(f"wrote       {args.out}  (+{len(freeze['reserve'])} in reserve)")

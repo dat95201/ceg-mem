@@ -126,8 +126,12 @@ def measure(
                     f"`python3 scripts/fetch_condefects.py --check-only`."
                 )
             calls.append({"call": i + 1, "accept": result.accept, "reason": result.reason})
+            # flush: this loop is the only sign of life in a run that takes
+            # hours, and stdout block-buffers as soon as it is not a terminal -
+            # piping to `tee` for a log would otherwise hold the progress trace
+            # in an 8 KB buffer and show nothing until it filled.
             print(f"{prefix} {name} [{i + 1:2d}/{calls_per_program}] "
-                  f"{'accept' if result.accept else 'reject'}")
+                  f"{'accept' if result.accept else 'reject'}", flush=True)
 
         successes = sum(c["accept"] for c in calls)
         per_program[name] = {
@@ -166,7 +170,7 @@ def main() -> None:
     args = parser.parse_args()
 
     programs, corpus_source = _resolve_programs(args.programs)
-    print(f"corpus: {len(programs)} faults from {corpus_source}")
+    print(f"corpus: {len(programs)} faults from {corpus_source}", flush=True)
     unknown = [p for p in programs if p not in TASKS]
     if unknown:
         raise SystemExit(f"unknown program(s): {unknown}")

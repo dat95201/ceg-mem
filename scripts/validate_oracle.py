@@ -1,4 +1,4 @@
-"""Validate the oracle against planted mutants and freeze the task list.
+"""Validate the oracle against natural mutants and freeze the task list.
 
 Two stages, in this order, because each answers a different question.
 
@@ -13,29 +13,34 @@ Stage 1 - is this fault *usable* as an experiment cell? Four conditions:
   4. neither version times out, so a repair round is not dominated by a
      candidate the sandbox has to kill.
 
-Stage 1.5 - can the program host the fault taxonomy? Some accepted AtCoder
-submissions are branch-free: no `if`, no comparison, a comprehension and a
-print. There is no site in them for tau_2 or tau_3, so they are excluded here
-rather than scored - charging the oracle for a mutant that could never have
-existed would make the stage-2 rate mean something else.
-
-Stage 2 - does the oracle actually *catch* bugs it has never seen? Three
-mutants are planted in the reference, one per fault type of proposal section
-3.5 (data/mutants.py), and the sampling oracle the repair loop calls is asked
-to refute each. A mutant it refutes is `caught`. One it accepts gets a second
-opinion from the whole shipped pool, which splits the failure in two:
+Stage 2 - does the oracle actually *catch* bugs it has never seen? Up to three
+*natural* mutants are taken from the coding task itself: other people's wrong
+submissions to the same problem (src.adapter.sibling_faults). The sampling
+oracle the repair loop calls is asked to refute each. One it refutes is
+`caught`. One it accepts gets a second opinion from the whole shipped pool,
+which splits the failure in two:
 
   missed      the pool refutes the mutant but the sample did not draw the case
               that separates them. This is a real limit of the oracle at this
               `max_examples`, and it is what the stage is here to measure.
-  equivalent  the pool does not refute it either. No oracle can catch this; it
-              is an equivalent mutant, a known artefact of mutation testing and
-              not evidence about the oracle. The generator retries on its next
-              candidate site (--mutant-retries) before giving up on the type.
+  equivalent  the pool does not refute it either. No oracle can catch this, so
+              it is excluded from the denominator rather than charged against
+              the oracle. Measured at 0 of 192 for natural mutants, against 21
+              of 201 when this stage planted its own.
 
-A program passes stage 2 when >= 2 of its 3 mutants are caught. The corpus is
-frozen only if >= 30 of the 40-program cohort pass. Both thresholds come from
-the proposal; neither is inferred from the data.
+Why natural. An earlier version of this stage wrote its own mutants, one per
+fault type of proposal section 3.5, by planting an edit in the reference. That
+tests the oracle against bugs we chose, and the bugs one reaches for fail
+loudly: a planted mutant was refuted by the very first sampled test 61% of the
+time, against 27% for the submission's own real fault. The oracle was sitting
+an exam we had written to be easy. A natural mutant is a real developer's real
+mistake with a real mistake's detectability - median 3 sampled cases to refute
+against 1 for a planted one - and it needs no AST site to occupy, which is why
+the old stage 1.5 (excluding branch-free programs) is gone.
+
+A program passes stage 2 when >= 2/3 of its scoreable natural mutants are
+caught. The corpus is frozen only if >= 30 of every 40 in the cohort pass. Both
+thresholds come from the proposal; neither is inferred from the data.
 
 The cohort and the corpus are deliberately not the same set. The gate is
 measured on the first `--corpus-size` candidates so it stays an unbiased
@@ -77,7 +82,13 @@ before any program is run:
   3. drop those whose coding task is rated below --hard-floor (or above
      --hard-ceiling) - a filter on difficulty.txt, no randomness in it;
   4. shuffle with random.Random(--seed), the single source of randomness;
-  5. walk that order, one fault per coding task, until 120 have passed.
+  5. drop those whose coding task supplies no sibling wrong submission, since
+     stage 2 would have no natural mutant to judge them with. After the
+     shuffle, so that adding the constraint removes faults rather than
+     re-indexing the rest - see scripts/select_hard_tasks.py;
+  6. drop those whose source is longer than --max-source-chars, which the
+     proposer could not rewrite inside its non-streaming output budget;
+  7. walk that order, one fault per coding task, until 120 have passed.
 
 Same seed, same floor and same test tree therefore give the same corpus, and
 data/tasks.json records all three plus a digest of the candidate order so a
@@ -98,6 +109,7 @@ takes one unstratified sample across every rating.
 
 Writes:
     data/oracle_validation.json - full per-fault detail and every mutant, for audit
+                                  (each mutant records which submission it was)
     data/tasks.json             - the frozen task list
 """
 from __future__ import annotations
@@ -116,9 +128,8 @@ import time
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from data.mutants import FAULT_TYPES, candidate_mutants, mutant_capacity
 from src.adapter import (CONDEFECTS_ROOT, TEST_DIR, SUPPORTED_PROGRAMS, TASKS, load,
-                         task_dates, task_difficulties, test_dir_for)
+                         sibling_faults, task_dates, task_difficulties, test_dir_for)
 from src.oracle import differential_test, outputs_equal
 from src.sandbox import DEFAULT_TIMEOUT, run_program
 
@@ -126,7 +137,14 @@ DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 
 DEFAULT_CORPUS_SIZE = 120
 DEFAULT_REFERENCE_CASES = 20   # cases the reference must pass to count as one
-MUTANTS_TO_CATCH = 2           # of 3, for a program to pass stage 2
+# Natural mutants judged per coding task, and the share of the scoreable ones
+# the oracle must refute. The proposal's criterion was "2 of 3"; held as the
+# fraction so it means the same thing for a task that supplies one sibling as
+# for one that supplies three - the corpus guarantees at least one but not
+# three (SELECTION.md). At 2/3 a task with a single mutant must have it caught,
+# and a task with two must have both.
+MUTANTS_PER_TASK = 3
+MUTANT_CATCH_FRACTION = 2 / 3
 # The proposal's corpus gate is 30 of 40, held as a fraction so that any
 # --corpus-size is gated at the same strictness rather than at a threshold it
 # could never reach: 90 of 120 at the default, 30 of 40 on the old corpus, and
@@ -141,10 +159,16 @@ CORPUS_PASS_FRACTION = 30 / 40
 DEFAULT_HARD_FLOOR = 1600
 # Coding tasks per corpus slot the hard pool must hold before the walk starts.
 # The pilot spent 102 candidates to pass 64 faults, ~1.6 examined per pass, and
-# each examined fault claims its coding task for good; 2.0 leaves margin for a
-# tree whose usable rate is worse than the pilot's without demanding a pool
-# that the full benchmark cannot supply (337 hard coding tasks, floor 1600).
-POOL_HEADROOM = 2.0
+# each examined fault claims its coding task for good.
+#
+# 1.5, not the 2.0 this started at. Requiring a natural mutant (--min-siblings)
+# takes the floor-1600 pool from 336 coding tasks to 188, so 2.0 would refuse
+# every run. The pilot's rate is also an overestimate now: 10 of its 102
+# candidates were spent on programs excluded as branch-free, which the natural
+# mutants no longer exclude, and none of its budget goes on equivalent mutants
+# any more. 1.5 x 120 = 180 against a pool of 188 is genuinely tight, so the
+# guard warns rather than staying silent whenever headroom is under 2.0.
+POOL_HEADROOM = 1.5
 
 
 def corpus_threshold(corpus_size: int) -> int:
@@ -341,19 +365,29 @@ def check_usable(name: str, *, max_examples: int, reference_cases: int, seed: in
     return record
 
 
-# ── stage 2: does the oracle catch planted mutants? ───────────────────────
+# ── stage 2: does the oracle catch natural mutants? ───────────────────────
+#
+# A natural mutant is another person's wrong submission to the same coding task
+# (src.adapter.sibling_faults). It is a known-broken program we did not write,
+# which is the whole point: an earlier version of this stage planted its own
+# mutants, and planting means choosing how to break the program. The breaks one
+# reaches for fail loudly - on the pilot corpus a planted mutant was refuted by
+# the very first sampled test 61% of the time, against 27% for the submission's
+# own real fault, so the oracle was passing an exam we had written to be easy.
+# Natural mutants carry a real mistake's detectability: median 3 sampled cases
+# to refute against 1 for a planted one. They are also never wasted - all 192
+# available across the corpus are refuted by their task's shipped pool, where 21
+# of 201 planted mutants were refuted by no test at all and had to be discarded.
 
-def _judge_mutant(task, program, mutant, *, max_examples: int, seed: int, timeout: float,
-                  full_pool_cap: int) -> tuple[str, dict]:
+def _judge_mutant(task, program, mutant_source: str, meta: dict, *, max_examples: int,
+                  seed: int, timeout: float, full_pool_cap: int) -> tuple[str, dict]:
     """caught | missed | equivalent | inconclusive, plus an audit record."""
     sampled = differential_test(
-        task, mutant.source, program.correct_source,
+        task, mutant_source, program.correct_source,
         max_examples=max_examples, seed=seed, timeout=timeout,
     )
     detail = {
-        "site": mutant.site,
-        "note": mutant.note,
-        "diff": mutant.diff,
+        **meta,
         "examples_tried": sampled.examples_tried,
         "counterexample": sampled.args[0] if sampled.args else None,
         "reason": sampled.reason,
@@ -366,7 +400,7 @@ def _judge_mutant(task, program, mutant, *, max_examples: int, seed: int, timeou
     # The sample accepted it. Ask the whole pool whether anything separates
     # them at all - that is what tells a weak sample from a non-bug.
     full = differential_test(
-        task, mutant.source, program.correct_source,
+        task, mutant_source, program.correct_source,
         max_examples=full_pool_cap, seed=seed + 1, timeout=timeout,
     )
     detail["full_pool_examples_tried"] = full.examples_tried
@@ -377,40 +411,48 @@ def _judge_mutant(task, program, mutant, *, max_examples: int, seed: int, timeou
 
 
 def check_mutants(name: str, *, max_examples: int, seed: int, timeout: float,
-                  full_pool_cap: int, retries: int) -> dict:
-    """Plant one mutant per fault type and ask the oracle to refute each.
+                  full_pool_cap: int, mutants_per_task: int = MUTANTS_PER_TASK) -> dict:
+    """Ask the oracle to refute this coding task's other wrong submissions.
 
-    An `equivalent` verdict is retried on the fault type's next candidate site,
-    up to `retries` attempts, because it says nothing about the oracle.
+    Capped at `mutants_per_task` so a coding task with eleven submissions does
+    not outweigh one with two; the draw guarantees at least one
+    (select_hard_tasks.py --min-siblings).
+
+    Only mutants the *full* pool can refute are scored. An `equivalent` verdict
+    - no test in the shipped pool separates it from the reference - says nothing
+    about the oracle and is excluded from the denominator rather than charged
+    against it, exactly as it was for planted mutants. A program whose every
+    mutant is unscoreable provides no evidence and does not pass.
     """
     task, program = TASKS[name], load(name)
-    per_type: dict[str, dict] = {}
+    siblings = sibling_faults(name)[:mutants_per_task]
+    per_mutant: dict[str, dict] = {}
 
-    for fault_type in FAULT_TYPES:
-        candidates = candidate_mutants(name, program.correct_source, fault_type)
-        if not candidates:
-            per_type[fault_type] = {"verdict": "unavailable", "attempts": 0,
-                                    "reason": "the program admits no site for this fault type"}
-            continue
-        for attempt, mutant in enumerate(candidates[:max(retries, 1)], 1):
-            verdict, detail = _judge_mutant(
-                task, program, mutant, max_examples=max_examples, seed=seed,
-                timeout=timeout, full_pool_cap=full_pool_cap,
-            )
-            if verdict != "equivalent":
-                break
-        per_type[fault_type] = {"verdict": verdict, "attempts": attempt, **detail}
+    for index, sibling in enumerate(siblings):
+        verdict, detail = _judge_mutant(
+            task, program, load(sibling).buggy_source,
+            {"source": "natural", "submission": sibling},
+            # A distinct seed per mutant, so two siblings of one task are not
+            # judged on the identical sample of test cases.
+            max_examples=max_examples, seed=seed + 17 * index,
+            timeout=timeout, full_pool_cap=full_pool_cap,
+        )
+        per_mutant[sibling] = {"verdict": verdict, **detail}
 
-    caught = [f for f, r in per_type.items() if r["verdict"] == "caught"]
+    verdicts = [r["verdict"] for r in per_mutant.values()]
+    caught = [s for s, r in per_mutant.items() if r["verdict"] == "caught"]
+    scored = sum(v in ("caught", "missed") for v in verdicts)
     return {
         "mutants_caught": len(caught),
-        "mutants_total": len(FAULT_TYPES),
-        "fault_types_caught": caught,
-        "n_missed": sum(r["verdict"] == "missed" for r in per_type.values()),
-        "n_equivalent": sum(r["verdict"] == "equivalent" for r in per_type.values()),
-        "n_unavailable": sum(r["verdict"] == "unavailable" for r in per_type.values()),
-        "passes": len(caught) >= MUTANTS_TO_CATCH,
-        "mutants": per_type,
+        "mutants_total": len(siblings),
+        "mutants_scored": scored,
+        "mutants_natural": len(siblings),
+        "caught_submissions": caught,
+        "n_missed": verdicts.count("missed"),
+        "n_equivalent": verdicts.count("equivalent"),
+        "n_inconclusive": verdicts.count("inconclusive"),
+        "passes": scored > 0 and len(caught) / scored >= MUTANT_CATCH_FRACTION,
+        "mutants": per_mutant,
     }
 
 
@@ -418,12 +460,13 @@ def check_mutants(name: str, *, max_examples: int, seed: int, timeout: float,
 
 def run(names: list[str], *, corpus_size: int, max_examples: int, mutant_examples: int,
         reference_cases: int, seed: int, timeout: float, full_pool_cap: int,
-        retries: int, top_up: bool, jobs: int,
+        top_up: bool, jobs: int, mutants_per_task: int = MUTANTS_PER_TASK,
         band_of: dict[str, str] | None = None, bands: tuple[str, ...] = STRATA,
         per_stratum: int = 0, unstratified_label: str = "all") -> dict:
     """Stage 1 then stage 2, walking `names` until the corpus is full.
 
-    Stage 2 is the expensive half (3+ mutants x a sampled oracle run each), so
+    Stage 2 is the expensive half (up to 3 natural mutants x a sampled oracle
+    run each), so
     it is only ever paid for faults that already cleared stage 1, and the walk
     stops as soon as there are enough passing programs.
 
@@ -489,7 +532,7 @@ def run(names: list[str], *, corpus_size: int, max_examples: int, mutant_example
             tag = f"[{examined:4d}/{len(names)}] {name:30s}"
 
             if not record["usable"]:
-                print(f"{tag} SKIP  {record['reason']}")
+                print(f"{tag} SKIP  {record['reason']}", flush=True)
                 continue
             # At most one fault per coding task: several submissions can fail
             # the same AtCoder problem, and treating them as separate tasks
@@ -497,21 +540,27 @@ def run(names: list[str], *, corpus_size: int, max_examples: int, mutant_example
             # cells that the analysis assumes are independent.
             if record["task_id"] in seen_task_ids:
                 record["reason"] = "another fault from this coding task is already in the corpus"
-                print(f"{tag} DUP   {record['task_id']}")
+                print(f"{tag} DUP   {record['task_id']}", flush=True)
                 continue
-            # Stage 1.5: can this program host the fault taxonomy at all? An
-            # accepted AtCoder submission is sometimes branch-free - no `if`,
-            # no comparison, just a comprehension and a print - and then there
-            # is no site for tau_2 or tau_3 to occupy. Scoring such a program
-            # "1/3 caught" would charge the oracle for a property of the
-            # program, so it is excluded here the way an unusable fault is.
-            capacity = mutant_capacity(name, load(name).correct_source)
-            record["mutant_capacity"] = capacity
-            missing = [f for f, n in capacity.items() if not n]
-            if missing:
+            # There is no stage 1.5 any more. It existed because a planted
+            # mutant needs an AST site to occupy, and an accepted AtCoder
+            # submission is sometimes branch-free - no `if`, no comparison,
+            # just a comprehension and a print - so the taxonomy had nowhere to
+            # go and scoring the program "1/3 caught" would have charged the
+            # oracle for a property of the program. A natural mutant needs no
+            # site: it is another submission, whatever shape this one has. The
+            # only precondition left is that the coding task supplies at least
+            # one sibling, which the draw guarantees before this script runs.
+            siblings = sibling_faults(name)
+            record["natural_mutants"] = list(siblings[:MUTANTS_PER_TASK])
+            if not siblings:
                 record["eligible"] = False
-                record["reason"] = f"program admits no mutation site for: {', '.join(missing)}"
-                print(f"{tag} INEL  {record['reason']}")
+                record["reason"] = (
+                    "no other wrong submission to this coding task, so the "
+                    "oracle cannot be validated on it - re-run the draw with "
+                    "scripts/select_hard_tasks.py --min-siblings 1"
+                )
+                print(f"{tag} INEL  {record['reason']}", flush=True)
                 continue
             record["eligible"] = True
             # Claimed only now: an ineligible program never enters the corpus,
@@ -523,7 +572,7 @@ def run(names: list[str], *, corpus_size: int, max_examples: int, mutant_example
         mutations = _in_parallel(
             lambda n: check_mutants(n, max_examples=mutant_examples, seed=seed,
                                     timeout=timeout, full_pool_cap=full_pool_cap,
-                                    retries=retries),
+                                    mutants_per_task=mutants_per_task),
             todo,
         )
 
@@ -541,10 +590,13 @@ def run(names: list[str], *, corpus_size: int, max_examples: int, mutant_example
             status = "PASS" if mutation["passes"] else "FAIL"
             extra = "" if record["in_cohort"] else " (top-up)"
             label = f" {b}" if band_of else ""
+            # flush: this is the only sign of life in a run that takes hours,
+            # and stdout block-buffers as soon as it is not a terminal, so a
+            # `> log` or `| tee` would otherwise show nothing until it filled.
             print(f"{record.pop('_tag')} {status}  "
-                  f"{mutation['mutants_caught']}/3 caught "
-                  f"[{'+'.join(mutation['fault_types_caught']) or 'none'}]"
-                  f"{label}{extra}")
+                  f"{mutation['mutants_caught']}/{mutation['mutants_scored']} "
+                  f"natural mutants caught"
+                  f"{label}{extra}", flush=True)
 
             if all(band_full(x) for x in bands):
                 done = True
@@ -557,7 +609,14 @@ def run(names: list[str], *, corpus_size: int, max_examples: int, mutant_example
             "test data present; reference passes its own cases; the faulty "
             "version is refuted by the shipped pool; neither version times out"
         ),
-        "task_pass_threshold": f">= {MUTANTS_TO_CATCH}/{len(FAULT_TYPES)} mutants caught",
+        "mutant_source": (
+            "natural: other wrong submissions to the same coding task "
+            "(src.adapter.sibling_faults), capped at "
+            f"{MUTANTS_PER_TASK} per task"
+        ),
+        "task_pass_threshold": (
+            f">= {MUTANT_CATCH_FRACTION:.2f} of the scoreable natural mutants caught"
+        ),
         "corpus_pass_threshold": f">= {corpus_threshold(corpus_size)}/{corpus_size} programs passing",
         # Provenance. A corpus frozen against a salvaged partial test tree is
         # not the corpus the paper reports, and the only way to tell after the
@@ -582,7 +641,6 @@ def run(names: list[str], *, corpus_size: int, max_examples: int, mutant_example
         "max_examples": max_examples,
         "mutant_examples": mutant_examples,
         "full_pool_cap": full_pool_cap,
-        "mutant_retries": retries,
         "reference_cases": reference_cases,
         "timeout_sec": timeout,
         "seed": seed,
@@ -639,7 +697,9 @@ def write_tasks_json(report: dict, selected: list[str], *, corpus_size: int, see
                 "counterexample": report["faults"][name]["counterexample"],
                 "stratum": report["faults"][name].get("stratum"),
                 "mutants_caught": report["faults"][name]["mutants_caught"],
-                "fault_types_caught": report["faults"][name]["fault_types_caught"],
+                "mutants_scored": report["faults"][name]["mutants_scored"],
+                "natural_mutants": report["faults"][name]["natural_mutants"],
+                "caught_submissions": report["faults"][name]["caught_submissions"],
             }
             for name in selected
         ],
@@ -702,6 +762,26 @@ def _candidates(args) -> tuple[list[str], dict[str, str], dict]:
     # pool, same corpus.
     random.Random(args.seed).shuffle(names)
 
+    # After the shuffle, exactly as scripts/select_hard_tasks.draw() does it, so
+    # the two build the same order and this script walks the frozen draw rather
+    # than re-deriving a different one. Filtering here rather than before the
+    # shuffle is what makes the constraint additive: it removes the faults that
+    # cannot be validated and leaves every other fault where it was.
+    if args.min_siblings:
+        names = [n for n in names if len(sibling_faults(n)) >= args.min_siblings]
+    if args.max_source_chars:
+        # Same ceiling, same place in the order, as scripts/select_hard_tasks.py:
+        # a program longer than this cannot be rewritten inside the proposer's
+        # non-streaming output budget, so an episode on it would record a
+        # mechanical failure rather than a hard one.
+        names = [n for n in names if len(load(n).buggy_source) <= args.max_source_chars]
+        if not names:
+            raise SystemExit(
+                f"no fault in the pool has {args.min_siblings} sibling wrong "
+                f"submission(s) to validate the oracle against - lower "
+                f"--min-siblings, or check that Code/ is the full checkout"
+            )
+
     if args.select == "hard":
         return names, {}, hard_selection_meta(
             names, floor=args.hard_floor, ceiling=args.hard_ceiling, seed=args.seed)
@@ -740,8 +820,9 @@ def main() -> None:
                         help="test cases the oracle may run per mutant (default: --max-examples)")
     parser.add_argument("--full-pool-cap", type=int, default=300,
                         help="cases the equivalent-mutant second opinion may run")
-    parser.add_argument("--mutant-retries", type=int, default=3,
-                        help="candidate sites to try per fault type before conceding equivalence")
+    parser.add_argument("--mutants-per-task", type=int, default=MUTANTS_PER_TASK,
+                        help="natural mutants judged per coding task, so a task with "
+                             "eleven wrong submissions does not outweigh one with two")
     parser.add_argument("--reference-cases", type=int, default=DEFAULT_REFERENCE_CASES,
                         help="cases the reference must answer correctly")
     parser.add_argument("--no-top-up", action="store_true",
@@ -762,6 +843,12 @@ def main() -> None:
                         help=f"candidates to evaluate concurrently (default: {DEFAULT_JOBS}); "
                              "1 is the serial path, immune to timeout jitter under load")
     parser.add_argument("--timeout", type=float, default=DEFAULT_TIMEOUT)
+    parser.add_argument("--max-source-chars", type=int, default=48_000,
+                        help="longest program to select; must match "
+                             "scripts/select_hard_tasks.py --max-source-chars")
+    parser.add_argument("--min-siblings", type=int, default=1,
+                        help="natural mutants a fault must bring; must match "
+                             "scripts/select_hard_tasks.py --min-siblings")
     parser.add_argument("--seed", type=int, default=20260717)
     parser.add_argument("--since", default=None, help="keep coding tasks on/after this date (YYYY-MM-DD)")
     parser.add_argument("--until", default=None, help="keep coding tasks on/before this date (YYYY-MM-DD)")
@@ -801,24 +888,35 @@ def main() -> None:
         needed = math.ceil(POOL_HEADROOM * args.corpus_size)
         if n_tasks < needed:
             raise SystemExit(
-                f"the hard pool holds {n_tasks} coding tasks (floor {args.hard_floor}, "
-                f"test tree {TEST_DIR}); a {args.corpus_size}-task corpus needs about "
-                f"{needed} to absorb the faults that fail the gate.\n"
+                f"the eligible pool holds {n_tasks} coding tasks (floor {args.hard_floor}, "
+                f">= {args.min_siblings} sibling, test tree {TEST_DIR}); a "
+                f"{args.corpus_size}-task corpus needs about {needed} to absorb the "
+                f"faults that fail the gate.\n"
                 f"Unpack the full Test.zip - a partial tree is a prefix of the contest "
-                f"range, not a sample of it - or lower --hard-floor / --corpus-size, "
-                f"knowing that lowering the floor moves the corpus out of the low-pi band."
+                f"range, not a sample of it - or lower --hard-floor / --min-siblings / "
+                f"--corpus-size, knowing that lowering the floor moves the corpus out "
+                f"of the low-pi band and lowering --min-siblings leaves faults with no "
+                f"natural mutant to validate the oracle against."
             )
+        if n_tasks < 2.0 * args.corpus_size:
+            # Above the refusal line but below the margin this had before the
+            # sibling requirement halved the pool. Say so now: the failure mode
+            # is a walk that runs for hours and then cannot fill the corpus.
+            print(f"warning: {n_tasks} eligible coding tasks for a {args.corpus_size}-task "
+                  f"corpus ({n_tasks / args.corpus_size:.2f}x). The pilot spent ~1.6 "
+                  f"candidates per passing fault; if this run's rate is worse the pool "
+                  f"will run out before the corpus fills.", file=sys.stderr)
 
     report = run(
         names,
         corpus_size=args.corpus_size,
         max_examples=args.max_examples,
         mutant_examples=args.mutant_examples or args.max_examples,
+        mutants_per_task=args.mutants_per_task,
         reference_cases=args.reference_cases,
         seed=args.seed,
         timeout=args.timeout,
         full_pool_cap=args.full_pool_cap,
-        retries=args.mutant_retries,
         top_up=not args.no_top_up,
         jobs=max(1, args.jobs),
         band_of=band_of or None,
@@ -849,12 +947,15 @@ def main() -> None:
     n_equiv = sum(r.get("n_equivalent", 0) for r in report["faults"].values())
     print()
     print(f"stage 1: {report['n_usable']}/{report['n_examined']} faults usable, "
-          f"{report['n_ineligible']} excluded as branch-free (no site for all three fault types)")
+          f"{report['n_ineligible']} excluded for having no sibling submission")
     print(f"stage 2: {report['n_cohort_passing']}/{report['n_cohort']} of the cohort caught "
-          f">= {MUTANTS_TO_CATCH}/3 mutants "
+          f">= {MUTANT_CATCH_FRACTION:.0%} of their natural mutants "
           f"(threshold {corpus_threshold(args.corpus_size)}/{args.corpus_size}) "
           f"-- {'MET' if report['corpus_gate_ok'] else 'NOT MET'}")
-    print(f"         {n_missed} mutants missed by the sample, {n_equiv} conceded equivalent")
+    n_caught = sum(r.get("mutants_caught", 0) for r in report["faults"].values())
+    n_scored = sum(r.get("mutants_scored", 0) for r in report["faults"].values())
+    print(f"         {n_caught}/{n_scored} natural mutants caught overall; "
+          f"{n_missed} missed by the sample, {n_equiv} conceded equivalent")
     meta = report.get("strata_selection") or {}
     if meta.get("mode") == "hard":
         ratings = sorted(report["faults"][n]["difficulty"] for n in selected)

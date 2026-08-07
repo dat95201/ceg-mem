@@ -202,6 +202,45 @@ TASKS: dict[str, Task] = discover()
 SUPPORTED_PROGRAMS: tuple[str, ...] = tuple(TASKS)
 
 
+# ── Natural mutants ───────────────────────────────────────────────────────
+# Several people submit wrong answers to the same AtCoder problem, and
+# ConDefects keeps each one. For a fault we have selected into the corpus, the
+# *other* wrong submissions to its coding task are known-broken programs we did
+# not write - which is exactly what scripts/validate_oracle.py needs to ask
+# whether the oracle catches bugs it has never seen.
+#
+# They are strictly better evidence than a mutant we plant ourselves. Planting
+# means choosing how to break the program, and the breaks one reaches for are
+# the ones that fail loudly: on the pilot corpus a planted mutant was refuted by
+# the very first sampled test 61% of the time, against 27% for the submission's
+# own real fault. A natural mutant is a real developer's real mistake, with a
+# real mistake's detectability - median 3 sampled cases to refute, against 1 for
+# a planted one. They also never turn out to be equivalent: all 192 available
+# across the corpus are refuted by their task's shipped pool, where 21 of 201
+# planted mutants were refuted by no test at all and had to be discarded.
+
+@functools.lru_cache(maxsize=1)
+def _faults_by_task() -> dict[str, tuple[str, ...]]:
+    """task_id -> its fault names. Built once; sibling_faults is called for
+    every candidate in the freeze and a linear scan of 2,864 faults per call
+    would be the stage's own bottleneck."""
+    index: dict[str, list[str]] = {}
+    for name, task in TASKS.items():
+        index.setdefault(task.task_id, []).append(name)
+    return {k: tuple(v) for k, v in index.items()}
+
+
+def sibling_faults(name: str) -> tuple[str, ...]:
+    """The other faulty submissions to `name`'s coding task, in adapter order.
+
+    Empty for a coding task with a single submission - 29 of the 120 coding
+    tasks in the first draw, which is why the draw
+    (scripts/select_hard_tasks.py --min-siblings) now requires at least one
+    before a fault may be selected.
+    """
+    return tuple(n for n in _faults_by_task().get(TASKS[name].task_id, ()) if n != name)
+
+
 # ── Corpus metadata (root date.txt / difficulty.txt) ──────────────────────
 # "abc221_a 2021-10-02" and "abc221_a 10", one coding task per line. The dates
 # are what makes a contamination-controlled split possible - the whole reason

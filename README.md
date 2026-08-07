@@ -53,7 +53,6 @@ and rewrites its own rows rather than appending a second copy.
 | Path | Contents |
 |---|---|
 | `src/adapter.py` | loads a ConDefects fault and its contest test pool |
-| `data/mutants.py` | mutation operators, one per fault type of section 3.5 |
 | `src/sandbox.py` | runs a candidate program on one input under a timeout |
 | `src/oracle.py` | counterexample oracle over the shipped test pool |
 | `src/typer.py` | failure-type function, two granularities |
@@ -99,22 +98,35 @@ conditions.
 `scripts/validate_oracle.py` runs two stages before it will freeze anything.
 The first asks whether a fault is *usable* — test data present, reference
 passes its own cases, faulty version actually refuted, nothing times out. The
-second asks whether the oracle *catches bugs it has not seen*: three mutants
-are planted in the reference, one per fault type of the proposal's section 3.5
-(`off_by_one`, `wrong_comparison`, `missing_guard`), and the same sampling
-oracle the repair loop calls is asked to refute each.
+second asks whether the oracle *catches bugs it has not seen*: up to three
+**natural mutants** are taken from the coding task itself — other people's
+wrong submissions to the same problem (`src.adapter.sibling_faults`) — and the
+same sampling oracle the repair loop calls is asked to refute each.
+
+Natural, not planted. This stage used to write its own mutants by planting an
+edit in the reference, one per fault type of the proposal's section 3.5. That
+asks whether the oracle catches bugs *we* chose, and the bugs one reaches for
+fail loudly: on the pilot corpus a planted mutant was refuted by the very first
+sampled test 61% of the time, against 27% for the submission's own real fault.
+The oracle was sitting an exam we had written to be easy. A natural mutant is a
+real developer's real mistake with a real mistake's detectability — median 3
+sampled cases to refute against 1 for a planted one — and none of the 192
+available across the corpus is equivalent, where 21 of 201 planted ones were.
+The cost is coverage: a coding task with a single submission has no sibling to
+borrow, so the draw now requires at least one (`--min-siblings`).
 
 A mutant the sample accepts gets a second opinion from the whole shipped pool,
 which separates two very different failures. If the pool refutes it, the
 sample was too small — that is a real property of the oracle at this
 `max_examples`, and it is reported. If the pool does not refute it either, no
-oracle could have caught it: it is an equivalent mutant, an artefact of
-mutation testing rather than evidence about the oracle, and the generator
-moves to the fault type's next candidate site.
+oracle could have caught it: it is excluded from the denominator rather than
+charged against the oracle.
 
-A program passes at ≥2 of 3 mutants caught; the corpus freezes at ≥75% of the
-cohort passing — the proposal's 30 of 40, held as a fraction, so 90 of 120 on
-the current corpus. The gate is measured on the cohort and the corpus
+A program passes at ≥2/3 of its scoreable mutants caught — held as a fraction,
+not "2 of 3", because a coding task supplies between one and three siblings and
+the criterion has to mean the same thing for each. The corpus freezes at ≥75%
+of the cohort passing — the proposal's 30 of 40, held as a fraction, so 90 of
+120 on the current corpus. The gate is measured on the cohort and the corpus
 is then topped up past it, because a pass rate computed over a set already
 filtered on passing would be vacuous. `data/oracle_validation.json` carries
 every mutant's diff, site and verdict.
@@ -144,7 +156,18 @@ authority on the strata the paper reports.
 Everything the seed touches is a pure function evaluated before any program
 runs: take the faults in adapter order, drop those whose coding task ships no
 test data, drop those rated below the floor, shuffle with `random.Random(seed)`,
-then walk that order one fault per coding task until 120 have passed.
+drop those whose coding task supplies no sibling wrong submission, then walk
+that order one fault per coding task until 120 have passed.
+
+The sibling filter runs *after* the shuffle, deliberately. Both orders give a
+uniform sample — filtering a uniformly shuffled list leaves the survivors
+uniformly ordered — but only this one is stable: adding a constraint removes
+the faults that fail it and leaves every other fault where it was. Adding
+`--min-siblings 1` this way kept 91 of the previous draw's 120; filtering
+before the shuffle kept 18, discarding tasks for no reason but a changed index.
+The rating floor stays before the shuffle because it is not an eligibility
+constraint — it defines which population the corpus is a sample of, so changing
+it should redraw, and does.
 `data/tasks.json` records the floor, the seed, the pool size and a SHA-256 of
 the candidate order, so a re-run can be *checked* against the freeze rather than
 trusted. `--jobs` changes how many candidates are in flight, never which are
@@ -152,23 +175,16 @@ chosen — though a program near the sandbox's wall-clock limit can time out und
 load when it would not have serially, so re-run a publication freeze with
 `--jobs 1` if that matters.
 
-The walk claims a coding task the moment one of its faults reaches stage 2, so a
-task whose fault fails the mutation gate is spent; the run refuses to start
-unless the hard pool holds ~2 coding tasks per corpus slot. The full benchmark
-supplies 337 at floor 1600, the salvaged partial tree only 123 — which is why
-the whole `Test.zip` has to be unpacked before a 120-task freeze. `--select
-terciles` restores the retired quota behaviour, `--select none` samples across
-every rating.
-
-`data/mutants.py` writes the *operators*, not the anchors. A ConDefects
-program is an anonymous AtCoder submission drawn from a pool of 2,864, and the
-corpus is not known until after this stage has run, so a hand-typed table of
-substring anchors per named program — what the QuixBugs version of this file
-held — has nothing to key on. Each operator locates its own site with `ast`
-and then splices the source *text* over that node's byte range, so every byte
-outside the edit is identical to what AtCoder accepted and no mutant is ever
-caught because of a round-trip through `ast.unparse`. `MUTANT_OVERRIDES` takes
-a hand-written edit for a specific program when one is wanted.
+The walk claims a coding task the moment one of its faults reaches stage 2, so
+a task whose fault fails the mutation gate is spent, and the run refuses to
+start unless the pool holds 1.5 coding tasks per corpus slot (and warns below
+2.0). Requiring a natural mutant is what makes that tight: the floor-1600 pool
+falls from 336 coding tasks to **188**, because the harder a contest problem
+the fewer people submit to it and the fewer wrong submissions exist. Requiring
+*three* natural mutants would leave 68 — short of the corpus itself — which is
+why `--min-siblings` is 1 and up to two of a task's three mutant slots may go
+unfilled. `--select terciles` restores the retired quota behaviour, `--select
+none` samples across every rating.
 
 ## Cost
 

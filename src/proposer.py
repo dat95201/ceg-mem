@@ -28,6 +28,8 @@ src/adapter.py's module docstring.
 """
 from __future__ import annotations
 
+import math
+
 import dataclasses
 import re
 
@@ -223,6 +225,42 @@ def _extract_code(text: str) -> str:
     return (match.group(1) if match else text).strip() + "\n"
 
 
+# The proposer rewrites a whole program, so its output budget has to cover one.
+# A reply cut off mid-block is a SyntaxError, and a SyntaxError refutes the
+# *harness*, not the proposal: the episode records a failure the model never
+# made. A flat 2048 did exactly that on the 8 corpus programs longer than about
+# 7 KB - one of them, a 68 KB submission carrying a precomputed table, needs
+# 22k.
+#
+# Sized per program rather than raised globally, for one reason: max_tokens is
+# part of src.llm's cache key. A global raise would invalidate every cached call
+# - including the pi already paid for on four corpus tasks - while a per-program
+# budget changes the key only for the programs whose budget actually moves. 112
+# of the 120 keep the 2048 floor and their cache with it.
+#
+# 3.5 chars/token is measured on this corpus's Python; the 15% margin covers the
+# model's own formatting.
+#
+# The ceiling is the SDK's, not the model's. claude-haiku-4-5 will emit 64k
+# output tokens, but only on a streamed request - the SDK refuses a
+# non-streaming call whose max_tokens it estimates will outrun the HTTP timeout,
+# and src.llm does not stream. Rather than add streaming for one outlier, the
+# draw refuses to select a program that would need more (MAX_SOURCE_CHARS in
+# scripts/select_hard_tasks.py, derived from this number), so nothing in the
+# corpus can reach the cap.
+
+_CHARS_PER_TOKEN = 3.5
+_BUDGET_MARGIN = 1.15
+_MIN_BUDGET = 2048
+_MAX_BUDGET = 16000
+
+
+def budget_for_source(source: str) -> int:
+    """Output tokens needed to rewrite `source`, floored at _MIN_BUDGET."""
+    estimate = math.ceil(len(source) / _CHARS_PER_TOKEN * _BUDGET_MARGIN)
+    return max(_MIN_BUDGET, min(estimate, _MAX_BUDGET))
+
+
 def propose(
     task_name: str,
     buggy_source: str,
@@ -232,7 +270,7 @@ def propose(
     *,
     model: str | None = None,
     granularity: str = "fine",
-    max_tokens: int = 2048,
+    max_tokens: int | None = None,
     disable_exclusion: bool = False,
     nonce: str = "",
     temperature: float | None = None,
@@ -244,15 +282,16 @@ def propose(
     same prompt - mandatory for no_memory, whose prompt never changes from round
     to round. src.loop.proposal_nonce is where the experiment's nonces come from.
 
-    max_tokens has to cover a whole rewritten program, not one function: a
-    reply cut off mid-block is a SyntaxError that refutes the harness rather
-    than the proposal (see _CODE_FENCE above).
+    max_tokens defaults to a budget sized for *this* program (see
+    budget_for_source). Pass a value only to override that.
     """
     prompt = build_prompt(
         task_name, buggy_source, program_label, mode, history,
         granularity=granularity, disable_exclusion=disable_exclusion,
         spec_note=spec_note,
     )
+    if max_tokens is None:
+        max_tokens = budget_for_source(buggy_source)
     text = complete(prompt, model=model, max_tokens=max_tokens, nonce=nonce, temperature=temperature)
     return _extract_code(text)
 

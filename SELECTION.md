@@ -32,8 +32,9 @@ salvaged download had. Against the 985 Python coding tasks in `Code/`:
 This closes **P2** (corpus frozen on 39% of the benchmark) and it is what makes
 a 120-fault freeze possible at all: the walk in `validate_oracle.py` claims a
 coding task the moment one of its faults enters stage 2, so the pool must hold
-`POOL_HEADROOM × 120 = 240` hard coding tasks before the run may start. The
-salvaged tree held 123 and would have been refused. The full tree holds 336.
+`POOL_HEADROOM × 120 = 180` coding tasks before the run may start. The salvaged
+tree held 123 and would have been refused. The full tree holds 336 at floor
+1600, and 188 once §3a's natural-mutant requirement is applied.
 
 **Unpack target is `Test/`, not `Test_partial/`.** `.env` sets no
 `CONDEFECTS_TEST_DIR`, so `src.adapter.TEST_DIR` resolves to
@@ -80,13 +81,31 @@ runs**. In order:
    `--hard-floor` in `difficulty.txt`. A task with no rating is dropped, not
    assumed hard. *(2,844 → 793 faults over 336 coding tasks)*
 4. **Shuffle** with `random.Random(20260717)` — the single source of randomness.
-5. **Walk** that order, at most one fault per coding task, running stage 1 →
-   stage 1.5 → stage 2 on each, until 120 have passed.
+5. **Require a natural mutant.** Drop faults whose coding task supplies no
+   *other* wrong submission, because stage 2 validates the oracle against
+   exactly those siblings and a fault without one cannot be validated at all.
+   *(336 → 188 coding tasks)*
+6. **Walk** that order, at most one fault per coding task, running stage 1 →
+   stage 2 on each, until 120 have passed.
+
+Step 5 sits **after** the shuffle and step 3 before it, and the split is not
+arbitrary. The rating floor defines *which population the corpus is a sample
+of*, so changing it should redraw — and does. The sibling requirement is an
+eligibility constraint: it says whether a given fault can serve as an
+experimental unit at all. Applying eligibility after the shuffle makes it
+additive — the faults that fail it drop out and every other fault keeps its
+position. Adding `--min-siblings 1` this way kept **91 of the previous draw's
+120**; filtering before the shuffle kept 18, throwing away tasks for no reason
+but a changed index, including three of the five whose π̂ had already been paid
+for.
 
 Then the two gates, both from the proposal, neither inferred from the data:
 
-- **Per program:** passes if ≥2 of 3 planted mutants are caught by the sampling
-  oracle (one mutant per fault type of §3.5).
+- **Per program:** passes if the sampling oracle catches ≥2/3 of the task's
+  *scoreable natural mutants* — up to three other wrong submissions to the same
+  coding task. Held as a fraction, not "2 of 3", because a task supplies
+  between one and three siblings and the criterion has to mean the same thing
+  for each: with one mutant it must be caught, with two both must be.
 - **Per corpus:** freezes only if ≥ 30/40 of the *cohort* — the first 120
   stage-2 candidates — pass, i.e. **≥90 of 120**. The corpus is then topped up
   past the cohort until it holds 120 *passing* faults. Cohort ≠ corpus on
@@ -102,12 +121,14 @@ the shuffled candidate order, so a re-run is checked, not trusted.
 |---|---|---|
 | `--select` | `hard` | §1 |
 | `--hard-floor` | **1600** | see below |
+| `--min-siblings` | **1** | §3a — three would leave 68 coding tasks |
+| `--mutants-per-task` | 3 | caps a task with eleven submissions |
 | `--hard-ceiling` | none | see §4 |
 | `--corpus-size` | 120 | proposal |
 | `--seed` | 20260717 | the project's single master seed |
-| `MUTANTS_TO_CATCH` | 2 of 3 | proposal |
+| `MUTANT_CATCH_FRACTION` | 2/3 | proposal's "2 of 3", held as a fraction |
 | `CORPUS_PASS_FRACTION` | 30/40 → 90/120 | proposal, held as a fraction |
-| `POOL_HEADROOM` | 2.0 | pilot spent ~1.6 examined per pass; 2.0 is margin |
+| `POOL_HEADROOM` | **1.5** | 2.0 would refuse every run once the sibling requirement halves the pool; warns below 2.0 |
 | `--jobs` | 1 for the publication freeze | see §6 |
 
 **Why the floor is absolute and why it is 1600.** Terciles of "whatever is on
@@ -121,16 +142,17 @@ range of 0.02–0.08.
 **Why not raise the floor further.** The pool shrinks faster than the band
 sharpens, and `POOL_HEADROOM` binds:
 
-| floor | hard coding tasks | headroom vs. 120 | admissible? |
+| floor | coding tasks, no sibling rule | with ≥1 sibling (§3a) | headroom vs. 120 |
 |---|---|---|---|
-| 1600 | 336 | 2.80× | yes |
-| 1800 | 279 | 2.33× | yes |
-| 2000 | 235 | 1.96× | **no — `main()` refuses to start** |
+| 1600 | 336 | **188** | 1.57× |
+| 1800 | 279 | 152 | 1.27× — **refused** |
+| 2000 | 235 | 127 | 1.06× — **refused** |
 
-1800 is affordable and is the documented fallback if the realized π̂ from E1
-comes out above the band. It is *not* the default, because the pilot's evidence
-for moving it is 20 programs, and because the high-π cells the move is supposed
-to remove sit at ratings 2135–2531 (§3) — a higher floor does not remove them.
+Raising the floor is no longer available: the sibling requirement already
+halves the pool, and 1800 falls below `POOL_HEADROOM`. If the realized π̂ from
+E1 comes out above the band, the fallback is now to drop `--min-siblings` back
+to 0 and accept planted mutants again, or to accept a smaller corpus — not to
+raise the floor. This is a real cost of §3a and is recorded as one.
 
 ---
 
@@ -210,6 +232,54 @@ Two reasons, in order of weight:
 
 The bimodality is therefore handled **after** the freeze, in analysis, not
 before it in selection. See §4.
+
+---
+
+## 3a. Why the oracle is validated against natural mutants
+
+Stage 2 asks whether the oracle catches bugs it has not seen. It used to answer
+that with **planted** mutants: three edits spliced into the reference by AST,
+one per fault type of the proposal's §3.5. The problem with planting is that we
+choose how to break the program, and the breaks one reaches for fail loudly.
+Measured on the pilot corpus:
+
+| | cases the oracle sampled before refuting | refuted by the first case |
+|---|---|---|
+| the submission's own **real** fault | median 4 | 27% |
+| a **planted** mutant | median 1 | **61%** |
+
+The oracle was sitting an exam we had written to be easy, and "0 missed across
+201 planted mutants" — the old headline — was a pass mark on that exam.
+
+A **natural mutant** is another person's wrong submission to the same coding
+task, already on disk (`src.adapter.sibling_faults`). It is a real developer's
+real mistake, with a real mistake's detectability, and measuring all 192
+available across the corpus confirms it is the harder test:
+
+- **median 3 sampled cases to refute**, against 1 for a planted mutant;
+- **192/192 are refutable by their task's shipped pool** — zero equivalent
+  mutants, against 21 of 201 planted ones that no test could catch and that had
+  to be discarded as wasted work;
+- no AST site is needed, so the old stage 1.5 — which excluded branch-free
+  programs because tau_2 and tau_3 had nowhere to go — is gone entirely, and
+  with it `data/mutants.py`.
+
+**What it costs: coverage.** The harder a contest problem, the fewer people
+submit to it, so the fewer wrong submissions exist. At rating ≥2400 only 10% of
+coding tasks have four or more submissions. Requiring one sibling per fault is
+what fits the hard band; requiring three does not:
+
+| requirement | natural mutants/task | coding tasks at floor 1600 |
+|---|---|---|
+| ≥2 submissions | 1 | **188** ✓ |
+| ≥3 submissions | 2 | 109 |
+| ≥4 submissions | 3 | 68 — short of the corpus itself |
+
+So `--min-siblings 1`, `--mutants-per-task 3`: every task is validated against
+at least one real bug, tasks that can supply more do, and none supplies more
+than three so that a task with eleven submissions does not outweigh one with
+two. The realized corpus carries **254 natural mutants over 120 tasks** — 55 tasks
+with 3, 24 with 2, 41 with 1.
 
 ---
 
@@ -300,12 +370,14 @@ Frozen result:
 
 ```
 test data   external/ConDefects/Test.zip (central directory)
-hard pool   793 faults over 336 coding tasks (2.8x the corpus)
+population  793 faults (floor 1600)
+eligible    188 coding tasks with >=1 natural mutant (1.57x the corpus)
 selected    120 faults, one per coding task
-rating      min 1601 · median 2218 · max 3466   (q1 1895 · q3 2462)
-dates       2021-10-02 → 2024-06-30, 49 of 120 after 2023-02-01
-digest      d9908a3167688ff8147ee6ec9bee58b8b5ae589299cde652ad95afba28b6b064
-reserve     216 further coding tasks, in walk order
+mutants     254 natural (cap 3/task): 55 tasks with 3, 24 with 2, 41 with 1
+rating      min 1601 · median 2201 · max 3271
+dates       2021-10-02 → 2024-06-30
+digest      7c5cc606d5f6629956625de2e238b3cfef5ffc93505a5cc50781679f20762d63
+reserve     68 further coding tasks, in walk order
 ```
 
 Two properties make the file usable as a freeze rather than a snapshot:
@@ -315,8 +387,9 @@ Two properties make the file usable as a freeze rather than a snapshot:
   yet, so the draw is the same before and after unpacking — closing the hole
   that let a salvaged partial tree name a different corpus.
 - **It is the same order `validate_oracle.py` walks.** Both build
-  adapter order → test-data filter → `hard_pool` → `random.Random(seed).shuffle`,
-  and the two agree on the digest byte for byte. So the gates do not re-draw;
+  adapter order → test-data filter → `hard_pool` → `random.Random(seed).shuffle`
+  → sibling filter, and the two agree on the digest byte for byte (a smoke run
+  of the gate reports `order 7c5cc606d5f6`, the head of the freeze's own). So the gates do not re-draw;
   they walk this list, and a fault that fails a gate is replaced by the head of
   `reserve`, deterministically.
 
@@ -339,7 +412,7 @@ python3 -c "from src.adapter import TEST_DIR, TASKS; print(TEST_DIR, len(TASKS))
 
 # 3. freeze — CPU only, no model calls, hours at --jobs 1
 python3 scripts/validate_oracle.py --select hard --hard-floor 1600 \
-        --corpus-size 120 --seed 20260717 --jobs 1
+        --min-siblings 1 --corpus-size 120 --seed 20260717 --jobs 1
 
 # 4. reclaim the salvaged tree once (3) has written data/tasks.json
 rm -rf external/ConDefects/Test_partial
@@ -354,8 +427,10 @@ Checks that must hold before the freeze is used:
 - `data/tasks.json`'s candidate-order digest equals `data/hard_120.json`'s
   `candidate_order_sha256`. They are the same draw; if they differ, one of the
   two filters changed and the reserve list no longer describes the swaps.
-- `data/oracle_validation.json` → `n_missed == 0`, or a stated `max_examples`
-  at which it is not, reported as a property of the oracle.
+- `data/oracle_validation.json` → the natural-mutant catch rate, and
+  `n_missed` reported as a property of the oracle at this `max_examples`
+  rather than hidden. Expect it to be worse than the planted mutants' 0/201:
+  that is the point of §3a, not a regression.
 - All 120 `task_id`s distinct (one fault per coding task).
 - The recorded candidate-order SHA-256 reproduces on a second dry run.
 
