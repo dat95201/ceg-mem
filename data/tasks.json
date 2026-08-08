@@ -8,17 +8,17 @@
     "note": "an absolute rating floor, not a tercile of the pool: the same seed must name the same corpus whatever fraction of Test.zip is unpacked. Licensed by the pilot's pi_hat ~ 0.04 for this band - a proxy for the paper's pi bands, not a measurement of pi, see scripts/build_strata.py",
     "hard_floor": 1600,
     "hard_ceiling": null,
-    "n_candidate_faults": 645,
+    "n_candidate_faults": 643,
     "n_candidate_coding_tasks": 188,
     "rating_quantiles": {
       "min": 1601,
-      "q1": 1887,
+      "q1": 1881,
       "median": 2162,
       "q3": 2381,
       "max": 3884
     },
     "seed": 20260717,
-    "candidate_order_sha256": "7c5cc606d5f6629956625de2e238b3cfef5ffc93505a5cc50781679f20762d63"
+    "candidate_order_sha256": "8d605fcd3014a0c62665b36c81a946294fb9733703764fdbabecfd7f8a70a3ea"
   },
   "criterion": "a program is selected if it catches >= 0.67 of the scoreable natural mutants caught; the corpus is frozen only if >= 90/120 programs passing",
   "usability_criterion": "test data present; reference passes its own cases; the faulty version is refuted by the shipped pool; neither version times out",
@@ -26,7 +26,7 @@
   "n_selected": 120,
   "n_cohort": 120,
   "n_cohort_passing": 120,
-  "n_examined": 396,
+  "n_examined": 378,
   "seed": 20260717,
   "tasks": [
     {
@@ -249,6 +249,28 @@
         "arc139_b/35647235",
         "arc139_b/39342455",
         "arc139_b/44587414"
+      ]
+    },
+    {
+      "name": "abc243_e/49785483",
+      "task_id": "abc243_e",
+      "program_id": "49785483",
+      "date": "2022-03-12",
+      "difficulty": 1637,
+      "loc": 31,
+      "fault_lines": [
+        29
+      ],
+      "n_test_cases": 24,
+      "counterexample": "01_small_03.txt",
+      "stratum": "hard",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc243_e/52524531"
+      ],
+      "caught_submissions": [
+        "abc243_e/52524531"
       ]
     },
     {
@@ -1720,7 +1742,7 @@
         167
       ],
       "n_test_cases": 58,
-      "counterexample": "example_00.txt",
+      "counterexample": "example_01.txt",
       "stratum": "hard",
       "mutants_caught": 2,
       "mutants_scored": 2,
@@ -1731,6 +1753,54 @@
       "caught_submissions": [
         "abc302_g/41709058",
         "abc302_g/41887698"
+      ]
+    },
+    {
+      "name": "abc235_g/48493148",
+      "task_id": "abc235_g",
+      "program_id": "48493148",
+      "date": "2022-01-15",
+      "difficulty": 2462,
+      "loc": 45,
+      "fault_lines": [
+        45
+      ],
+      "n_test_cases": 38,
+      "counterexample": "01_small_00.txt",
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc235_g/28570313",
+        "abc235_g/28594583",
+        "abc235_g/28640040"
+      ],
+      "caught_submissions": [
+        "abc235_g/28570313",
+        "abc235_g/28594583",
+        "abc235_g/28640040"
+      ]
+    },
+    {
+      "name": "abc346_g/51994914",
+      "task_id": "abc346_g",
+      "program_id": "51994914",
+      "date": "2024-03-23",
+      "difficulty": 2166,
+      "loc": 178,
+      "fault_lines": [
+        174
+      ],
+      "n_test_cases": 37,
+      "counterexample": "testcase00.txt",
+      "stratum": "hard",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc346_g/51628683"
+      ],
+      "caught_submissions": [
+        "abc346_g/51628683"
       ]
     },
     {
@@ -1990,6 +2060,28 @@
       ]
     },
     {
+      "name": "abc303_g/41795359",
+      "task_id": "abc303_g",
+      "program_id": "41795359",
+      "date": "2023-05-27",
+      "difficulty": 2736,
+      "loc": 40,
+      "fault_lines": [
+        36
+      ],
+      "n_test_cases": 66,
+      "counterexample": "01_srnd_01.txt",
+      "stratum": "hard",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc303_g/41906923"
+      ],
+      "caught_submissions": [
+        "abc303_g/41906923"
+      ]
+    },
+    {
       "name": "abc221_h/26325908",
       "task_id": "abc221_h",
       "program_id": "26325908",
@@ -2037,32 +2129,6 @@
       "caught_submissions": [
         "abc258_h/32929696",
         "abc258_h/50522493"
-      ]
-    },
-    {
-      "name": "abc235_g/28570313",
-      "task_id": "abc235_g",
-      "program_id": "28570313",
-      "date": "2022-01-15",
-      "difficulty": 2462,
-      "loc": 158,
-      "fault_lines": [
-        138
-      ],
-      "n_test_cases": 38,
-      "counterexample": "01_small_00.txt",
-      "stratum": "hard",
-      "mutants_caught": 3,
-      "mutants_scored": 3,
-      "natural_mutants": [
-        "abc235_g/28594583",
-        "abc235_g/28640040",
-        "abc235_g/30010913"
-      ],
-      "caught_submissions": [
-        "abc235_g/28594583",
-        "abc235_g/28640040",
-        "abc235_g/30010913"
       ]
     },
     {
@@ -2839,74 +2905,6 @@
       "caught_submissions": [
         "abc232_g/28190550",
         "abc232_g/28970603"
-      ]
-    },
-    {
-      "name": "abc299_g/43242154",
-      "task_id": "abc299_g",
-      "program_id": "43242154",
-      "date": "2023-04-22",
-      "difficulty": 2088,
-      "loc": 56,
-      "fault_lines": [
-        19
-      ],
-      "n_test_cases": 48,
-      "counterexample": "01_max_13.txt",
-      "stratum": "hard",
-      "mutants_caught": 1,
-      "mutants_scored": 1,
-      "natural_mutants": [
-        "abc299_g/52236570"
-      ],
-      "caught_submissions": [
-        "abc299_g/52236570"
-      ]
-    },
-    {
-      "name": "arc173_c/51137292",
-      "task_id": "arc173_c",
-      "program_id": "51137292",
-      "date": "2024-03-10",
-      "difficulty": 2008,
-      "loc": 314,
-      "fault_lines": [
-        250
-      ],
-      "n_test_cases": 77,
-      "counterexample": "00_sample_02.txt",
-      "stratum": "hard",
-      "mutants_caught": 1,
-      "mutants_scored": 1,
-      "natural_mutants": [
-        "arc173_c/51460321"
-      ],
-      "caught_submissions": [
-        "arc173_c/51460321"
-      ]
-    },
-    {
-      "name": "arc176_d/52671232",
-      "task_id": "arc176_d",
-      "program_id": "52671232",
-      "date": "2024-04-21",
-      "difficulty": 2572,
-      "loc": 155,
-      "fault_lines": [
-        140
-      ],
-      "n_test_cases": 16,
-      "counterexample": "example_03.txt",
-      "stratum": "hard",
-      "mutants_caught": 2,
-      "mutants_scored": 2,
-      "natural_mutants": [
-        "arc176_d/52672133",
-        "arc176_d/52897913"
-      ],
-      "caught_submissions": [
-        "arc176_d/52672133",
-        "arc176_d/52897913"
       ]
     }
   ]

@@ -5,8 +5,8 @@
   "corpus_pass_threshold": ">= 90/120 programs passing",
   "test_dir": "external/ConDefects/Test",
   "jobs": 6,
-  "n_examined": 396,
-  "n_usable": 257,
+  "n_examined": 378,
+  "n_usable": 247,
   "n_ineligible": 0,
   "strata": {
     "hard": {
@@ -20,6 +20,7 @@
         "arc155_c/38489822",
         "abc271_h/54716396",
         "arc139_b/38643909",
+        "abc243_e/49785483",
         "abc321_e/54658110",
         "agc061_a/38853475",
         "abc258_f/53486241",
@@ -81,6 +82,8 @@
         "abc332_f/51643425",
         "abc262_f/48961945",
         "abc302_g/41876580",
+        "abc235_g/48493148",
+        "abc346_g/51994914",
         "abc314_g/45264890",
         "arc165_c/45733476",
         "abc307_f/51485146",
@@ -92,9 +95,9 @@
         "agc062_c/41651640",
         "abc294_g/53664226",
         "abc253_g/32996849",
+        "abc303_g/41795359",
         "abc221_h/26325908",
         "abc258_h/33045301",
-        "abc235_g/28570313",
         "arc137_c/33142482",
         "abc299_f/40872561",
         "arc164_e/43438224",
@@ -127,13 +130,10 @@
         "arc128_d/26708943",
         "abc247_f/52972964",
         "abc358_g/54855434",
-        "abc232_g/28189928",
-        "abc299_g/43242154",
-        "arc173_c/51137292",
-        "arc176_d/52671232"
+        "abc232_g/28189928"
       ],
       "n_cohort": 120,
-      "n_passing": 123,
+      "n_passing": 121,
       "quota": 120
     }
   },
@@ -148,6 +148,7 @@
     "arc155_c/38489822",
     "abc271_h/54716396",
     "arc139_b/38643909",
+    "abc243_e/49785483",
     "abc321_e/54658110",
     "agc061_a/38853475",
     "abc258_f/53486241",
@@ -209,6 +210,8 @@
     "abc332_f/51643425",
     "abc262_f/48961945",
     "abc302_g/41876580",
+    "abc235_g/48493148",
+    "abc346_g/51994914",
     "abc314_g/45264890",
     "arc165_c/45733476",
     "abc307_f/51485146",
@@ -220,9 +223,9 @@
     "agc062_c/41651640",
     "abc294_g/53664226",
     "abc253_g/32996849",
+    "abc303_g/41795359",
     "abc221_h/26325908",
     "abc258_h/33045301",
-    "abc235_g/28570313",
     "arc137_c/33142482",
     "abc299_f/40872561",
     "arc164_e/43438224",
@@ -255,22 +258,19 @@
     "arc128_d/26708943",
     "abc247_f/52972964",
     "abc358_g/54855434",
-    "abc232_g/28189928",
-    "abc299_g/43242154",
-    "arc173_c/51137292",
-    "arc176_d/52671232"
+    "abc232_g/28189928"
   ],
   "n_cohort": 120,
   "n_cohort_passing": 120,
   "corpus_gate_ok": true,
-  "n_passing": 123,
+  "n_passing": 121,
   "max_examples": 80,
   "mutant_examples": 80,
   "full_pool_cap": 300,
   "reference_cases": 20,
   "timeout_sec": 10.0,
   "seed": 20260717,
-  "elapsed_sec": 3026.7,
+  "elapsed_sec": 2930.5,
   "faults": {
     "abc222_g/45118973": {
       "task_id": "abc222_g",
@@ -918,10 +918,39 @@
       "fault_lines": [
         29
       ],
-      "fault_exposed": false,
-      "reference_ok": false,
-      "reason": "reference timed out on 02_perfect_00.txt",
-      "usable": false
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 7,
+      "counterexample": "01_small_03.txt",
+      "natural_mutants": [
+        "abc243_e/52524531"
+      ],
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 1,
+      "mutants_total": 1,
+      "mutants_scored": 1,
+      "mutants_natural": 1,
+      "caught_submissions": [
+        "abc243_e/52524531"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "passes": true,
+      "mutants": {
+        "abc243_e/52524531": {
+          "verdict": "caught",
+          "source": "natural",
+          "submission": "abc243_e/52524531",
+          "examples_tried": 7,
+          "counterexample": "01_small_03.txt",
+          "reason": "wrong output on test case 01_small_03.txt"
+        }
+      },
+      "in_cohort": true
     },
     "abc321_e/54658110": {
       "task_id": "abc321_e",
@@ -979,7 +1008,7 @@
       ],
       "fault_exposed": false,
       "reference_ok": false,
-      "reason": "reference disagrees with the shipped output on 00-sample-001.txt",
+      "reason": "reference disagrees with the shipped output on 01-012.txt",
       "usable": false
     },
     "arc148_d/34818045": {
@@ -1534,9 +1563,9 @@
           "verdict": "caught",
           "source": "natural",
           "submission": "arc154_c/38909905",
-          "examples_tried": 10,
-          "counterexample": "test_08.txt",
-          "reason": "wrong output on test case test_08.txt"
+          "examples_tried": 3,
+          "counterexample": "test_01.txt",
+          "reason": "timed out after 10.0s on test case test_01.txt"
         }
       },
       "in_cohort": true
@@ -3559,7 +3588,7 @@
       ],
       "fault_exposed": false,
       "reference_ok": false,
-      "reason": "reference disagrees with the shipped output on example_00.txt",
+      "reason": "reference disagrees with the shipped output on test_06.txt",
       "usable": false
     },
     "abc333_g/50750395": {
@@ -5506,8 +5535,8 @@
       "reference_ok": true,
       "reason": null,
       "usable": true,
-      "examples_tried": 1,
-      "counterexample": "example_00.txt",
+      "examples_tried": 2,
+      "counterexample": "example_01.txt",
       "natural_mutants": [
         "abc302_g/41709058",
         "abc302_g/41887698"
@@ -5624,10 +5653,59 @@
       "fault_lines": [
         45
       ],
-      "fault_exposed": false,
-      "reference_ok": false,
-      "reason": "reference timed out on 00_sample_04.txt",
-      "usable": false
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 6,
+      "counterexample": "01_small_00.txt",
+      "natural_mutants": [
+        "abc235_g/28570313",
+        "abc235_g/28594583",
+        "abc235_g/28640040"
+      ],
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "mutants_scored": 3,
+      "mutants_natural": 3,
+      "caught_submissions": [
+        "abc235_g/28570313",
+        "abc235_g/28594583",
+        "abc235_g/28640040"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "passes": true,
+      "mutants": {
+        "abc235_g/28570313": {
+          "verdict": "caught",
+          "source": "natural",
+          "submission": "abc235_g/28570313",
+          "examples_tried": 6,
+          "counterexample": "01_small_00.txt",
+          "reason": "wrong output on test case 01_small_00.txt"
+        },
+        "abc235_g/28594583": {
+          "verdict": "caught",
+          "source": "natural",
+          "submission": "abc235_g/28594583",
+          "examples_tried": 6,
+          "counterexample": "01_small_00.txt",
+          "reason": "wrong output on test case 01_small_00.txt"
+        },
+        "abc235_g/28640040": {
+          "verdict": "caught",
+          "source": "natural",
+          "submission": "abc235_g/28640040",
+          "examples_tried": 6,
+          "counterexample": "01_small_00.txt",
+          "reason": "wrong output on test case 01_small_00.txt"
+        }
+      },
+      "in_cohort": true
     },
     "abc303_f/52228360": {
       "task_id": "abc303_f",
@@ -5680,21 +5758,6 @@
       "examples_tried": 13,
       "counterexample": "02_pair_2_00.txt"
     },
-    "arc143_d/32779304": {
-      "task_id": "arc143_d",
-      "program_id": "32779304",
-      "date": "2022-06-26",
-      "difficulty": 2229,
-      "n_test_cases": 35,
-      "loc": 1571,
-      "fault_lines": [
-        1552
-      ],
-      "fault_exposed": false,
-      "reference_ok": false,
-      "reason": "reference disagrees with the shipped output on in01.txt",
-      "usable": false
-    },
     "abc346_g/51994914": {
       "task_id": "abc346_g",
       "program_id": "51994914",
@@ -5705,10 +5768,39 @@
       "fault_lines": [
         174
       ],
-      "fault_exposed": false,
-      "reference_ok": false,
-      "reason": "reference timed out on testcase00.txt",
-      "usable": false
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 4,
+      "counterexample": "testcase00.txt",
+      "natural_mutants": [
+        "abc346_g/51628683"
+      ],
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 1,
+      "mutants_total": 1,
+      "mutants_scored": 1,
+      "mutants_natural": 1,
+      "caught_submissions": [
+        "abc346_g/51628683"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "passes": true,
+      "mutants": {
+        "abc346_g/51628683": {
+          "verdict": "caught",
+          "source": "natural",
+          "submission": "abc346_g/51628683",
+          "examples_tried": 4,
+          "counterexample": "testcase00.txt",
+          "reason": "timed out after 10.0s on test case testcase00.txt"
+        }
+      },
+      "in_cohort": true
     },
     "abc314_g/45264890": {
       "task_id": "abc314_g",
@@ -5813,7 +5905,7 @@
       ],
       "fault_exposed": false,
       "reference_ok": false,
-      "reason": "reference disagrees with the shipped output on test_06.txt",
+      "reason": "reference disagrees with the shipped output on example_01.txt",
       "usable": false
     },
     "agc058_b/34050152": {
@@ -6767,10 +6859,39 @@
       "fault_lines": [
         36
       ],
-      "fault_exposed": false,
-      "reference_ok": false,
-      "reason": "reference timed out on 01_srnd_00.txt",
-      "usable": false
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 5,
+      "counterexample": "01_srnd_01.txt",
+      "natural_mutants": [
+        "abc303_g/41906923"
+      ],
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 1,
+      "mutants_total": 1,
+      "mutants_scored": 1,
+      "mutants_natural": 1,
+      "caught_submissions": [
+        "abc303_g/41906923"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "passes": true,
+      "mutants": {
+        "abc303_g/41906923": {
+          "verdict": "caught",
+          "source": "natural",
+          "submission": "abc303_g/41906923",
+          "examples_tried": 4,
+          "counterexample": "01_srnd_00.txt",
+          "reason": "wrong output on test case 01_srnd_00.txt"
+        }
+      },
+      "in_cohort": true
     },
     "abc333_g/49970736": {
       "task_id": "abc333_g",
@@ -7002,70 +7123,6 @@
       "reference_ok": false,
       "reason": "reference disagrees with the shipped output on 00-sample-001.txt",
       "usable": false
-    },
-    "abc235_g/28570313": {
-      "task_id": "abc235_g",
-      "program_id": "28570313",
-      "date": "2022-01-15",
-      "difficulty": 2462,
-      "n_test_cases": 38,
-      "loc": 158,
-      "fault_lines": [
-        138
-      ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": null,
-      "usable": true,
-      "examples_tried": 6,
-      "counterexample": "01_small_00.txt",
-      "natural_mutants": [
-        "abc235_g/28594583",
-        "abc235_g/28640040",
-        "abc235_g/30010913"
-      ],
-      "eligible": true,
-      "stratum": "hard",
-      "mutants_caught": 3,
-      "mutants_total": 3,
-      "mutants_scored": 3,
-      "mutants_natural": 3,
-      "caught_submissions": [
-        "abc235_g/28594583",
-        "abc235_g/28640040",
-        "abc235_g/30010913"
-      ],
-      "n_missed": 0,
-      "n_equivalent": 0,
-      "n_inconclusive": 0,
-      "passes": true,
-      "mutants": {
-        "abc235_g/28594583": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "abc235_g/28594583",
-          "examples_tried": 6,
-          "counterexample": "01_small_00.txt",
-          "reason": "wrong output on test case 01_small_00.txt"
-        },
-        "abc235_g/28640040": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "abc235_g/28640040",
-          "examples_tried": 6,
-          "counterexample": "01_small_00.txt",
-          "reason": "wrong output on test case 01_small_00.txt"
-        },
-        "abc235_g/30010913": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "abc235_g/30010913",
-          "examples_tried": 6,
-          "counterexample": "01_small_00.txt",
-          "reason": "wrong output on test case 01_small_00.txt"
-        }
-      },
-      "in_cohort": true
     },
     "abc315_f/46136201": {
       "task_id": "abc315_f",
@@ -8812,7 +8869,7 @@
       ],
       "fault_exposed": false,
       "reference_ok": false,
-      "reason": "reference disagrees with the shipped output on test_03.txt",
+      "reason": "reference disagrees with the shipped output on example_00.txt",
       "usable": false
     },
     "abc297_g/44405855": {
@@ -9688,12 +9745,10 @@
       "fault_lines": [
         19
       ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": "another fault from this coding task is already in the corpus",
-      "usable": true,
-      "examples_tried": 3,
-      "counterexample": "example_02.txt"
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference timed out on hand_01.txt",
+      "usable": false
     },
     "agc059_a/38508739": {
       "task_id": "agc059_a",
@@ -10088,10 +10143,12 @@
       "fault_lines": [
         47
       ],
-      "fault_exposed": false,
-      "reference_ok": false,
-      "reason": "reference timed out on 01_rnd_03.txt",
-      "usable": false
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": "another fault from this coding task is already in the corpus",
+      "usable": true,
+      "examples_tried": 3,
+      "counterexample": "01_rnd_00.txt"
     },
     "agc058_b/34045717": {
       "task_id": "agc058_b",
@@ -10323,10 +10380,12 @@
       "fault_lines": [
         128
       ],
-      "fault_exposed": false,
-      "reference_ok": false,
-      "reason": "reference timed out on 02_yes_02.txt",
-      "usable": false
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": "another fault from this coding task is already in the corpus",
+      "usable": true,
+      "examples_tried": 35,
+      "counterexample": "03_no_06.txt"
     },
     "arc128_c/41096330": {
       "task_id": "arc128_c",
@@ -10832,420 +10891,7 @@
           "reason": "wrong output on test case 01_max_03.txt"
         }
       },
-      "in_cohort": true
-    },
-    "abc353_f/53483883": {
-      "task_id": "abc353_f",
-      "program_id": "53483883",
-      "date": "2024-05-11",
-      "difficulty": 2201,
-      "n_test_cases": 91,
-      "loc": 53,
-      "fault_lines": [
-        10
-      ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": "another fault from this coding task is already in the corpus",
-      "usable": true,
-      "examples_tried": 7,
-      "counterexample": "01_random_13.txt"
-    },
-    "arc173_c/51137292": {
-      "task_id": "arc173_c",
-      "program_id": "51137292",
-      "date": "2024-03-10",
-      "difficulty": 2008,
-      "n_test_cases": 77,
-      "loc": 314,
-      "fault_lines": [
-        250
-      ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": null,
-      "usable": true,
-      "examples_tried": 2,
-      "counterexample": "00_sample_02.txt",
-      "natural_mutants": [
-        "arc173_c/51460321"
-      ],
-      "eligible": true,
-      "stratum": "hard",
-      "mutants_caught": 1,
-      "mutants_total": 1,
-      "mutants_scored": 1,
-      "mutants_natural": 1,
-      "caught_submissions": [
-        "arc173_c/51460321"
-      ],
-      "n_missed": 0,
-      "n_equivalent": 0,
-      "n_inconclusive": 0,
-      "passes": true,
-      "mutants": {
-        "arc173_c/51460321": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "arc173_c/51460321",
-          "examples_tried": 10,
-          "counterexample": "01_random_case_07.txt",
-          "reason": "wrong output on test case 01_random_case_07.txt"
-        }
-      },
-      "in_cohort": true
-    },
-    "arc139_b/39342455": {
-      "task_id": "arc139_b",
-      "program_id": "39342455",
-      "date": "2022-04-24",
-      "difficulty": 1719,
-      "n_test_cases": 36,
-      "loc": 41,
-      "fault_lines": [
-        30
-      ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": "another fault from this coding task is already in the corpus",
-      "usable": true,
-      "examples_tried": 27,
-      "counterexample": "test_25.txt"
-    },
-    "abc332_f/50678043": {
-      "task_id": "abc332_f",
-      "program_id": "50678043",
-      "date": "2023-12-10",
-      "difficulty": 1786,
-      "n_test_cases": 39,
-      "loc": 64,
-      "fault_lines": [
-        15
-      ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": "another fault from this coding task is already in the corpus",
-      "usable": true,
-      "examples_tried": 2,
-      "counterexample": "001.txt"
-    },
-    "agc059_b/37028649": {
-      "task_id": "agc059_b",
-      "program_id": "37028649",
-      "date": "2022-12-04",
-      "difficulty": 1887,
-      "n_test_cases": 52,
-      "loc": 64,
-      "fault_lines": [
-        60
-      ],
-      "fault_exposed": false,
-      "reference_ok": false,
-      "reason": "reference disagrees with the shipped output on 01.txt",
-      "usable": false
-    },
-    "abc338_f/52776716": {
-      "task_id": "abc338_f",
-      "program_id": "52776716",
-      "date": "2024-01-27",
-      "difficulty": 1835,
-      "n_test_cases": 34,
-      "loc": 23,
-      "fault_lines": [
-        21
-      ],
-      "fault_exposed": false,
-      "reference_ok": false,
-      "reason": "reference timed out on 01_random_00.txt",
-      "usable": false
-    },
-    "abc246_g/33722514": {
-      "task_id": "abc246_g",
-      "program_id": "33722514",
-      "date": "2022-04-02",
-      "difficulty": 2313,
-      "n_test_cases": 65,
-      "loc": 801,
-      "fault_lines": [
-        780
-      ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": "another fault from this coding task is already in the corpus",
-      "usable": true,
-      "examples_tried": 1,
-      "counterexample": "000.txt"
-    },
-    "abc235_g/43758724": {
-      "task_id": "abc235_g",
-      "program_id": "43758724",
-      "date": "2022-01-15",
-      "difficulty": 2462,
-      "n_test_cases": 38,
-      "loc": 27,
-      "fault_lines": [
-        26
-      ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": "another fault from this coding task is already in the corpus",
-      "usable": true,
-      "examples_tried": 6,
-      "counterexample": "01_small_00.txt"
-    },
-    "arc132_c/31270911": {
-      "task_id": "arc132_c",
-      "program_id": "31270911",
-      "date": "2021-12-26",
-      "difficulty": 1616,
-      "n_test_cases": 41,
-      "loc": 31,
-      "fault_lines": [
-        3
-      ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": "another fault from this coding task is already in the corpus",
-      "usable": true,
-      "examples_tried": 1,
-      "counterexample": "empty_1_0.txt"
-    },
-    "arc176_d/52671232": {
-      "task_id": "arc176_d",
-      "program_id": "52671232",
-      "date": "2024-04-21",
-      "difficulty": 2572,
-      "n_test_cases": 16,
-      "loc": 155,
-      "fault_lines": [
-        140
-      ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": null,
-      "usable": true,
-      "examples_tried": 4,
-      "counterexample": "example_03.txt",
-      "natural_mutants": [
-        "arc176_d/52672133",
-        "arc176_d/52897913"
-      ],
-      "eligible": true,
-      "stratum": "hard",
-      "mutants_caught": 2,
-      "mutants_total": 2,
-      "mutants_scored": 2,
-      "mutants_natural": 2,
-      "caught_submissions": [
-        "arc176_d/52672133",
-        "arc176_d/52897913"
-      ],
-      "n_missed": 0,
-      "n_equivalent": 0,
-      "n_inconclusive": 0,
-      "passes": true,
-      "mutants": {
-        "arc176_d/52672133": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "arc176_d/52672133",
-          "examples_tried": 4,
-          "counterexample": "example_03.txt",
-          "reason": "wrong output on test case example_03.txt"
-        },
-        "arc176_d/52897913": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "arc176_d/52897913",
-          "examples_tried": 1,
-          "counterexample": "example_00.txt",
-          "reason": "wrong output on test case example_00.txt"
-        }
-      },
-      "in_cohort": true
-    },
-    "abc319_f/45777946": {
-      "task_id": "abc319_f",
-      "program_id": "45777946",
-      "date": "2023-09-09",
-      "difficulty": 2480,
-      "n_test_cases": 70,
-      "loc": 64,
-      "fault_lines": [
-        8
-      ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": null,
-      "usable": true,
-      "examples_tried": 62,
-      "counterexample": "02_handmade_61.txt",
-      "natural_mutants": [
-        "abc319_f/45769357"
-      ],
-      "eligible": true,
-      "stratum": "hard",
-      "mutants_caught": 1,
-      "mutants_total": 1,
-      "mutants_scored": 1,
-      "mutants_natural": 1,
-      "caught_submissions": [
-        "abc319_f/45769357"
-      ],
-      "n_missed": 0,
-      "n_equivalent": 0,
-      "n_inconclusive": 0,
-      "passes": true,
-      "mutants": {
-        "abc319_f/45769357": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "abc319_f/45769357",
-          "examples_tried": 62,
-          "counterexample": "02_handmade_61.txt",
-          "reason": "wrong output on test case 02_handmade_61.txt"
-        }
-      },
       "in_cohort": false
-    },
-    "abc221_f/40898300": {
-      "task_id": "abc221_f",
-      "program_id": "40898300",
-      "date": "2021-10-02",
-      "difficulty": 2093,
-      "n_test_cases": 37,
-      "loc": 116,
-      "fault_lines": [
-        84
-      ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": "another fault from this coding task is already in the corpus",
-      "usable": true,
-      "examples_tried": 4,
-      "counterexample": "even_random_03.txt"
-    },
-    "arc165_c/45716699": {
-      "task_id": "arc165_c",
-      "program_id": "45716699",
-      "date": "2023-09-17",
-      "difficulty": 1743,
-      "n_test_cases": 62,
-      "loc": 77,
-      "fault_lines": [
-        77
-      ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": "another fault from this coding task is already in the corpus",
-      "usable": true,
-      "examples_tried": 5,
-      "counterexample": "01_random_case_02.txt"
-    },
-    "arc132_d/28175955": {
-      "task_id": "arc132_d",
-      "program_id": "28175955",
-      "date": "2021-12-26",
-      "difficulty": 2221,
-      "n_test_cases": 45,
-      "loc": 52,
-      "fault_lines": [
-        22
-      ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": null,
-      "usable": true,
-      "examples_tried": 33,
-      "counterexample": "max1111.txt",
-      "natural_mutants": [
-        "arc132_d/28174907"
-      ],
-      "eligible": true,
-      "stratum": "hard",
-      "mutants_caught": 1,
-      "mutants_total": 1,
-      "mutants_scored": 1,
-      "mutants_natural": 1,
-      "caught_submissions": [
-        "arc132_d/28174907"
-      ],
-      "n_missed": 0,
-      "n_equivalent": 0,
-      "n_inconclusive": 0,
-      "passes": true,
-      "mutants": {
-        "arc132_d/28174907": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "arc132_d/28174907",
-          "examples_tried": 4,
-          "counterexample": "O_127668_127663_25532.txt",
-          "reason": "wrong output on test case O_127668_127663_25532.txt"
-        }
-      },
-      "in_cohort": false
-    },
-    "abc297_f/49316217": {
-      "task_id": "abc297_f",
-      "program_id": "49316217",
-      "date": "2023-04-09",
-      "difficulty": 1990,
-      "n_test_cases": 20,
-      "loc": 39,
-      "fault_lines": [
-        8
-      ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": null,
-      "usable": true,
-      "examples_tried": 2,
-      "counterexample": "00_sample_02.txt",
-      "natural_mutants": [
-        "abc297_f/47953762"
-      ],
-      "eligible": true,
-      "stratum": "hard",
-      "mutants_caught": 1,
-      "mutants_total": 1,
-      "mutants_scored": 1,
-      "mutants_natural": 1,
-      "caught_submissions": [
-        "abc297_f/47953762"
-      ],
-      "n_missed": 0,
-      "n_equivalent": 0,
-      "n_inconclusive": 0,
-      "passes": true,
-      "mutants": {
-        "abc297_f/47953762": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "abc297_f/47953762",
-          "examples_tried": 2,
-          "counterexample": "00_sample_02.txt",
-          "reason": "wrong output on test case 00_sample_02.txt"
-        }
-      },
-      "in_cohort": false
-    },
-    "abc309_f/51733804": {
-      "task_id": "abc309_f",
-      "program_id": "51733804",
-      "date": "2023-07-08",
-      "difficulty": 1619,
-      "n_test_cases": 64,
-      "loc": 111,
-      "fault_lines": [
-        83
-      ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": "another fault from this coding task is already in the corpus",
-      "usable": true,
-      "examples_tried": 35,
-      "counterexample": "04_rnd2_09.txt"
     }
   },
   "strata_selection": {
@@ -11254,16 +10900,16 @@
     "note": "an absolute rating floor, not a tercile of the pool: the same seed must name the same corpus whatever fraction of Test.zip is unpacked. Licensed by the pilot's pi_hat ~ 0.04 for this band - a proxy for the paper's pi bands, not a measurement of pi, see scripts/build_strata.py",
     "hard_floor": 1600,
     "hard_ceiling": null,
-    "n_candidate_faults": 645,
+    "n_candidate_faults": 643,
     "n_candidate_coding_tasks": 188,
     "rating_quantiles": {
       "min": 1601,
-      "q1": 1887,
+      "q1": 1881,
       "median": 2162,
       "q3": 2381,
       "max": 3884
     },
     "seed": 20260717,
-    "candidate_order_sha256": "7c5cc606d5f6629956625de2e238b3cfef5ffc93505a5cc50781679f20762d63"
+    "candidate_order_sha256": "8d605fcd3014a0c62665b36c81a946294fb9733703764fdbabecfd7f8a70a3ea"
   }
 }
