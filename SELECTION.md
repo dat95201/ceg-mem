@@ -253,16 +253,44 @@ The oracle was sitting an exam we had written to be easy, and "0 missed across
 
 A **natural mutant** is another person's wrong submission to the same coding
 task, already on disk (`src.adapter.sibling_faults`). It is a real developer's
-real mistake, with a real mistake's detectability, and measuring all 192
-available across the corpus confirms it is the harder test:
+real mistake, and measuring all 240 in the frozen corpus confirms it needs more
+of the pool to expose than a planted one does:
 
-- **median 3 sampled cases to refute**, against 1 for a planted mutant;
-- **192/192 are refutable by their task's shipped pool** — zero equivalent
-  mutants, against 21 of 201 planted ones that no test could catch and that had
-  to be discarded as wasted work;
-- no AST site is needed, so the old stage 1.5 — which excluded branch-free
-  programs because tau_2 and tau_3 had nowhere to go — is gone entirely, and
-  with it `data/mutants.py`.
+| | cases sampled before refuting | refuted by the first case |
+|---|---|---|
+| planted mutant | median 1 | 61% |
+| natural mutant | median 4 | 22% |
+| the submission's own real fault | median 4 | 27% |
+
+Natural mutants also never turn out to be equivalent — all 240 are refuted by
+their task's shipped pool — where 21 of 201 planted ones were refuted by no
+test at all.
+
+**But that last property is why they are not sufficient on their own.** A
+natural mutant is a submission AtCoder *rejected*, so the shipped pool refutes
+it by construction. Feeding the pool a program it is already known to reject
+cannot reveal a case the pool would miss. Combined with the fact that 109 of the
+120 tasks ship 80 test cases or fewer — so at `max_examples=80` the oracle runs
+the *whole* pool rather than a sample — the 240/240 result is close to
+tautological on 91% of the corpus. It is a real measurement with a bounded
+reach, not a strong one.
+
+Two things it structurally cannot measure, and one thing it should be reported
+as instead:
+
+- **Pool weakness.** Whether the pool can tell a *small perturbation* of the
+  correct program from the correct program itself. Only a planted mutant can
+  produce an `equivalent` verdict, and that verdict is the measurement — see
+  §3b.
+- **The right population.** The loop's oracle judges LLM patches: near misses,
+  a few tokens from something that works. A planted mutant (one AST edit to the
+  reference) is the closer proxy; a stranger's from-scratch reimplementation is
+  not.
+- **Report the curve, not the point.** `240/240` says nothing without the
+  sample size it was measured at. The share of natural mutants a sample of *k*
+  cases would have refuted — 76% at k=10, 87% at k=20, 96% at k=40, 100% at
+  k=80 — is the honest form, and it feeds RQ2's oracle-informativeness sweep
+  directly.
 
 **What it costs: coverage.** The harder a contest problem, the fewer people
 submit to it, so the fewer wrong submissions exist. At rating ≥2400 only 10% of
@@ -282,6 +310,48 @@ two. The realized corpus carries **254 natural mutants over 120 tasks** — 55 t
 with 3, 24 with 2, 41 with 1.
 
 ---
+
+## 3b. Pool strength: what natural mutants cannot measure
+
+`scripts/measure_pool_strength.py` plants mutants — the population §3a retired
+as a *gate* — and runs them on the already-frozen corpus as a *measurement*.
+It selects nothing, drops nothing, and reads `data/tasks.json` rather than a
+draw. The distinction matters: a task whose pool turns out to be weak is
+reported, not removed, because removing it would be selecting the corpus on a
+property measured after the freeze.
+
+**The verdict it exists to produce is `equivalent`:** the mutant is wrong, and
+no test in the shipped pool distinguishes it from the reference. An equivalent
+mutant is a hole in the pool, and in the repair loop a patch that lands in one
+is *accepted while being wrong* — a false accept, which is precisely what
+Theorem 4.1's soundness claim rules out by assumption.
+
+**Nothing else in this pipeline estimates that hole.** The obvious candidate
+does not work here:
+
+- the loop's oracle runs at `max_examples=100`, and 109 of the 120 tasks ship
+  80 cases or fewer — so on those tasks the *sampled* oracle already is the
+  whole pool;
+- `src.oracle.is_truly_correct`, the overfitting audit, also runs the whole
+  pool — so on those same tasks it agrees with the loop's oracle trivially and
+  can detect nothing.
+
+The audit that was designed to separate "correct" from "merely plausible"
+therefore collapses into a tautology on 91% of the corpus. The equivalent rate
+is the only available upper bound on how much patch overfitting could be
+happening invisibly.
+
+Reported as three numbers rather than one:
+
+```
+natural mutants  (240)   catch rate by sample size k: 76% @10 · 87% @20 · 96% @40 · 100% @80
+planted mutants  (~700)  catch rate      — the sample's reach
+                         equivalent rate — the POOL's blind spot
+```
+
+If the equivalent rate is small, soundness on real data is supported and the
+paper can say so with a number. If it is large, that is a threat to validity
+the paper has to state — and knowing it beforehand beats a reviewer finding it.
 
 ## 4. Handling the degenerate cells: pre-registered, post-hoc
 

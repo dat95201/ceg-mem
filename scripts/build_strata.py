@@ -57,9 +57,54 @@ def stratify(pi_by_task: dict[str, float]) -> list[dict]:
     return out
 
 
+def _read_pi(explicit: pathlib.Path | None) -> tuple[pathlib.Path, dict[str, float], int | None]:
+    """(path, task -> pi_hat, seed) from whichever measurement is on disk.
+
+    Two shapes, because pi_hat has two producers and only one of them is still
+    part of the pipeline:
+
+      data/theory_fit.json   `pi_q_by_task[task]["pi_hat"]` - estimated by
+                             scripts/fit_theory.py from E1, the no-memory arm
+                             run with --force-full-budget. This is the one to
+                             use: every round of that arm is an independent
+                             draw, the arm is needed for RQ1 anyway, and it
+                             yields q_hat_tau alongside pi_hat.
+      data/pi_pilot.json     `per_program[task]["pi_hat"]` - scripts/measure_pi.py.
+                             A standalone pilot that buys pi_hat and nothing
+                             else, at the price of a whole extra arm's worth of
+                             model calls. Kept readable for the calibration runs
+                             that used it; not part of the flow.
+
+    Preferred order rather than a required flag: a corpus that has run E1 should
+    never be stratified from an older pilot just because the file is still there.
+    """
+    candidates = [explicit] if explicit else [DATA_DIR / "theory_fit.json",
+                                              DATA_DIR / "pi_pilot.json"]
+    for path in candidates:
+        if path is None or not path.exists():
+            continue
+        blob = json.loads(path.read_text())
+        if "pi_q_by_task" in blob:
+            return path, {t: v["pi_hat"] for t, v in blob["pi_q_by_task"].items()}, None
+        if "per_program" in blob:
+            return path, {t: v["pi_hat"] for t, v in blob["per_program"].items()}, blob.get("seed")
+        raise SystemExit(f"{path}: no pi_hat in it (expected pi_q_by_task or per_program)")
+    raise SystemExit(
+        "no measured pi_hat on disk. Run E1 and fit_theory:\n"
+        "  python3 scripts/run_eval.py --modes no_memory --force-full-budget\n"
+        "  python3 scripts/fit_theory.py"
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--pi-pilot-path", type=pathlib.Path, default=DATA_DIR / "pi_pilot.json")
+    parser.add_argument("--pi-source", type=pathlib.Path, default=None,
+                        help="where measured pi_hat comes from. Default: "
+                             "data/theory_fit.json (E1's no-memory corpus) if it "
+                             "exists, else data/pi_pilot.json (the retired "
+                             "measure_pi.py pilot)")
+    parser.add_argument("--pi-pilot-path", type=pathlib.Path, default=None,
+                        help="deprecated alias for --pi-source")
     parser.add_argument("--force", action="store_true", help="overwrite an already-frozen data/strata.json")
     args = parser.parse_args()
 
@@ -69,20 +114,16 @@ def main() -> None:
         if existing.get("frozen"):
             raise SystemExit(f"{out_path} is already frozen - pass --force to overwrite")
 
-    if not args.pi_pilot_path.exists():
-        raise SystemExit(
-            f"{args.pi_pilot_path} missing - run "
-            "`python3 scripts/measure_pi.py --programs all` first"
-        )
-    pilot = json.loads(args.pi_pilot_path.read_text())
-    pi_by_task = {name: p["pi_hat"] for name, p in pilot["per_program"].items()}
+    pi_path, pi_by_task, seed = _read_pi(args.pi_source or args.pi_pilot_path)
 
     expected = set(_frozen_task_names())
     missing = expected - set(pi_by_task)
     if missing:
         raise SystemExit(
-            f"{args.pi_pilot_path} covers {len(pi_by_task)}/{len(expected)} frozen tasks, "
-            f"missing: {sorted(missing)} - re-run measure_pi.py --programs all"
+            f"{pi_path} covers {len(pi_by_task)}/{len(expected)} frozen tasks, "
+            f"missing: {sorted(missing)} - re-run E1 over the whole corpus "
+            f"(run_eval.py --modes no_memory --force-full-budget) and "
+            f"scripts/fit_theory.py"
         )
 
     tasks = stratify({name: pi_by_task[name] for name in expected})
@@ -90,8 +131,8 @@ def main() -> None:
 
     report = {
         "frozen": True,
-        "source": str(args.pi_pilot_path),
-        "seed": pilot.get("seed"),
+        "source": str(pi_path),
+        "seed": seed,
         "n_total": len(tasks),
         "counts": counts,
         "paper_reference_ranges": PAPER_REFERENCE_RANGES,

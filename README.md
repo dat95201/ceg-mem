@@ -21,11 +21,13 @@ is no oracle.
 ## Reproduce
 
 ```bash
-python3 scripts/validate_oracle.py                        # mutation gate; freezes data/tasks.json
-python3 scripts/measure_pi.py                             # -> data/pi_pilot.json
-python3 scripts/build_strata.py                           # freezes data/strata.json
+python3 scripts/select_hard_tasks.py           # the pure draw; -> data/hard_120.json
+python3 scripts/validate_oracle.py             # gate on natural mutants; freezes data/tasks.json
+python3 scripts/measure_pool_strength.py       # planted mutants, measured not gated; -> data/pool_strength.json
 
-python3 scripts/run_eval.py --modes no_memory --force-full-budget   # E1
+python3 scripts/run_eval.py --modes no_memory --force-full-budget   # E1 - also the pi_hat/q_hat corpus
+python3 scripts/build_strata.py                # freezes data/strata.json from E1's measured pi_hat
+
 python3 scripts/run_eval.py --modes untyped typed --check-overfit   # E2
 
 python3 scripts/freeze_results.py --experiment main       # -> data/results_real.json
@@ -56,12 +58,17 @@ and rewrites its own rows rather than appending a second copy.
 | `src/sandbox.py` | runs a candidate program on one input under a timeout |
 | `src/oracle.py` | counterexample oracle over the shipped test pool |
 | `src/typer.py` | failure-type function, two granularities |
+| `data/mutants.py` | planted-mutant operators, one per fault type of section 3.5 |
 | `src/memory.py` | no-memory / untyped / typed stores |
 | `src/loop.py` | the repair loop (Algorithm 1) |
 | `src/llm.py` | model client with on-disk cache and a cost meter |
+| `scripts/select_hard_tasks.py` | the pure draw: which 120 faults, seeded and checkable |
+| `scripts/validate_oracle.py` | usability + natural-mutant gate; freezes the corpus |
+| `scripts/measure_pool_strength.py` | planted mutants on the frozen corpus: how blind is the pool |
 | `scripts/` | experiment driver and consistency checker |
 | `paper/` | LaTeX source (IEEEtran) |
-| `data/`, `cache/`, `external/` | generated or vendored; not tracked |
+| `cache/`, `external/` | model-response cache and the vendored benchmark; not tracked |
+| `data/` | frozen artefacts *are* tracked (the corpus, the gate's audit, the pool-strength report); `cache/` is not |
 
 ## Benchmark
 
@@ -104,16 +111,13 @@ wrong submissions to the same problem (`src.adapter.sibling_faults`) — and the
 same sampling oracle the repair loop calls is asked to refute each.
 
 Natural, not planted. This stage used to write its own mutants by planting an
-edit in the reference, one per fault type of the proposal's section 3.5. That
-asks whether the oracle catches bugs *we* chose, and the bugs one reaches for
-fail loudly: on the pilot corpus a planted mutant was refuted by the very first
-sampled test 61% of the time, against 27% for the submission's own real fault.
-The oracle was sitting an exam we had written to be easy. A natural mutant is a
-real developer's real mistake with a real mistake's detectability — median 3
-sampled cases to refute against 1 for a planted one — and none of the 192
-available across the corpus is equivalent, where 21 of 201 planted ones were.
-The cost is coverage: a coding task with a single submission has no sibling to
-borrow, so the draw now requires at least one (`--min-siblings`).
+edit in the reference, one per fault type of the proposal's section 3.5. A
+natural mutant is a real developer's real mistake with a real mistake's
+detectability — median 4 sampled cases to refute against 1 for a planted one,
+refuted by the very first sampled case 22% of the time against 61% — and none
+of the 240 across the corpus turns out to be equivalent, where 21 of 201
+planted ones were. The cost is coverage: a coding task with a single submission
+has no sibling to borrow, so the draw requires at least one (`--min-siblings`).
 
 A mutant the sample accepts gets a second opinion from the whole shipped pool,
 which separates two very different failures. If the pool refutes it, the
@@ -130,6 +134,59 @@ of the cohort passing — the proposal's 30 of 40, held as a fraction, so 90 of
 is then topped up past it, because a pass rate computed over a set already
 filtered on passing would be vacuous. `data/oracle_validation.json` carries
 every mutant's diff, site and verdict.
+
+The corpus clears this gate outright: **240 of 240 natural mutants caught, none
+missed, none equivalent.**
+
+### What that result cannot say — `scripts/measure_pool_strength.py`
+
+A natural mutant is a submission AtCoder *rejected*, so the shipped pool refutes
+it by construction. Asking the pool about a program it is already known to
+reject cannot reveal a case the pool would miss — and with 109 of the 120 tasks
+shipping 80 test cases or fewer, `--max-examples 80` runs the *whole* pool
+rather than a sample. On 91% of the corpus, 240/240 is close to a tautology.
+
+The unanswered question is whether the pool can tell a *small perturbation* of
+the correct program from the correct program itself — which is the population
+the repair loop actually judges, since an LLM patch is a near miss rather than
+a stranger's from-scratch reimplementation. `measure_pool_strength.py` answers
+it by planting mutants on the **already-frozen** corpus. It is a measurement,
+not a gate: it selects nothing, drops nothing, and a task whose pool turns out
+to be weak is reported rather than removed — removing it would be selecting the
+corpus on a property measured after the freeze.
+
+Over 348 planted mutants on all 120 tasks (`data/pool_strength.json`):
+
+| verdict | | |
+|---|---|---|
+| caught | 244 | 70.1% |
+| **missed** | **0** | the sampled oracle is exactly as strong as the full pool |
+| **equivalent** | **104** | **29.9% — no test in the pool distinguishes it** |
+
+`missed = 0` settles the oracle: 80 sampled cases lose nothing against running
+every case, and the catch rate saturates well before that — 98.8% at k=40,
+89.8% at k=10. The natural mutants need more of the pool than the planted ones
+do at every k (95.8% vs 98.8% at 40, 75.8% vs 89.8% at 10), which is the same
+selection effect that makes a shipped fault subtler than a fresh mutation: the
+author already ran the sample cases before submitting.
+
+`equivalent = 29.9%` is the finding. It is a property of the contest's test
+suite, not of this implementation, and it is concentrated rather than uniform —
+53 of 120 tasks have none, while 8 have every planted mutant invisible. A
+`wrong_comparison` edit is the worst case at 40% invisible, against 24-25% for
+`off_by_one` and `missing_guard`; catching a boundary swap needs a test that
+lands exactly on the boundary. Task size does not predict it: `arc173_e` ships
+144 cases and still hides all three.
+
+**What it means for the results.** In the loop, a patch that lands in one of
+those holes is accepted while being wrong, so π̂ is an *upper bound* on the true
+repair rate and every result is stated with respect to this oracle. The
+comparison between the three memory conditions is unaffected — all three call
+the same oracle, so a permissive oracle is permissive for all of them equally.
+Read 29.9% as an upper bound on pool weakness rather than a measurement of it:
+some share of it is a planted edit that changes no behaviour at all (a
+comparison on a branch never reached), and separating the two needs coverage
+data this run does not collect.
 
 ## Selecting the corpus
 
