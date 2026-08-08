@@ -1,46 +1,67 @@
-"""A4 - differential-testing counterexample oracle.
+"""A4 - counterexample oracle over the shipped contest test pool.
 
-Generate inputs with Hypothesis, run the patch and the reference side by
-side, return the first divergence as the counterexample. Accept if none is
-found. The reference implementation is visible here only - never place it in
-a model prompt (see src/adapter.py's module docstring and the README).
+Run the candidate on test inputs and compare its stdout against the output
+AtCoder accepted; the first case where they disagree is the counterexample.
+Accept if none is found within the budget.
+
+Two things follow from ConDefects shipping expected outputs alongside inputs
+(src/adapter.py) rather than only a reference implementation:
+
+  * a round costs *one* sandbox run per case, not two - the reference's output
+    is already on disk. `reference_source` is still taken, and still never
+    goes near a model prompt, but it is only executed for the rare case whose
+    `out/` file is missing.
+
+  * the counterexample is a test case *name*, not an input. That is what goes
+    into OracleResult.args and therefore into data/episodes.jsonl and the
+    proposer's evidence block; the input text is looked back up from the task
+    when a guard replays it (src/memory.py). Contest inputs run to hundreds of
+    kilobytes, so storing them inline would bloat the log and blow the prompt.
+
+`max_examples` keeps its name and its role from the property-based version -
+the oracle's informativeness knob swept in E4 - but now means "how many of the
+shipped cases this round is allowed to run" rather than "how many inputs to
+draw". It is a *sample*, seeded per round, not a prefix: a prefix would make
+every round of an episode re-run the same first N cases and see the same
+counterexample forever.
 """
 from __future__ import annotations
 
 import dataclasses
-import math
-from typing import Any
+import random
 
-from hypothesis import HealthCheck, given, reject, seed as hyp_seed, settings
-
-from src.adapter import QuixBugsProgram, Task
-from src.sandbox import DEFAULT_TIMEOUT, Outcome, run_call
+from src.adapter import ConDefectsProgram, Task, TestCase
+from src.sandbox import DEFAULT_TIMEOUT, Outcome, run_program
 
 DEFAULT_MAX_EXAMPLES = 100
 
 
-def values_equal(a: Any, b: Any, *, rel_tol: float = 1e-6, abs_tol: float = 1e-9) -> bool:
-    """Structural equality, tolerant of float rounding (e.g. sqrt, rpn_eval)."""
-    if isinstance(a, bool) or isinstance(b, bool):
-        return a is b
-    if isinstance(a, float) or isinstance(b, float):
-        try:
-            return math.isclose(a, b, rel_tol=rel_tol, abs_tol=abs_tol)
-        except TypeError:
-            return a == b
-    if isinstance(a, (list, tuple)) and isinstance(b, (list, tuple)):
-        return len(a) == len(b) and all(values_equal(x, y, rel_tol=rel_tol, abs_tol=abs_tol) for x, y in zip(a, b))
-    if isinstance(a, dict) and isinstance(b, dict):
-        return a.keys() == b.keys() and all(
-            values_equal(a[k], b[k], rel_tol=rel_tol, abs_tol=abs_tol) for k in a
-        )
-    return a == b
+def normalize_output(text: str | None) -> list[str]:
+    """Judge-normalised form of a program's stdout.
+
+    Trailing whitespace on a line and trailing blank lines at the end are not
+    differences a contest judge counts, and neither should the oracle: a patch
+    that prints an extra newline is not a distinct failure class, it is noise
+    that would otherwise get its own failure type and its own memory bucket.
+    Everything else is compared exactly, matching ConDefects' own comparison
+    (Tool/RunTest.py: `compare_res`).
+    """
+    if text is None:
+        return []
+    lines = [line.rstrip() for line in text.splitlines()]
+    while lines and not lines[-1]:
+        lines.pop()
+    return lines
+
+
+def outputs_equal(candidate: str | None, expected: str | None) -> bool:
+    return normalize_output(candidate) == normalize_output(expected)
 
 
 @dataclasses.dataclass(frozen=True)
 class OracleResult:
     accept: bool
-    args: list | None = None
+    args: list | None = None        # [test case name] - replayable via Task.case()
     candidate: Outcome | None = None
     reference: Outcome | None = None
     reason: str | None = None       # human-readable divergence description
@@ -52,8 +73,23 @@ class OracleResult:
     oracle_error: str | None = None
 
 
-def _combined_source(task: Task, program_source: str) -> str:
-    return program_source + task.harness
+def _expected_outcome(
+    case: TestCase,
+    reference_source: str,
+    *,
+    timeout: float,
+) -> Outcome:
+    """The reference's answer for one case: the shipped out/ file if there is
+    one, otherwise the reference implementation actually run."""
+    if case.expected_output is not None:
+        return Outcome(ok=True, value=case.expected_output)
+    return run_program(reference_source, case.input_text, timeout=timeout)
+
+
+def _sample(cases: tuple[TestCase, ...], max_examples: int, seed: int) -> list[TestCase]:
+    if max_examples >= len(cases):
+        return list(cases)
+    return random.Random(seed).sample(list(cases), max_examples)
 
 
 def differential_test(
@@ -65,129 +101,93 @@ def differential_test(
     seed: int = 0,
     timeout: float = DEFAULT_TIMEOUT,
 ) -> OracleResult:
-    """Run candidate and reference on Hypothesis-drawn inputs for `task`.
+    """Run `candidate_source` on up to `max_examples` of the task's test cases.
 
-    Returns the first (shrunk) counterexample where they disagree, or
-    accept=True if none turns up within `max_examples` valid draws. An input
-    the reference itself fails on is out of the task's domain (a strategy
-    that draws one too often is a strategy bug, not a counterexample) and is
-    rejected rather than compared.
+    Returns the first case where the candidate's stdout differs from the
+    expected output (or where it crashes or times out), or accept=True if none
+    of the sampled cases separates them. A case whose reference answer cannot
+    itself be established is skipped rather than counted against the candidate.
     """
-    candidate_full = _combined_source(task, candidate_source)
-    reference_full = _combined_source(task, reference_source)
-
-    found: dict[str, Any] = {}
-    tried = {"n": 0}
-
-    @settings(
-        max_examples=max_examples,
-        deadline=None,
-        suppress_health_check=list(HealthCheck),
-        database=None,
-    )
-    @hyp_seed(seed)
-    @given(task.strategy)
-    def _run(args):
-        tried["n"] += 1
-        ref = run_call(reference_full, task.entry_point, args, timeout=timeout)
-        if not ref.ok:
-            reject()
-
-        cand = run_call(candidate_full, task.entry_point, args, timeout=timeout)
-        if cand.timed_out:
-            reason = f"candidate timed out after {timeout}s (reference returned {ref.value!r})"
-        elif not cand.ok:
-            reason = f"candidate raised {cand.error_type}: {cand.error_message}"
-        elif not values_equal(cand.value, ref.value):
-            reason = f"expected {ref.value!r}, got {cand.value!r}"
-        else:
-            return
-
-        found["args"] = args
-        found["candidate"] = cand
-        found["reference"] = ref
-        found["reason"] = reason
-        raise AssertionError(reason)
-
-    try:
-        _run()
-    except AssertionError:
-        pass
-    except (KeyboardInterrupt, SystemExit):
-        raise
-    except BaseException as exc:
-        # Hypothesis raises for reasons that are not "the candidate is wrong":
-        # Unsatisfiable when the reference rejects nearly every draw, Flaky when
-        # a candidate sitting on the sandbox's wall-clock timeout fails once and
-        # passes on the shrinking replay. Neither is evidence about the patch,
-        # and neither should take down a multi-hour sweep. If a counterexample
-        # was already found before the error (a Flaky mid-shrink, say), keep it
-        # and fall through; otherwise report the round as inconclusive.
-        if "args" not in found:
-            return OracleResult(
-                accept=False,
-                reason=f"oracle error: {type(exc).__name__}: {exc}",
-                oracle_error=f"{type(exc).__module__}.{type(exc).__name__}",
-                examples_tried=tried["n"],
-            )
-
-    if "args" in found:
+    cases = task.test_cases
+    if not cases:
         return OracleResult(
             accept=False,
-            args=found["args"],
-            candidate=found["candidate"],
-            reference=found["reference"],
-            reason=found["reason"],
-            examples_tried=tried["n"],
+            reason=f"no test data for {task.task_id} (is Test.zip unpacked?)",
+            oracle_error="src.oracle.NoTestCases",
         )
-    return OracleResult(accept=True, examples_tried=tried["n"])
+
+    tried = 0
+    for case in _sample(cases, max_examples, seed):
+        ref = _expected_outcome(case, reference_source, timeout=timeout)
+        if not ref.ok:
+            continue  # the reference cannot answer this case; it proves nothing
+        tried += 1
+
+        cand = run_program(candidate_source, case.input_text, timeout=timeout)
+        if cand.timed_out:
+            reason = f"timed out after {timeout}s on test case {case.name}"
+        elif not cand.ok:
+            reason = f"raised {cand.error_type} on test case {case.name}: {cand.error_message}"
+        elif not outputs_equal(cand.value, ref.value):
+            reason = f"wrong output on test case {case.name}"
+        else:
+            continue
+
+        return OracleResult(
+            accept=False, args=[case.name], candidate=cand, reference=ref,
+            reason=reason, examples_tried=tried,
+        )
+
+    if tried == 0:
+        return OracleResult(
+            accept=False,
+            reason=f"no usable test case for {task.name}: the reference failed every one",
+            oracle_error="src.oracle.NoUsableTestCase",
+            examples_tried=0,
+        )
+    return OracleResult(accept=True, examples_tried=tried)
 
 
 def is_truly_correct(
     task: Task,
-    program: QuixBugsProgram,
+    program: ConDefectsProgram,
     candidate_source: str,
     *,
-    big_n: int = 2000,
+    big_n: int | None = None,
     seed: int = 1_000_000_007,
     timeout: float = DEFAULT_TIMEOUT,
 ) -> bool:
-    """Stronger correctness check for a patch the (sampling-based) oracle
-    already accepted - used only for the E2 overfitting audit, never as the
-    repair loop's acceptance criterion (that stays differential_test with
-    max_examples=100, the oracle Algorithm 1 actually calls).
+    """Stronger correctness check for a patch the (sampling) oracle accepted -
+    used only for the E2 overfitting audit, never as the repair loop's
+    acceptance criterion (that stays differential_test with max_examples=100,
+    the oracle Algorithm 1 actually calls).
 
-    Two independent checks, both must pass:
-      1. Re-run differential_test with a much larger example budget and a
-         different seed, to catch inputs the original narrower search missed.
-      2. Every QuixBugs-shipped fixed testcase for this task (program.testcases()),
-         checked exactly - an independent, human-curated check. 9 of the 40
-         tasks (graph/linked-list) ship none, so step 1 alone covers those.
+    This is the plausible-vs-correct distinction the APR literature reports on
+    real-fault benchmarks: the loop accepts on a *sample* of the contest's
+    tests, so a patch can be accepted while still failing a case the sample
+    never drew. Here the candidate is run against the **entire** shipped pool
+    - the same suite AtCoder judged the original submission with.
 
-    An inconclusive step 1 (OracleResult.oracle_error) fails the check: this is
-    the overfitting audit, so "could not establish" is treated as "not clean".
+    `big_n` caps the pool for a cheap approximation; None (the default) means
+    all of it. An inconclusive run fails the check: this is the overfitting
+    audit, so "could not establish" is treated as "not clean".
     """
-    big = differential_test(
+    result = differential_test(
         task, candidate_source, program.correct_source,
-        max_examples=big_n, seed=seed, timeout=timeout,
+        max_examples=big_n if big_n is not None else len(task.test_cases),
+        seed=seed, timeout=timeout,
     )
-    if not big.accept:
-        return False
-
-    full_source = candidate_source + task.harness
-    for args, expected in program.testcases():
-        outcome = run_call(full_source, task.entry_point, list(args), timeout=timeout)
-        if not outcome.ok or not values_equal(outcome.value, expected):
-            return False
-    return True
+    return result.accept
 
 
 if __name__ == "__main__":
-    from src.adapter import TASKS, load
+    from src.adapter import SUPPORTED_PROGRAMS, TASKS, load
 
-    for name in ("gcd", "mergesort", "detect_cycle", "topological_ordering"):
+    if not SUPPORTED_PROGRAMS:
+        raise SystemExit("no ConDefects faults found - see scripts/fetch_condefects.py")
+    for name in SUPPORTED_PROGRAMS[:4]:
         task = TASKS[name]
         program = load(name)
-        result = differential_test(task, program.buggy_source, program.correct_source, max_examples=50)
-        status = "accept (no divergence found)" if result.accept else f"REJECT: {result.reason}"
-        print(f"{name}: {status} ({result.examples_tried} examples)")
+        result = differential_test(task, program.buggy_source, program.correct_source, max_examples=30)
+        status = "accept (pool did not expose the fault)" if result.accept else f"REJECT: {result.reason}"
+        print(f"{name}: {status} ({result.examples_tried} cases)")
