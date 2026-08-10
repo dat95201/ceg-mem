@@ -74,6 +74,28 @@ PRIMARY_BANDS = ("hard", "medium", "easy")
 DEFAULT_QUOTAS = {"easy": 30, "medium": 20, "hard": 30, "too_easy": 15, "dead": 20}
 
 
+# Representative pi per band, for the cost projection only. Never used to
+# select anything - a task's band comes from its own measured pi_hat.
+BAND_PI = {"dead": 0.01, "hard": 0.05, "medium": 0.13, "easy": 0.26, "too_easy": 0.60}
+
+# Measured over 4,778 logged calls at claude-haiku-4-5 ($1/$5 per Mtok):
+# mean $0.00513, median 620 in / 831 out tokens. Output is ~87% of cost, so the
+# memory arms - which add evidence to the *input* - run ~15-20% dearer, not 2x.
+USD_PER_CALL_NO_MEMORY = 0.0051
+USD_PER_CALL_MEMORY = 0.0060
+
+
+def expected_rounds(pi: float, budget: int) -> float:
+    """E[rounds] for an early-stopping episode at one-shot rate `pi`.
+
+    Truncated geometric: (1 - (1-pi)^B) / pi. Deliberately evaluated at pi
+    rather than at the per-round rate q the memory arms actually achieve. Since
+    q >= pi whenever steering helps at all, this is an upper bound on the memory
+    arms' cost and an exact figure for no_memory.
+    """
+    return (1.0 - (1.0 - pi) ** budget) / pi
+
+
 def band_of(pi_hat: float) -> str:
     for name, lo, hi in BANDS:
         if lo <= pi_hat < hi:
@@ -119,6 +141,10 @@ def main() -> None:
     parser.add_argument("--out", type=pathlib.Path, default=DATA_DIR / "tasks.json")
     parser.add_argument("--audit-out", type=pathlib.Path, default=DATA_DIR / "screening.json")
     parser.add_argument("--force", action="store_true", help="overwrite an already-frozen corpus")
+    parser.add_argument("--budget", type=int, default=20, help="B, for the cost projection")
+    parser.add_argument("--seeds-main", type=int, default=5, help="seeds in E1/E2, for the cost projection")
+    parser.add_argument("--seeds-abl", type=int, default=3, help="seeds in E3-E5, for the cost projection")
+    parser.add_argument("--sweep-size", type=int, default=30, help="E4/E5 subset, for the cost projection")
     args = parser.parse_args()
 
     quotas = dict(DEFAULT_QUOTAS)
@@ -227,7 +253,39 @@ def main() -> None:
     if short:
         print(f"SHORT: {short} - screen more candidates and re-run; the walk is "
               f"deterministic, so already-selected tasks keep their places")
-    print(f"wrote {args.out} (frozen) and {args.audit_out}")
+
+    # The grid's cost, from the counts that just came out - not from the quotas.
+    # A band that under-fills makes the corpus smaller and the run cheaper, and
+    # this is the first moment either number is knowable.
+    B = args.budget
+    e1 = sum(counts[b] * args.seeds_main * B for b in counts)
+    e2 = sum(counts[b] * args.seeds_main * 2 * expected_rounds(BAND_PI[b], B) for b in counts)
+    e3 = sum(counts[b] * args.seeds_abl * 2 * expected_rounds(BAND_PI[b], B) for b in counts)
+    n_sweep = min(args.sweep_size, len(selected))
+    sweep_pi = sum(counts[b] * BAND_PI[b] for b in counts) / max(1, len(selected))
+    e45 = 2 * 3 * n_sweep * args.seeds_abl * expected_rounds(sweep_pi, B)
+
+    lines = [
+        ("screening (already spent by this point)", None, None),
+        (f"E1  no_memory, {len(selected)} x {args.seeds_main} x {B} full budget", e1, USD_PER_CALL_NO_MEMORY),
+        (f"E2  untyped+typed, {len(selected)} x {args.seeds_main} x 2, early stop", e2, USD_PER_CALL_MEMORY),
+        (f"E3  ablations, {len(selected)} x {args.seeds_abl} x 2", e3, USD_PER_CALL_MEMORY),
+        (f"E4+E5  2 sweeps x 3 levels x {n_sweep} x {args.seeds_abl}", e45, USD_PER_CALL_MEMORY),
+    ]
+    total_calls = total_usd = 0.0
+    print(f"\nprojected grid cost at B={B} (upper bound: E[rounds] evaluated at pi, not q)")
+    for label, calls, rate in lines:
+        if calls is None:
+            print(f"  {label}")
+            continue
+        total_calls += calls
+        total_usd += calls * rate
+        print(f"  {label:56s} {calls:8,.0f} calls  ${calls * rate:7,.0f}")
+    print(f"  {'TOTAL':56s} {total_calls:8,.0f} calls  ${total_usd:7,.0f}")
+    print(f"  set BUDGET_USD_CAP above ${total_usd:,.0f} + whatever data/calls.jsonl "
+          f"already carries (llm.spent() sums the whole file)")
+
+    print(f"\nwrote {args.out} (frozen) and {args.audit_out}")
 
 
 if __name__ == "__main__":

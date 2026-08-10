@@ -428,11 +428,13 @@ every accept and writes the verdict to `data/overfit_checks.jsonl`, which is the
 series to plot.
 
 E4's levels stop at 20. `src/oracle.py::_sample` returns the whole pool whenever
-`max_examples ≥ len(cases)`, and 115 of 120 corpus tasks ship ≤ 100 test cases,
-so levels of 100 and 300 are the same experiment on 96% of the corpus — they
-would cost twice and vary nothing. The same fact is why the overfitting audit is
-near-vacuous in E2 (§VI-C): the sampled oracle already *is* the full oracle
-almost everywhere, so E4 is the only place ρ actually moves.
+`max_examples ≥ len(cases)`, and across the *benchmark* — not just some corpus —
+the test pools are small: median 30 cases, 97.0% at ≤ 80, 98.9% at ≤ 100, and a
+maximum of **148**. So `--max-examples 300` never differs from running the whole
+pool anywhere in ConDefects, and 100 differs on 1.1% of coding tasks. Those two
+levels are the same experiment at twice the price. The same fact is why the
+overfitting audit is near-vacuous in E2 (§VI-C): the sampled oracle already *is*
+the full oracle almost everywhere, so E4 is the only place ρ actually moves.
 
 The sweep subset must be pre-declared and shared: pass the same list to
 `run_eval.py --programs` and to `freeze_results.py --sweep-programs`, and draw it
@@ -448,25 +450,47 @@ $0.00513 per call**, median $0.00472, median 620 in / 831 out tokens. Output
 dominates at ~87% of cost, so the memory arms — which add evidence to the
 *input* — run only about 15–20% dearer than no-memory, not double.
 
-At B = 20 over the 115-task corpus the quotas above define (80 primary, 35
-outside the analysis range):
+**The grid's cost is not knowable until the screen has run.** The quotas in
+`select_corpus.py` are a ceiling, not a prediction: each band takes
+`min(quota, available)`, and §V-F's distribution says `medium` is the trough
+between two modes, so it is the band most likely to come up short. A corpus that
+under-fills is smaller *and* cheaper, and both numbers land at the same moment.
 
-| | calls | est. |
-|---|---|---|
-| screening, two stages over a 360-fault pool | ~5,800 | $30 |
-| E1 — 115 × 5 × 20, full budget | ~11,500 | $59 |
-| E2 — 115 × 5 × 2 arms, early stop | ~9,800 | $59 |
-| E3 — 115 × 3 × 2 configs | ~5,900 | $35 |
-| E4 — 3 levels × 30 × 3 | ~2,300 | $14 |
-| E5 — 3 levels × 30 × 3 | ~2,300 | $14 |
-| retries, misc | 1,500 | $8 |
-| **total** | **~39,000** | **~$217** |
+So the projection lives in `select_corpus.py`, computed from the counts it just
+produced rather than written down here:
 
-Set `BUDGET_USD_CAP` above that *plus* whatever `data/calls.jsonl` already
-carries — `llm.spent()` sums the whole file, so prior spend counts against the
-cap. Dropping E4 and cutting E3 to 2 seeds brings it near $150; halving every
-quota brings it near $120 and still leaves the primary comparison resting on 40
-tasks against the 12 §VI-A found in the pilot corpus.
+```
+projected grid cost at B=20 (upper bound: E[rounds] evaluated at pi, not q)
+  E1  no_memory, 94 x 5 x 20 full budget          9,400 calls  $  48
+  E2  untyped+typed, 94 x 5 x 2, early stop       7,697 calls  $  46
+  E3  ablations, 94 x 3 x 2                       4,618 calls  $  28
+  E4+E5  2 sweeps x 3 levels x 30 x 3             2,520 calls  $  15
+  TOTAL                                          24,236 calls  $ 137
+```
+
+What *is* fixed in advance is the rate card and the shape of the arithmetic:
+
+| | |
+|---|---|
+| no-memory / screening call | $0.0051 |
+| memory-arm call | $0.0060 |
+| E1 calls | `N × seeds × B` (full budget, no early stop) |
+| E2 calls | `N × seeds × 2 × E[rounds]` |
+| E[rounds] at one-shot rate π | `(1 − (1−π)^B) / π` |
+
+E[rounds] is evaluated at π rather than at the per-round rate q the memory arms
+achieve. Since q ≥ π whenever steering helps at all, every memory-arm figure is
+an upper bound; only E1's is exact. Per-band π used for the projection:
+`dead` 0.01, `hard` 0.05, `medium` 0.13, `easy` 0.26, `too_easy` 0.60 —
+projection only, never selection.
+
+Screening is the one line that *can* be budgeted up front, because the pool size
+is chosen rather than discovered: a 360-fault pool at 8 draws each, plus 12 more
+on whatever survives stage A, is ~5,800 calls ≈ **$30**.
+
+Set `BUDGET_USD_CAP` from the projection *plus* whatever `data/calls.jsonl`
+already carries — `llm.spent()` sums the whole file, so prior spend counts
+against the cap.
 
 Wall clock is the binding constraint more often than money: the pilot ran at
 ~10.7 s/call (most of it sandbox execution, not the API), and neither

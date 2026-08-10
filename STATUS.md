@@ -108,10 +108,15 @@ proxy-easy at median π̂ = 0.300 and proxy-hard at 0.038) and let
 `select_corpus.py`'s shortfall report drive a top-up; the walk is deterministic
 over the pool order, so a top-up leaves already-selected tasks in place.
 
-The primary comparison rests on **80 tasks × 5 seeds**, against the **12 of 60**
+The quotas *ask* for 80 primary tasks (30 + 20 + 30) against the **12 of 60**
 §VI-A found in the pilot corpus — §VI-A's verdict on that corpus was
 *"underpowered for its own primary metric, and this is knowable before spending
-anything."*
+anything."* Whether 80 is what the screen delivers is not knowable until it has
+run: `select_corpus.py` prints the realised counts and flags any band that came
+up short, and a short band is a signal to screen more candidates in the matching
+rating range, not to lower the target. No number downstream of N — corpus size,
+primary-comparison size, grid cost — is settled before that point, and none is
+quoted here as if it were.
 
 ### The low-π strata are not controls — §VI-A's framing is too narrow
 
@@ -259,7 +264,9 @@ It does need writing before E5 is reported.
 ### Not a bug, but a constraint on E4
 
 `src/oracle.py::_sample` returns the whole pool when `max_examples ≥ len(cases)`,
-and 115 of 120 tasks ship ≤ 100 test cases. So `--max-examples 300` and `100` are
+and across the benchmark the pools are small: median 30 cases, 97.0% at ≤ 80,
+98.9% at ≤ 100, maximum 148 — so `--max-examples 300` never differs from the full
+pool anywhere in ConDefects. `--max-examples 300` and `100` are
 the same experiment on 96% of the corpus. E4's levels are 20 / 8 / 3 with 100 as
 the reference cell E2 already paid for. The same fact is why §VI-C calls the
 overfitting audit near-vacuous: the sampled oracle already *is* the full oracle
@@ -277,20 +284,34 @@ Measured on 4,778 logged calls: **$0.00513/call** mean, $0.00472 median, 620 in 
 831 out median tokens. Output is ~87% of cost, so the memory arms run ~15–20%
 dearer than no-memory rather than double.
 
+**The grid's total is not knowable yet, and should not be quoted as if it were.**
+The quotas in `select_corpus.py` are a ceiling — each band takes
+`min(quota, available)` — and §V-F's distribution makes `medium` the band most
+likely to come up short. N, the primary-comparison size, and the cost all become
+known at the same moment: when `select_corpus.py` prints its counts. It prints
+the cost projection there, from those counts.
+
+Only two lines can be budgeted in advance:
+
 | | calls | est. |
 |---|---|---|
-| screening, two stages over a 360-fault pool | ~5,800 | $30 |
-| E1 — 115 × 5 × 20, full budget | ~11,500 | $59 |
-| E2 — 115 × 5 × 2 arms, early stop | ~9,800 | $59 |
-| E3 — 115 × 3 × 2 configs | ~5,900 | $35 |
-| E4, E5 — 3 levels × 30 × 3 each | ~4,600 | $28 |
-| retries, misc | 1,500 | $8 |
-| **total** | **~39,000** | **~$217** |
+| screening — 360-fault pool, 8 draws + 12 on stage-A survivors | ~5,800 | **$30** |
+| already spent (`data/calls.jsonl`, 4,778 calls) | — | **$24.52** |
+
+For the rest, what is fixed is the rate card ($0.0051/call no-memory,
+$0.0060/call memory arms) and the arithmetic: E1 costs `N × seeds × B`, the
+early-stopping arms cost `N × seeds × arms × E[rounds]` with
+`E[rounds] = (1 − (1−π)^B)/π` evaluated per band. That last substitution uses π
+where the memory arms actually achieve q ≥ π, so every memory-arm figure is an
+upper bound and only E1's is exact.
+
+As an order of magnitude: a corpus that fills every quota (115 tasks) projects to
+roughly $217; the synthetic under-fill in `select_corpus.py`'s own test (94
+tasks, `hard` 20 short) projects to $137. **Both are conditional on the screen.**
 
 `BUDGET_USD_CAP` is currently **150.0** and `llm.spent()` sums the whole of
-`data/calls.jsonl`, so the $24.52 already spent counts against it. **Raise the
-cap before starting E1** or the sweep will stop mid-run. Dropping E4 and cutting
-E3 to 2 seeds brings the total near $150.
+`data/calls.jsonl`, so the $24.52 already spent counts against it. Raise it after
+the screen, from the projection — not before, and not from a number in this file.
 
 Wall clock binds harder than money: the pilot ran at ~10.7 s/call, most of it
 sandbox execution rather than API latency, and neither `run_eval.py` nor
