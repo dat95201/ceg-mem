@@ -47,6 +47,13 @@ class RoundRecord:
     # Set when the oracle could not reach a verdict (src.oracle.OracleResult):
     # the round consumed budget but is not a refutation and carries no type.
     oracle_error: str | None = None
+    # Set when the *proposer* failed to return a patch at all
+    # (src.proposer.TruncatedResponse). Same treatment as oracle_error: the
+    # round spent a proposal, but nothing was refuted, so no type is recorded
+    # and memory is left untouched. Kept as a separate field because the two
+    # have different causes and different fixes - one is a property of the
+    # test pool, the other of the response budget (paper SS VI-D-a).
+    proposal_error: str | None = None
 
     def to_json(self) -> dict[str, Any]:
         return dataclasses.asdict(self)
