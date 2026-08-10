@@ -1,17 +1,34 @@
-"""Stratify the 40 frozen tasks into easy/medium/hard by measured pi_hat.
+"""Stratify the frozen corpus into the paper's pi bands, and audit the drift.
 
-Reads data/pi_pilot.json (must cover every task in the frozen data/tasks.json
-- run `python3 scripts/measure_pi.py --programs all` first) and splits tasks
-into terciles by pi_hat: the lowest third is "hard" (least likely the LLM
-proposes a correct patch in one shot), the highest third is "easy". This
-mirrors the paper's own stratification story (Easy/Medium/Hard by pi) but the
-tercile boundaries here come from the *measured* pi_hat distribution, not
-imposed from the synthetic study's pi ranges - those are recorded alongside
-purely as a reference point, not as thresholds.
+The bands are **absolute** - the proposal's own Easy [0.18, 0.35], Medium
+[0.08, 0.18), Hard [0.02, 0.08), plus the two control bands outside the
+analysis range (scripts/select_corpus.py holds the same table). They are not
+terciles of whatever happens to be on disk.
 
-Writes data/strata.json with "frozen": true once written; the "khoa lai,
-khong sua sau" (freeze, don't touch again) requirement from the plan means
-re-running this script is a no-op unless --force is passed.
+This used to split the corpus into terciles of the measured pi_hat. That is
+wrong for the thing SS VI-A of the paper does with the strata: Table II reads
+informativeness off *absolute* pi, so a tercile boundary that floats with the
+corpus renames the bands every time the corpus changes and makes "the effect
+is predicted in the middle band" untestable. On a bimodal pi_hat distribution
+- which is what SS V-F measured - terciles are worse than uninformative: they
+put pi_hat = 0.00 and pi_hat = 0.05 in different strata and pi_hat = 0.30 and
+pi_hat = 1.00 in the same one.
+
+Two pi_hat's, deliberately, and the distinction is the whole of SS VI-A-c:
+
+  selection-time pi_hat  (`screen_pi_hat`, from scripts/measure_pi.py) fixes
+      the stratum. Measured before any treatment, so stratifying on it is a
+      controlled factor, not conditioning on an outcome.
+  reported pi_hat        (from E1 via data/theory_fit.json) is what results
+      tables print. An independent sample, so regression to the mean cannot
+      inflate it.
+
+Tasks migrate between the two - that is expected, and the migration matrix is
+written out rather than hidden, because its size *is* the regression-to-the-
+mean term SS VI-A-c warns about.
+
+Writes data/strata.json with "frozen": true; re-running is a no-op unless
+--force is passed.
 """
 from __future__ import annotations
 
@@ -24,36 +41,46 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 
-# For context only in the output - not enforced as thresholds (see module docstring).
-PAPER_REFERENCE_RANGES = {
-    "easy": [0.18, 0.35],
-    "medium": [0.08, 0.18],
-    "hard": [0.02, 0.08],
-}
+from scripts.select_corpus import BANDS, PRIMARY_BANDS, band_of  # noqa: E402
+
+# Enforced as thresholds (see module docstring), not decoration.
+PAPER_REFERENCE_RANGES = {name: [lo, hi] for name, lo, hi in BANDS}
 
 
-def _frozen_task_names() -> list[str]:
+def _frozen_corpus() -> list[dict]:
     tasks_json = DATA_DIR / "tasks.json"
     if not tasks_json.exists():
-        raise SystemExit(f"{tasks_json} missing - run scripts/validate_oracle.py first")
+        raise SystemExit(f"{tasks_json} missing - run scripts/select_corpus.py first")
     data = json.loads(tasks_json.read_text())
     if not data.get("frozen"):
-        raise SystemExit(f"{tasks_json} is not frozen - re-run scripts/validate_oracle.py")
-    return [t["name"] for t in data["tasks"]]
+        raise SystemExit(f"{tasks_json} is not frozen - re-run scripts/select_corpus.py")
+    return data["tasks"]
 
 
-def stratify(pi_by_task: dict[str, float]) -> list[dict]:
-    ordered = sorted(pi_by_task.items(), key=lambda kv: kv[1])  # ascending: hardest first
-    n = len(ordered)
-    # split into 3 near-equal groups; remainder (n % 3) goes to the earlier groups
-    base, extra = divmod(n, 3)
-    sizes = [base + (1 if i < extra else 0) for i in range(3)]
-    labels = ["hard", "medium", "easy"]
-    out, i = [], 0
-    for label, size in zip(labels, sizes):
-        for name, pi_hat in ordered[i:i + size]:
-            out.append({"name": name, "pi_hat": pi_hat, "stratum": label})
-        i += size
+def stratify(corpus: list[dict], reported_pi: dict[str, float]) -> list[dict]:
+    """One row per task: the stratum it was selected into, and where the
+    independent measurement would have put it."""
+    out = []
+    for entry in corpus:
+        name = entry["name"]
+        selected_pi = entry.get("screen_pi_hat")
+        if selected_pi is None:
+            raise SystemExit(
+                f"{name}: data/tasks.json carries no screen_pi_hat, so its stratum "
+                f"cannot be traced to a pre-treatment measurement. Re-freeze the "
+                f"corpus with scripts/select_corpus.py."
+            )
+        row = {
+            "name": name,
+            "stratum": entry.get("stratum") or band_of(selected_pi),
+            "screen_pi_hat": selected_pi,
+            "screen_calls": entry.get("screen_calls"),
+        }
+        if name in reported_pi:
+            row["reported_pi_hat"] = reported_pi[name]
+            row["reported_band"] = band_of(reported_pi[name])
+            row["moved"] = row["reported_band"] != row["stratum"]
+        out.append(row)
     return out
 
 
@@ -114,35 +141,53 @@ def main() -> None:
         if existing.get("frozen"):
             raise SystemExit(f"{out_path} is already frozen - pass --force to overwrite")
 
-    pi_path, pi_by_task, seed = _read_pi(args.pi_source or args.pi_pilot_path)
+    corpus = _frozen_corpus()
 
-    expected = set(_frozen_task_names())
-    missing = expected - set(pi_by_task)
-    if missing:
-        raise SystemExit(
-            f"{pi_path} covers {len(pi_by_task)}/{len(expected)} frozen tasks, "
-            f"missing: {sorted(missing)} - re-run E1 over the whole corpus "
-            f"(run_eval.py --modes no_memory --force-full-budget) and "
-            f"scripts/fit_theory.py"
-        )
+    # The reported pi_hat is optional here: strata come from the pre-treatment
+    # screen, so this script is runnable before E1 and gains the drift audit
+    # once E1 and fit_theory have run.
+    try:
+        pi_path, reported_pi, seed = _read_pi(args.pi_source or args.pi_pilot_path)
+    except SystemExit:
+        pi_path, reported_pi, seed = None, {}, None
 
-    tasks = stratify({name: pi_by_task[name] for name in expected})
-    counts = {label: sum(1 for t in tasks if t["stratum"] == label) for label in ("easy", "medium", "hard")}
+    tasks = stratify(corpus, reported_pi)
+    counts = {name: sum(1 for t in tasks if t["stratum"] == name) for name, _, _ in BANDS}
+    n_primary = sum(counts[b] for b in PRIMARY_BANDS)
+
+    moved = [t for t in tasks if t.get("moved")]
+    migration: dict[str, dict[str, int]] = {}
+    for t in tasks:
+        if "reported_band" in t:
+            migration.setdefault(t["stratum"], {}).setdefault(t["reported_band"], 0)
+            migration[t["stratum"]][t["reported_band"]] += 1
 
     report = {
         "frozen": True,
-        "source": str(pi_path),
+        "bands": PAPER_REFERENCE_RANGES,
+        "primary_bands": list(PRIMARY_BANDS),
+        "selection_source": "data/tasks.json screen_pi_hat (pre-treatment)",
+        "reported_source": str(pi_path) if pi_path else None,
         "seed": seed,
         "n_total": len(tasks),
+        "n_primary": n_primary,
         "counts": counts,
-        "paper_reference_ranges": PAPER_REFERENCE_RANGES,
+        "n_moved": len(moved),
+        "migration_selected_to_reported": migration,
         "tasks": tasks,
     }
     out_path.write_text(json.dumps(report, indent=2) + "\n")
 
-    print(f"stratified {len(tasks)} tasks: {counts}")
-    for t in tasks:
-        print(f"  {t['stratum']:6s} {t['name']:28s} pi_hat={t['pi_hat']:.3f}")
+    print(f"stratified {len(tasks)} tasks into absolute pi bands:")
+    for name, lo, hi in BANDS:
+        role = "primary" if name in PRIMARY_BANDS else "control"
+        print(f"  {name:9s} [{lo:.2f},{hi:.2f})  {counts[name]:3d}   {role}")
+    print(f"primary comparison rests on {n_primary} tasks")
+    if reported_pi:
+        print(f"drift vs the independent E1 measurement: {len(moved)}/{len(tasks)} "
+              f"tasks change band (regression to the mean, SS VI-A-c)")
+    else:
+        print("no reported pi_hat yet - re-run after E1 + fit_theory for the drift audit")
     print(f"wrote {out_path} (frozen)")
 
 

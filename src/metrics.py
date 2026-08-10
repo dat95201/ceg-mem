@@ -164,6 +164,15 @@ def summarize_episode(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "accepted": accepted, "first_accept_round": first_accept_round,
         "oracle_calls_to_accept": oracle_calls_to_accept,
         "guard_miss": guard_miss, "redundant_attempts": n_guarded + guard_miss,
+        # Corollary 4.4: a repair found within the budget, as a 0/1 per episode
+        # so a per-task mean is the budgeted-success *rate*. Unlike
+        # oracle_calls_to_accept this is defined on every episode, which is what
+        # makes the low-pi strata - where the corollary's "whenever B binds"
+        # actually holds - measurable at all.
+        "success_at_b": 1.0 if accepted else 0.0,
+        # Proposals = model calls, the proposal's second budget. Every round
+        # spends exactly one, guarded or not.
+        "proposals": len(effective),
     }
 
 

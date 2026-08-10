@@ -21,14 +21,26 @@ is no oracle.
 ## Reproduce
 
 ```bash
-python3 scripts/select_hard_tasks.py           # the pure draw; -> data/hard_120.json
-python3 scripts/validate_oracle.py             # gate on natural mutants; freezes data/tasks.json
-python3 scripts/measure_pool_strength.py       # planted mutants, measured not gated; -> data/pool_strength.json
+# 1. candidate pool - execution-only gates plus the natural-mutant gate. No model calls.
+python3 scripts/validate_oracle.py --select none --corpus-size 360 \
+        --min-siblings 1 --data-dir data/pool --jobs 6
 
-python3 scripts/run_eval.py --modes no_memory --force-full-budget   # E1 - also the pi_hat/q_hat corpus
-python3 scripts/build_strata.py                # freezes data/strata.json from E1's measured pi_hat
+# 2. screen the pool on measured pi. Two stages: stage A rejects the too-easy
+#    tail cheaply, stage B deepens the survivors and replays A from cache free.
+python3 scripts/measure_pi.py --calls-per-program 8  --out data/screen_a.json \
+        --programs $(python3 -c "import json;print(' '.join(t['name'] for t in json.load(open('data/pool/tasks.json'))['tasks']))")
+python3 scripts/measure_pi.py --calls-per-program 20 --out data/screen_b.json \
+        --programs $(python3 -c "import json;d=json.load(open('data/screen_a.json'))['per_program'];print(' '.join(k for k,v in d.items() if v['successes']<5))")
 
-python3 scripts/run_eval.py --modes untyped typed --check-overfit   # E2
+# 3. select the reported corpus by measured pi -> data/tasks.json, data/screening.json
+python3 scripts/select_corpus.py --screen data/screen_a.json data/screen_b.json
+python3 scripts/build_strata.py                # absolute pi bands -> data/strata.json
+python3 scripts/measure_pool_strength.py       # planted mutants, measured not gated
+
+# 4. the grid
+python3 scripts/run_eval.py --budget 20 --modes no_memory --force-full-budget   # E1
+python3 scripts/run_eval.py --budget 20 --modes untyped typed --check-overfit   # E2
+python3 scripts/build_strata.py --force        # again, now with E1's drift audit
 
 python3 scripts/freeze_results.py --experiment main       # -> data/results_real.json
 python3 scripts/analyze.py                                # -> data/analysis.json
@@ -43,6 +55,14 @@ step then truncates its rounds back at the first accept, so the arm stays
 comparable to the memory arms it is tabulated against. Do not run `no_memory`
 a second time without `--force-full-budget` — that is a different cell, and
 `scripts/analyze.py` will refuse to pool the two.
+
+Because the no-memory prompt carries no evidence and no exclusion block, it is
+byte-identical across all `--budget` rounds of an episode (`src/proposer.py`,
+`_evidence_block` returns `""` for that mode). Every round of E1 is therefore
+an independent draw of π, and E1 at 5 seeds × 20 rounds measures π̂ on 100
+draws per task — against the screen's 20, and against the 40 the pilot used.
+That is why the *reported* π̂ comes from E1 and the screen's π̂ is spent on
+selection and never printed in a results table.
 
 `run_eval.py` is resumable and caches every model call on disk, so an
 interrupted run costs nothing to restart. Both properties come from the same
@@ -62,8 +82,11 @@ and rewrites its own rows rather than appending a second copy.
 | `src/memory.py` | no-memory / untyped / typed stores |
 | `src/loop.py` | the repair loop (Algorithm 1) |
 | `src/llm.py` | model client with on-disk cache and a cost meter |
-| `scripts/select_hard_tasks.py` | the pure draw: which 120 faults, seeded and checkable |
-| `scripts/validate_oracle.py` | usability + natural-mutant gate; freezes the corpus |
+| `scripts/select_hard_tasks.py` | the pure draw: which faults, seeded and checkable |
+| `scripts/validate_oracle.py` | usability + natural-mutant gate; freezes the candidate pool |
+| `scripts/measure_pi.py` | the π screen: N i.i.d. no-memory draws per candidate |
+| `scripts/select_corpus.py` | stage 2: fills the π bands; freezes the corpus + the screening audit |
+| `scripts/build_strata.py` | absolute π bands, and the selection-vs-reported drift audit |
 | `scripts/measure_pool_strength.py` | planted mutants on the frozen corpus: how blind is the pool |
 | `scripts/` | experiment driver and consistency checker |
 | `paper/` | LaTeX source (IEEEtran) |
@@ -190,63 +213,265 @@ data this run does not collect.
 
 ## Selecting the corpus
 
-`validate_oracle.py --select hard` (the default) freezes 120 faults drawn from
-the hard band and nothing else. The pilot is what retired the earlier
-easy/medium/hard quotas: median π̂ came out 0.300 easy, 0.275 medium, 0.038
-hard, so two thirds of that corpus sat where the proposer usually succeeds on
-the first try and no memory condition can separate from another. The budget now
-buys 120 of the discriminating cells rather than 40 of them plus 80 that mostly
-answer themselves.
+Selection runs in two stages, and they answer different questions. Stage 1
+(`validate_oracle.py`) asks whether a fault is *usable* — test data, a working
+reference, a real refutation, an oracle that catches mutants it has not seen.
+It costs no model calls and it freezes a **candidate pool**, not the corpus.
+Stage 2 (`measure_pi.py` → `select_corpus.py`) asks whether a usable fault is
+*informative*, and that question can only be answered by measuring π.
 
-The band is an absolute AtCoder rating floor — `--hard-floor`, default 1600 —
-not a tercile of whatever is on disk. π is *measured* (`scripts/measure_pi.py`
-spends a model call per sample) so it cannot drive selection, and the rating
-ConDefects ships in `difficulty.txt` stands in for it: the pilot puts the band
-above 1600 at π̂ ≈ 0.04, inside the paper's Hard range of 0.02–0.08. Terciles
-moved with the test tree — 1577 on the salvaged partial tree, 1639 on the full
-one — so the same seed named a different corpus depending on how much of the
-download had survived, which is not a property a frozen corpus may have. 1600 is
-AtCoder's own blue boundary, fixed outside this project. The substitution is
-recorded as `strata_selection.proxy`; `scripts/build_strata.py` remains the
-authority on the strata the paper reports.
+### Why π has to drive selection
 
+An earlier revision refused to let it, on the ground that a measured quantity
+cannot name a reproducible corpus, and substituted the AtCoder rating shipped in
+`difficulty.txt`. The substitution does not work, and the paper says why.
+
+§VI-A of the paper reads informativeness off *absolute* π at budget B. Under the
+no-memory arm every round is an independent Bernoulli draw, so π alone fixes both
+Pr[accept within B] and E[rounds | accept]. Two regimes contribute nothing:
+
+- **π ≳ 0.5** — the first proposal is accepted in all three conditions. No
+  counterexample is produced, so nothing is ever stored, and the cell cannot
+  distinguish typed from no-memory. Not because the hypothesis is false but
+  because the memory was never written to.
+- **π below the band** — the episode exhausts B without accepting, and the
+  primary metric (§VII-a: oracle calls before an accepted patch) is averaged over
+  accepted episodes only, so the task supplies no datum to it.
+
+The rating proxy cannot separate those. §V-G measured it: Spearman(rating, π̂) =
+−0.350 on 60 tasks — monotone in the intended direction, moderately predictive,
+and nowhere near sharp enough to place a task in a band 0.10 wide. Contest
+difficulty measures how hard a problem is to solve from scratch; the task here is
+to repair an almost-correct program.
+
+Worse, the proxy pointed the wrong way. A rating floor of 1600 selects the band
+§V-G puts at median π̂ = 0.038 — which is inside the proposal's Hard range
+[0.02, 0.08] and therefore looks right, but at B = 12 sits in the regime §VI-A-a
+calls *too hard*: Pr[accept] = 0.46 at π = 0.05, and the primary metric is
+conditioned on accepting. Meanwhile the proxy-easy and proxy-medium terciles that
+floor discarded came in at median π̂ = 0.300 and 0.275 — squarely inside the
+informative window. The floor kept the band that answers nothing and threw away
+the band that answers the question.
+
+### The bands, and the two π̂'s
+
+`scripts/select_corpus.py` fills absolute quotas. The bands are the proposal's
+own, held in one table shared with `scripts/build_strata.py`:
+
+| stratum | π̂ | quota | role |
+|---|---|---|---|
+| `dead` | [0.00, 0.02) | 20 | below the analysis range; B binds hardest, memory grows longest |
+| `hard` | [0.02, 0.08) | 30 | primary — **largest predicted effect** |
+| `medium` | [0.08, 0.18) | 20 | primary |
+| `easy` | [0.18, 0.35] | 30 | primary |
+| `too_easy` | (0.35, 1.00] | 15 | control — predicted null, nothing is ever stored |
+
+The quotas are unequal for two reasons, one of supply and one of demand.
+
+**Supply.** §V-F's π̂ distribution is bimodal: of 60 tasks, 25 above 0.35 and 16
+below 0.02, leaving 4 Easy / 4 Medium / 11 Hard. `medium` is the trough between
+the modes, so a quota of 30 there would demand ~450 screened candidates on its
+own. Screen in rating-stratified batches — low-rated candidates feed
+`easy`/`too_easy` (§V-G puts the proxy-easy tercile at median π̂ = 0.300),
+high-rated ones feed `hard`/`dead` (median 0.038) — and let `select_corpus.py`'s
+shortfall report drive a top-up. The walk is deterministic over the pool order,
+so a top-up leaves every already-selected task exactly where it was.
+
+**Demand — and this is the part that a naive reading of §VI-A gets backwards.**
+The proposal's own simulation puts the largest predicted effect at the *low*-π
+end: Vargha–Delaney A₁₂ = 0.83 / 0.96 / **1.00** for Easy / Medium / Hard,
+oracle calls 23.07 → 6.50 on Hard against 2.6× overall, and 16.62 redundant
+attempts on Hard. Proposition 4.5 states its guard-cost gap *"grows with task
+difficulty — smaller π accumulates more refuted types before a repair"*, and
+Corollary 4.4's budgeted-success advantage holds *"whenever B binds"*, which is
+the low-π regime by definition.
+
+§VI-A's "a task at π < 0.1 contributes no datum" is true of exactly one metric —
+oracle calls to repair, which is conditioned on accepting. It is false of the
+other four. Three of the proposal's four theoretical results are most visible
+precisely where that one metric goes undefined, so `hard` gets a full quota and
+`dead` a generous one. Only `too_easy` is a pure control: there the first
+proposal is accepted, nothing is ever stored, and all three conditions coincide
+by construction.
+
+### Metrics
+
+The proposal's §5 lists six per-episode metrics; `scripts/analyze.py` computes
+five of them, each per stratum and pooled, with a per-task mean over seeds and a
+10⁴-resample bootstrap over tasks, Wilcoxon signed-rank paired on tasks,
+Vargha–Delaney A₁₂, and Benjamini–Hochberg across the three primary strata.
+
+| metric | result | defined on |
+|---|---|---|
+| `oracle_calls_to_accept` | Thm 4.3(a) — primary cost | accepted episodes only |
+| `redundant_attempts` | Thm 4.3(b) — exactly zero for typed | every episode |
+| `success_at_b` | Cor. 4.4 — budgeted success | every episode |
+| `guard_evaluations` | Prop. 4.5 — Θ(m) vs O(1) | every episode |
+| `proposals` | the model-call budget | every episode |
+
+The sixth, **anchoring rate** (RQ2: the failure mode typed steering introduces),
+is not yet computed — see STATUS. Note that in this implementation it cannot
+arise at the guard: `TypedMemory.guard` re-runs the matched bucket's stored
+counterexample (`memory.py::_still_refutes`) and blocks only when it *still*
+refutes, so a blocked candidate provably fails. Anchoring here is a
+generation-side effect of the exclusion block, and measuring it means asking
+whether the reference patch's own class was named in that block.
+
+Two π̂'s, and keeping them apart is the whole of §VI-A-c:
+
+- **selecting π̂** — `screen_pi_hat` in `data/tasks.json`, from the stage-2
+  screen. Fixes the stratum. Measured on the no-memory arm *before any treatment
+  is applied*, which makes it dose-range choice rather than outcome selection.
+- **reported π̂** — from E1, via `data/theory_fit.json`. What results tables
+  print. A different sample with a different cache nonce, so conditioning on the
+  first cannot inflate the second.
+
+Tasks migrate between the two. That is regression to the mean and it is expected;
+`build_strata.py` writes the migration matrix out rather than hiding it, because
+its size *is* the term §VI-A-c warns about. `data/screening.json` records every
+candidate screened, its π̂ and why it was or was not taken — the full excluded
+distribution that §VI-A-c requires to be reported.
+
+### The budget is B = 20, not 12
+
+The one deliberate deviation from §IX-B, forced by §VI-A-a's own arithmetic:
+
+| π | Pr[accept] at B=12 | at B=20 |
+|---|---|---|
+| 0.02 | 0.215 | 0.332 |
+| 0.05 | 0.460 | 0.642 |
+| 0.08 | 0.632 | **0.811** |
+| 0.10 | 0.718 | 0.878 |
+| 0.20 | 0.931 | 0.988 |
+
+At B = 12 the primary metric does not reach the proposal's Hard band at all, and
+only half-reaches Medium — the informative window starts around π = 0.13, above
+Medium's floor. B = 20 brings the window down to π = 0.08 and makes
+[0.08, 0.35] — the interval §VI-A itself reports counts for — actually usable.
+The cost is 67% more calls per non-accepting episode, which is paid mostly on the
+two control strata.
+
+### What the seed still fixes
+
+Stage 1 keeps every reproducibility property the rating floor was introduced to
+protect; it just applies them to the candidate pool instead of to the corpus.
 Everything the seed touches is a pure function evaluated before any program
 runs: take the faults in adapter order, drop those whose coding task ships no
-test data, drop those rated below the floor, shuffle with `random.Random(seed)`,
-drop those whose coding task supplies no sibling wrong submission, then walk
-that order one fault per coding task until 120 have passed.
+test data, shuffle with `random.Random(seed)`, drop those whose coding task
+supplies no sibling wrong submission, then walk that order one fault per coding
+task until the pool is full. `--select none` is the mode that does this across
+every rating; `--select hard` (a floor) and `--select terciles` remain for
+re-deriving the retired draws, and neither is used by the pipeline above.
+
+Stage 2 then adds exactly one non-pure input — measured π̂ — and records it in
+full (`data/screening.json`), so a re-run can be checked against the freeze
+rather than trusted. The corpus is reproducible from *the seed plus the screen*,
+and the screen is an artifact, not a hidden state. This is a real weakening of
+the earlier "reproducible from the seed alone" property and it is the price of
+§VI-A: a corpus that cannot see π cannot be calibrated to π.
 
 The sibling filter runs *after* the shuffle, deliberately. Both orders give a
 uniform sample — filtering a uniformly shuffled list leaves the survivors
 uniformly ordered — but only this one is stable: adding a constraint removes
 the faults that fail it and leaves every other fault where it was. Adding
-`--min-siblings 1` this way kept 91 of the previous draw's 120; filtering
+`--min-siblings 1` this way kept 91 of a previous draw's 120; filtering
 before the shuffle kept 18, discarding tasks for no reason but a changed index.
-The rating floor stays before the shuffle because it is not an eligibility
-constraint — it defines which population the corpus is a sample of, so changing
-it should redraw, and does.
-`data/tasks.json` records the floor, the seed, the pool size and a SHA-256 of
-the candidate order, so a re-run can be *checked* against the freeze rather than
-trusted. `--jobs` changes how many candidates are in flight, never which are
-chosen — though a program near the sandbox's wall-clock limit can time out under
-load when it would not have serially, so re-run a publication freeze with
+`data/pool/tasks.json` records the seed, the pool size and a SHA-256 of the
+candidate order. `--jobs` changes how many candidates are in flight, never which
+are chosen — though a program near the sandbox's wall-clock limit can time out
+under load when it would not have serially, so re-run a publication freeze with
 `--jobs 1` if that matters.
 
 The walk claims a coding task the moment one of its faults reaches stage 2, so
 a task whose fault fails the mutation gate is spent, and the run refuses to
-start unless the pool holds 1.5 coding tasks per corpus slot (and warns below
-2.0). Requiring a natural mutant is what makes that tight: the floor-1600 pool
-falls from 336 coding tasks to **188**, because the harder a contest problem
-the fewer people submit to it and the fewer wrong submissions exist. Requiring
-*three* natural mutants would leave 68 — short of the corpus itself — which is
-why `--min-siblings` is 1 and up to two of a task's three mutant slots may go
-unfilled. `--select terciles` restores the retired quota behaviour, `--select
-none` samples across every rating.
+start unless the pool holds 1.5 coding tasks per slot (and warns below 2.0).
+Requiring a natural mutant is what makes that tight — the harder a contest
+problem, the fewer people submit to it and the fewer wrong submissions exist:
+
+| AtCoder rating | coding tasks with test data | …and ≥1 sibling |
+|---|---|---|
+| < 800 | 412 | 299 |
+| 800–1200 | 112 | 81 |
+| 1200–1600 | 114 | 78 |
+| 1600–2200 | 155 | 97 |
+| ≥ 2200 | 181 | 91 |
+| **total** | **980** | **646** |
+
+Sampling across every rating rather than above a floor is what makes a 280-fault
+candidate pool affordable: the floor-1600 pool holds 188 coding tasks, the
+unfiltered one 646. Requiring *three* natural mutants would leave far fewer,
+which is why `--min-siblings` is 1 and up to two of a task's three mutant slots
+may go unfilled.
+
+## Experiments
+
+One driver, one grid — `(task × condition × seed)` — with different flags. All
+five run at `--budget 20`.
+
+| | command | seeds | scope |
+|---|---|---|---|
+| **E1** no-memory arm | `--modes no_memory --force-full-budget` | 1–5 | whole corpus |
+| **E2** memory arms | `--modes untyped typed --check-overfit` | 1–5 | whole corpus |
+| **E3** ablation | `--modes typed --guard off` / `--steer off` | 1–3 | whole corpus |
+| **E4** oracle sweep | `--modes typed --max-examples 20 \| 8 \| 3 --check-overfit` | 1–3 | 30-task subset |
+| **E5** typing sweep | `--modes typed --typing-noise-c 0.9 \| 0.75 \| 0.5` | 1–3 | 30-task subset |
+
+E4's reference level is `--max-examples 100` and E5's is `c = 1.0`; both are the
+typed cell E2 already ran, so neither sweep pays for its own baseline —
+`run_eval.py` recognises the cell and skips it.
+
+**E4 must be read off `is_truly_correct`, not off `accept`.** Lowering
+`max_examples` weakens the oracle, so more wrong patches are accepted and the
+apparent repair rate *rises*; reported naively the sweep concludes that a less
+informative oracle repairs better. `--check-overfit` re-runs the full pool on
+every accept and writes the verdict to `data/overfit_checks.jsonl`, which is the
+series to plot.
+
+E4's levels stop at 20. `src/oracle.py::_sample` returns the whole pool whenever
+`max_examples ≥ len(cases)`, and 115 of 120 corpus tasks ship ≤ 100 test cases,
+so levels of 100 and 300 are the same experiment on 96% of the corpus — they
+would cost twice and vary nothing. The same fact is why the overfitting audit is
+near-vacuous in E2 (§VI-C): the sampled oracle already *is* the full oracle
+almost everywhere, so E4 is the only place ρ actually moves.
+
+The sweep subset must be pre-declared and shared: pass the same list to
+`run_eval.py --programs` and to `freeze_results.py --sweep-programs`, and draw it
+stratified across the π bands so a sweep is not confounded with difficulty.
 
 ## Cost
 
 Every model call records input tokens, output tokens and cost to
 `data/calls.jsonl`. The driver aborts when the configured cap is reached.
+
+Measured on 4,778 logged calls at `claude-haiku-4-5` ($1/$5 per Mtok): **mean
+$0.00513 per call**, median $0.00472, median 620 in / 831 out tokens. Output
+dominates at ~87% of cost, so the memory arms — which add evidence to the
+*input* — run only about 15–20% dearer than no-memory, not double.
+
+At B = 20 over the 115-task corpus the quotas above define (80 primary, 35
+outside the analysis range):
+
+| | calls | est. |
+|---|---|---|
+| screening, two stages over a 360-fault pool | ~5,800 | $30 |
+| E1 — 115 × 5 × 20, full budget | ~11,500 | $59 |
+| E2 — 115 × 5 × 2 arms, early stop | ~9,800 | $59 |
+| E3 — 115 × 3 × 2 configs | ~5,900 | $35 |
+| E4 — 3 levels × 30 × 3 | ~2,300 | $14 |
+| E5 — 3 levels × 30 × 3 | ~2,300 | $14 |
+| retries, misc | 1,500 | $8 |
+| **total** | **~39,000** | **~$217** |
+
+Set `BUDGET_USD_CAP` above that *plus* whatever `data/calls.jsonl` already
+carries — `llm.spent()` sums the whole file, so prior spend counts against the
+cap. Dropping E4 and cutting E3 to 2 seeds brings it near $150; halving every
+quota brings it near $120 and still leaves the primary comparison resting on 40
+tasks against the 12 §VI-A found in the pilot corpus.
+
+Wall clock is the binding constraint more often than money: the pilot ran at
+~10.7 s/call (most of it sandbox execution, not the API), and neither
+`run_eval.py` nor `measure_pi.py` parallelises. Budget roughly 100 hours for the
+full grid and run it under `tmux`/`nohup`.
 
 ## Data availability
 
