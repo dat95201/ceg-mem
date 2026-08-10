@@ -63,8 +63,18 @@ class Memory:
     def __init__(self) -> None:
         self.history: list[Attempt] = []
 
-    def store(self, attempt: Attempt) -> None:
+    def store(self, attempt: Attempt) -> Attempt:
+        """File `attempt` and return it *as filed*.
+
+        The return value matters only for TypedMemory, which may re-file an
+        attempt under a different location than its true one (Def. 3.1's
+        coherence c). Returning it lets src.loop log what memory actually
+        believes alongside what was actually true, which is the only way to
+        measure the anchoring rate without re-deriving the typing-noise RNG
+        outside the loop that owns it.
+        """
         self.history.append(attempt)
+        return attempt
 
     def guard(self, candidate_source: str, buggy_source: str) -> GuardResult:
         return GuardResult(blocked=False, evaluations=0)
@@ -126,14 +136,12 @@ class TypedMemory(Memory):
     def _true_type(self, attempt: Attempt):
         return attempt.failure_type(self.granularity)
 
-    def store(self, attempt: Attempt) -> None:
+    def store(self, attempt: Attempt) -> Attempt:
         if attempt.result.accept:
-            super().store(attempt)
-            return
+            return super().store(attempt)
         ft = self._true_type(attempt)
         if ft is None:
-            super().store(attempt)
-            return
+            return super().store(attempt)
         location = ft.location
         if self.typing_noise_c < 1.0 and self._rng.random() >= self.typing_noise_c:
             # Mistype: file this counterexample under a different location than
@@ -155,6 +163,7 @@ class TypedMemory(Memory):
 
         super().store(attempt)
         self._by_location.setdefault(location, []).append(attempt)
+        return attempt
 
     def eliminated_locations(self) -> set[str]:
         """Snapshot of eliminated buckets E, as stored (post-noise) locations."""

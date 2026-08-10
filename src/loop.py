@@ -212,15 +212,23 @@ def run_episode(
 
         attempt = Attempt.from_result(task_name, program.buggy_source, patch, result)
 
+        # Store first, then log: TypedMemory may file the attempt under a
+        # different location than its true one (Def. 3.1's coherence c), and the
+        # record has to carry both. coarse_type/fine_type stay the *true* types;
+        # stored_type is what memory believes, and the gap between them is the
+        # mistyping that scripts/measure_anchoring.py looks for.
+        stored = memory.store(attempt)
+        stored_ft = stored.failure_type(granularity)
+
         append_round(_record(
             round_index=round_index, patch=patch, accept=result.accept,
             counterexample_args=result.args, reason=result.reason,
             examples_tried=result.examples_tried,
             coarse_type=attempt.coarse_type.key if attempt.coarse_type else None,
             fine_type=attempt.fine_type.key if attempt.fine_type else None,
+            stored_type=stored_ft.key if stored_ft else None,
             guarded=False, guard_evaluations=guard_evaluations,
         ), **kwargs)
-        memory.store(attempt)
 
         if result.accept:
             if first_accept_round is None:

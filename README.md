@@ -25,29 +25,41 @@ is no oracle.
 python3 scripts/validate_oracle.py --select none --corpus-size 360 \
         --min-siblings 1 --data-dir data/pool --jobs 6
 
-# 2. screen the pool on measured pi. Two stages: stage A rejects the too-easy
-#    tail cheaply, stage B deepens the survivors and replays A from cache free.
-python3 scripts/measure_pi.py --calls-per-program 8  --out data/screen_a.json \
+# 2. screen the pool on measured pi. Stage A places everything at k=20; stage B
+#    deepens only the LOW end to k=40, where the bands are narrow. Stage B
+#    replays A's 20 draws from cache, so it costs 20 new calls per task.
+python3 scripts/measure_pi.py --calls-per-program 20 --out data/screen_a.json \
         --programs $(python3 -c "import json;print(' '.join(t['name'] for t in json.load(open('data/pool/tasks.json'))['tasks']))")
-python3 scripts/measure_pi.py --calls-per-program 20 --out data/screen_b.json \
-        --programs $(python3 -c "import json;d=json.load(open('data/screen_a.json'))['per_program'];print(' '.join(k for k,v in d.items() if v['successes']<5))")
+python3 scripts/measure_pi.py --calls-per-program 40 --out data/screen_b.json \
+        --programs $(python3 -c "import json;d=json.load(open('data/screen_a.json'))['per_program'];print(' '.join(k for k,v in d.items() if v['successes']<=4))")
 
 # 3. select the reported corpus by measured pi -> data/tasks.json, data/screening.json
 python3 scripts/select_corpus.py --screen data/screen_a.json data/screen_b.json
 python3 scripts/build_strata.py                # absolute pi bands -> data/strata.json
 python3 scripts/measure_pool_strength.py       # planted mutants, measured not gated
 
-# 4. the grid
-python3 scripts/run_eval.py --budget 20 --modes no_memory --force-full-budget   # E1
-python3 scripts/run_eval.py --budget 20 --modes untyped typed --check-overfit   # E2
-python3 scripts/build_strata.py --force        # again, now with E1's drift audit
+# 4. the grid. Run these one at a time - they all append to data/episodes.jsonl
+#    and all read llm.spent() from data/calls.jsonl, so concurrent runs race.
+python3 scripts/run_eval.py --modes no_memory --force-full-budget   # E1
+python3 scripts/run_eval.py --modes untyped typed --check-overfit   # E2
 
+# 5. the analysis chain. Order matters: freeze needs strata, fit_theory needs
+#    the frozen results, and build_strata's drift audit needs fit_theory.
 python3 scripts/freeze_results.py --experiment main       # -> data/results_real.json
 python3 scripts/analyze.py                                # -> data/analysis.json
 python3 scripts/fit_theory.py                             # -> data/theory_fit.json
+python3 scripts/build_strata.py --force                   # now with the drift audit
+python3 scripts/measure_coherence.py                      # C1/C2 off E1, no model calls
+python3 scripts/measure_anchoring.py                      # RQ2 anchoring rate, no model calls
 python3 figures/make_figures.py
 python3 scripts/check_consistency.py   # asserts every reported number matches
 ```
+
+`--budget` defaults to 20 and is deliberately *not* part of the cell key, so a
+run that passes a different one silently mixes arms rather than creating new
+cells. Leave it alone unless every arm changes together.
+
+E3–E5 and their freezes are in **Experiments** below.
 
 E1 *is* the main grid's no-memory arm. It runs to the full budget so that
 `pi_hat` and `q_hat` are estimated without early-stopping bias; the summary
@@ -87,6 +99,7 @@ and rewrites its own rows rather than appending a second copy.
 | `scripts/measure_pi.py` | the π screen: N i.i.d. no-memory draws per candidate |
 | `scripts/select_corpus.py` | stage 2: fills the π bands; freezes the corpus + the screening audit |
 | `scripts/build_strata.py` | absolute π bands, and the selection-vs-reported drift audit |
+| `scripts/measure_anchoring.py` | RQ2: how often steering rules out the class holding the fix |
 | `scripts/measure_pool_strength.py` | planted mutants on the frozen corpus: how blind is the pool |
 | `scripts/` | experiment driver and consistency checker |
 | `paper/` | LaTeX source (IEEEtran) |
@@ -310,12 +323,33 @@ Vargha–Delaney A₁₂, and Benjamini–Hochberg across the three primary stra
 | `proposals` | the model-call budget | every episode |
 
 The sixth, **anchoring rate** (RQ2: the failure mode typed steering introduces),
-is not yet computed — see STATUS. Note that in this implementation it cannot
-arise at the guard: `TypedMemory.guard` re-runs the matched bucket's stored
-counterexample (`memory.py::_still_refutes`) and blocks only when it *still*
-refutes, so a blocked candidate provably fails. Anchoring here is a
-generation-side effect of the exclusion block, and measuring it means asking
-whether the reference patch's own class was named in that block.
+comes from `scripts/measure_anchoring.py` — a post-hoc audit over
+`data/episodes.jsonl`, no model calls.
+
+It cannot arise at the guard. `TypedMemory.guard` re-runs the matched bucket's
+stored counterexample (`memory.py::_still_refutes`) and blocks only when it
+*still* refutes, so a blocked candidate provably fails at any `c`. Anchoring here
+is a generation-side effect of `_exclusion_block`: if mistyping files a
+refutation under the location the fix has to occupy, the proposer is told in
+plain words to avoid the answer.
+
+An episode is **anchored** when the reference patch's edit location entered the
+exclusion block *and* the episode never accepted. The audit also splits the
+round that first excluded it:
+
+| | |
+|---|---|
+| `by_noise` | stored location ≠ true location — Def. 3.1's mistyping. Should vanish at c = 1. |
+| `by_conflation` | stored *is* the true location: a genuinely refuted patch really does edit where the fix goes, and θ's location granularity cannot separate them. **Survives at c = 1**, so it is a property of the real type function rather than of the noise model. |
+
+`excluded but accepted anyway` is reported alongside `anchored`, because a
+proposer that repairs in spite of the exclusion is evidence about how strong the
+steering channel actually is.
+
+The target location is `edit_location(buggy, reference)`. Checked against
+ConDefects' own `faultLocation.txt` on the current corpus: it contains an
+annotated fault line on **112 of 118** comparable tasks (94.9%), **117 of 118**
+within one line.
 
 Two π̂'s, and keeping them apart is the whole of §VI-A-c:
 
@@ -485,8 +519,27 @@ an upper bound; only E1's is exact. Per-band π used for the projection:
 projection only, never selection.
 
 Screening is the one line that *can* be budgeted up front, because the pool size
-is chosen rather than discovered: a 360-fault pool at 8 draws each, plus 12 more
-on whatever survives stage A, is ~5,800 calls ≈ **$30**.
+is chosen rather than discovered: a 360-fault pool at 20 draws each, plus 20 more
+on the ~55% that come back at ≤ 4/20, is ~11,200 calls ≈ **$57**.
+
+That depth is not padding. The bands at the low end are narrow and π̂ lives on a
+grid of 1/k, so a shallow screen cannot represent them: **at k = 20 the whole
+`hard` band [0.02, 0.08) is reachable by exactly one outcome** — 1 success out of
+20 — and a genuinely hard task lands in it only about a third of the time.
+
+| true π | band | placed correctly at k=20 | at k=40 |
+|---|---|---|---|
+| 0.03 | `hard` | 33.6% | **67.3%** |
+| 0.05 | `hard` | 37.7% | **73.3%** |
+| 0.07 | `hard` | 35.3% | **63.9%** |
+| 0.12 | `medium` | 49.8% | 62.4% |
+| 0.30 | `easy` | 66.5% | 66.5% |
+| 0.60 | `too_easy` | 97.9% | 97.9% |
+
+The top of the range needs no deepening — `easy` is 0.17 wide and `too_easy` is
+open-ended — which is why stage B is spent only where the resolution is missing.
+A mislabelled `hard` band would be the expensive mistake: it is where the
+proposal predicts A₁₂ = 1.00.
 
 Set `BUDGET_USD_CAP` from the projection *plus* whatever `data/calls.jsonl`
 already carries — `llm.spent()` sums the whole file, so prior spend counts

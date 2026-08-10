@@ -21,4 +21,5 @@ paper/*.zip
 **/.DS_Store
 .claude/
 data/pool_strength_partial.json
+data/calls.jsonl
 paper/*.zip

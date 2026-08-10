@@ -66,8 +66,8 @@ paper will report.
 |---|---|---|---|---|
 | 0 | Fetch benchmark | `fetch_condefects.py` | ✅ complete | `external/ConDefects/Test` |
 | 1 | Candidate pool: usability + natural-mutant gate | `validate_oracle.py --select none` | ⬜ to re-run | `data/pool/tasks.json` |
-| 2a | π screen, stage A (k=8) | `measure_pi.py --out data/screen_a.json` | ⬜ not run | `data/screen_a.json` |
-| 2b | π screen, stage B (k=20 on survivors) | `measure_pi.py --out data/screen_b.json` | ⬜ not run | `data/screen_b.json` |
+| 2a | π screen, stage A — k=20, whole pool | `measure_pi.py --out data/screen_a.json` | ⬜ not run | `data/screen_a.json` |
+| 2b | π screen, stage B — k=40 on the low end (≤4/20) | `measure_pi.py --out data/screen_b.json` | ⬜ not run | `data/screen_b.json` |
 | 3 | Select corpus by measured π̂ | `select_corpus.py` | ⬜ not run | `data/tasks.json`, `data/screening.json` |
 | 4 | Stratify into absolute π bands | `build_strata.py` | ⬜ not run | `data/strata.json` |
 | 5 | Pool strength (measured, not gated) | `measure_pool_strength.py` | ⚠️ stale corpus | `data/pool_strength.json` |
@@ -76,6 +76,7 @@ paper will report.
 | 8 | E3–E5 — ablations & sweeps | `run_eval.py` (guard/steer, `--max-examples`, `--typing-noise-c`) | ⬜ not run | — |
 | 9 | Freeze results | `freeze_results.py` ×4 | ⬜ not run | `data/results_*.json` |
 | 10 | Analysis, theory fit, figures | `analyze.py`, `fit_theory.py`, `make_figures.py` | ⬜ not run | `data/analysis.json`, `figures/` |
+| 10b | C1/C2 and anchoring — no model calls | `measure_coherence.py`, `measure_anchoring.py` | ⬜ not run | `data/coherence_report.json`, `data/anchoring.json` |
 | 11 | Consistency check | `check_consistency.py` | ⬜ not run | — |
 
 ---
@@ -151,7 +152,7 @@ written, at no additional API cost, and three are now added:
 | `success_at_b` | **Cor. 4.4** | every episode | **added** |
 | `guard_evaluations` | **Prop. 4.5** | every episode | **added** (was recorded, never compared) |
 | `proposals` | model-call budget | every episode | **added** |
-| anchoring rate | **RQ2** | typed episodes | **still missing** — see §4 |
+| anchoring rate | **RQ2** | typed episodes | **added** — `scripts/measure_anchoring.py` |
 
 `success_at_b` is the important one. It is the co-primary that keeps the low-π
 strata measurable when the round count cannot be defined because nothing
@@ -233,7 +234,7 @@ bound on pool weakness. It must be re-run once the corpus is re-frozen.
 | B3 | `run_eval.py::_cell_key` omitted `model` and `granularity`, so a second model's sweep would skip every cell as "already complete" against the first model's rows — silently, since the driver prints a skip line either way. | **fixed** — both are in the key |
 | B4 | 3 of 510 salvaged test directories are internally inconsistent (`in/` without matching `out/`). A property of the archive, not of the salvage. | mitigated — rejected by the stage-1 guard |
 | B5 | `data/tasks.json`, `data/pool_strength.json`, `data/oracle_validation.json` and `data/episodes.jsonl` all describe the retired rating-floor corpus. | **stale** — re-freeze before use |
-| B6 | **Anchoring rate is not measured anywhere.** RQ2 of the proposal asks "what new failure mode (anchoring) does typed steering introduce?", and E5 is the experiment that answers RQ2. Without it E5 answers half its question. | **open** — needed before E5 is written up |
+| B6 | Anchoring rate was not measured anywhere, so E5 answered only half of RQ2. | **fixed** — `scripts/measure_anchoring.py`, a post-hoc CPU-only audit. Needed one logging change: `RoundRecord.stored_type` now records the key memory actually filed an attempt under, so the audit reads mistyping off the log instead of re-deriving the loop's noise RNG |
 | — | `TEST_DIR` fell back to `.` when `CONDEFECTS_TEST_DIR` was unset (`pathlib.Path("")` is `PosixPath(".")`, which is truthy). | fixed |
 | — | `_check_reference` returned "reference OK" when *every* case lacked an expected output. | fixed |
 | — | `measure_pi.py` counted `oracle_error` as a failed draw, silently producing π̂ = 0.000 across the board. | fixed — now aborts |
@@ -295,8 +296,15 @@ Only two lines can be budgeted in advance:
 
 | | calls | est. |
 |---|---|---|
-| screening — 360-fault pool, 8 draws + 12 on stage-A survivors | ~5,800 | **$30** |
+| screening — 360-fault pool at k=20, then k=40 on the ~55% at ≤4/20 | ~11,200 | **$57** |
 | already spent (`data/calls.jsonl`, 4,778 calls) | — | **$24.52** |
+
+The screen has to be that deep because π̂ lives on a grid of 1/k and the low
+bands are narrow: **at k = 20 the whole `hard` band [0.02, 0.08) is reachable by
+exactly one outcome** (1 success in 20), and a true π = 0.05 task lands in it
+37.7% of the time. At k = 40 that becomes 73.3%. `easy` and `too_easy` are wide
+enough that k = 20 already places them at 67% and 98%, so stage B is spent only
+on the tasks that came back low.
 
 For the rest, what is fixed is the rate card ($0.0051/call no-memory,
 $0.0060/call memory arms) and the arithmetic: E1 costs `N × seeds × B`, the
@@ -337,8 +345,6 @@ sandbox execution rather than API latency, and neither `run_eval.py` nor
    oracle change and the cheapest to drop.
 7. `freeze_results.py` ×4 → `analyze.py` → `fit_theory.py` → `make_figures.py` →
    `check_consistency.py`.
-
-8. Write the anchoring audit (B6) before E5 is reported. CPU only.
 
 **Paper edits this revision forces:**
 

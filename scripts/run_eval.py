@@ -13,8 +13,8 @@ different flags:
   E2 (memory arms):              --modes untyped typed --check-overfit
   E3 (ablation):                 --modes typed --guard off   (steering-only)
                                   --modes typed --steer off  (guard-only)
-  E4 (oracle-informativeness sweep):  --max-examples 300|100|30|10
-  E5 (typing-coherence sweep):        --typing-noise-c 1.0|0.9|0.75|0.5
+  E4 (oracle-informativeness sweep):  --max-examples 20|8|3 (100 = E2's cell)
+  E5 (typing-coherence sweep):        --typing-noise-c 0.9|0.75|0.5 (1.0 = E2's cell)
 
 E1 *is* the main grid's no-memory arm - run it, then run E2 over the two
 memory modes only. Running no_memory a second time without
@@ -39,16 +39,22 @@ from src.oracle import is_truly_correct
 DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 DEFAULT_OVERFIT_LOG = DATA_DIR / "overfit_checks.jsonl"
 DEFAULT_SEEDS = (1, 2, 3, 4, 5)
-DEFAULT_BUDGET = 12
+# B=20, not the proposal's 10 or the paper's 12. SS VI-A-a's own arithmetic:
+# at B=12, Pr[accept] is 0.632 at pi=0.08, so the primary metric does not reach
+# the floor of the proposal's Medium band; at B=20 it is 0.811. Note budget is
+# deliberately *not* in _cell_key - a 12-round episode is a prefix of a 20-round
+# one - so a run that forgets --budget would silently mix arms. Hence the default
+# is the value the grid actually uses.
+DEFAULT_BUDGET = 20
 
 
 def _frozen_programs() -> list[str]:
     tasks_json = DATA_DIR / "tasks.json"
     if not tasks_json.exists():
-        raise SystemExit(f"{tasks_json} missing - run scripts/validate_oracle.py first to freeze the task list")
+        raise SystemExit(f"{tasks_json} missing - run scripts/select_corpus.py first to freeze the corpus")
     data = json.loads(tasks_json.read_text())
     if not data.get("frozen"):
-        raise SystemExit(f"{tasks_json} is not frozen - re-run scripts/validate_oracle.py")
+        raise SystemExit(f"{tasks_json} is not frozen - re-run scripts/select_corpus.py")
     return [t["name"] for t in data["tasks"]]
 
 

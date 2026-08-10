@@ -44,6 +44,14 @@ class RoundRecord:
     # the cell identity (scripts/run_eval.py, scripts/freeze_results.py) and in
     # summarize_episode's decision about which rounds are comparable.
     force_full_budget: bool = False
+    # The key memory actually filed this attempt under, at the active
+    # granularity. Equal to coarse_type/fine_type except under typing noise,
+    # where TypedMemory re-files a refutation at a different location (Def. 3.1
+    # coherence c). Logging both is what lets scripts/measure_anchoring.py tell
+    # "the correct class was excluded because we mistyped" from "the correct
+    # class was excluded because theta cannot separate it from a wrong one",
+    # without re-deriving the loop's typing-noise RNG from outside.
+    stored_type: str | None = None
     # Set when the oracle could not reach a verdict (src.oracle.OracleResult):
     # the round consumed budget but is not a refutation and carries no type.
     oracle_error: str | None = None
