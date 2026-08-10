@@ -220,9 +220,28 @@ def build_prompt(
     return "\n\n".join(sections)
 
 
+class TruncatedResponse(RuntimeError):
+    """The reply carried no *closed* ```python fence.
+
+    _CODE_FENCE requires the closing fence, so a reply cut off mid-block does
+    not match. The old fallback returned the raw reply - prose and opening
+    fence included - as though it were a patch. Such a candidate always fails,
+    and src.typer then assigns it a failure type, so a harness defect entered
+    the typed memory as evidence and polluted exactly the mechanism under
+    study (paper SS VI-D-a). Raising instead lets src.loop log the round as
+    spent-but-inconclusive and leave memory untouched, the same treatment an
+    unusable oracle already gets.
+    """
+
+
 def _extract_code(text: str) -> str:
     match = _CODE_FENCE.search(text)
-    return (match.group(1) if match else text).strip() + "\n"
+    if match is None:
+        raise TruncatedResponse(
+            f"no closed ```python fence in a {len(text)}-char reply "
+            f"(ends: {text[-80:]!r})"
+        )
+    return match.group(1).strip() + "\n"
 
 
 # The proposer rewrites a whole program, so its output budget has to cover one.

@@ -131,8 +131,10 @@ def cross_refutation_rate(rows: list[dict], granularity: str, *, max_pairs_per_t
                 args = src["counterexample_args"]
                 cache_key = (task_name, json.dumps(args, sort_keys=True))  # args may nest lists - not hashable as-is
                 if cache_key not in ref_cache:
-                    ref_out = _reference_value(task_name, args)
-                    ref_cache[cache_key] = ref_out.value if ref_out.ok else None
+                    # _reference_value already unwraps the Outcome and returns
+                    # the expected stdout (or None when the case has no
+                    # establishable answer) - it is a str, not an Outcome.
+                    ref_cache[cache_key] = _reference_value(task_name, args)
                 ref_value = ref_cache[cache_key]
                 if ref_value is None:
                     continue  # no expected output for this case - not a valid comparison point

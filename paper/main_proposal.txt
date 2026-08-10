@@ -1,0 +1,1184 @@
+1
+2
+             Never Twice the Same Mistake: Counterexample-Guided                                                                                                                   59
+                                                                                                                                                                                   60
+3           Program Repair with a Typed Memory of Refuted Attempts                                                                                                                 61
+4                                                                                                                                                                                  62
+5                                                                                                                                                                                  63
+6
+                                                                               Anonymous Author(s)                                                                                 64
+7                                                                                                                                                                                  65
+     ABSTRACT                                                                                          1    INTRODUCTION
+8                                                                                                                                                                                  66
+9
+     Large language model (LLM) repair agents iterate: they propose a                                  Automated program repair (APR) has moved from search- and                   67
+10
+     patch, run the tests, read the failure, and try again. In practice they                           template-based systems [10, 11, 18, 19] to learning-based genera-           68
+11
+     waste much of their budget re-proposing variants of already-refuted                               tors [12, 39, 41] and, most recently, to agents built on large language     69
+12
+     patches, because their working memory is a flat conversational                                    models (LLMs) that repair real projects by interacting with an envi-        70
+13
+     transcript that neither precisely retrieves the relevant past failure                             ronment: they localize a fault, propose an edit, execute the test suite,    71
+14
+     nor rules out the failure class it belongs to. We present CEGMem, a                               read the failure, and revise [3, 34, 35, 37, 40]. This loop is a form of    72
+15
+     counterexample-guided repair agent whose memory is typed: every                                   counterexample-guided repair: each failing test is a counterexample         73
+16
+     refuted attempt is stored together with the counterexample that                                   that should constrain the next proposal, exactly as a failing input         74
+17
+     killed it and a failure type (an edit-location × violated-property                                drives counterexample-guided inductive synthesis (CEGIS) [28] and           75
+18
+     signature), so retrieval is precise and whole refuted classes can be                              counterexample-guided abstraction refinement (CEGAR) [7].                   76
+     excluded from future proposals. We formalize the counterexample-
+19                                                                                                        The problem: agents repeat their mistakes. The counterexample            77
+     guided repair loop and prove three properties: (i) soundness—an
+20                                                                                                     discipline is only as good as the agent’s memory of past failures.          78
+     accepted patch satisfies the tests and every accumulated counterex-
+21                                                                                                     Today that memory is almost always a flat, growing conversational           79
+     ample, and the full specification under a complete oracle; (ii) non-
+22                                                                                                     transcript: prior patches and their error messages are concatenated         80
+     repetition and a round bound—typed memory guarantees the agent
+23                                                                                                     into the prompt [20, 26, 35]. A transcript has two defects. First, it       81
+     never re-proposes a refuted class and halts within 𝐾+1 verification
+24                                                                                                     does not retrieve: as the dialogue grows it overflows the context           82
+     rounds for 𝐾 reachable failure types; and (iii) redundancy reduction—
+25                                                                                                     window and dilutes the signal, so the proposer cannot reliably tell         83
+     typed memory drives the expected number of redundant attempts
+26                                                                                                     which past failure is relevant to the patch it is about to write. Second,   84
+     to zero, strictly below untyped memory and no memory. A con-
+27                                                                                                     it does not generalize: a transcript records that specific patch 𝑝 3        85
+     trolled study over 480 synthetic repair tasks1 confirms the theory:
+28                                                                                                     failed on test 𝑡, but not that every patch sharing 𝑝 3 ’s defect—the        86
+     memory cuts verification rounds 2.6× (up to 3.6× on hard tasks),
+29                                                                                                     same off-by-one at the same line, the same missing null check—will          87
+     typed memory attains exactly zero redundant attempts on every
+30                                                                                                     fail the same way. The consequence is empirically familiar and,             88
+     run while untyped memory retains 7.2 on average, and the sim-
+31                                                                                                     as we show, theoretically unavoidable for flat memory: the agent            89
+     ulated round counts match the closed-form predictions (𝑟 =0.97).
+32                                                                                                     burns budget re-proposing minor variants of patches it has already          90
+     We further show graceful degradation under imperfect oracles and
+33                                                                                                     refuted. Because each proposal is an LLM call and each verification         91
+     noisy typing, and quantify the anchoring risk that typed steering
+34                                                                                                     is a full test-suite run, this redundancy is the dominant cost of           92
+     introduces.
+35                                                                                                     iterative repair.                                                           93
+36                                                                                                                                                                                 94
+37
+     CCS CONCEPTS                                                                                          Our insight: type the memory. We argue that a repair agent’s            95
+38   • Software and its engineering → Software verification and                                        memory of failures should be typed. When a proposed patch 𝑝 is              96
+39   validation; Automatic programming; • Computing method-                                            refuted by a counterexample 𝑥, we store the triple (𝑝, 𝑥, 𝜏), where         97
+40   ologies → Artificial intelligence.                                                                𝜏 is a failure type: a signature summarizing how the patch was              98
+41
+                                                                                                       wrong—an edit-location × violated-property tag (e.g., “still throws         99
+42   KEYWORDS                                                                                          NPE at line 42”, “off-by-one in the loop bound”). Typing changes            100
+                                                                                                       what memory can do. Retrieval becomes precise: given a new candi-
+43   automated program repair, LLM agents, counterexample-guided                                                                                                                   101
+                                                                                                       date, the agent fetches only the type-matched evidence, which fits
+44   synthesis, agent memory, non-repetition, soundness                                                                                                                            102
+45
+                                                                                                       in context and directly says which class to avoid. And refutation           103
+46
+     1 All results are produced by a controlled synthetic model of the repair loop with a              becomes class-level: a counterexample that exposes a failure type           104
+47
+     known candidate space and a counterexample oracle whose ground truth we set (no                   𝜏 rules out the entire class of patches that share 𝜏, not just the          105
+     real LLM or benchmark is executed); this is disclosed throughout and detailed in
+48   Section 5 and the data-availability statement.
+                                                                                                       one candidate. A typed memory therefore lets the agent (i) guard—           106
+49
+                                                                                                       cheaply reject a candidate whose type is already refuted before             107
+50
+     Permission to make digital or hard copies of all or part of this work for personal or             paying for verification—and (ii) steer—remove refuted types from            108
+     classroom use is granted without fee provided that copies are not made or distributed             the proposer’s support so it never generates that class again. This
+51   for profit or commercial advantage and that copies bear this notice and the full citation                                                                                     109
+52   on the first page. Copyrights for components of this work owned by others than ACM                is the agent-architecture realization of the CEGIS invariant “each          110
+53
+     must be honored. Abstracting with credit is permitted. To copy otherwise, or republish,           round eliminates at least the refuted candidate,” upgraded to “each         111
+     to post on servers or to redistribute to lists, requires prior specific permission and/or a       round eliminates a refuted type.”
+54   fee. Request permissions from permissions@acm.org.                                                                                                                            112
+55   FSE 2026, July 2026, Montréal, Canada                                                                This paper. We introduce CEGMem, a counterexample-guided                 113
+     © 2026 Association for Computing Machinery.
+56
+     ACM ISBN 978-x-xxxx-xxxx-x/YY/MM. . . $15.00                                                      repair agent with a typed memory of refuted attempts, and give it           114
+57   https://doi.org/10.1145/nnnnnnn.nnnnnnn                                                           a formal footing. We model the repair loop over a candidate space           115
+58                                                                                                 1                                                                               116
+      FSE 2026, July 2026, Montréal, Canada                                                                                                                        Anon.
+
+
+117   with a known correct/failure structure and a counterexample oracle,                             LLM repair agents and iterative refinement. LLMs repair code by       175
+118   and prove that typed memory yields soundness, non-repetition                                 conversing: ChatRepair feeds test failures back into the prompt and      176
+119   with a round bound, and a strict reduction in redundant attempts                             iterates [35]; agentic systems localize, edit, and validate over many    177
+120   (Section 4). We then validate every claim in a controlled study2                             turns [3, 37, 40], and even deliberately “agentless” pipelines retain    178
+121   over 480 repair tasks (Sections 5–7).                                                        a propose–validate loop [34]. General agent frameworks share the         179
+122                                                                                                pattern: ReAct interleaves reasoning and acting [38], Reflexion          180
+123      Contributions.                                                                            keeps verbal self-reflections in an episodic buffer [26], Self-Refine    181
+124    • An agent architecture (Section 3). CEGMem formalizes the                                  iterates on self-feedback [20], and Toolformer learns when to call       182
+125      counterexample-guided repair loop as a proposer, a typed mem-                             external tools [25]. In all of these the memory of past attempts is      183
+126      ory that both guards verification and steers proposal, and a                              a flat, growing transcript. How we differ: we replace the transcript     184
+127      counterexample oracle. We separate the two things memory                                  with a typed index of refutations and show, formally and empirically,    185
+128      does—retrieval-precise guarding and class-level steering—and                              that typing—not merely remembering—is what removes redundant             186
+129      make each a first-class, analyzable operator (Algorithm 1).                               re-proposals; flat verbal memory is exactly our untyped baseline.        187
+130    • A formal core (Section 4). We prove soundness (accepted patches                                                                                                    188
+131      satisfy the tests and all counterexamples, and the full spec un-                             Counterexample-guided synthesis and verification. The idea that       189
+132      der a complete oracle; Theorem 4.1), non-repetition and a round                           a counterexample should constrain the next candidate is the engine       190
+133      bound (typed memory never re-proposes a refuted class and                                 of CEGIS [28] and CEGAR [7], and counterexamples are produced            191
+134      halts in ≤ 𝐾+1 verification rounds; Theorem 4.2), a redundancy-                           at scale by symbolic execution [4], SMT solving [9], abstract inter-     192
+135      reduction result (expected redundant attempts are exactly zero                            pretation [8], and fuzzing [15]. Classical CEGIS assumes a complete,     193
+136      for typed memory, strictly below untyped/no memory; Theo-                                 deterministic synthesizer that provably makes progress each round;       194
+137      rem 4.3), and a guard-cost separation (typed guarding is Θ(𝐾)                             an LLM proposer is neither, so the clean CEGIS termination ar-           195
+138      versus Θ(𝐾 2 ) for untyped; Proposition 4.5).                                             gument does not transfer. How we differ: we recover a progress           196
+139    • A validating study (Sections 6–7). On 480 synthetic tasks,                                guarantee for a stochastic proposer by moving the invariant into         197
+140      memory cuts verification rounds from 11.8 to 4.6 (2.6×; up to                             memory—each round eliminates a refuted type—and we quantify              198
+141      3.6× on the hard stratum), typed memory attains exactly zero                              the redundancy that arises when that invariant is absent (no mem-        199
+142      redundant attempts on all 480 × 30 runs while untyped memory                              ory) or imprecise (untyped memory).                                      200
+143      retains 7.2 on average, and typed steering lifts success within                                                                                                    201
+144      a 10-attempt budget from 0.68 to 0.95. The simulated round                                   Memory-augmented agents. Beyond transcripts, agents have been         202
+145      counts match the closed forms 1/𝜋 and 1+𝐷 (𝑟 =0.97), and we                               given structured long-term memory: Generative Agents maintain            203
+146      chart graceful degradation under imperfect oracles and noisy                              a retrievable, reflective memory stream [23], and MemGPT man-            204
+147      typing, including a quantified anchoring risk.                                            ages a tiered memory hierarchy to fit long histories into a bounded      205
+148                                                                                                context [22]. These works show that what and how an agent re-            206
+      CEGMem reframes “agent memory” for repair from a transcript to
+149                                                                                                members materially changes behavior. How we differ: our memory           207
+      be re-read into a typed index of refutations to be reasoned over, and
+150                                                                                                is domain-specific and refutation-typed—indexed by how a patch           208
+      shows—formally and empirically—why that reframing removes an
+151                                                                                                failed—which lets us prove non-repetition and redundancy bounds          209
+      entire category of wasted work.
+152                                                                                                that generic retrieval memories do not target, and lets retrieval        210
+153                                                                                                exclude entire failure classes rather than surface similar episodes.     211
+154
+      2    BACKGROUND AND RELATED WORK                                                                                                                                      212
+155      Automated program repair. Generate-and-validate repair searches                              Benchmarks and cost. Repair and coding agents are evaluated           213
+156   a space of candidate patches and keeps those that pass a test suite,                         on Defects4J [14], BugsInPy [32], and SWE-bench [13], where the          214
+157   from evolutionary search [10] and learned patch priors [19] to                               binding budget is the number of model calls and test-suite execu-        215
+158   template- and redundancy-based methods [11, 18], and, more re-                               tions; program understanding at scale motivates related coding-          216
+159   cently, neural sequence models that generate edits directly [12,                             LLM evaluations [5] and fault localization underpins the loop [1, 33],   217
+160   30, 39, 41]. A persistent obstacle is patch overfitting: a patch can                         with analogous iterative structure appearing in neural decompila-        218
+161   pass the visible tests yet be incorrect [17, 24, 27, 36], which is why                       tion [16, 29]. How we differ: rather than report end-task pass rates,    219
+162   stronger acceptance evidence—additional tests, counterexamples,                              we isolate and bound the wasted fraction of that budget—redundant        220
+163   metamorphic relations [6]—is valuable. How we differ: we take the                            verification rounds and redundant generations—which any of these         221
+164   counterexample oracle as given and instead study the agent archi-                            systems pays and which our theory predicts precisely.                    222
+165   tecture that consumes counterexamples across rounds; our contri-                                                                                                      223
+166   bution is how refutations are remembered and reused, not a new                                                                                                        224
+                                                                                                   3 THE CEGMEM ARCHITECTURE
+167   oracle for judging a single patch.                                                                                                                                    225
+168                                                                                                3.1 Problem setup                                                        226
+169                                                                                                A repair task is a tuple (P, 𝜑, O). The candidate space P is the         227
+170   2 Our evaluation is a synthetic model of the loop, not a run of a real LLM on a real         (large, possibly unbounded) set of patches an agent may propose.         228
+171   benchmark; this is disclosed here, in Section 5, in Section 9, and in our availability       The specification 𝜑 is a predicate over patches and inputs; a patch 𝑝    229
+      statement. The synthetic design is what makes the soundness and non-repetition
+172
+      claims checkable against ground truth we set; Section 5 and PLAN.md describe the path        is correct iff it satisfies 𝜑 on every input in a domain X, sat(𝑝) :=    230
+173   to a real implementation.                                                                    ∀𝑥 ∈ X. 𝜑 (𝑝, 𝑥). We write 𝐺 = {𝑝 ∈ P : sat(𝑝)} for the set of           231
+174                                                                                            2                                                                            232
+      Never Twice the Same Mistake: Counterexample-Guided Program Repair with a Typed Memory of Refuted Attempts                  FSE 2026, July 2026, Montréal, Canada
+
+
+233                             Table 1: Notation.                                         Algorithm 1: CEGMem: counterexample-guided repair                              291
+234                                                                                        with typed memory                                                              292
+235         Symbol             Meaning                                                                                                                                    293
+                                                                                            Input: task ( P, 𝜑, O), proposer G, budget 𝐵
+236                                                                                         Output: a repaired patch, or ⊥                                                294
+            P, 𝑝               candidate space; a candidate patch
+237                                                                                       1 M ← ∅; 𝐸 ← ∅               // typed memory; eliminated types                  295
+            𝜑, sat(𝑝)          specification; 𝑝 satisfies 𝜑 on all of X
+238
+            𝐺 ⊆P               correct patches (sat(𝑝) holds)                             2 for 𝑡 ← 1 to 𝐵 do                                                             296
+239         O (𝑝)              counterexample oracle (Eq. (1))                            3     𝑝𝑡 ∼ G ( · | 𝐸 )        // steer: avoid eliminated types,                 297
+240         𝜃 (𝑝) ∈ T ∪ {⊤}    failure type of 𝑝 (⊤ if correct)                                   Eq. (3)                                                                 298
+241         𝜏 (𝑥) ∈ T          failure type witnessed by counterexample 𝑥                 4     if GuardM (𝑝𝑡 ) then                                                      299
+242         𝐾 = |T |           number of reachable failure types                          5         continue // typed retrieval already refutes 𝑝𝑡 ,                      300
+243         G                  stochastic proposer (the LLM)                                          Eq. (2)                                                             301
+244         𝜋                  P[ G proposes a correct patch]                                                                                                             302
+                                                                                          6      𝑟 ← O (𝑝𝑡 )        // the expensive verification round
+                               P[ G proposes failure type 𝜏 ], 𝜋 + 𝜏 𝑞𝜏 =1
+                                                                   Í
+245
+            𝑞𝜏                                                                                                                                                            303
+                                                                                                 if 𝑟 = accept then
+                               typed memory of triples (𝑝, 𝑥, 𝜏)
+                                                                                          7
+            M
+246                                                                                                   return 𝑝𝑡                        // sound: 𝑝𝑡 ∈ 𝐺                   304
+                               failure types eliminated so far
+                                                                                          8
+            𝐸 ⊆T
+247                                                                                                                                                                       305
+            𝜌                  oracle informativeness (Def. 3.1)                          9      𝑥𝑡 ← 𝑟 ; 𝜏𝑡 ← 𝜏 (𝑥𝑡 )
+248                                                                                                                                                                       306
+            𝑐                  typing coherence (Def. 3.1)                               10      M ← M ∪ { (𝑝𝑡 , 𝑥𝑡 , 𝜏𝑡 ) }; 𝐸 ← 𝐸 ∪ {𝜏𝑡 }          // store +
+249                            per-episode round/attempt budget                                                                                                           307
+            𝐵                                                                                     eliminate the class
+250                                                                                                                                                                       308
+                                                                                         11   return ⊥
+251                                                                                                                                                                       309
+252                                                                                                                                                                       310
+253   correct patches and assume 𝐺 ≠ ∅ (the task is repairable). A coun-                                                                                                  311
+254   terexample oracle O takes a candidate and either accepts it or returns               Guard. Before paying the oracle, the guard rejects a candidate                 312
+255   a counterexample witnessing a violation:                                           whose type is already refuted:                                                   313
+256                                                                                            Guard M (𝑝) = 1 ∃(𝑝 ′, 𝑥 ′, 𝜏 ′ ) ∈ M : 𝑥 ′ refutes 𝑝 . (2)                314
+                           (                                                                                                                       
+                             accept                 if 𝑝 ∈ 𝐺,
+257               O (𝑝) =                                                 (1)                                                                                             315
+258                         𝑥 ∈ X with ¬𝜑 (𝑝, 𝑥) if 𝑝 ∉ 𝐺 .                              A typed guard evaluates Eq. (2) against only the type-matched en-                316
+259
+                                                                                         tries {(𝑝 ′, 𝑥 ′, 𝜏 ′ ) ∈ M : 𝜏 ′ = 𝜃 (𝑝)}—an 𝑂 (1) lookup in expectation—       317
+260
+      In an APR setting O is the test suite augmented with a counterex-                  whereas an untyped guard has no index and must re-run all stored                 318
+261
+      ample generator (a property-based tester, a differential oracle, or                counterexamples, an 𝑂 (|M|) scan.                                                319
+262
+      an SMT witness); accept means “passes every check the oracle can                      Steer. Typed memory also reshapes the proposer. Writing G’s                   320
+263
+      run.” Table 1 collects notation.                                                   base distribution over types as (𝜋, {𝑞𝜏 }), the steered proposer renor-          321
+264
+                                                                                         malizes onto the not-yet-eliminated support:                                     322
+265   3.2     Failure types                                                                                      (𝜋, {𝑞𝜏 })𝑠 · 1[𝑠 ∉ 𝐸]                                   323
+266   The engine of CEGMem is a failure type: a signature that sum-                              Psteer [𝜃 =𝑠] =          Í             ,      𝑠 ∈ {⊤} ∪ T .       (3)    324
+                                                                                                                     𝜋 + 𝜏∉𝐸 𝑞𝜏
+267   marizes how a patch is wrong. Formally we posit a type map                                                                                                          325
+      𝜃 : P → T ∪ {⊤} that assigns each correct patch the symbol                         Steering is what a flat transcript cannot do: excluding a whole
+268                                                                                                                                                                       326
+      ⊤ and each incorrect patch a type in a finite set T , together with a              class from generation requires knowing the class, i.e., a type. An
+269                                                                                                                                                                       327
+      map 𝜏 that labels each counterexample with the type it witnesses.                  untyped/flat memory can guard (re-run past counterexamples) but
+270                                                                                                                                                                       328
+      In an implementation, 𝜃 is realized by tagging a candidate with,                   cannot steer, because it has no class to remove from the proposal
+271                                                                                                                                                                       329
+      e.g., its edit location and the class of property it violates (which               distribution.
+272                                                                                                                                                                       330
+273   assertion/exception, which metamorphic relation), and 𝜏 (𝑥) is read                                                                                                 331
+274   off the failing execution induced by 𝑥. Two modeling parameters
+                                                                                         3.4     The repair loop                                                          332
+275   capture the reality that types are imperfect.                                      Algorithm 1 and Figure 1 give CEGMem in full. Each round draws                   333
+276                                                                                      a (steered) proposal, guards it against memory, and—only if it                   334
+277
+         Definition 3.1 (Informativeness and coherence). The oracle is 𝜌-                survives—calls the oracle. An accepted patch is returned; a re-                  335
+278
+      informative if, when it refutes a candidate of type 𝜏, the returned                futed one is stored with its counterexample and type, eliminating                336
+279
+      counterexample generalizes to the whole class—i.e., it refutes ev-                 that type. The three memory regimes we compare are obtained by                   337
+280
+      ery candidate of type 𝜏—with probability at least 𝜌 (otherwise it                  switching operations on or off: no memory disables both guard and                338
+281
+      refutes only the specific candidate). Memory is 𝑐-coherent if it cor-              steer; untyped memory enables the 𝑂 (|M|) guard but not steering                 339
+282
+      rectly attributes a candidate or counterexample to its true type with              (a flat transcript); typed memory enables the 𝑂 (1) typed guard and              340
+283
+      probability at least 𝑐. The ideal regime is 𝜌 = 𝑐 = 1.                             steering.                                                                        341
+284                                                                                                                                                                       342
+285   3.3     Typed memory: guard and steer                                              3.5     An illustrative episode                                                  343
+286   CEGMem maintains a typed memory M, a set of triples (𝑝, 𝑥, 𝜏),                     Consider repairing a routine that indexes an array, where the correct            344
+287   and the induced set of eliminated types 𝐸 = {𝜏 : ∃(𝑝, 𝑥, 𝜏) ∈ M}.                  fix must both widen a loop bound and add a null guard. A stochastic              345
+288   Memory exposes two operations, which we deliberately keep dis-                     proposer emits patches that fall into a handful of failure classes—              346
+289   tinct because Section 7 shows they do different jobs.                              𝜏1 : off-by-one at the loop bound (throws IndexError at the last                 347
+290                                                                                  3                                                                                    348
+      FSE 2026, July 2026, Montréal, Canada                                                                                                                                               Anon.
+
+
+349         Counterexample-guided repair loop with typed memory (CEGMem)                                                  proofs are in Appendix A. We use three assumptions. Assumption 1         407
+350                                                                                                                       is structural and always holds; Assumptions 2–3 isolate the ideal        408
+351                                                                                                    accept ⇒           regime in which the guarantees are cleanest, and Section 6 measures      409
+                                                                                            sat       return patch
+352
+           Proposer
+                      candidate pt
+                                     Typed memory
+                                                       guarded
+                                                                 Counterexample
+                                                                                                                          what happens as they are relaxed.                                        410
+353          (LLM)                  guard + steer                  oracle                                                                                                                        411
+354                                                                                        refuted
+                                                                                                                             Assumption 1 (Oracle soundness). O (𝑝) = accept ⇒ 𝑝 ∈ 𝐺;              412
+                                                                                                     counterexample       equivalently, acceptance implies the patch satisfies every check the
+               type-matched evidence
+355                                                                                                     xt, type τ                                                                                 413
+356
+                                                     store (pt, xt, τ); eliminate type τ
+                                                                                                                          oracle runs. If the oracle is a complete verifier over X, acceptance     414
+357
+                                                                                                                          implies sat(𝑝).                                                          415
+358   Figure 1: The CEGMem loop. The proposer emits a candi-                                                                 Assumption 2 (Ideal typing). 𝜌 = 𝑐 = 1 (Def. 3.1): every coun-        416
+359   date; typed memory guards it (rejecting a type already re-                                                          terexample generalizes to its class and memory attributes types cor-     417
+360   futed) and steers the proposer away from eliminated types;                                                          rectly.                                                                  418
+361   the counterexample oracle either accepts or returns a coun-                                                                                                                                  419
+362   terexample 𝑥𝑡 of type 𝜏, which is stored and eliminates the                                                           Assumption 3 (Memoryless proposer). The type of each pro-              420
+363   whole class.                                                                                                        posal is drawn i.i.d. from the base distribution (𝜋, {𝑞𝜏 }𝜏 ∈T ) with    421
+364                                                                                                                       𝜋 > 0; steering (Eq. (3)) modifies its support but not the relative      422
+365                                                                                                                       weights.                                                                 423
+366   element); 𝜏2 : wrong comparison operator (< vs. <=); 𝜏3 : missing                                                   Assumption 3 is the conservative modeling choice: it endows the          424
+367   null guard (throws NullError on empty input)—plus the correct                                                       proposer with no intrinsic learning, so every improvement we prove       425
+368   class. Suppose the proposer tends to emit 𝜏1 patches (a common                                                      is attributable to memory alone. We first record the two structural      426
+369   but wrong “fix”) far more often than a correct one. We trace three                                                  guarantees, which need only Assumptions 1–2.                             427
+370   rounds.                                                                                                                                                                                      428
+371        Round 1. The proposer emits a 𝜏1 patch 𝑝 1 . The oracle runs the                                                 Theorem 4.1 (Soundness). If CEGMem returns a patch ˆ         𝑝, then   429
+372   tests and returns a counterexample 𝑥 1 : the input that triggers the                                                   𝑝) = accept and 𝑝ˆ is consistent with every counterexample ac-
+                                                                                                                          O( ˆ                                                                     430
+373   out-of-bounds access. CEGMem stores (𝑝 1, 𝑥 1, 𝜏1 ) and eliminates                                                  cumulated during the run. Under Assumption 1, 𝑝ˆ passes all oracle       431
+374   𝜏1 .                                                                                                                checks; if the oracle is complete, 𝑝ˆ ∈ 𝐺, i.e., sat( ˆ
+                                                                                                                                                                               𝑝) holds.           432
+375        Round 2. The proposer, left to itself, would again emit a 𝜏1 patch                                             Soundness is immediate but worth stating: CEGMem never returns
+                                                                                                                                                                                                   433
+376   𝑝 2 —a cosmetically different off-by-one that fails on the same 𝑥 1 .                                               a patch the oracle has not accepted, and the guard never suppresses
+                                                                                                                                                                                                   434
+377   Here the three memories diverge. No memory verifies 𝑝 2 (a wasted                                                   a correct patch, because ⊤ ∉ 𝐸 (only refuted wrong types are ever
+                                                                                                                                                                                                   435
+378   oracle call) and learns nothing. Untyped memory re-runs its whole                                                   eliminated under Assumption 2). Thus adding memory cannot cause
+                                                                                                                                                                                                   436
+379   counterexample log against 𝑝 2 , finds that 𝑥 1 still fails it, and blocks                                          a false accept or hide a genuine fix.
+                                                                                                                                                                                                   437
+380   the oracle call—but it generated 𝑝 2 , a wasted model call, and it                                                                                                                           438
+381   will generate another 𝜏1 variant next time because a flat log gives                                                     Theorem 4.2 (Non-repetition and round bound). Under As-              439
+382   the proposer no class to avoid. Typed memory never reaches this                                                      sumptions 1–3, with typed memory:                                       440
+383   situation: 𝜏1 ∈ 𝐸, so steering (Eq. (3)) has removed 𝜏1 from the                                                     (i) (Non-repetition) the agent never proposes a candidate whose fail-   441
+384   proposer’s support, and the round instead draws a new class.                                                             ure type is already eliminated; in particular no refuted patch is   442
+385        Round 3 onward. CEGMem proceeds through 𝜏2, 𝜏3, . . . , retiring                                                    ever re-proposed;                                                   443
+386   one class per verification, until the proposer draws a correct patch,                                               (ii) (Round bound) every oracle call that returns a counterexample       444
+387   which the oracle accepts (Theorem 4.1). Because each verified refu-                                                      eliminates a previously live type, so CEGMem halts after at most    445
+388   tation retires a live class, at most 𝐾+1 verifications occur (Theo-                                                      𝐾+1 oracle calls and at most 𝐾+1 proposals, where 𝐾 is the number   446
+389   rem 4.2), and no 𝜏1 patch is ever generated twice (zero redundant                                                        of reachable failure types.                                         447
+390   attempts, Theorem 4.3). The untyped agent reaches the same repair,                                                   Untyped memory attains the same 𝐾+1 oracle-call bound (its guard        448
+391   but along the way it keeps generating—and paying to generate—𝜏1                                                      blocks re-verification) but not the proposal bound. No memory attains   449
+392   variants that its guard then discards. This is the gap the rest of the                                               neither: it issues 1/𝜋 oracle calls in expectation, unbounded in the    450
+393   paper quantifies.                                                                                                    worst case.                                                             451
+394                                                                                                                                                                                                452
+395      Design rationale. CEGMem deliberately does not add a separate                                                    Theorem 4.2 is the CEGIS termination argument recovered for a            453
+396   planner or a multi-role controller; the only new state is the typed                                                 stochastic proposer: classical CEGIS makes each round eliminate the      454
+397   memory, and the only new operations are guard and steer. This                                                       refuted candidate, bounding rounds by |P |; typed memory makes           455
+398   keeps the architecture analyzable: the guarantees in Section 4 are                                                  each round eliminate the refuted type, bounding rounds by 𝐾 ≪ |P |.      456
+399   properties of memory, so they hold for any proposer G and any 𝜌-                                                    The distinction between the two memories is already visible here—        457
+400   informative oracle, and degrade predictably as the typing coherence                                                 both bound verification rounds, but only typing bounds proposals.        458
+401   𝑐 falls.                                                                                                                                                                                     459
+402                                                                                                                       4.1    Redundancy reduction                                              460
+403   4    FORMAL CORE                                                                                                    We call a proposal a redundant attempt if, at the moment it is           461
+404   We now prove that typed memory makes CEGMem sound, termi-                                                           generated, its type is already eliminated (𝜃 (𝑝𝑡 ) ∈ 𝐸)—memory           462
+405   nating with a round bound, and free of redundant attempts. All                                                      already implies it is doomed, so generating it wastes a model call,      463
+406                                                                                                                   4                                                                            464
+      Never Twice the Same Mistake: Counterexample-Guided Program Repair with a Typed Memory of Refuted Attempts               FSE 2026, July 2026, Montréal, Canada
+
+
+465   and verifying it wastes a round. Let                                               is a deliberate methodological choice, not a convenience: the claims          523
+466                                  Õ 𝑞𝜏                                                we test are soundness, non-repetition, and redundancy, which are              524
+467
+                              𝐷 :=                                             (4)       only checkable when the correct/failure structure is known exactly.           525
+                                         𝑞𝜏 + 𝜋
+                                         𝜏 ∈T
+468                                                                                      A real LLM run cannot certify that “the agent never re-proposed a             526
+469   be the expected number of distinct failure types the proposer draws                refuted class” because it cannot label the (unbounded, unknown)               527
+470   before its first correct proposal (a competing-geometric race be-                  candidate space. The synthetic model executes the same loop, guard,           528
+471   tween each type and the correct class; Lemma A.1). The next theo-                  and steering logic (Algorithm 1) that a real agent would; only the            529
+472   rem is our central quantitative result.                                            proposer and oracle are simulated. What it cannot tell us—whether             530
+473
+         Theorem 4.3 (Redundancy reduction). Under Assumptions 1–                        real failure types are coherent, whether real oracles generalize—is           531
+474
+      3:                                                                                 exactly what Section 9 flags and what Section 6’s 𝜌/𝑐 sweeps probe.           532
+475
+      (a) (Verification rounds) the expected number of oracle calls is 1/𝜋               PLAN.md details the path to a real implementation.                            533
+476                                                                                                                                                                    534
+          with no memory and 1 + 𝐷 with either
+                                             untyped or typed memory.                      Research questions.
+477                                                                                                                                                                    535
+          Since 𝜋1 −(1+𝐷) = 𝜏 𝑞𝜏 𝜋1 − 𝑞𝜏1+𝜋 ≥ 0, memory strictly reduces
+                              Í
+478                                                                                       • RQ1 (efficiency). Does typed memory reduce the cost of repair—             536
+          expected verification rounds whenever some 𝑞𝜏 > 0.                                verification rounds, redundant attempts, and budgeted success—
+479                                                                                                                                                                    537
+480
+      (b) (Redundant attempts) the expected number of redundant attempts                    relative to untyped and no memory, and how does the effect                 538
+481
+          is 0 with typed memory and 𝜋1 − 1 − 𝐷 > 0 with untyped mem-                       vary with task difficulty?                                                 539
+482
+          ory and with no memory. Hence typed memory strictly reduces                     • RQ2 (robustness). How does the advantage hold as the oracle                540
+483
+          redundant attempts below both untyped memory and no memory.                       becomes less informative (𝜌 < 1) and typing becomes noisier                541
+484   Part (a) says the two memories are equivalent in verification cost: a                 (𝑐 < 1), and what new failure mode (anchoring) does typed                  542
+485   counterexample log, typed or not, prevents re-verifying a refuted                     steering introduce?                                                        543
+486   class. Part (b) says they are not equivalent in generation cost: only               • RQ3 (mechanism & theory). Which operation—guarding or                      544
+487   typed memory, via steering (Eq. (3)), stops the proposer from produc-                 steering—accounts for which gain, and do the simulated dynam-              545
+488   ing doomed candidates in the first place. Untyped memory catches                      ics match the closed-form predictions of Section 4?                        546
+489   them at the guard but still paid to generate them. This is the formal                 Task suite and stratification. We generate 480 repair tasks with
+                                                                                                                                                                       547
+490   statement of the paper’s thesis: typing, not merely remembering, is                the fixed seed 20260717 (gen_synthetic.py). Each task fixes a
+                                                                                                                                                                       548
+491   what removes redundant work, and it removes it entirely in the ideal               correct-proposal probability 𝜋, a type count 𝐾 ∈ [5, 18], and a
+                                                                                                                                                                       549
+492   regime.                                                                            skewed wrong-type mixture 𝑞 ∼ Dirichlet(0.7) · (1 − 𝜋). We stratify
+                                                                                                                                                                       550
+493                                                                                                                                                                    551
+         Corollary 4.4 (Budgeted success). Fix a budget of 𝐵 proposals                   by difficulty rather than sampling randomly, matching the reality
+494                                                                                                                                                                    552
+      (model calls). Because untyped memory and no memory each waste                     that repair benchmarks contain easy and hard bugs in very different
+495                                                                                                                                                                    553
+       1                                                                                 proportions: Easy (𝜋 ∈ [0.18, 0.35]), Medium (𝜋 ∈ [0.08, 0.18]), and
+496    𝜋 − 1 − 𝐷 proposals in expectation while typed memory wastes none,                                                                                              554
+      the probability of returning a repair within 𝐵 proposals is strictly               Hard (𝜋 ∈ [0.02, 0.08]), with 160 tasks each. Every agent is run on
+497                                                                                                                                                                    555
+      higher for typed memory whenever 𝐵 binds and 𝐷 < 𝜋1 − 1.                           every task with 30 independent proposer seeds, so all cross-agent
+498                                                                                                                                                                    556
+                                                                                         comparisons are paired on identical tasks.
+499                                                                                                                                                                    557
+          Proposition 4.5 (Guard cost). Per candidate, a typed (type-
+500
+      indexed) guard performs 𝑂 (1) stored-counterexample evaluations,                      Baselines. We compare three agents that share the loop of Algo-            558
+501
+      whereas an untyped (full-log) guard performs Θ(𝑚), where 𝑚 ≤ 𝐾                     rithm 1 and differ only in memory:                                            559
+502
+      is the current memory size—a factor Θ(𝑚) more expensive. Over an                    • No memory (trivial baseline): naive resample-and-verify with               560
+503
+      episode the untyped guard’s total exceeds the typed guard’s by the                     no record of past attempts—the lower bound that exposes whether           561
+504
+      mean memory size during the run, which grows with task difficulty                      memory is needed at all.                                                  562
+505                                                                                       • Untyped memory (strong baseline): a flat counterexample log                563
+      (smaller 𝜋 accumulates more refuted types before a repair).
+506                                                                                          that guards by re-running all stored counterexamples but can-             564
+507   Proposition 4.5 is the “memory bloat” concern made precise: a                                                                                                    565
+                                                                                             not steer the proposer. This is the faithful abstraction of tran-
+508   flat memory that re-runs its entire counterexample log on every                                                                                                  566
+                                                                                             script/verbal memory as used by conversational repair and re-
+509   candidate pays a cost that grows both with the number of failure                                                                                                 567
+                                                                                             flective agents [20, 26, 35]; we grant it a validation guard, making
+510   types and with task difficulty, whereas a typed index pays per                                                                                                   568
+                                                                                             it a strong, not straw, baseline.
+511   candidate only for the matching class. Section 6 confirms all four                                                                                               569
+                                                                                          • Typed memory (CEGMem): the type-indexed guard plus steer-
+512   results—the 1/𝜋 vs. 1 + 𝐷 round counts, the exactly-zero redundant                                                                                               570
+                                                                                             ing.
+513   attempts, and the growing-with-difficulty guard gap—in simulation,                                                                                               571
+      and Section 7 shows how they erode as Assumption 2 is relaxed.                     RQ3 additionally runs two ablations—guard-only (typed guard, no
+514                                                                                                                                                                    572
+                                                                                         steering) and steering-only (steering, no guard)—to attribute effects.
+515                                                                                                                                                                    573
+516   5    STUDY DESIGN                                                                     Metrics. We report, per episode: oracle calls to repair (verifica-         574
+517     Nature of the evaluation (please read). Every number in this paper               tion rounds, the primary cost); proposals (model calls); redundant            575
+518   comes from a controlled synthetic model of the repair loop, not from               attempts (proposals of an already-eliminated type; Section 4); guard          576
+519   running a real LLM on a real benchmark. We construct repair tasks                  evaluations (stored counterexamples re-run—the memory book-                   577
+520   with a known candidate space, a known set of correct patches, and a                keeping cost of Proposition 4.5); success@𝐵 (a repair found within            578
+521   counterexample oracle whose ground truth we set (Section 3). This                  a budget of 𝐵=10, measured against both an oracle-call budget                 579
+522                                                                                  5                                                                                 580
+      FSE 2026, July 2026, Montréal, Canada                                                                                                                                                                                                                                  Anon.
+
+
+581   and a proposal budget); and, for typed memory, the anchoring rate                                         25
+                                                                                                                                    (a) Verification rounds                                                                                     (b) Redundant attempts               639
+582   (episodes that fail because mis-typing wrongly eliminated the cor-                                                        no memory
+                                                                                                                                untyped
+                                                                                                                                                                                                       17.5
+                                                                                                                                                                                                                                                                                     640
+      rect class). Costs are reported both overall and stratified by difficulty.
+                                                                                                                                                                                                       15.0
+
+
+
+
+                                                                                       oracle calls to repair                                                                redundant attempts
+                                                                                                                20              typed
+583                                                                                                                                                                                                                                                                                  641
+                                                                                                                                                                                                       12.5
+584                                                                                                             15                                                                                                                                                                   642
+                                                                                                                                                                                                       10.0
+585      Statistical protocol. For each agent and metric we compute a                                                                                                                                                                                                                643
+                                                                                                                10                                                                                          7.5
+586   per-task mean over the 30 seeds, then report the mean over tasks                                                                                                                                      5.0
+                                                                                                                                                                                                                                                                                     644
+587   with a 95% confidence interval from a 104 -resample bootstrap over                                            5
+                                                                                                                                                                                                            2.5                                                                      645
+588   tasks. Cross-agent comparisons are paired on tasks and tested with                                            0                                                                                       0.0                                                                      646
+      the Wilcoxon signed-rank test [21]; we report the Vargha–Delaney
+                                                                                                                               Easy              Medium           Hard                                                                     Easy         Medium          Hard
+589                                                                                                                                                                                                                                                                                  647
+590   𝐴12 effect size [31] and correct for multiple comparisons across                                                                                                                                                                                                               648
+591   the three strata with the Benjamini–Hochberg procedure [2]. All                  Figure 2: RQ1. (a) Verification rounds grow steeply for no                                                                                                                                    649
+592   randomness derives from the master seed 20260717; the pipeline                   memory but stay flat and low for both memories. (b) Redun-                                                                                                                                    650
+593   is deterministic and re-derivable end-to-end, and a consistency                  dant attempts are high for no memory and untyped memory                                                                                                                                       651
+594   checker asserts that every number in this paper equals the value in              alike and vanish for typed memory (no visible bar). Error                                                                                                                                     652
+595   results.json.                                                                    bars are 95% bootstrap CIs.                                                                                                                                                                   653
+596                                                                                                                                                                                                                                                                                  654
+597                                                                                                                       (a) Sensitivity to typing quality                                                                                 (b) Sensitivity to oracle quality        655
+      6 RESULTS                                                                                                 8             untyped, oracle calls
+                                                                                                                                                                         0.200
+                                                                                                                                                                                                                                     12
+598                                                                                                                           typed, oracle calls                        0.175                                                                                                       656
+
+
+
+
+                                                                                                                                                                                   anchoring failure rate   oracle calls to repair
+599
+      6.1 RQ1: Typed memory removes redundant                                                                   6
+                                                                                                                              typed, redundant
+                                                                                                                                                                         0.150
+                                                                                                                                                                                                                                                                                     657
+                                                                                                                                                                                                                                     10
+                                                                                                                                                                         0.125
+600
+          work                                                                                                                                                                                                                                                         no memory
+                                                                                                                                                                                                                                                                                     658
+                                                                                       count                    4                                                        0.100                                                                                         untyped
+                                                                                                                                                                                                                                      8
+601   Table 2 and Figure 2 report the main comparison.                                                                                                                   0.075
+                                                                                                                                                                                                                                                                       typed
+                                                                                                                                                                                                                                                                                     659
+                                                                                                                2                                                        0.050
+602                                                                                                                                                                                                                                   6                                              660
+603      Finding 1: memory cuts verification rounds 2.6×, and the                                               0
+                                                                                                                                                                         0.025
+                                                                                                                                                                                                                                                                                     661
+                                                                                                                                                                         0.000
+604   cut grows with difficulty. Any counterexample memory slashes                                                      1.0     0.9       0.8         0.7   0.6    0.5                                                                    1.0     0.9    0.8     0.7   0.6     0.5
+                                                                                                                                                                                                                                                                                     662
+                                                                                                                                    typing coherence c                                                                                            oracle informativeness ρ
+605   oracle calls: overall, from 11.83 [10.95, 12.76] with no memory to                                                                                                                                                                                                             663
+606   4.58 [4.42, 4.75] (untyped) and 4.59 [4.42, 4.77] (typed)—a 2.6× re-                                                                                                                                                                                                           664
+607   duction. On the Hard stratum the reduction is 3.6× (23.07 → 6.50).               Figure 3: RQ2. (a) As typing coherence 𝑐 degrades (right to
+                                                                                                                                                                                                                                                                                     665
+608   This confirms Theorem 4.3(a): the two memories are statistically                 left), typed memory’s oracle calls rise more slowly than un-
+                                                                                                                                                                                                                                                                                     666
+609   indistinguishable on verification rounds (their CIs overlap almost               typed’s, but its redundant attempts and anchoring rate grow.
+                                                                                                                                                                                                                                                                                     667
+610   completely), because both prevent re-verifying a refuted class. The              (b) As oracle informativeness 𝜌 degrades, both memories
+                                                                                                                                                                                                                                                                                     668
+611   effect over no memory is large and significant on every stratum                  rise gently and stay far below no memory.
+                                                                                                                                                                                                                                                                                     669
+612   (Vargha–Delaney 𝐴12 = 0.83, 0.96, 1.00 for Easy/Medium/Hard;                                                                                                                                                                                                                   670
+613   Wilcoxon 𝑝 < 10−3 , Benjamini–Hochberg corrected).                                                                                                                                                                                                                             671
+                                                                                          Finding 4: the redundancy guarantee is immune to oracle
+614                                                                                                                                                                                                                                                                                  672
+         Finding 2: typed memory drives redundant attempts to ex-                      weakness but sensitive to typing noise. As the oracle informa-
+615                                                                                                                                                                                                                                                                                  673
+      actly zero. The two memories diverge sharply on wasted genera-                   tiveness 𝜌 falls from 1.0 to 0.5, typed memory’s redundant attempts
+616                                                                                                                                                                                                                                                                                  674
+      tions. Untyped memory still re-proposes doomed candidates—7.25                   stay exactly zero (steering depends on which class was eliminated,
+617                                                                                                                                                                                                                                                                                  675
+      redundant attempts on average, rising to 16.62 on Hard—identical                 not on how strong the counterexample was), and oracle calls rise
+618                                                                                                                                                                                                                                                                                  676
+      to no memory (same proposer, no steering). Typed memory records                  only modestly (4.56 → 5.91) as weak counterexamples occasionally
+619                                                                                                                                                                                                                                                                                  677
+      zero redundant attempts, not on average but on every one of the                  fail to eliminate a class. Typing noise is the real threat: as coherence
+620                                                                                                                                                                                                                                                                                  678
+      480 × 30 runs (the maximum observed is 0.00), exactly as Theo-                   𝑐 falls to 0.5, typed redundant attempts climb to 3.31 and oracle calls
+621                                                                                                                                                                                                                                                                                  679
+      rem 4.2(i) predicts. The separation from untyped is total (𝐴12 = 1.00            to 6.25. Even here, typed memory strictly dominates untyped
+622                                                                                                                                                                                                                                                                                  680
+      on all strata, 𝑝 < 10−3 corrected).                                              on oracle calls (6.25 vs. 8.22 at 𝑐=0.5)—mis-typing hurts untyped’s
+623                                                                                                                                                                                                                                                                                  681
+                                                                                       guard too, and untyped has no steering to fall back on.
+624                                                                                                                                                                                                                                                                                  682
+         Finding 3: only typed memory converts the round savings
+625                                                                                       Finding 5: typed steering introduces a quantifiable anchor-                                                                                                                                683
+      into budgeted success. Under an oracle-call budget of 10, untyped
+626                                                                                    ing risk. Steering has a downside the theory flags: a mis-typed                                                                                                                               684
+      and typed are tied (0.95 each) and both beat no memory (0.68): the
+627                                                                                    counterexample can wrongly mark the correct class as eliminated, af-                                                                                                                          685
+      guard is what matters when the scarce resource is verification. But
+628                                                                                    ter which the agent can never propose a fix. This anchoring-failure                                                                                                                           686
+      under a proposal budget of 10—the regime where each model call is
+629                                                                                    rate is 0 under ideal typing and rises to 0.148 at 𝑐=0.5 (Table 3,                                                                                                                            687
+      the scarce resource—untyped collapses to 0.68 (indistinguishable
+630                                                                                    Figure 3a). It is the price of steering and the subject of the failure                                                                                                                        688
+      from no memory), while typed holds at 0.95 (Corollary 4.4). On
+631                                                                                    taxonomy in Section 7; it argues for coherence-aware safeguards                                                                                                                               689
+      Hard tasks the proposal-budget gap is starkest: 0.38 (no memory /
+632                                                                                    (e.g., never eliminating a class on a single low-confidence type                                                                                                                              690
+      untyped) versus 0.88 (typed).
+633                                                                                    match) in a real system.                                                                                                                                                                      691
+634                                                                                                                                                                                                                                                                                  692
+635
+      6.2     RQ2: Graceful degradation, and the                                       6.3                                    RQ3: The simulation matches the theory                                                                                                                 693
+636           anchoring cost                                                              Finding 6: simulated round counts match the closed forms.                                                                                                                                  694
+637   Table 3 and Figure 3 relax the ideal regime.                                     Figure 4 plots each task’s simulated mean oracle calls against the                                                                                                                            695
+638                                                                                6                                                                                                                                                                                                 696
+      Never Twice the Same Mistake: Counterexample-Guided Program Repair with a Typed Memory of Refuted Attempts                                              FSE 2026, July 2026, Montréal, Canada
+
+
+697   Table 2: RQ1. Repair cost by difficulty stratum and overall (480 tasks, 30 seeds each; ideal oracle 𝜌=𝑐=1). Oracle calls and re-                                                                755
+698   dundant attempts are means; lower is better. Success@10 is the fraction repaired within a 10-call budget, measured against an                                                                   756
+699   oracle-call budget and a proposal budget. Typed memory (CEGMem) attains exactly zero redundant attempts everywhere and                                                                          757
+700   is the only agent whose proposal-budget success stays high. Bootstrap 95% CIs for the Overall column are in the text.                                                                           758
+701                                                                                                                                                                                                   759
+702                                                          Oracle calls to repair ↓            Redundant ↓                                            Success@10 ↑                                  760
+703                                                                                                                                                                                                   761
+                         Method                       Easy    Medium       Hard    Overall    attempts (overall)                           oracle-budget      proposal-budget
+704                                                                                                                                                                                                   762
+705                      No memory (trivial)          3.93       8.49      23.07    11.83                  7.25                                  0.68               0.68                              763
+706
+                         Untyped (flat transcript)    2.91       4.39      6.45      4.58                  7.25                                  0.95               0.68                              764
+                         Typed (CEGMem)               2.88       4.39       6.50     4.59                  0.00                                  0.95               0.95
+707                                                                                                                                                                                                   765
+708                                                                                                                                                                                                   766
+709   Table 3: RQ2. Sensitivity to oracle informativeness 𝜌 (top)                                                                                                                                     767
+                                                                                                                                                 Theory vs. simulation
+710   and typing coherence 𝑐 (bottom). “Oracle” is mean ora-                                                                                                                                          768
+                                                                                                                                  60       no memory (1/π)
+711   cle calls to repair; “Redund.” is mean redundant attempts                                                                                                                                       769
+712                                                                                                                                        memory (1 + D)                                             770
+
+
+
+
+                                                                                                    simulated mean oracle calls
+      (typed); “Anchor” is the typed-memory anchoring-failure
+                                                                                                                                  50       y=x
+713   rate. No memory is 𝜌/𝑐-invariant at 12.10–12.20.                                                                                                                                                771
+714                                                                                                                                                                                                   772
+715
+                                                                                                                                  40                                                                  773
+                              Oracle calls ↓         Typed       Typed
+716                                                                                                                                                                                                   774
+717              Level      Untyped    Typed     Redund. ↓      Anchor ↓                                                          30                                                                  775
+718             𝜌 = 1.00      4.59       4.56        0.00         0.00                                                                                                                                776
+719             𝜌 = 0.90      4.79       4.75        0.00         0.00                                                            20                                                                  777
+720             𝜌 = 0.75      5.14       5.09        0.00         0.00                                                                                                                                778
+721             𝜌 = 0.50      5.97       5.91        0.00         0.00                                                            10                                                                  779
+722             𝑐 = 1.00      4.54       4.57        0.00         0.000                                                                                                                               780
+723             𝑐 = 0.90      5.26       4.68        0.93         0.026                                                            0                                                                  781
+                                                                                                                                       0   10       20       30     40          50    60
+724             𝑐 = 0.75      6.39       5.09        1.83         0.071                                                                                                                               782
+                                                                                                                                           predicted expected oracle calls
+725             𝑐 = 0.50      8.22       6.25        3.31         0.148                                                                                                                               783
+726                                                                                                                                                                                                   784
+727                                                                                          Figure 4: RQ3. Simulated mean oracle calls vs. the closed-                                               785
+728                                                                                          form predictions of Section 4; each point is one of the 480                                              786
+                                                                                             tasks. Both arms lie on 𝑦=𝑥 (𝑟 =0.97).
+729   Section 4 predictions—1/𝜋 for no memory and 1+𝐷 (Eq. (4)) for                                                                                                                                   787
+730   memory. The points track the diagonal: aggregate simulated means                                                                                                                                788
+731   are 11.83 (predicted 11.97) for no memory and 4.59 (predicted 4.57)                    Table 4: RQ3 ablation (ideal regime). “Guard-only” is a typed                                            789
+732   for memory, with per-task correlations of 0.97 for both and a relative                 guard with steering off; “steering-only” is steering with the                                            790
+733   mean absolute error of 0.08 for the memory arm. The residual                           guard off. Guarding owns the verification-round reduction;                                               791
+734   scatter for no memory at high 1/𝜋 is the expected variance of a                        steering owns the redundancy elimination; the typed guard                                                792
+735   geometric process with a small success probability. The mechanism                      is ≈ 8× cheaper than the untyped guard.                                                                  793
+736   decomposition behind these curves—guarding versus steering—is                                                                                                                                   794
+737   analyzed next.                                                                            Variant                                         Oracle    Redundant Guard Success@10
+                                                                                                                                                                                                      795
+738                                                                                                                                                                                                   796
+                                                                                                                                                calls ↓   attempts ↓ evals ↓ (prop) ↑
+739                                                                                                                                                                                                   797
+740
+      7 ANALYSIS                                                                                No memory                                       11.92        7.34        0.0         0.68             798
+      7.1 Ablation: guarding versus steering                                                    Untyped                                         4.58         7.34        57.2        0.68
+741                                                                                                                                                                                                   799
+                                                                                                Guard-only (typed)                              4.58         7.34        7.3         0.68
+742   Typed memory does two things—guarding verification and steering                           Steering-only                                   4.58         0.00        0.0         0.95
+                                                                                                                                                                                                      800
+743   proposal—and Table 4 separates them by disabling each in turn                             Typed (CEGMem)                                  4.58         0.00        0.0         0.95             801
+744   (ideal regime, all 480 tasks).                                                                                                                                                                  802
+745                                                                                                                                                                                                   803
+746      Finding 7: the two mechanisms are separable and each owns                           the guard is therefore dormant under steering (typed ≡ steering-
+                                                                                                                                                                                                      804
+747   one metric. Guard-only reproduces untyped memory’s verification                        only), which is why CEGMem’s guard evaluations read 0: steering
+                                                                                                                                                                                                      805
+748   savings (11.92 → 4.58 oracle calls) but leaves redundant attempts                      never lets a doomed candidate reach the guard.
+                                                                                                                                                                                                      806
+749   untouched (7.34): a guard prevents re-verifying a doomed candidate,                                                                                                                             807
+750   not re-proposing it. Steering-only does the opposite lever’s job—it                       Finding 8: the typed guard is an order of magnitude cheaper                                           808
+751   drives redundant attempts to zero and lifts proposal-budget success                    than the untyped guard. When the guard does run (guard-only),                                            809
+752   to 0.95—and, because avoiding an eliminated class also avoids re-                      a type-indexed lookup performs 7.3 counterexample evaluations                                            810
+753   verifying it, it recovers the round savings too. In the ideal regime                   per repair versus 57.2 for the untyped full-log scan —a 7.8× gap that                                    811
+754                                                                                     7                                                                                                             812
+      FSE 2026, July 2026, Montréal, Canada                                                                                                       Anon.
+
+
+813   Table 5: RQ3 ablation under noisy typing (𝑐=0.75, 𝜌=0.9).                    Table 6: Failure taxonomy for typed memory under noisy                  871
+814   Compared with the ideal regime (Table 4), steering alone                     typing (𝑐=0.75, 𝜌=0.9). Frequencies are per episode (rates) or          872
+815   lets a little redundancy back in; re-enabling the typed guard                per-episode means (counts) over 480 tasks ×30 seeds.                    873
+816   (full CEGMem) yields the fewest oracle calls but incurs the                                                                                          874
+817   anchoring cost of Finding 5.                                                     Mode                   Frequency Mechanism / violated as-           875
+818                                                                                                                     sumption                           876
+819       Variant                 Oracle      Redundant Guard Success@10                                                                                   877
+                                                                                       Anchoring (terminal)   6.7%of mis-typed counterexample
+820                               calls ↓     attempts ↓ evals ↓ (prop) ↑                                     runs   marks the correct class elimi-        878
+821                                                                                                                  nated (Asm. 2); agent can no          879
+          No memory                11.83        7.10     0.0      0.69
+822
+          Untyped                  6.50         7.10     54.1     0.69                                               longer propose a fix                  880
+823       Guard-only (typed)       6.50         7.10     7.1      0.69                 Guard miss         0.48     / mis-typed candidate escapes           881
+824       Steering-only            5.56         0.73     0.0      0.85                                    episode    the typed guard (Asm. 2)              882
+825       Typed (CEGMem)           5.32         1.93     1.9      0.83                                               ⇒ one wasted verification             883
+826                                                                                                                  round                                 884
+827
+                                                                                       Residual redundant 1.89     / mis-typed counterexample              885
+                                                                                       proposal           episode    fails to eliminate the true
+828                                                                                                                                                        886
+                                                                                                                     class (Asm. 2) ⇒ one wasted
+829                                                                                                                                                        887
+                                                                                                                     generation
+830   widens with difficulty (on Hard tasks the untyped guard performs                 Budget exhaustion  22.9% at correct class not drawn                 888
+831   131 evaluations), confirming the per-candidate 𝑂 (1) vs. Θ(𝑚) sepa-                                 𝐵=8        within budget (small 𝜋 ,              889
+832   ration of Proposition 4.5. This is the “memory bloat” cost that a flat                                         Asm. 3); not a memory                 890
+833   transcript pays and a typed index does not.                                                                    defect                                891
+834                                                                                                                                                        892
+835      Finding 9: under noisy typing the guard becomes a safety                                                                                          893
+836   net. When typing is imperfect (𝑐=0.75, 𝜌=0.9; Table 5), steering             8   DISCUSSION                                                          894
+837   alone lets a little redundancy back in (mis-typed counterexamples                                                                                    895
+                                                                                      Why typing, precisely. The results draw a sharp line between
+838   occasionally fail to eliminate the true class): steering-only rises                                                                                  896
+                                                                                   remembering and typing. A counterexample log—typed or not—is
+839   to 5.56 oracle calls and 0.73 redundant attempts. Re-enabling the                                                                                    897
+                                                                                   enough to stop an agent from re-verifying a refuted patch (Theo-
+840   typed guard—the full CEGMem—brings oracle calls back down to                                                                                         898
+                                                                                   rem 4.3a; Findings 1, 7). What a flat log cannot do is stop the agent
+841   the lowest value observed (5.32) by catching the leaked re-proposals                                                                                 899
+                                                                                   from re-generating it, because excluding a class from generation
+842   before verification. The guard’s own coherence coin-flips slightly                                                                                   900
+                                                                                   requires naming the class. Typing supplies the name, and with it
+843   perturb the elimination book-keeping, so CEGMem’s redundant                                                                                          901
+                                                                                   steering (Eq. (3)), which is the sole source of the redundant-attempt
+844   attempts (1.93) sit between steering-only and untyped (7.10); both                                                                                   902
+                                                                                   elimination (Finding 7). For any deployment where model calls
+845   typed variants remain far below untyped, and steering-only edges                                                                                     903
+                                                                                   dominate cost—the common case for LLM agents—this is the differ-
+846   out full CEGMem on proposal-budget success (0.85 vs. 0.83) pre-                                                                                      904
+                                                                                   ence between paying for one proposal per failure class and paying
+847   cisely because the guard’s extra book-keeping occasionally triggers                                                                                  905
+                                                                                   for many.
+848   the anchoring failure of Finding 5. The practical reading: steering is                                                                               906
+849                                                                                                                                                        907
+      the primary lever; the typed guard is a cheap safety net that pays off          A CEGIS invariant for stochastic proposers. Classical CEGIS guar-
+850                                                                                                                                                        908
+      precisely when typing is unreliable.                                         antees progress because a complete synthesizer, once handed a
+851                                                                                                                                                        909
+                                                                                   counterexample, never returns the same candidate; the bound is the
+852                                                                                                                                                        910
+      7.2     Failure taxonomy                                                     candidate count [7, 28]. An LLM proposer offers no such guarantee:
+853                                                                                                                                                        911
+                                                                                   it may resample a refuted patch indefinitely. CEGMem restores
+854   Table 6 catalogues how typed memory wastes effort or fails under                                                                                     912
+                                                                                   the invariant not in the proposer but in memory: by eliminating
+855   noisy typing (𝑐=0.75, 𝜌=0.9), tying each mode to the assumption it                                                                                   913
+                                                                                   a type per round it bounds progress by the type count 𝐾 (Theo-
+856   violates. Three are wasted-effort modes (recoverable) and one is a                                                                                   914
+                                                                                   rem 4.2), which is exponentially smaller than the candidate space.
+857   terminal failure.                                                                                                                                    915
+                                                                                   We think this “move the invariant into memory” pattern is reusable
+858                                                                                                                                                        916
+                                                                                   for other agentic loops—test generation, proof search, configura-
+859      Finding 10: mis-typing, not the loop, is the dominant risk.               tion repair—where the actor is a black-box sampler rather than a        917
+860   Every recoverable waste mode and the one terminal failure trace to           complete procedure.                                                     918
+861   a single cause—imperfect typing (Assumption 2)—not to the loop                                                                                       919
+862   or the oracle. Anchoring, the only way typed memory can do worse                Relationship to memory-augmented agents. General agent memories— 920
+863   than untyped, is a 6.7% terminal risk at 𝑐=0.75 and is entirely absent       reflective streams [23], tiered managers [22], verbal buffers [26]— 921
+864   under reliable typing. Budget exhaustion, by contrast, is difficulty-        optimize recall: they surface a relevant past episode. CEGMem       922
+865   driven: at a tight budget of 8 oracle calls it accounts for 22.9% of         optimizes exclusion: rule out a refuted class. The two are comple-  923
+866   episodes and reflects small 𝜋 rather than any defect of memory.              mentary, but only exclusion yields the non-repetition and redun-    924
+867   This localizes where a real deployment must invest: make the type            dancy bounds, because those are statements about what the agent     925
+868   function reliable, and add a confidence gate before eliminating a            will not do again. A promising synthesis is a memory that is typed  926
+869   class, and typed memory’s guarantees are recovered.                          for exclusion and reflective for recall.                            927
+870                                                                            8                                                                           928
+      Never Twice the Same Mistake: Counterexample-Guided Program Repair with a Typed Memory of Refuted Attempts              FSE 2026, July 2026, Montréal, Canada
+
+
+929      When does typing not pay? Our own robustness data bound the                         Conclusion validity. All comparisons are paired on identical tasks       987
+930   claim. Typing helps in proportion to type coherence: when 𝑐 is                     and tested with non-parametric statistics (Wilcoxon signed-rank,             988
+931   low the steering guarantee weakens and the anchoring risk ap-                      Vargha–Delaney 𝐴12 ) with Benjamini–Hochberg correction across               989
+932   pears (Findings 5, 10). If failure types were unstructured—if patches              strata; CIs are bootstrap over tasks. The very small 𝑝-values partly         990
+933   sharing a signature failed on unrelated inputs—typed and untyped                   reflect the large paired sample (480 tasks) and, for the typed-vs-           991
+934   memory would converge, and the safest design would disable steer-                  untyped redundancy comparison, a deterministic separation (typed             992
+935   ing and keep only the cheap typed guard. The empirical question a                  is exactly zero by Theorem 4.2); we therefore foreground effect sizes        993
+936   real system must answer is therefore not “should we remember?”                     and the theoretical explanation rather than significance alone. All          994
+937   (always yes) but “are our failure types coherent enough to steer                   numbers are regenerated from seed 20260717 and checked against               995
+938   on?”—which our 𝑐-sweep is designed to answer once real types are                   results.json by an automated consistency test.                               996
+939   available.                                                                                                                                                      997
+940                                                                                      10     DATA AND CODE AVAILABILITY                                            998
+941                                                                                                                                                                   999
+      9    THREATS TO VALIDITY                                                           The complete artifact—the CEGMem reference implementation (pro-
+942                                                                                                                                                                   1000
+         Construct validity: the results are synthetic. The most important               poser loop, typed/untyped/no-memory stores, closed-form predic-
+943                                                                                                                                                                   1001
+      threat is that our evaluation is a controlled synthetic model, not a               tor, and statistics), the task generator, the evaluation driver, the
+944                                                                                                                                                                   1002
+      run of a real LLM agent on a real repair benchmark. No model is                    figure scripts, and a consistency checker—accompanies this submis-
+945                                                                                                                                                                   1003
+      prompted and no test suite is executed; the proposer and oracle                    sion and will be released publicly. It is CPU-only and depends solely
+946                                                                                                                                                                   1004
+      are simulated (Section 5). We chose this deliberately—soundness                    on numpy, scipy, and matplotlib; it runs end-to-end in under a
+947                                                                                                                                                                   1005
+      and non-repetition are only checkable against a known candidate                    minute with no network access. Every result derives from the single
+948                                                                                                                                                                   1006
+      space and a known set of correct patches, which no real bench-                     master seed 20260717 and is deterministic:
+949                                                                                                                                                                   1007
+      mark provides—but it means our numbers measure the logic of                                python3 scripts/gen_synthetic.py
+950                                                                                                                                                                   1008
+      typed memory, not end-to-end repair rates on Defects4J or SWE-                             python3 scripts/run_eval.py
+951                                                                                                                                                                   1009
+      bench [13, 14]. We do not claim any real-benchmark result. Miti-                           python3 figures/make_figures.py
+952                                                                                                                                                                   1010
+      gation: the simulated loop, guard, and steering are the same code                          python3 scripts/check_consistency.py
+953                                                                                                                                                                   1011
+      paths a real agent would use (Algorithm 1); PLAN.md specifies the                  The last command re-derives every number in this paper from
+954                                                                                                                                                                   1012
+      datasets, oracle, and type function needed to make it real, and the                data/results.json and asserts equality, so the manuscript cannot
+955                                                                                                                                                                   1013
+      𝜌/𝑐 sweeps pre-register how the guarantees should degrade when                     drift from the artifact. data/schema.md documents the task and
+956                                                                                                                                                                   1014
+      they are.                                                                          result formats, and the repository-level PLAN.md and STATUS.md
+957                                                                                                                                                                   1015
+958
+                                                                                         record precisely which numbers are synthetic (all of them) and the           1016
+         Internal validity: the modeling assumptions. Theorems 4.2–4.3
+959
+                                                                                         steps required to reproduce the study with a real LLM proposer               1017
+      assume a memoryless, i.i.d.-type proposer (Assumption 3). A real
+960
+                                                                                         and an executable counterexample oracle.                                     1018
+      LLM is not memoryless: it may improve within a conversation even
+961                                                                                                                                                                   1019
+      without our memory, which would raise the no-memory and un-
+962
+      typed baselines and shrink the absolute gaps. It could also correlate
+                                                                                         11     CONCLUSION                                                            1020
+963
+      proposals in ways that help or hurt. We deliberately used the conser-              LLM repair agents iterate against counterexamples, but their mem-            1021
+964
+      vative memoryless model so that every measured gain is attributable                ory of past failures is a flat transcript that neither retrieves pre-        1022
+965
+      to memory alone; a real proposer’s intrinsic learning is an orthogo-               cisely nor generalizes, so they repeat their mistakes. We introduced         1023
+966
+      nal, additive effect. The three RNG streams (proposer/guard/book-                  CEGMem, a counterexample-guided repair agent whose memory                    1024
+967
+      keeping) are decoupled so that ablation arms are trajectory-paired                 is typed: refuted attempts are stored with the counterexample that           1025
+968
+      and differences reflect mechanism, not RNG path (Section 7.1).                     killed them and a failure type, enabling a cheap type-indexed guard          1026
+969                                                                                      and, crucially, steering that removes refuted classes from future            1027
+970      External validity: type coherence and oracle availability. Two                  proposals. We proved that typed memory makes the loop sound,                 1028
+971   premises may not hold in practice. (i) Typed-memory realism: we                    bounds it to 𝐾+1 verification rounds for 𝐾 failure types, and drives         1029
+972   assume failure types exist and are coherent—that patches sharing a                 redundant attempts to exactly zero—strictly below both untyped               1030
+973   signature fail alike. Real failure signatures (edit location × violated            and no memory—while a type-indexed guard costs a factor Θ(1/𝜋)               1031
+974   property) are a reasonable but unproven proxy; if they are noisy,                  less than a flat one. A controlled study over 480 synthetic tasks            1032
+975   the 𝑐 < 1 rows of Table 3 apply, and at low coherence the anchoring                confirmed each claim to the decimal: memory cuts verification                1033
+976   risk (Finding 5) can make typed memory worse than untyped on                       rounds 2.6× (up to 3.6× on hard tasks), typed memory records zero            1034
+977   the terminal-failure axis. (ii) Counterexample-oracle availability: we             redundant attempts on every run, budgeted success under a pro-               1035
+978   assume the oracle returns a counterexample, and sometimes a gen-                   posal budget rises from 0.68 to 0.95, and the simulated dynamics             1036
+979   eralizing one (𝜌). Many repair settings have only a fixed test suite               match the closed forms (𝑟 =0.97). We also charted the limits: the            1037
+980   that yields a pass/fail bit, not a fresh counterexample, and never a               guarantees hold robustly under weak oracles but erode under noisy            1038
+981   class-eliminating one; the 𝜌=0.5 rows bound that regime (memory                    typing, where steering introduces a quantifiable anchoring risk.             1039
+982   still helps, but less). Where no counterexample is available at all,                   The central lesson is that for a counterexample-guided agent,            1040
+983   CEGMem degenerates to no memory. These are the two premises                        typing memory —not merely keeping it— is what removes redundant              1041
+984   a real deployment must establish, and our sweeps are designed to                   work, and it removes it provably. Our results are synthetic by design,       1042
+985   characterize the sensitivity to each.                                              to make soundness and non-repetition checkable; the immediate                1043
+986                                                                                  9                                                                                1044
+       FSE 2026, July 2026, Montréal, Canada                                                                                                                                        Anon.
+
+
+1045   next step, detailed in our plan, is to instantiate the type function                           [23] Joon Sung Park, Joseph C. O’Brien, Carrie J. Cai, Meredith Ringel Morris, Percy     1103
+1046   and counterexample oracle on real repair benchmarks and measure                                     Liang, and Michael S. Bernstein. 2023. Generative Agents: Interactive Simulacra     1104
+                                                                                                           of Human Behavior. In ACM Symposium on User Interface Software and Technology
+1047   how coherent real failure types actually are—the single quantity                                    (UIST).                                                                             1105
+1048   our theory identifies as decisive.                                                             [24] Zichao Qi, Fan Long, Sara Achour, and Martin Rinard. 2015. An Analysis of           1106
+1049
+                                                                                                           Patch Plausibility and Correctness for Generate-and-Validate Patch Generation       1107
+                                                                                                           Systems. In ACM SIGSOFT International Symposium on Software Testing and
+1050                                                                                                       Analysis (ISSTA).                                                                   1108
+1051                                                                                                  [25] Timo Schick, Jane Dwivedi-Yu, Roberto Dessì, Roberta Raileanu, Maria Lomeli,        1109
+       REFERENCES                                                                                          Eric Hambro, Luke Zettlemoyer, Nicola Cancedda, and Thomas Scialom. 2023.
+1052                                                                                                                                                                                           1110
+        [1] Rui Abreu, Peter Zoeteweij, and Arjan J. C. van Gemund. 2007. On the Accuracy of               Toolformer: Language Models Can Teach Themselves to Use Tools. In Advances
+1053        Spectrum-Based Fault Localization. In Testing: Academic and Industrial Conference              in Neural Information Processing Systems (NeurIPS).                                 1111
+1054        Practice and Research Techniques (TAICPART).                                              [26] Noah Shinn, Federico Cassano, Edward Berman, Ashwin Gopinath, Karthik               1112
+        [2] Yoav Benjamini and Yosef Hochberg. 1995. Controlling the False Discovery Rate:                 Narasimhan, and Shunyu Yao. 2023. Reflexion: Language Agents with Verbal
+1055        A Practical and Powerful Approach to Multiple Testing. Journal of the Royal                    Reinforcement Learning. In Advances in Neural Information Processing Systems        1113
+1056        Statistical Society: Series B 57, 1 (1995), 289–300.                                           (NeurIPS).                                                                          1114
+1057
+        [3] Islem Bouzenia, Premkumar Devanbu, and Michael Pradel. 2025. RepairAgent: An              [27] Edward K. Smith, Earl T. Barr, Claire Le Goues, and Yuriy Brun. 2015. Is the Cure   1115
+            Autonomous, LLM-Based Agent for Program Repair. In IEEE/ACM International                      Worse than the Disease? Overfitting in Automated Program Repair. In ACM Joint
+1058        Conference on Software Engineering (ICSE).                                                     Meeting on Foundations of Software Engineering (ESEC/FSE).                          1116
+1059    [4] Cristian Cadar, Daniel Dunbar, and Dawson Engler. 2008. KLEE: Unassisted and              [28] Armando Solar-Lezama, Liviu Tancau, Rastislav Bodík, Sanjit A. Seshia, and          1117
+            Automatic Generation of High-Coverage Tests for Complex Systems Programs.                      Vijay A. Saraswat. 2006. Combinatorial Sketching for Finite Programs. In In-
+1060                                                                                                                                                                                           1118
+            In USENIX Symposium on Operating Systems Design and Implementation (OSDI).                     ternational Conference on Architectural Support for Programming Languages and
+1061    [5] Mark Chen, Jerry Tworek, Heewoo Jun, Qiming Yuan, et al. 2021. Evaluating                      Operating Systems (ASPLOS). 404–415.                                                1119
+1062        Large Language Models Trained on Code. arXiv preprint arXiv:2107.03374 (2021).            [29] Hanzhuo Tan, Qi Luo, Jing Li, and Yuqun Zhang. 2024. LLM4Decompile: Decom-          1120
+        [6] Tsong Yueh Chen, Fei-Ching Kuo, Huai Liu, Pak-Lok Poon, Dave Towey, T. H.                      piling Binary Code with Large Language Models. arXiv preprint arXiv:2403.05286
+1063        Tse, and Zhi Quan Zhou. 2018. Metamorphic Testing: A Review of Challenges                      (2024).                                                                             1121
+1064        and Opportunities. Comput. Surveys 51, 1 (2018).                                          [30] Michele Tufano, Cody Watson, Gabriele Bavota, Massimiliano Di Penta, Martin         1122
+1065
+        [7] Edmund M. Clarke, Orna Grumberg, Somesh Jha, Yuan Lu, and Helmut Veith. 2000.                  White, and Denys Poshyvanyk. 2019. An Empirical Study on Learning Bug-Fixing        1123
+            Counterexample-Guided Abstraction Refinement. In International Conference on                   Patches in the Wild via Neural Machine Translation. In ACM Transactions on
+1066        Computer Aided Verification (CAV) (LNCS), Vol. 1855. 154–169.                                  Software Engineering and Methodology (TOSEM).                                       1124
+1067    [8] Patrick Cousot and Radhia Cousot. 1977. Abstract Interpretation: A Unified                [31] András Vargha and Harold D. Delaney. 2000. A Critique and Improvement of            1125
+            Lattice Model for Static Analysis of Programs. ACM SIGPLAN-SIGACT Symposium                    the CL Common Language Effect Size Statistics. Journal of Educational and
+1068                                                                                                                                                                                           1126
+            on Principles of Programming Languages (POPL) (1977).                                          Behavioral Statistics 25, 2 (2000), 101–132.
+1069    [9] Leonardo de Moura and Nikolaj Bjørner. 2008. Z3: An Efficient SMT Solver. In              [32] Ratnadira Widyasari, Sheng Qin Sim, Camellia Lok, Haodi Qi, Jack Phan, Qijin        1127
+1070        Tools and Algorithms for the Construction and Analysis of Systems (TACAS).                     Tay, Constance Tan, Fiona Wee, Jodie Ethelda Tan, Yuheng Yieh, Brian Goh,           1128
+       [10] Claire Le Goues, ThanhVu Nguyen, Stephanie Forrest, and Westley Weimer. 2012.                  Ferdian Thung, Hong Jin Kang, Thong Hoang, David Lo, and Eng Lieh Ouh. 2020.
+1071        GenProg: A Generic Method for Automatic Software Repair. IEEE Transactions                     BugsInPy: A Database of Existing Bugs in Python Programs to Enable Controlled       1129
+1072        on Software Engineering 38, 1 (2012), 54–72.                                                   Testing and Debugging Studies. In ACM Joint European Software Engineering           1130
+1073
+       [11] Jiajun Jiang, Yingfei Xiong, Hongyu Zhang, Qing Gao, and Xiangqun Chen. 2018.                  Conference and Symposium on the Foundations of Software Engineering (ESEC/FSE).     1131
+            Shaping Program Repair Space with Existing Patches and Similar Code. In ACM               [33] W. Eric Wong, Ruizhi Gao, Yihao Li, Rui Abreu, and Franz Wotawa. 2016. A
+1074        SIGSOFT International Symposium on Software Testing and Analysis (ISSTA).                      Survey on Software Fault Localization. IEEE Transactions on Software Engineering    1132
+1075   [12] Nan Jiang, Thibaud Lutellier, and Lin Tan. 2021. CURE: Code-Aware Neural                       42, 8 (2016), 707–740.                                                              1133
+            Machine Translation for Automatic Program Repair. In IEEE/ACM International               [34] Chunqiu Steven Xia, Yinlin Deng, Soren Dunn, and Lingming Zhang. 2025. Agent-
+1076                                                                                                                                                                                           1134
+            Conference on Software Engineering (ICSE).                                                     less: Demystifying LLM-based Software Engineering Agents. In ACM Interna-
+1077   [13] Carlos E. Jimenez, John Yang, Alexander Wettig, Shunyu Yao, Kexin Pei, Ofir Press,             tional Conference on the Foundations of Software Engineering (FSE).                 1135
+1078        and Karthik Narasimhan. 2024. SWE-bench: Can Language Models Resolve Real-                [35] Chunqiu Steven Xia and Lingming Zhang. 2024. Keep the Conversation Going:           1136
+            World GitHub Issues?. In International Conference on Learning Representations                  Fixing 162 out of 337 Bugs for $0.42 Each using ChatGPT. In ACM SIGSOFT
+1079        (ICLR).                                                                                        International Symposium on Software Testing and Analysis (ISSTA).                   1137
+1080   [14] René Just, Darioush Jalali, and Michael D. Ernst. 2014. Defects4J: A Database of          [36] Yingfei Xiong, Xinyuan Liu, Muhan Zeng, Lu Zhang, and Gang Huang. 2018.             1138
+1081
+            Existing Faults to Enable Controlled Testing Studies for Java Programs. In ACM                 Identifying Patch Correctness in Test-Based Program Repair. In IEEE/ACM Inter-      1139
+            SIGSOFT International Symposium on Software Testing and Analysis (ISSTA).                      national Conference on Software Engineering (ICSE).
+1082   [15] George Klees, Andrew Ruef, Benji Cooper, Shiyi Wei, and Michael Hicks. 2018.              [37] John Yang, Carlos E. Jimenez, Alexander Wettig, Kilian Lieret, Shunyu Yao,          1140
+1083        Evaluating Fuzz Testing. In ACM SIGSAC Conference on Computer and Communi-                     Karthik Narasimhan, and Ofir Press. 2024. SWE-agent: Agent-Computer Inter-          1141
+            cations Security (CCS).                                                                        faces Enable Automated Software Engineering. In Advances in Neural Information
+1084                                                                                                                                                                                           1142
+       [16] Jeremy Lacomis, Pengcheng Yin, Edward J. Schwartz, Miltiadis Allamanis,                        Processing Systems (NeurIPS).
+1085        Claire Le Goues, Graham Neubig, and Bogdan Vasilescu. 2019. DIRE: A Neural Ap-            [38] Shunyu Yao, Jeffrey Zhao, Dian Yu, Nan Du, Izhak Shafran, Karthik Narasimhan,       1143
+1086        proach to Decompiled Identifier Naming. In IEEE/ACM International Conference                   and Yuan Cao. 2023. ReAct: Synergizing Reasoning and Acting in Language             1144
+            on Automated Software Engineering (ASE).                                                       Models. In International Conference on Learning Representations (ICLR).
+1087   [17] Xuan-Bach D. Le, Ferdian Thung, David Lo, and Claire Le Goues. 2018. Overfitting          [39] He Ye, Matias Martinez, and Martin Monperrus. 2022. Neural Program Repair           1145
+1088        in Semantics-Based Automated Program Repair. Empirical Software Engineering                    with Execution-Based Backpropagation. In IEEE/ACM International Conference          1146
+1089
+            23, 5 (2018), 3007–3033.                                                                       on Software Engineering (ICSE).                                                     1147
+       [18] Kui Liu, Anil Koyuncu, Dongsun Kim, and Tegawendé F. Bissyandé. 2019. TBar:               [40] Yuntong Zhang, Haifeng Ruan, Zhiyu Fan, and Abhik Roychoudhury. 2024. Au-
+1090        Revisiting Template-Based Automated Program Repair. In ACM SIGSOFT Inter-                      toCodeRover: Autonomous Program Improvement. In ACM SIGSOFT International           1148
+1091        national Symposium on Software Testing and Analysis (ISSTA).                                   Symposium on Software Testing and Analysis (ISSTA).                                 1149
+       [19] Fan Long and Martin Rinard. 2016. Automatic Patch Generation by Learning                  [41] Qihao Zhu, Zeyu Sun, Yuan an Xiao, Wenjie Zhang, Kang Yuan, Yingfei Xiong,
+1092                                                                                                                                                                                           1150
+            Correct Code. In ACM SIGPLAN-SIGACT Symposium on Principles of Programming                     and Lu Zhang. 2021. A Syntax-Guided Edit Decoder for Neural Program Repair.
+1093        Languages (POPL).                                                                              In ACM Joint European Software Engineering Conference and Symposium on the          1151
+1094   [20] Aman Madaan, Niket Tandon, Prakhar Gupta, Skyler Hallinan, Luyu Gao, Sarah                     Foundations of Software Engineering (ESEC/FSE).                                     1152
+            Wiegreffe, Uri Alon, Nouha Dziri, Shrimai Prabhumoye, Yiming Yang, Shashank
+1095        Gupta, Bodhisattwa Prasad Majumder, Katherine Hermann, Sean Welleck, Amir                                                                                                          1153
+1096        Yazdanbakhsh, and Peter Clark. 2023. Self-Refine: Iterative Refinement with                                                                                                        1154
+1097
+            Self-Feedback. In Advances in Neural Information Processing Systems (NeurIPS).                                                                                                     1155
+       [21] Henry B. Mann and Donald R. Whitney. 1947. On a Test of Whether One of
+1098        Two Random Variables is Stochastically Larger than the Other. The Annals of
+                                                                                                      A     PROOFS                                                                             1156
+1099        Mathematical Statistics 18, 1 (1947), 50–60.                                              Throughout, recall the type-draw model (Assumption 3): each pro-                         1157
+       [22] Charles Packer, Sarah Wooders, Kevin Lin, Vivian Fang, Shishir G. Patil, Ion
+1100
+            Stoica, and Joseph E. Gonzalez. 2023. MemGPT: Towards LLMs as Operating                   posal is, independently, correct with probability 𝜋 > 0 or of wrong                      1158
+                                                                                                      type 𝜏 ∈ T with probability 𝑞𝜏 , where 𝜋 + 𝜏 𝑞𝜏 = 1. Under ideal
+                                                                                                                                                  Í
+1101        Systems. arXiv preprint arXiv:2310.08560 (2023).                                                                                                                                   1159
+1102                                                                                             10                                                                                            1160
+       Never Twice the Same Mistake: Counterexample-Guided Program Repair with a Typed Memory of Refuted Attempts               FSE 2026, July 2026, Montréal, Canada
+
+
+1161   typing (Assumption 2) a refuted type’s counterexample eliminates                   most one refuted oracle call—its first appearance before the first            1219
+1162   its whole class and all type attributions are correct.                             correct proposal (later appearances are guarded or steered out)—              1220
+1163                                                                                      and the run ends with one accepting call. The expected number                 1221
+          Lemma A.1 (Distinct-type count). Under Assumption 3, the
+1164                                                                                      of wrong types that appear before the first correct proposal is 𝐷             1222
+       expected number of distinct wrong types proposed before the first
+1165                          Í                                                           (Lemma A.1), identical for typed and untyped memory since steer-              1223
+       correct proposal is 𝐷 = 𝜏 ∈ T 𝑞𝜏 /(𝑞𝜏 + 𝜋).
+1166                                                                                      ing removes only repeat appearances, not first appearances. Hence             1224
+1167      Proof. For wrong type 𝜏, let 𝐴𝜏 be the event that at least one                  E[oracle calls] = 1 + 𝐷 for both. The gap is                                  1225
+1168   type-𝜏 proposal occurs strictly before the first correct proposal. The                                                              𝑞𝜏2                          1226
+                                                                                                1                 𝑞𝜏 𝜋1 − 𝑞𝜏1+𝜋 =
+                                                                                                               Õ               Õ
+1169   distinct-wrong-type count is 𝜏 1[𝐴𝜏 ], so by linearity its expecta-
+                                      Í
+                                                                                                𝜋 − (1 + 𝐷) =                                     ≥ 0,                  1227
+                                                                                                                                       𝜋 (𝑞𝜏 + 𝜋)
+1170   tion is 𝜏 P(𝐴𝜏 ). Restrict attention to the subsequence of draws                                                                                                 1228
+               Í                                                                                                𝜏                   𝜏
+1171   that are either type 𝜏 or correct; draws of other types do not affect              strict whenever some 𝑞𝜏 > 0.                                                  1229
+1172   the relative order of the first 𝜏 and the first correct. Within this                   (b) Redundant attempts. A proposal is redundant iff its type has          1230
+1173   subsequence each draw is type 𝜏 with probability 𝑞𝜏 /(𝑞𝜏 + 𝜋) and                  already been refuted. With typed memory the steered proposer                  1231
+1174   correct with probability 𝜋/(𝑞𝜏 + 𝜋), i.i.d. 𝐴𝜏 occurs iff the first such           never draws an eliminated type, so the count is 0 on every run.               1232
+1175   draw is type 𝜏, so P(𝐴𝜏 ) = 𝑞𝜏 /(𝑞𝜏 + 𝜋). Summing gives 𝐷.             □           With no memory and with untyped memory the proposer draws                     1233
+1176                                                                                      i.i.d. from the base distribution (neither steers), so the total number       1234
+1177      Proof of Theorem 4.1 (Soundness). CEGMem returns only at                        of proposals equals the number of oracle-or-blocked draws until               1235
+1178   the accept branch of Algorithm 1, reached exactly when O (𝑝𝑡 ) =                   the first correct one, geometric with mean 1/𝜋; of the 1/𝜋 −1 wrong           1236
+1179   accept; hence any returned 𝑝ˆ was accepted by the oracle and passes                proposals in expectation, 𝐷 are first appearances (productive) and            1237
+1180   every check the oracle performs. If the oracle’s check set is mono-                the remainder are repeats. Thus the expected redundant count is               1238
+       tone across rounds and includes all accumulated counterexamples                     1             Í 2
+1181
+                                                                                          𝜋 − 1 − 𝐷 = 𝜏 𝑞𝜏 /(𝜋 (𝑞𝜏 + 𝜋)) > 0 whenever some 𝑞𝜏 > 0. Typed                1239
+1182   (the fixed test suite augmented with returned counterexamples),                    memory is therefore strictly below both.                             □        1240
+1183   then acceptance implies 𝑝ˆ is consistent with all of them. Under                                                                                                 1241
+       Assumption 1 with a complete oracle, O (𝑝) = accept ⇒ 𝑝 ∈ 𝐺,               Proof of Corollary 4.4 (Budgeted success). Fix a proposal
+1184                                                                                                                                                                    1242
+       so sat( ˆ
+               𝑝) holds. Finally, the guard cannot suppress a correct patch:  budget 𝐵. Typed memory issues no redundant proposals, so all
+1185                                                                                                                                                                    1243
+       counterexamples are returned only for 𝑝 ∉ 𝐺 and are typed within       𝐵 proposals are first appearances of a type or a correct attempt;
+1186                                                                                                                                                                    1244
+       T , so the eliminated set satisfies 𝐸 ⊆ T and never contains ⊤; a      untyped memory and no memory spend 𝜋1 − 1 − 𝐷 > 0 proposals in
+1187                                                                                                                                                                    1245
+       correct proposal is therefore never guarded (Eq. (2)) nor steered      expectation on repeats, which do not advance toward a correct pro-
+1188                                                                                                                                                                    1246
+       away (Eq. (3)).                                                    □   posal. Hence for any 𝐵 that binds (i.e., 𝐵 < the number of proposals
+1189                                                                                                                                                                    1247
+                                                                              the un-steered agent needs), the probability that the first correct
+1190                                                                                                                                                                    1248
+          Proof of Theorem 4.2 (Non-repetition, round bound). (i) With proposal occurs within 𝐵 proposals is strictly larger under typed
+1191                                                                                                                                                                    1249
+       typed memory the steered proposer (Eq. (3)) places zero probability    memory. When 𝐵 does not bind the probabilities coincide at 1. □
+1192                                                                                                                                                                    1250
+       on any type in 𝐸. A type enters 𝐸 only after a candidate of that
+1193
+       type has been proposed and refuted; thereafter no candidate of that        Proof of Proposition 4.5 (Guard cost). Consider a single can-                         1251
+1194
+       type is proposed, and in particular the refuted candidate is never     didate and let 𝑚 ≤ 𝐾 be the current number of stored (distinct-type)                      1252
+1195
+       re-proposed.                                                           counterexamples. A typed guard consults only the entries whose                            1253
+1196
+          (ii) Under Assumption 2 a refuted oracle call on a candidate of     type matches the candidate, of which there is 𝑂 (1) in the class-                         1254
+1197
+       type 𝜏 adds 𝜏 to 𝐸. By steering, every candidate that reaches the      indexed store, so it performs 𝑂 (1) counterexample evaluations. An                        1255
+1198
+       oracle has type ∉ 𝐸 at that round, so each refuted oracle call adds a  untyped guard has no index and re-executes the entire log, per-                           1256
+1199
+       new element to 𝐸 ⊆ T . Since |T | = 𝐾, at most 𝐾 oracle calls can      forming Θ(𝑚) evaluations. The per-candidate cost ratio is therefore                       1257
+1200                                                                          Θ(𝑚). Summing over an episode, the untyped guard’s total is 𝑡 𝑚𝑡                          1258
+                                                                                                                                            Í
+       be refutations; the run then either draws a correct proposal (one
+1201
+       accepting call) or halts at the budget. Hence at most 𝐾+1 oracle       with 𝑚𝑡 nondecreasing up to 𝐾, so it is Θ(𝑚)-fold larger than the                         1259
+1202
+       calls. Under ideal typing the guard never fires (steering already      typed guard’s total, where 𝑚¯ is the mean memory size during the                          1260
+1203
+       excludes 𝐸), so each loop iteration issues one proposal and one        run; 𝑚¯ grows with task difficulty because harder tasks (smaller 𝜋)                       1261
+1204
+       oracle call, bounding proposals by 𝐾+1 as well. For untyped memory     accumulate more distinct refuted types before a repair is found.                          1262
+1205
+       the guard (which re-runs the stored counterexamples, 𝑐=1) blocks       This  is confirmed empirically in Table 4 (7.3 vs. 57.2 evaluations                       1263
+1206
+       any candidate of an eliminated type from reaching the oracle, so the   overall, and 131 for untyped on the Hard stratum).                □                       1264
+1207                                                                                                                                                                    1265
+       same counting gives ≤ 𝐾+1 oracle calls; but the un-steered proposer
+1208                                                                          B CONFIGURATION                                                                           1266
+       may draw eliminated types arbitrarily often, so proposals are not
+1209                                                                                                                                                                    1267
+       bounded by 𝐾. With no memory, 𝐸 is never used, every proposal is       Reproducibility. All tables and figures are regenerated by the ar-
+1210                                                                                                                                                                    1268
+       verified, and the number of oracle calls to the first correct proposal tifact (gen_synthetic.py → run_eval.py → make_figures.py)
+1211                                                                                                                                                                    1269
+       is geometric with mean 1/𝜋 and no finite worst-case bound.          □  from the single seed 20260717, with three decoupled RNG streams
+1212                                                                                                                                                                    1270
+                                                                              per episode (proposer, guard, book-keeping) so that ablation arms
+1213      Proof of Theorem 4.3 (Redundancy reduction). (a) Oracle calls. sharing a proposer are trajectory-paired. check_consistency.py                                 1271
+1214   With no memory, every proposal is verified, and the run ends at        asserts that every number in this paper equals the corresponding                          1272
+1215   the first correct proposal—a geometric event with success probabil-    value in results.json. No wall-clock quantities are recorded, so                          1273
+1216   ity 𝜋—so the expected number of oracle calls is 1/𝜋. With either       runs are bit-stable.                                                                      1274
+1217   memory, by the proof of Theorem 4.2 each wrong type incurs at                                                                                                    1275
+1218                                                                                 11                                                                                 1276
+       FSE 2026, July 2026, Montréal, Canada        Anon.
+
+
+1277                                                        1335
+1278                                                        1336
+1279                                                        1337
+1280                                                        1338
+1281                                                        1339
+1282                                                        1340
+1283                                                        1341
+1284                                                        1342
+1285                                                        1343
+1286                                                        1344
+1287                                                        1345
+1288                                                        1346
+1289                                                        1347
+1290                                                        1348
+1291                                                        1349
+1292                                                        1350
+1293                                                        1351
+1294                                                        1352
+1295                                                        1353
+1296                                                        1354
+1297                                                        1355
+1298                                                        1356
+1299                                                        1357
+1300                                                        1358
+1301                                                        1359
+1302                                                        1360
+1303                                                        1361
+1304                                                        1362
+1305                                                        1363
+1306                                                        1364
+1307                                                        1365
+1308                                                        1366
+1309                                                        1367
+1310                                                        1368
+1311                                                        1369
+1312                                                        1370
+1313                                                        1371
+1314                                                        1372
+1315                                                        1373
+1316                                                        1374
+1317                                                        1375
+1318                                                        1376
+1319                                                        1377
+1320                                                        1378
+1321                                                        1379
+1322                                                        1380
+1323                                                        1381
+1324                                                        1382
+1325                                                        1383
+1326                                                        1384
+1327                                                        1385
+1328                                                        1386
+1329                                                        1387
+1330                                                        1388
+1331                                                        1389
+1332                                                        1390
+1333                                                        1391
+1334                                           12           1392
+       Never Twice the Same Mistake: Counterexample-Guided Program Repair with a Typed Memory of Refuted Attempts   FSE 2026, July 2026, Montréal, Canada
+
+
+1393                                                                                                                                                        1451
+1394                                                                                                                                                        1452
+1395                                                                                                                                                        1453
+1396                                                                                                                                                        1454
+1397                                                                                                                                                        1455
+1398                                                                                                                                                        1456
+1399                                                                                                                                                        1457
+1400                                                                                                                                                        1458
+1401                                                                                                                                                        1459
+1402                                                                                                                                                        1460
+1403                                                                                                                                                        1461
+1404                                                                                                                                                        1462
+1405                                                                                                                                                        1463
+1406                                                                                                                                                        1464
+1407                                                                                                                                                        1465
+1408                                                                                                                                                        1466
+1409                                                                                                                                                        1467
+1410                                                                                                                                                        1468
+1411                                                                                                                                                        1469
+1412                                                                                                                                                        1470
+1413                                                                                                                                                        1471
+1414                                                                                                                                                        1472
+1415                                                                                                                                                        1473
+1416                                                                                                                                                        1474
+1417                                                                                                                                                        1475
+1418                                                                                                                                                        1476
+1419                                                                                                                                                        1477
+1420                                                                                                                                                        1478
+1421                                                                                                                                                        1479
+1422                                                                                                                                                        1480
+1423                                                                                                                                                        1481
+1424                                                                                                                                                        1482
+1425                                                                                                                                                        1483
+1426                                                                                                                                                        1484
+1427                                                                                                                                                        1485
+1428                                                                                                                                                        1486
+1429                                                                                                                                                        1487
+1430                                                                                                                                                        1488
+1431                                                                                                                                                        1489
+1432                                                                                                                                                        1490
+1433                                                                                                                                                        1491
+1434                                                                                                                                                        1492
+1435                                                                                                                                                        1493
+1436                                                                                                                                                        1494
+1437                                                                                                                                                        1495
+1438                                                                                                                                                        1496
+1439                                                                                                                                                        1497
+1440                                                                                                                                                        1498
+1441                                                                                                                                                        1499
+1442                                                                                                                                                        1500
+1443                                                                                                                                                        1501
+1444                                                                                                                                                        1502
+1445                                                                                                                                                        1503
+1446                                                                                                                                                        1504
+1447                                                                                                                                                        1505
+1448                                                                                                                                                        1506
+1449                                                                                                                                                        1507
+1450                                                                                 13                                                                     1508
+

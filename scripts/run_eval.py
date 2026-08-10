@@ -31,7 +31,7 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from src.adapter import TASKS, load
-from src.llm import BudgetExceeded, spent
+from src.llm import MODEL as LLM_MODEL, BudgetExceeded, spent
 from src.loop import MODES, run_episode
 from src.metrics import DEFAULT_METRICS_LOG, load_rounds
 from src.oracle import is_truly_correct
@@ -53,10 +53,19 @@ def _frozen_programs() -> list[str]:
 
 
 def _cell_key(row: dict) -> tuple:
+    """Identity of one experiment cell.
+
+    model and granularity belong here for the same reason every other knob
+    does: they change what the cell *is*. Leaving them out made a second
+    model's sweep skip every cell as "already complete" against the first
+    model's rows - silently, since the driver prints a skip line either way -
+    and would have done the same to a coarse-granularity arm.
+    """
     return (
         row["task"], row["mode"], row["seed"],
         row["guard_on"], row["steer_on"], row["max_examples"], row["typing_noise_c"],
         row.get("force_full_budget", False),
+        row.get("model"), row.get("granularity", "fine"),
     )
 
 
@@ -168,6 +177,14 @@ def main() -> None:
     if unknown:
         raise SystemExit(f"unknown program(s): {unknown}")
 
+    # Resolve the model here rather than letting src.llm fall back inside every
+    # call: the id has to reach the metrics row, or the artifact cannot state
+    # which model produced it (paper SS VI-D-b) and _cell_key cannot separate
+    # two models' cells.
+    model = args.model or LLM_MODEL
+    if not model:
+        raise SystemExit("no model configured - set MODEL in .env or pass --model")
+
     # Free, and run before the first billable call. src.loop handles an
     # unusable oracle correctly per round - it logs the round and leaves memory
     # untouched - but with no test data *every* round is inconclusive, so the
@@ -184,7 +201,7 @@ def main() -> None:
 
     run_sweep(
         programs, args.modes, args.seeds,
-        budget=args.budget, model=args.model, granularity=args.granularity,
+        budget=args.budget, model=model, granularity=args.granularity,
         max_examples=args.max_examples, typing_noise_c=args.typing_noise_c,
         guard_on=args.guard == "on", steer_on=args.steer == "on",
         force_full_budget=args.force_full_budget, check_overfit=args.check_overfit,

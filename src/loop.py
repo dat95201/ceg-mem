@@ -30,7 +30,7 @@ from src.adapter import TASKS, load
 from src.memory import build_memory
 from src.metrics import RoundRecord, append_round
 from src.oracle import differential_test
-from src.proposer import Attempt, propose
+from src.proposer import Attempt, TruncatedResponse, propose
 
 MODES = ("no_memory", "untyped", "typed")
 
@@ -153,13 +153,26 @@ def run_episode(
         return RoundRecord(**base)
 
     for round_index in range(1, budget + 1):
-        patch = propose(
-            task_name, program.buggy_source, task.name,
-            mode, memory.history, model=model, granularity=granularity,
-            disable_exclusion=not steer_on,
-            nonce=proposal_nonce(task_name, seed, round_index),
-            spec_note=task.spec_note,
-        )
+        try:
+            patch = propose(
+                task_name, program.buggy_source, task.name,
+                mode, memory.history, model=model, granularity=granularity,
+                disable_exclusion=not steer_on,
+                nonce=proposal_nonce(task_name, seed, round_index),
+                spec_note=task.spec_note,
+            )
+        except TruncatedResponse as exc:
+            # The harness failed, not the proposal. Log the round - it did spend
+            # a model call - and move on without touching memory, so a reply the
+            # response budget cut short can never enter the evidence block or an
+            # eliminated bucket (paper SS VI-D-a).
+            append_round(_record(
+                round_index=round_index, patch="", accept=False,
+                counterexample_args=None, reason=f"proposal unusable: {exc}",
+                examples_tried=0, coarse_type=None, fine_type=None,
+                proposal_error="truncated_response",
+            ), **kwargs)
+            continue
 
         guarded, guard_evaluations = False, 0
         if guard_on:

@@ -23,6 +23,7 @@ import time
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from src.adapter import SUPPORTED_PROGRAMS, TASKS, load
+from src.llm import MODEL as LLM_MODEL
 from src.oracle import differential_test
 from src.proposer import propose
 
@@ -167,6 +168,10 @@ def main() -> None:
     parser.add_argument("--model", default=None)
     parser.add_argument("--max-examples", type=int, default=100)
     parser.add_argument("--seed", type=int, default=20260717)
+    parser.add_argument("--out", type=pathlib.Path, default=None,
+                        help="default: data/pi_pilot.json. Point the stages of a "
+                             "screen at separate files so one does not clobber "
+                             "the next; scripts/select_corpus.py merges them.")
     args = parser.parse_args()
 
     programs, corpus_source = _resolve_programs(args.programs)
@@ -189,20 +194,28 @@ def main() -> None:
             f"Refusing to spend the budget measuring pi against an empty test pool."
         )
 
+    # Resolve before the first call so the artifact states which model produced
+    # it. Recording args.model wrote "model": null whenever the id came from
+    # .env, which is the normal case (paper SS VI-D-b).
+    model = args.model or LLM_MODEL
+    if not model:
+        raise SystemExit("no model configured - set MODEL in .env or pass --model")
+
     report = measure(
         programs, args.calls_per_program,
-        model=args.model, max_examples=args.max_examples, seed=args.seed,
+        model=model, max_examples=args.max_examples, seed=args.seed,
         corpus_source=corpus_source,
     )
 
-    DATA_DIR.mkdir(exist_ok=True)
-    (DATA_DIR / "pi_pilot.json").write_text(json.dumps(report, indent=2) + "\n")
+    out_path = args.out or (DATA_DIR / "pi_pilot.json")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(report, indent=2) + "\n")
 
     print()
     print(f"pooled pi_hat = {report['pi_hat_pooled']:.3f} over {report['total_calls']} calls")
     for name, p in report["per_program"].items():
         print(f"  {name:30s} pi_hat={p['pi_hat']:.3f} ({p['successes']}/{p['calls']})")
-    print("wrote data/pi_pilot.json")
+    print(f"wrote {out_path}")
 
 
 if __name__ == "__main__":
