@@ -1,0 +1,46 @@
+@startuml conditions
+' CEGMem - ba dieu kien bo nho khac nhau chinh xac o dau
+' render: plantuml -tsvg docs/diagrams/conditions.puml
+skinparam defaultFontName Helvetica
+skinparam shadowing false
+skinparam rectangleBorderColor #868E96
+
+title Ba dieu kien bo nho - cai gi giu nguyen, cai gi thay doi
+
+package "Giong het nhau o ca 3 arm" #EEF6FF {
+  rectangle "cung proposer + template prompt" as X1
+  rectangle "cung oracle, max_examples = 100" as X2
+  rectangle "cung budget B = 20, cung seed" as X3
+  rectangle "cung 2 vi du I/O (spec_note)" as X4
+  rectangle "cung nonce vong 1\n-> chung 1 lan goi da tra tien" as X5
+}
+
+package "no_memory" #E7F5FF {
+  rectangle "evidence: rong" as N1
+  rectangle "exclusion: khong" as N2
+  rectangle "guard: khong" as N3
+}
+
+package "untyped  (baseline manh)" #FFF3BF {
+  rectangle "evidence: transcript day du\n(patch + phan vi du moi lan thu)" as U1
+  rectangle "exclusion: KHONG\nlog phang khong co LOP de loai" as U2
+  rectangle "guard: chay lai TOAN BO -> Theta(m)\nco tinh khong toi uu" as U3
+}
+
+package "typed  (CEGMem)" #D3F9D8 {
+  rectangle "evidence: 1 dai dien moi failure type\n(khong kem source patch)" as T1
+  rectangle "exclusion: CO\n'dung sua o L12-L14 vi pham off_by_small_high'" as T2
+  rectangle "guard: index theo type -> O(1)" as T3
+}
+
+X5 -[hidden]down- N1
+N3 -[hidden]right- U1
+U3 -[hidden]right- T1
+
+note bottom of U2
+  Day la cho gia thuyet cua paper nam:
+  untyped GUARD duoc nhung STEER khong duoc,
+  nen no bat patch hong SAU KHI da tra tien sinh ra no
+  -> Theorem 4.3(b): redundant attempts > 0 voi untyped, = 0 voi typed
+end note
+@enduml

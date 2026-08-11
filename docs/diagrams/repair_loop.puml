@@ -1,0 +1,73 @@
+@startuml repair_loop
+' CEGMem - Algorithm 1: mot vong lap sua loi
+' render: plantuml -tsvg docs/diagrams/repair_loop.puml
+skinparam defaultFontName Helvetica
+skinparam shadowing false
+skinparam sequenceMessageAlign center
+
+title Algorithm 1 - mot vong t (B = 20 vong / episode)
+
+participant "loop.py" as L
+participant "proposer.py" as P
+participant "Claude\n(llm.py + cache)" as LLM
+participant "memory.py" as M
+participant "oracle.py" as O
+participant "sandbox.py" as S
+participant "typer.py" as T
+
+autonumber
+
+L -> P : propose(mode, history,\nnonce = "task|seedN|rK")
+note right of P
+  evidence: rong / transcript / 1 dai dien moi type
+  exclusion: CHI typed
+  nonce khong phu thuoc mode
+  -> 3 arm chung 1 lan goi o vong 1
+end note
+P -> LLM : prompt (cache sha256)
+LLM --> P : reply
+P --> L : patch trong ```python fence
+
+alt fence khong dong
+  L -> L : TruncatedResponse\nghi log, KHONG ghi memory,\ntieu 1 vong budget
+end
+
+alt guard_on
+  L -> M : guard(patch, buggy_source)
+  note right of M
+    untyped: chay lai TOAN BO counterexample -> Theta(m)
+    typed  : doan bucket bang edit_location (khong chay gi)
+             roi chi chay bucket khop -> O(1)
+  end note
+  M --> L : blocked? + guard_evaluations
+end
+
+alt bi chan
+  L -> L : ghi guarded=true\ntieu 1 vong, BO QUA oracle
+else khong bi chan
+  L -> O : differential_test(patch, max_examples=100, seed+t)
+  loop moi case da lay mau
+    O -> S : chay patch tren 1 input
+    S --> O : stdout / loi / timeout
+  end
+  O --> L : accept | ten case phan vi du | oracle_error
+
+  alt accept
+    L -> L : ghi first_accept_round, DUNG\n(tru khi --force-full-budget cua E1)
+  else oracle_error
+    L -> L : ghi la vong tieu-nhung-vo-ket-luan\nKHONG ghi memory
+  else bi bac bo
+    L -> T : theta(patch)
+    T --> L : (vi tri sua) x (tinh chat vi pham)\ncoarse_type, fine_type
+    L -> M : store(attempt)
+    note right of M
+      typed + c<1: xac suat 1-c gan nham bucket
+      ghi de type TRUOC khi vao history
+      -> guard va steering dung chung 1 quy ket
+    end note
+    M --> L : stored_type (de do anchoring)
+  end
+end
+
+L -> L : append RoundRecord\n-> data/episodes.jsonl
+@enduml
