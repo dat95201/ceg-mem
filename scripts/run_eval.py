@@ -124,7 +124,8 @@ def run_sweep(
                 cell = (task_name, mode, seed, guard_on, steer_on, max_examples,
                         typing_noise_c, force_full_budget)
                 if cell in done:
-                    print(f"[{n:4d}/{total}] {task_name:28s} {mode:10s} seed={seed} - already complete, skipping")
+                    print(f"[{n:4d}/{total}] {task_name:28s} {mode:10s} seed={seed} - already complete, skipping",
+                          flush=True)
                     continue
                 try:
                     result = run_episode(
@@ -142,9 +143,16 @@ def run_sweep(
                     return
 
                 status = f"repaired@{result.first_accept_round}" if result.accepted_patch else "exhausted"
+                # flush: a cell is minutes of wall clock, stdout block-buffers
+                # the moment it is not a terminal, and `> log` is how this driver
+                # is always run - so without it the only sign of life in a
+                # multi-day sweep appears 8 KB (about 85 cells) at a time.
+                # scripts/measure_pi.py and scripts/validate_oracle.py already
+                # do this; this one was missed.
                 print(
                     f"[{n:4d}/{total}] {task_name:28s} {mode:10s} seed={seed} - {status} "
-                    f"(guard_evals={result.guard_evaluations}, spent=${spent():.4f})"
+                    f"(guard_evals={result.guard_evaluations}, spent=${spent():.4f})",
+                    flush=True,
                 )
 
                 if check_overfit and result.accepted_patch is not None:
@@ -157,7 +165,8 @@ def run_sweep(
                             "truly_correct": truly_correct, "overfit": not truly_correct,
                         }) + "\n")
                     if not truly_correct:
-                        print(f"           overfit flagged: oracle accepted but is_truly_correct() rejected")
+                        print("           overfit flagged: oracle accepted but is_truly_correct() rejected",
+                              flush=True)
 
 
 def main() -> None:

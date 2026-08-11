@@ -27,15 +27,29 @@ from scripts.select_corpus import BANDS, PRIMARY_BANDS  # noqa: E402
 
 DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 MODES = ("no_memory", "untyped", "typed")
-# All five bands scripts/select_corpus.py fills, not just the proposal's three:
-# the two outside the analysis range carry the episodes that never accept, and
-# success_at_b / redundant_attempts / guard_evaluations are all defined there.
-STRATA = tuple(name for name, _, _ in BANDS)
-# Benjamini-Hochberg corrects across the strata that carry a prediction. The
-# proposal corrects across three; the two control bands are reported without a
-# prediction attached, so folding them into the same family would inflate the
-# correction against the bands that do make one.
-BH_STRATA = PRIMARY_BANDS
+def _strata_in_use() -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """(all strata, strata the BH family corrects across), read off the freeze.
+
+    Hardcoding these was wrong: the corpus can be frozen two ways and they carry
+    different labels. scripts/select_corpus.py bands on measured pi and marks
+    two of five bands as controls; a rating-floor corpus has no pi measurement
+    at all and is split into three proxy terciles, every one of which carries
+    the same prediction. Reading data/strata.json keeps the analysis honest
+    about which corpus it is analysing instead of asserting one.
+    """
+    path = DATA_DIR / "strata.json"
+    if not path.exists():
+        return tuple(name for name, _, _ in BANDS), PRIMARY_BANDS
+    blob = json.loads(path.read_text())
+    seen = []
+    for t in blob.get("tasks", []):
+        if t["stratum"] not in seen:
+            seen.append(t["stratum"])
+    primary = tuple(blob.get("primary_bands") or seen)
+    return tuple(seen), primary
+
+
+STRATA, BH_STRATA = _strata_in_use()
 
 
 def bootstrap_ci(values: list[float], *, n_resamples: int = 10_000, alpha: float = 0.05, seed: int = 0) -> dict:

@@ -57,19 +57,59 @@ def _frozen_corpus() -> list[dict]:
     return data["tasks"]
 
 
+PROXY_LABELS = ("proxy_low", "proxy_mid", "proxy_high")
+
+
+def stratify_by_proxy(corpus: list[dict], reported_pi: dict[str, float]) -> tuple[list[dict], dict]:
+    """Terciles of the corpus's own AtCoder rating, for a corpus selected by a
+    rating floor rather than by measured pi.
+
+    Deliberately *not* called easy/medium/hard. Those names denote pi bands in
+    the paper, and this is not one: SS V-G measures Spearman(rating, pi_hat) =
+    -0.350 on 60 tasks - monotone in the intended direction, moderately
+    predictive, nowhere near sharp enough to name a pi band. Borrowing the names
+    would assert a calibration nobody measured.
+
+    What it is good for is the one thing a stratum has to do: be fixed before
+    any treatment is applied, so that stratifying on it is a controlled factor
+    rather than conditioning on an outcome. The rating is a property of the
+    contest, decided years before this experiment.
+
+    The measured pi_hat from E1 is attached alongside once it exists, as a
+    descriptive column. Binning *on* it would be stratifying on the no-memory
+    arm's own outcome, which is why it is reported and not used as the stratum.
+    """
+    rated = [e for e in corpus if e.get("difficulty") is not None]
+    if len(rated) < len(corpus):
+        missing = [e["name"] for e in corpus if e.get("difficulty") is None]
+        raise SystemExit(f"{len(missing)} tasks carry no AtCoder rating, so a proxy "
+                         f"stratum cannot be assigned: {missing[:3]}")
+    ordered = sorted(rated, key=lambda e: (e["difficulty"], e["name"]))
+    n = len(ordered)
+    base, extra = divmod(n, 3)
+    sizes = [base + (1 if i < extra else 0) for i in range(3)]
+
+    out, i = [], 0
+    cuts = {}
+    for label, size in zip(PROXY_LABELS, sizes):
+        chunk = ordered[i:i + size]
+        cuts[label] = [chunk[0]["difficulty"], chunk[-1]["difficulty"]] if chunk else None
+        for entry in chunk:
+            row = {"name": entry["name"], "stratum": label, "difficulty": entry["difficulty"]}
+            if entry["name"] in reported_pi:
+                row["reported_pi_hat"] = reported_pi[entry["name"]]
+            out.append(row)
+        i += size
+    return out, cuts
+
+
 def stratify(corpus: list[dict], reported_pi: dict[str, float]) -> list[dict]:
     """One row per task: the stratum it was selected into, and where the
     independent measurement would have put it."""
     out = []
     for entry in corpus:
         name = entry["name"]
-        selected_pi = entry.get("screen_pi_hat")
-        if selected_pi is None:
-            raise SystemExit(
-                f"{name}: data/tasks.json carries no screen_pi_hat, so its stratum "
-                f"cannot be traced to a pre-treatment measurement. Re-freeze the "
-                f"corpus with scripts/select_corpus.py."
-            )
+        selected_pi = entry["screen_pi_hat"]
         row = {
             "name": name,
             "stratum": entry.get("stratum") or band_of(selected_pi),
@@ -151,9 +191,24 @@ def main() -> None:
     except SystemExit:
         pi_path, reported_pi, seed = None, {}, None
 
-    tasks = stratify(corpus, reported_pi)
-    counts = {name: sum(1 for t in tasks if t["stratum"] == name) for name, _, _ in BANDS}
-    n_primary = sum(counts[b] for b in PRIMARY_BANDS)
+    # Two corpora shapes, two stratifications. A corpus frozen by
+    # scripts/select_corpus.py carries screen_pi_hat and is banded on it; a
+    # corpus frozen by a rating floor (validate_oracle.py --select hard) has no
+    # pre-treatment pi measurement at all, and its only pre-treatment ordering
+    # is the contest rating.
+    by_pi = all("screen_pi_hat" in e for e in corpus)
+    cuts = None
+    if by_pi:
+        tasks = stratify(corpus, reported_pi)
+        labels = [name for name, _, _ in BANDS]
+        primary = list(PRIMARY_BANDS)
+    else:
+        tasks, cuts = stratify_by_proxy(corpus, reported_pi)
+        labels = list(PROXY_LABELS)
+        primary = list(PROXY_LABELS)   # all three carry the same prediction
+
+    counts = {name: sum(1 for t in tasks if t["stratum"] == name) for name in labels}
+    n_primary = sum(counts[b] for b in primary)
 
     moved = [t for t in tasks if t.get("moved")]
     migration: dict[str, dict[str, int]] = {}
@@ -164,9 +219,18 @@ def main() -> None:
 
     report = {
         "frozen": True,
-        "bands": PAPER_REFERENCE_RANGES,
-        "primary_bands": list(PRIMARY_BANDS),
-        "selection_source": "data/tasks.json screen_pi_hat (pre-treatment)",
+        "stratified_by": "measured pi_hat (pre-treatment screen)" if by_pi
+                         else "AtCoder rating terciles - a PROXY, not a pi band",
+        "proxy_warning": None if by_pi else (
+            "these strata are terciles of the corpus's own contest rating, not "
+            "the paper's pi bands. SS V-G measures Spearman(rating, pi_hat) = "
+            "-0.350: monotone but only moderately predictive. Report them as a "
+            "difficulty proxy and use the E1-measured pi_hat for any claim about pi."),
+        "rating_cuts": cuts,
+        "bands": PAPER_REFERENCE_RANGES if by_pi else None,
+        "primary_bands": primary,
+        "selection_source": ("data/tasks.json screen_pi_hat (pre-treatment)" if by_pi
+                             else "data/tasks.json difficulty (contest rating, pre-treatment)"),
         "reported_source": str(pi_path) if pi_path else None,
         "seed": seed,
         "n_total": len(tasks),
@@ -178,10 +242,18 @@ def main() -> None:
     }
     out_path.write_text(json.dumps(report, indent=2) + "\n")
 
-    print(f"stratified {len(tasks)} tasks into absolute pi bands:")
-    for name, lo, hi in BANDS:
-        role = "primary" if name in PRIMARY_BANDS else "control"
-        print(f"  {name:9s} [{lo:.2f},{hi:.2f})  {counts[name]:3d}   {role}")
+    if by_pi:
+        print(f"stratified {len(tasks)} tasks into absolute pi bands:")
+        for name, lo, hi in BANDS:
+            role = "primary" if name in primary else "control"
+            print(f"  {name:9s} [{lo:.2f},{hi:.2f})  {counts[name]:3d}   {role}")
+    else:
+        print(f"stratified {len(tasks)} tasks into rating terciles (PROXY, not pi bands):")
+        for name in labels:
+            lo, hi = cuts[name]
+            print(f"  {name:10s} rating [{lo}, {hi}]  {counts[name]:3d}")
+        print("  NOTE: Spearman(rating, pi_hat) = -0.350 (SS V-G) - a difficulty")
+        print("        proxy only. Any claim about pi must use E1's measured pi_hat.")
     print(f"primary comparison rests on {n_primary} tasks")
     if reported_pi:
         print(f"drift vs the independent E1 measurement: {len(moved)}/{len(tasks)} "
