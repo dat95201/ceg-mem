@@ -58,7 +58,9 @@ def _frozen_programs() -> list[str]:
     return [t["name"] for t in data["tasks"]]
 
 
-def _cell_key(row: dict) -> tuple:
+def cell_key(task: str, mode: str, seed: int, guard_on: bool, steer_on: bool,
+             max_examples: int, typing_noise_c: float, force_full_budget: bool,
+             model: str | None, granularity: str) -> tuple:
     """Identity of one experiment cell.
 
     model and granularity belong here for the same reason every other knob
@@ -66,8 +68,23 @@ def _cell_key(row: dict) -> tuple:
     model's sweep skip every cell as "already complete" against the first
     model's rows - silently, since the driver prints a skip line either way -
     and would have done the same to a coarse-granularity arm.
+
+    Taken as explicit arguments rather than read off a row, because the two
+    callers do not both *have* a row: the resume index is built from logged
+    rounds, and the driver has only its own loop variables. When those were two
+    separate tuple literals the driver's went on building the pre-model,
+    pre-granularity 8-field key while the index built the 10-field one, so no
+    lookup could ever match and every cell re-ran - the same drift the
+    paragraph above describes, in the other direction. One constructor, so a
+    field added here reaches both sites or neither.
     """
-    return (
+    return (task, mode, seed, guard_on, steer_on, max_examples, typing_noise_c,
+            force_full_budget, model, granularity)
+
+
+def _cell_key(row: dict) -> tuple:
+    """cell_key for a logged round."""
+    return cell_key(
         row["task"], row["mode"], row["seed"],
         row["guard_on"], row["steer_on"], row["max_examples"], row["typing_noise_c"],
         row.get("force_full_budget", False),
@@ -121,8 +138,8 @@ def run_sweep(
         for mode in modes:
             for seed in seeds:
                 n += 1
-                cell = (task_name, mode, seed, guard_on, steer_on, max_examples,
-                        typing_noise_c, force_full_budget)
+                cell = cell_key(task_name, mode, seed, guard_on, steer_on, max_examples,
+                                typing_noise_c, force_full_budget, model, granularity)
                 if cell in done:
                     print(f"[{n:4d}/{total}] {task_name:28s} {mode:10s} seed={seed} - already complete, skipping",
                           flush=True)

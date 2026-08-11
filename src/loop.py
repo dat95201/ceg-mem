@@ -53,12 +53,24 @@ def cell_signature(
     Every knob that changes what the episode *is* goes in, so two runs of the
     same cell agree and two different cells never collide. Used for both the
     episode id and the typing-noise RNG below.
+
+    `budget` is accepted and deliberately *not* used. A B-round episode is the
+    prefix of a longer one - same task, same seed, same nonces, so round k is
+    the identical draw at either budget - which is why scripts/run_eval.py
+    excludes budget from its resume key too. Including it here gave the same
+    cell two episode ids, so src.metrics.load_rounds (which collapses on
+    (episode_id, round_index), last write wins) could not recognise the rerun
+    as a rewrite: topping a cell up from 12 rounds to 20 appended a second
+    episode instead, and every estimator that averages over rounds - pi_hat in
+    scripts/fit_theory.py above all - counted the first 12 draws twice. The
+    parameter stays in the signature because callers pass it by keyword.
     """
+    del budget
     return "|".join((
         task_name, mode, f"seed={seed}", f"gran={granularity}",
         f"max_examples={max_examples}", f"c={typing_noise_c!r}",
         f"guard={guard_on}", f"steer={steer_on}",
-        f"budget={budget}", f"full={force_full_budget}",
+        f"full={force_full_budget}",
     ))
 
 
