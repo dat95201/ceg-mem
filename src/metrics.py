@@ -44,9 +44,24 @@ class RoundRecord:
     # the cell identity (scripts/run_eval.py, scripts/freeze_results.py) and in
     # summarize_episode's decision about which rounds are comparable.
     force_full_budget: bool = False
+    # The key memory actually filed this attempt under, at the active
+    # granularity. Equal to coarse_type/fine_type except under typing noise,
+    # where TypedMemory re-files a refutation at a different location (Def. 3.1
+    # coherence c). Logging both is what lets scripts/measure_anchoring.py tell
+    # "the correct class was excluded because we mistyped" from "the correct
+    # class was excluded because theta cannot separate it from a wrong one",
+    # without re-deriving the loop's typing-noise RNG from outside.
+    stored_type: str | None = None
     # Set when the oracle could not reach a verdict (src.oracle.OracleResult):
     # the round consumed budget but is not a refutation and carries no type.
     oracle_error: str | None = None
+    # Set when the *proposer* failed to return a patch at all
+    # (src.proposer.TruncatedResponse). Same treatment as oracle_error: the
+    # round spent a proposal, but nothing was refuted, so no type is recorded
+    # and memory is left untouched. Kept as a separate field because the two
+    # have different causes and different fixes - one is a property of the
+    # test pool, the other of the response budget (paper SS VI-D-a).
+    proposal_error: str | None = None
 
     def to_json(self) -> dict[str, Any]:
         return dataclasses.asdict(self)
@@ -157,6 +172,15 @@ def summarize_episode(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "accepted": accepted, "first_accept_round": first_accept_round,
         "oracle_calls_to_accept": oracle_calls_to_accept,
         "guard_miss": guard_miss, "redundant_attempts": n_guarded + guard_miss,
+        # Corollary 4.4: a repair found within the budget, as a 0/1 per episode
+        # so a per-task mean is the budgeted-success *rate*. Unlike
+        # oracle_calls_to_accept this is defined on every episode, which is what
+        # makes the low-pi strata - where the corollary's "whenever B binds"
+        # actually holds - measurable at all.
+        "success_at_b": 1.0 if accepted else 0.0,
+        # Proposals = model calls, the proposal's second budget. Every round
+        # spends exactly one, guarded or not.
+        "proposals": len(effective),
     }
 
 

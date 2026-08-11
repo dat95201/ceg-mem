@@ -13,3 +13,13 @@ paper/*.out
 paper/*.bbl
 paper/*.blg
 paper/*.pdf
+.DS_Store
+**/.DS_Store
+.claude/
+paper/*.zip
+.DS_Store
+**/.DS_Store
+.claude/
+data/pool_strength_partial.json
+data/calls.jsonl
+paper/*.zip

@@ -13,8 +13,8 @@ different flags:
   E2 (memory arms):              --modes untyped typed --check-overfit
   E3 (ablation):                 --modes typed --guard off   (steering-only)
                                   --modes typed --steer off  (guard-only)
-  E4 (oracle-informativeness sweep):  --max-examples 300|100|30|10
-  E5 (typing-coherence sweep):        --typing-noise-c 1.0|0.9|0.75|0.5
+  E4 (oracle-informativeness sweep):  --max-examples 20|8|3 (100 = E2's cell)
+  E5 (typing-coherence sweep):        --typing-noise-c 0.9|0.75|0.5 (1.0 = E2's cell)
 
 E1 *is* the main grid's no-memory arm - run it, then run E2 over the two
 memory modes only. Running no_memory a second time without
@@ -31,7 +31,7 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from src.adapter import TASKS, load
-from src.llm import BudgetExceeded, spent
+from src.llm import MODEL as LLM_MODEL, BudgetExceeded, spent
 from src.loop import MODES, run_episode
 from src.metrics import DEFAULT_METRICS_LOG, load_rounds
 from src.oracle import is_truly_correct
@@ -39,24 +39,39 @@ from src.oracle import is_truly_correct
 DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 DEFAULT_OVERFIT_LOG = DATA_DIR / "overfit_checks.jsonl"
 DEFAULT_SEEDS = (1, 2, 3, 4, 5)
-DEFAULT_BUDGET = 12
+# B=20, not the proposal's 10 or the paper's 12. SS VI-A-a's own arithmetic:
+# at B=12, Pr[accept] is 0.632 at pi=0.08, so the primary metric does not reach
+# the floor of the proposal's Medium band; at B=20 it is 0.811. Note budget is
+# deliberately *not* in _cell_key - a 12-round episode is a prefix of a 20-round
+# one - so a run that forgets --budget would silently mix arms. Hence the default
+# is the value the grid actually uses.
+DEFAULT_BUDGET = 20
 
 
 def _frozen_programs() -> list[str]:
     tasks_json = DATA_DIR / "tasks.json"
     if not tasks_json.exists():
-        raise SystemExit(f"{tasks_json} missing - run scripts/validate_oracle.py first to freeze the task list")
+        raise SystemExit(f"{tasks_json} missing - run scripts/select_corpus.py first to freeze the corpus")
     data = json.loads(tasks_json.read_text())
     if not data.get("frozen"):
-        raise SystemExit(f"{tasks_json} is not frozen - re-run scripts/validate_oracle.py")
+        raise SystemExit(f"{tasks_json} is not frozen - re-run scripts/select_corpus.py")
     return [t["name"] for t in data["tasks"]]
 
 
 def _cell_key(row: dict) -> tuple:
+    """Identity of one experiment cell.
+
+    model and granularity belong here for the same reason every other knob
+    does: they change what the cell *is*. Leaving them out made a second
+    model's sweep skip every cell as "already complete" against the first
+    model's rows - silently, since the driver prints a skip line either way -
+    and would have done the same to a coarse-granularity arm.
+    """
     return (
         row["task"], row["mode"], row["seed"],
         row["guard_on"], row["steer_on"], row["max_examples"], row["typing_noise_c"],
         row.get("force_full_budget", False),
+        row.get("model"), row.get("granularity", "fine"),
     )
 
 
@@ -109,7 +124,8 @@ def run_sweep(
                 cell = (task_name, mode, seed, guard_on, steer_on, max_examples,
                         typing_noise_c, force_full_budget)
                 if cell in done:
-                    print(f"[{n:4d}/{total}] {task_name:28s} {mode:10s} seed={seed} - already complete, skipping")
+                    print(f"[{n:4d}/{total}] {task_name:28s} {mode:10s} seed={seed} - already complete, skipping",
+                          flush=True)
                     continue
                 try:
                     result = run_episode(
@@ -127,9 +143,16 @@ def run_sweep(
                     return
 
                 status = f"repaired@{result.first_accept_round}" if result.accepted_patch else "exhausted"
+                # flush: a cell is minutes of wall clock, stdout block-buffers
+                # the moment it is not a terminal, and `> log` is how this driver
+                # is always run - so without it the only sign of life in a
+                # multi-day sweep appears 8 KB (about 85 cells) at a time.
+                # scripts/measure_pi.py and scripts/validate_oracle.py already
+                # do this; this one was missed.
                 print(
                     f"[{n:4d}/{total}] {task_name:28s} {mode:10s} seed={seed} - {status} "
-                    f"(guard_evals={result.guard_evaluations}, spent=${spent():.4f})"
+                    f"(guard_evals={result.guard_evaluations}, spent=${spent():.4f})",
+                    flush=True,
                 )
 
                 if check_overfit and result.accepted_patch is not None:
@@ -142,7 +165,8 @@ def run_sweep(
                             "truly_correct": truly_correct, "overfit": not truly_correct,
                         }) + "\n")
                     if not truly_correct:
-                        print(f"           overfit flagged: oracle accepted but is_truly_correct() rejected")
+                        print("           overfit flagged: oracle accepted but is_truly_correct() rejected",
+                              flush=True)
 
 
 def main() -> None:
@@ -168,9 +192,31 @@ def main() -> None:
     if unknown:
         raise SystemExit(f"unknown program(s): {unknown}")
 
+    # Resolve the model here rather than letting src.llm fall back inside every
+    # call: the id has to reach the metrics row, or the artifact cannot state
+    # which model produced it (paper SS VI-D-b) and _cell_key cannot separate
+    # two models' cells.
+    model = args.model or LLM_MODEL
+    if not model:
+        raise SystemExit("no model configured - set MODEL in .env or pass --model")
+
+    # Free, and run before the first billable call. src.loop handles an
+    # unusable oracle correctly per round - it logs the round and leaves memory
+    # untouched - but with no test data *every* round is inconclusive, so the
+    # sweep would spend its whole budget producing episodes in which nothing
+    # was ever refuted and no memory was ever written.
+    empty = [p for p in programs if not TASKS[p].test_cases]
+    if empty:
+        from src.adapter import TEST_DIR
+        raise SystemExit(
+            f"{len(empty)}/{len(programs)} programs have no test cases under {TEST_DIR} "
+            f"(e.g. {empty[0]}).\nSet CONDEFECTS_TEST_DIR or unpack Test.zip - "
+            f"`python3 scripts/fetch_condefects.py --check-only` reports what is visible."
+        )
+
     run_sweep(
         programs, args.modes, args.seeds,
-        budget=args.budget, model=args.model, granularity=args.granularity,
+        budget=args.budget, model=model, granularity=args.granularity,
         max_examples=args.max_examples, typing_noise_c=args.typing_noise_c,
         guard_on=args.guard == "on", steer_on=args.steer == "on",
         force_full_budget=args.force_full_budget, check_overfit=args.check_overfit,

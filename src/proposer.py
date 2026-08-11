@@ -28,9 +28,12 @@ src/adapter.py's module docstring.
 """
 from __future__ import annotations
 
+import math
+
 import dataclasses
 import re
 
+from src.adapter import TASKS
 from src.llm import complete
 from src.oracle import OracleResult
 from src.sandbox import Outcome
@@ -38,6 +41,9 @@ from src.typer import FailureType, theta_both
 
 MODES = ("no_memory", "untyped", "typed")
 GRANULARITIES = ("coarse", "fine")
+
+# Cap on any single piece of contest data quoted into a prompt. See _snippet.
+_MAX_SNIPPET_CHARS = 240
 
 _CODE_FENCE = re.compile(r"```(?:python)?\s*\n(.*?)```", re.DOTALL)
 
@@ -60,18 +66,48 @@ class Attempt:
         return self.coarse_type if granularity == "coarse" else self.fine_type
 
 
+def _snippet(text: str | None, limit: int = _MAX_SNIPPET_CHARS) -> str:
+    """One-line, length-capped view of a test input or a program's output.
+
+    Contest data is not prompt-sized: a single AtCoder input can be hundreds of
+    kilobytes, and an untyped transcript concatenates one per past attempt. Left
+    whole they would blow the context window - and would do it *only* in the
+    untyped arm, turning a memory comparison into a truncation artefact. Every
+    counterexample shown to a model goes through here, in all three conditions.
+    """
+    if not text:
+        return "<no output>"
+    joined = " / ".join(line.strip() for line in text.strip().splitlines())
+    if len(joined) > limit:
+        return f"{joined[:limit]}... [truncated, {len(text)} chars total]"
+    return joined
+
+
+def _case_input(attempt: Attempt) -> str | None:
+    """The stored counterexample's input text, looked up by case name."""
+    ft = attempt.fine_type or attempt.coarse_type
+    if ft is None or not attempt.result.args:
+        return None
+    task = TASKS.get(ft.task)
+    case = task.case(attempt.result.args[0]) if task else None
+    return case.input_text if case else None
+
+
 def _describe_outcome(outcome: Outcome, reference: Outcome | None) -> str:
     if outcome.timed_out:
-        return "timed out"
+        return "exceeded the time limit"
     if not outcome.ok:
-        return f"raised {outcome.error_type}: {outcome.error_message}"
-    ref_desc = f", reference returned {reference.value!r}" if reference and reference.ok else ""
-    return f"returned {outcome.value!r}{ref_desc}"
+        return f"crashed with {outcome.error_type}: {outcome.error_message}"
+    expected = f", but the expected output is `{_snippet(reference.value)}`" if reference and reference.ok else ""
+    return f"printed `{_snippet(outcome.value)}`{expected}"
 
 
 def _format_counterexample(attempt: Attempt) -> str:
     r = attempt.result
-    return f"input {r.args!r} -> {_describe_outcome(r.candidate, r.reference)}"
+    case_name = r.args[0] if r.args else "?"
+    stdin_text = _case_input(attempt)
+    on_input = f" (stdin: `{_snippet(stdin_text)}`)" if stdin_text is not None else ""
+    return f"test case {case_name}{on_input} -> {_describe_outcome(r.candidate, r.reference)}"
 
 
 def _refuted(history: list[Attempt]) -> list[Attempt]:
@@ -135,14 +171,25 @@ def _exclusion_block(mode: str, history: list[Attempt], granularity: str) -> str
 def build_prompt(
     task_name: str,
     buggy_source: str,
-    entry_point: str,
+    program_label: str,
     mode: str,
     history: list[Attempt],
     *,
     granularity: str = "fine",
     disable_exclusion: bool = False,
+    spec_note: str = "",
 ) -> str:
-    """disable_exclusion: steering ablation (E3, "guard-only") - keep the typed
+    """program_label: how the fault is named to the model. ConDefects programs
+    are whole scripts with no single function under repair, so this is the
+    fault id, not an entry point - there is nothing for the model to rename.
+
+    spec_note: worked input/output examples for the coding task (see
+    src.adapter.Task.spec_note). A submission carries no problem statement, so
+    without them the intended output format is underdetermined and a patch can
+    be refuted for a defensible reading rather than for a bug. Applied
+    identically in all three modes, so it cannot confound the comparison.
+
+    disable_exclusion: steering ablation (E3, "guard-only") - keep the typed
     evidence_block but suppress exclusion_block, so the proposer sees what was
     refuted without being told to avoid it.
     """
@@ -155,57 +202,125 @@ def build_prompt(
     exclusion_block = "" if disable_exclusion else _exclusion_block(mode, history, granularity)
 
     sections = [
-        "You are repairing a single buggy Python function.",
-        f"Function to fix: `{entry_point}`",
+        "You are repairing a single buggy Python program. It reads its input "
+        "from standard input and writes its answer to standard output.",
+        f"Program: `{program_label}`",
         f"Current source:\n```python\n{buggy_source}\n```",
     ]
+    if spec_note:
+        sections.append(spec_note)
     if evidence_block:
         sections.append(evidence_block)
     if exclusion_block:
         sections.append(exclusion_block)
     sections.append(
-        "Return the corrected source for the whole module and nothing else: "
+        "Return the corrected source for the whole program and nothing else: "
         "a single ```python fenced code block, no prose before or after it."
     )
     return "\n\n".join(sections)
 
 
+class TruncatedResponse(RuntimeError):
+    """The reply carried no *closed* ```python fence.
+
+    _CODE_FENCE requires the closing fence, so a reply cut off mid-block does
+    not match. The old fallback returned the raw reply - prose and opening
+    fence included - as though it were a patch. Such a candidate always fails,
+    and src.typer then assigns it a failure type, so a harness defect entered
+    the typed memory as evidence and polluted exactly the mechanism under
+    study (paper SS VI-D-a). Raising instead lets src.loop log the round as
+    spent-but-inconclusive and leave memory untouched, the same treatment an
+    unusable oracle already gets.
+    """
+
+
 def _extract_code(text: str) -> str:
     match = _CODE_FENCE.search(text)
-    return (match.group(1) if match else text).strip() + "\n"
+    if match is None:
+        raise TruncatedResponse(
+            f"no closed ```python fence in a {len(text)}-char reply "
+            f"(ends: {text[-80:]!r})"
+        )
+    return match.group(1).strip() + "\n"
+
+
+# The proposer rewrites a whole program, so its output budget has to cover one.
+# A reply cut off mid-block is a SyntaxError, and a SyntaxError refutes the
+# *harness*, not the proposal: the episode records a failure the model never
+# made. A flat 2048 did exactly that on the 8 corpus programs longer than about
+# 7 KB - one of them, a 68 KB submission carrying a precomputed table, needs
+# 22k.
+#
+# Sized per program rather than raised globally, for one reason: max_tokens is
+# part of src.llm's cache key. A global raise would invalidate every cached call
+# - including the pi already paid for on four corpus tasks - while a per-program
+# budget changes the key only for the programs whose budget actually moves. 112
+# of the 120 keep the 2048 floor and their cache with it.
+#
+# 3.5 chars/token is measured on this corpus's Python; the 15% margin covers the
+# model's own formatting.
+#
+# The ceiling is the SDK's, not the model's. claude-haiku-4-5 will emit 64k
+# output tokens, but only on a streamed request - the SDK refuses a
+# non-streaming call whose max_tokens it estimates will outrun the HTTP timeout,
+# and src.llm does not stream. Rather than add streaming for one outlier, the
+# draw refuses to select a program that would need more (MAX_SOURCE_CHARS in
+# scripts/select_hard_tasks.py, derived from this number), so nothing in the
+# corpus can reach the cap.
+
+_CHARS_PER_TOKEN = 3.5
+_BUDGET_MARGIN = 1.15
+_MIN_BUDGET = 2048
+_MAX_BUDGET = 16000
+
+
+def budget_for_source(source: str) -> int:
+    """Output tokens needed to rewrite `source`, floored at _MIN_BUDGET."""
+    estimate = math.ceil(len(source) / _CHARS_PER_TOKEN * _BUDGET_MARGIN)
+    return max(_MIN_BUDGET, min(estimate, _MAX_BUDGET))
 
 
 def propose(
     task_name: str,
     buggy_source: str,
-    entry_point: str,
+    program_label: str,
     mode: str,
     history: list[Attempt],
     *,
     model: str | None = None,
     granularity: str = "fine",
-    max_tokens: int = 1024,
+    max_tokens: int | None = None,
     disable_exclusion: bool = False,
     nonce: str = "",
     temperature: float | None = None,
+    spec_note: str = "",
 ) -> str:
     """Build the mode-appropriate prompt, call the LLM, and extract the patch source.
 
     `nonce` separates this draw from any other call that happens to build the
     same prompt - mandatory for no_memory, whose prompt never changes from round
     to round. src.loop.proposal_nonce is where the experiment's nonces come from.
+
+    max_tokens defaults to a budget sized for *this* program (see
+    budget_for_source). Pass a value only to override that.
     """
     prompt = build_prompt(
-        task_name, buggy_source, entry_point, mode, history,
+        task_name, buggy_source, program_label, mode, history,
         granularity=granularity, disable_exclusion=disable_exclusion,
+        spec_note=spec_note,
     )
+    if max_tokens is None:
+        max_tokens = budget_for_source(buggy_source)
     text = complete(prompt, model=model, max_tokens=max_tokens, nonce=nonce, temperature=temperature)
     return _extract_code(text)
 
 
 if __name__ == "__main__":
-    from src.adapter import TASKS, load
+    from src.adapter import SUPPORTED_PROGRAMS, load
 
-    task = TASKS["gcd"]
-    program = load("gcd")
-    print(build_prompt("gcd", program.buggy_source, task.entry_point, "no_memory", []))
+    if not SUPPORTED_PROGRAMS:
+        raise SystemExit("no ConDefects faults found - see scripts/fetch_condefects.py")
+    name = SUPPORTED_PROGRAMS[0]
+    task = TASKS[name]
+    program = load(name)
+    print(build_prompt(name, program.buggy_source, name, "no_memory", [], spec_note=task.spec_note))

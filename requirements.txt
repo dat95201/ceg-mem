@@ -1,7 +1,6 @@
 numpy
 scipy
 matplotlib
-hypothesis
 pytest
 anthropic
 python-dotenv

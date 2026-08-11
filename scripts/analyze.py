@@ -23,9 +23,33 @@ from scipy import stats as scipy_stats
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
+from scripts.select_corpus import BANDS, PRIMARY_BANDS  # noqa: E402
+
 DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 MODES = ("no_memory", "untyped", "typed")
-STRATA = ("easy", "medium", "hard")
+def _strata_in_use() -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """(all strata, strata the BH family corrects across), read off the freeze.
+
+    Hardcoding these was wrong: the corpus can be frozen two ways and they carry
+    different labels. scripts/select_corpus.py bands on measured pi and marks
+    two of five bands as controls; a rating-floor corpus has no pi measurement
+    at all and is split into three proxy terciles, every one of which carries
+    the same prediction. Reading data/strata.json keeps the analysis honest
+    about which corpus it is analysing instead of asserting one.
+    """
+    path = DATA_DIR / "strata.json"
+    if not path.exists():
+        return tuple(name for name, _, _ in BANDS), PRIMARY_BANDS
+    blob = json.loads(path.read_text())
+    seen = []
+    for t in blob.get("tasks", []):
+        if t["stratum"] not in seen:
+            seen.append(t["stratum"])
+    primary = tuple(blob.get("primary_bands") or seen)
+    return tuple(seen), primary
+
+
+STRATA, BH_STRATA = _strata_in_use()
 
 
 def bootstrap_ci(values: list[float], *, n_resamples: int = 10_000, alpha: float = 0.05, seed: int = 0) -> dict:
@@ -115,8 +139,12 @@ def _per_task_means(episodes: list[dict], mode: str, stratum: str | None, metric
 
     metric == "oracle_calls_to_accept": averaged only over accepted episodes
     (unrepaired episodes have no verification-round count to report, exactly
-    as Table 2's "oracle calls to repair" column is defined).
-    metric == "redundant_attempts": averaged over every episode.
+    as Table 2's "oracle calls to repair" column is defined). This is the one
+    metric the conditioning applies to, and it is why the proposal's Hard band
+    needs a co-primary that survives non-acceptance.
+    every other metric: averaged over every episode, accepted or not -
+    redundant_attempts, guard_evaluations (Prop. 4.5), proposals, and
+    success_at_b (Cor. 4.4, the budgeted-success rate).
     """
     by_task: dict[str, list[float]] = {}
     for ep in episodes:
@@ -155,7 +183,7 @@ def compare_conditions(episodes: list[dict], metric: str) -> dict:
             wilcoxon = wilcoxon_paired(xs, ys)
             a12 = vargha_delaney_a12(xs, ys)
             comparisons[f"{a}_vs_{b}"] = {"n_tasks": len(shared_tasks), "a12": a12, **wilcoxon}
-            if stratum_label != "overall":
+            if stratum_label in BH_STRATA:
                 pending_bh.setdefault((a, b), []).append((stratum_label, wilcoxon["pvalue"]))
 
         out["strata"][stratum_label] = {"summary": summary, "comparisons": comparisons}
@@ -182,9 +210,26 @@ def main() -> None:
 
     report = {
         "results_path": str(args.results_path),
+        # The proposal's SS5 metric list, in its order. The first two were the
+        # only ones computed before; the other three are recoverable from the
+        # episode summaries that were already being written, at no extra cost.
+        #   oracle_calls_to_accept  Thm 4.3(a), primary cost. Accepted episodes only.
+        #   redundant_attempts      Thm 4.3(b). Every episode.
+        #   success_at_b            Cor. 4.4, budgeted success. Every episode -
+        #                           the co-primary that keeps the low-pi strata
+        #                           informative when the round count cannot be
+        #                           defined because nothing accepted.
+        #   guard_evaluations       Prop. 4.5, the Theta(m) vs O(1) guard cost.
+        #                           Predicted to *grow* with difficulty, so it is
+        #                           measured best exactly where the round count
+        #                           is measured worst.
+        #   proposals               model calls, the other budget a practitioner pays.
         "metrics": {
             "oracle_calls_to_accept": compare_conditions(episodes, "oracle_calls_to_accept"),
             "redundant_attempts": compare_conditions(episodes, "redundant_attempts"),
+            "success_at_b": compare_conditions(episodes, "success_at_b"),
+            "guard_evaluations": compare_conditions(episodes, "guard_evaluations"),
+            "proposals": compare_conditions(episodes, "proposals"),
         },
     }
     args.out.write_text(json.dumps(report, indent=2) + "\n")

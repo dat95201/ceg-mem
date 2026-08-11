@@ -100,7 +100,7 @@ def label_session(annotator: str, episodes_path: pathlib.Path) -> None:
     remaining = [r for r in sample if _attempt_id(r) not in done]
 
     print(f"{len(done)}/{len(sample)} already labeled by {annotator!r}; {len(remaining)} remaining.")
-    print("For each attempt: type a location (e.g. 'L12', 'L5-L9', 'wholesale', 'whole_function')")
+    print("For each attempt: type a location (e.g. 'L12', 'L5-L9', 'wholesale', 'whole_program')")
     print("then a property (e.g. 'IndexError', 'Timeout', 'WrongValue', or free text).")
     print("Type 'quit' at either prompt to stop and save progress.\n")
 

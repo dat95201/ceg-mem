@@ -30,7 +30,7 @@ from src.adapter import TASKS, load
 from src.memory import build_memory
 from src.metrics import RoundRecord, append_round
 from src.oracle import differential_test
-from src.proposer import Attempt, propose
+from src.proposer import Attempt, TruncatedResponse, propose
 
 MODES = ("no_memory", "untyped", "typed")
 
@@ -153,12 +153,26 @@ def run_episode(
         return RoundRecord(**base)
 
     for round_index in range(1, budget + 1):
-        patch = propose(
-            task_name, program.buggy_source, task.entry_point,
-            mode, memory.history, model=model, granularity=granularity,
-            disable_exclusion=not steer_on,
-            nonce=proposal_nonce(task_name, seed, round_index),
-        )
+        try:
+            patch = propose(
+                task_name, program.buggy_source, task.name,
+                mode, memory.history, model=model, granularity=granularity,
+                disable_exclusion=not steer_on,
+                nonce=proposal_nonce(task_name, seed, round_index),
+                spec_note=task.spec_note,
+            )
+        except TruncatedResponse as exc:
+            # The harness failed, not the proposal. Log the round - it did spend
+            # a model call - and move on without touching memory, so a reply the
+            # response budget cut short can never enter the evidence block or an
+            # eliminated bucket (paper SS VI-D-a).
+            append_round(_record(
+                round_index=round_index, patch="", accept=False,
+                counterexample_args=None, reason=f"proposal unusable: {exc}",
+                examples_tried=0, coarse_type=None, fine_type=None,
+                proposal_error="truncated_response",
+            ), **kwargs)
+            continue
 
         guarded, guard_evaluations = False, 0
         if guard_on:
@@ -198,15 +212,23 @@ def run_episode(
 
         attempt = Attempt.from_result(task_name, program.buggy_source, patch, result)
 
+        # Store first, then log: TypedMemory may file the attempt under a
+        # different location than its true one (Def. 3.1's coherence c), and the
+        # record has to carry both. coarse_type/fine_type stay the *true* types;
+        # stored_type is what memory believes, and the gap between them is the
+        # mistyping that scripts/measure_anchoring.py looks for.
+        stored = memory.store(attempt)
+        stored_ft = stored.failure_type(granularity)
+
         append_round(_record(
             round_index=round_index, patch=patch, accept=result.accept,
             counterexample_args=result.args, reason=result.reason,
             examples_tried=result.examples_tried,
             coarse_type=attempt.coarse_type.key if attempt.coarse_type else None,
             fine_type=attempt.fine_type.key if attempt.fine_type else None,
+            stored_type=stored_ft.key if stored_ft else None,
             guarded=False, guard_evaluations=guard_evaluations,
         ), **kwargs)
-        memory.store(attempt)
 
         if result.accept:
             if first_accept_round is None:
@@ -228,7 +250,11 @@ def run_episode(
 if __name__ == "__main__":
     import sys
 
-    task_name = sys.argv[1] if len(sys.argv) > 1 else "gcd"
+    from src.adapter import SUPPORTED_PROGRAMS
+
+    if not SUPPORTED_PROGRAMS:
+        raise SystemExit("no ConDefects faults found - see scripts/fetch_condefects.py")
+    task_name = sys.argv[1] if len(sys.argv) > 1 else SUPPORTED_PROGRAMS[0]
     mode = sys.argv[2] if len(sys.argv) > 2 else "typed"
     result = run_episode(task_name, mode, budget=5)
     status = f"repaired in {result.rounds} rounds" if result.accepted_patch else "budget exhausted"

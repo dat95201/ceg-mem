@@ -7,9 +7,9 @@ data/episodes.jsonl (E1) - no extra API calls:
   cross-refutation rate ("does same-type mean same-counterexample?")
     For every pair of refuted no_memory attempts on the *same task* that
     theta() assigned the *same* failure type, re-run attempt A's stored
-    counterexample input against attempt B's patch (and vice versa) via
-    src.sandbox.run_call, and check whether it *still* diverges from the
-    reference. Each direction is one Bernoulli trial. This is the practical,
+    counterexample test case against attempt B's patch (and vice versa) via
+    src.sandbox.run_program, and check whether it *still* diverges from the
+    expected output. Each direction is one Bernoulli trial. This is the practical,
     checkable proxy for whether a real (imperfect) type function behaves like
     the paper's idealized theta - the formal model splits that into oracle
     informativeness rho (Def. 3.1) and typing coherence c; on real data
@@ -42,8 +42,8 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from src.adapter import TASKS, load
 from src.metrics import DEFAULT_METRICS_LOG, load_rounds
-from src.oracle import values_equal
-from src.sandbox import run_call
+from src.oracle import outputs_equal
+from src.sandbox import run_program
 
 DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 GRANULARITIES = ("coarse", "fine")
@@ -54,20 +54,34 @@ def _type_key(row: dict, granularity: str) -> str | None:
     return row[f"{granularity}_type"]
 
 
-def _reference_value(task_name: str, args: list):
-    task = TASKS[task_name]
-    program = load(task_name)
-    full_source = program.correct_source + task.harness
-    return run_call(full_source, task.entry_point, args)
+def _case(task_name: str, args: list):
+    """The stored counterexample's test case. `args` is [case name]; see
+    src.oracle.OracleResult."""
+    if not args:
+        return None
+    return TASKS[task_name].case(args[0])
+
+
+def _reference_value(task_name: str, args: list) -> str | None:
+    """Expected output for a stored counterexample: the shipped out/ file, or
+    the reference implementation run if that case has none."""
+    case = _case(task_name, args)
+    if case is None:
+        return None
+    if case.expected_output is not None:
+        return case.expected_output
+    outcome = run_program(load(task_name).correct_source, case.input_text)
+    return outcome.value if outcome.ok else None
 
 
 def _still_diverges(task_name: str, patch: str, args: list, ref_value) -> bool:
-    task = TASKS[task_name]
-    full_source = patch + task.harness
-    cand = run_call(full_source, task.entry_point, args)
+    case = _case(task_name, args)
+    if case is None:
+        return False
+    cand = run_program(patch, case.input_text)
     if cand.timed_out or not cand.ok:
         return True
-    return not values_equal(cand.value, ref_value)
+    return not outputs_equal(cand.value, ref_value)
 
 
 def _bootstrap_ci(pooled_by_task: list[tuple[int, int]], n_resamples: int, rng: random.Random) -> tuple[float, float]:
@@ -117,11 +131,13 @@ def cross_refutation_rate(rows: list[dict], granularity: str, *, max_pairs_per_t
                 args = src["counterexample_args"]
                 cache_key = (task_name, json.dumps(args, sort_keys=True))  # args may nest lists - not hashable as-is
                 if cache_key not in ref_cache:
-                    ref_out = _reference_value(task_name, args)
-                    ref_cache[cache_key] = ref_out.value if ref_out.ok else None
+                    # _reference_value already unwraps the Outcome and returns
+                    # the expected stdout (or None when the case has no
+                    # establishable answer) - it is a str, not an Outcome.
+                    ref_cache[cache_key] = _reference_value(task_name, args)
                 ref_value = ref_cache[cache_key]
                 if ref_value is None:
-                    continue  # reference itself failed on this input - not a valid comparison point
+                    continue  # no expected output for this case - not a valid comparison point
                 held = _still_diverges(task_name, dst["patch"], args, ref_value)
                 per_task_trials[task_name].append(held)
 

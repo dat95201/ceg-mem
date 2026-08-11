@@ -1,0 +1,5376 @@
+{
+  "usability_criterion": "test data present; reference passes its own cases; the faulty version is refuted by the shipped pool; neither version times out",
+  "task_pass_threshold": ">= 2/3 mutants caught",
+  "corpus_pass_threshold": ">= 45/60 programs passing",
+  "test_dir": "external/ConDefects/Test_partial",
+  "jobs": 6,
+  "n_examined": 102,
+  "n_usable": 83,
+  "n_ineligible": 10,
+  "strata": {
+    "easy": {
+      "cohort": [
+        "abc256_b/45997189",
+        "abc250_b/45692958",
+        "abc225_c/45226527",
+        "abc249_a/45104462",
+        "abc276_a/45957302",
+        "abc251_a/45011950",
+        "abc272_c/45929207",
+        "abc230_a/44828138",
+        "abc287_a/45997981",
+        "abc265_c/46154642",
+        "abc276_c/54054587",
+        "abc237_c/45275344",
+        "abc265_b/45288123",
+        "abc264_b/45323702",
+        "abc263_a/45002191",
+        "abc277_b/45577199",
+        "abc239_d/54197752",
+        "abc245_b/45513233",
+        "abc273_b/46013086",
+        "abc263_b/45056655"
+      ],
+      "n_cohort": 20,
+      "n_passing": 21,
+      "quota": 20
+    },
+    "medium": {
+      "cohort": [
+        "abc234_d/54691667",
+        "abc250_d/45700046",
+        "abc235_e/44788391",
+        "abc283_d/45517172",
+        "abc241_d/45284602",
+        "abc238_c/44668354",
+        "abc232_e/45459245",
+        "abc248_e/45802660",
+        "abc255_c/45907671",
+        "abc253_e/45941559",
+        "abc245_f/45811431",
+        "abc272_d/45575170",
+        "abc252_d/45257814",
+        "abc275_d/45982640",
+        "abc242_e/45535167",
+        "abc266_c/44375735",
+        "abc277_d/45573210",
+        "abc258_e/46182612",
+        "abc223_e/53250614",
+        "abc234_e/45477719"
+      ],
+      "n_cohort": 20,
+      "n_passing": 21,
+      "quota": 20
+    },
+    "hard": {
+      "cohort": [
+        "abc262_f/47638667",
+        "abc226_g/48239634",
+        "abc271_g/37700812",
+        "abc279_g/37231957",
+        "abc240_h/29809348",
+        "abc232_g/28189928",
+        "abc241_f/51143333",
+        "abc247_f/52972964",
+        "abc257_f/45053747",
+        "abc238_g/44443541",
+        "abc225_f/30550444",
+        "abc286_g/41126621",
+        "abc264_g/34022331",
+        "abc237_f/35962547",
+        "abc250_g/36759156",
+        "abc261_h/37948163",
+        "abc235_g/28640040",
+        "abc247_g/39496981",
+        "abc238_f/48523335",
+        "abc245_g/49870441"
+      ],
+      "n_cohort": 20,
+      "n_passing": 22,
+      "quota": 20
+    }
+  },
+  "per_stratum": 20,
+  "cohort": [
+    "abc256_b/45997189",
+    "abc250_b/45692958",
+    "abc225_c/45226527",
+    "abc249_a/45104462",
+    "abc276_a/45957302",
+    "abc251_a/45011950",
+    "abc272_c/45929207",
+    "abc230_a/44828138",
+    "abc287_a/45997981",
+    "abc265_c/46154642",
+    "abc276_c/54054587",
+    "abc237_c/45275344",
+    "abc265_b/45288123",
+    "abc264_b/45323702",
+    "abc263_a/45002191",
+    "abc277_b/45577199",
+    "abc239_d/54197752",
+    "abc245_b/45513233",
+    "abc273_b/46013086",
+    "abc263_b/45056655",
+    "abc234_d/54691667",
+    "abc250_d/45700046",
+    "abc235_e/44788391",
+    "abc283_d/45517172",
+    "abc241_d/45284602",
+    "abc238_c/44668354",
+    "abc232_e/45459245",
+    "abc248_e/45802660",
+    "abc255_c/45907671",
+    "abc253_e/45941559",
+    "abc245_f/45811431",
+    "abc272_d/45575170",
+    "abc252_d/45257814",
+    "abc275_d/45982640",
+    "abc242_e/45535167",
+    "abc266_c/44375735",
+    "abc277_d/45573210",
+    "abc258_e/46182612",
+    "abc223_e/53250614",
+    "abc234_e/45477719",
+    "abc262_f/47638667",
+    "abc226_g/48239634",
+    "abc271_g/37700812",
+    "abc279_g/37231957",
+    "abc240_h/29809348",
+    "abc232_g/28189928",
+    "abc241_f/51143333",
+    "abc247_f/52972964",
+    "abc257_f/45053747",
+    "abc238_g/44443541",
+    "abc225_f/30550444",
+    "abc286_g/41126621",
+    "abc264_g/34022331",
+    "abc237_f/35962547",
+    "abc250_g/36759156",
+    "abc261_h/37948163",
+    "abc235_g/28640040",
+    "abc247_g/39496981",
+    "abc238_f/48523335",
+    "abc245_g/49870441"
+  ],
+  "n_cohort": 60,
+  "n_cohort_passing": 57,
+  "corpus_gate_ok": true,
+  "n_passing": 64,
+  "max_examples": 80,
+  "mutant_examples": 80,
+  "full_pool_cap": 300,
+  "mutant_retries": 3,
+  "reference_cases": 20,
+  "timeout_sec": 10.0,
+  "seed": 20260717,
+  "elapsed_sec": 5814.9,
+  "faults": {
+    "abc256_b/45997189": {
+      "task_id": "abc256_b",
+      "program_id": "45997189",
+      "date": "2022-06-18",
+      "difficulty": 83,
+      "n_test_cases": 10,
+      "loc": 12,
+      "fault_lines": [
+        8
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 4,
+      "counterexample": "01_random_00.txt",
+      "mutant_capacity": {
+        "off_by_one": 10,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "eligible": true,
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L4:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n cum_sum = [0] * (N + 1)\n-for i in range(N):\n+for i in range((N) - 1):\n     cum_sum[i + 1] = cum_sum[i] + A[i]\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L8:C7",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n for i in range(N):\n-    if 3 < cum_sum[N] - cum_sum[i]:\n+    if 3 <= cum_sum[N] - cum_sum[i]:\n         ans += 1\n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_01.txt",
+          "reason": "wrong output on test case 00_sample_01.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L8:C4",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n for i in range(N):\n-    if 3 < cum_sum[N] - cum_sum[i]:\n+    if True:\n         ans += 1\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "reason": "wrong output on test case 00_sample_00.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc234_d/54691667": {
+      "task_id": "abc234_d",
+      "program_id": "54691667",
+      "date": "2022-01-08",
+      "difficulty": 503,
+      "n_test_cases": 28,
+      "loc": 18,
+      "fault_lines": [
+        7
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 1,
+      "counterexample": "000.txt",
+      "mutant_capacity": {
+        "off_by_one": 3,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "eligible": true,
+      "stratum": "medium",
+      "mutants_caught": 2,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L11:C17",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n print(a)\n-for i in range(k,n):\n+for i in range(k,(n) - 1):\n   heapq.heappush(q, P[i])\n",
+          "examples_tried": 2,
+          "counterexample": "001.txt",
+          "reason": "wrong output on test case 001.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "equivalent",
+          "attempts": 1,
+          "site": "L14:C5",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -13,3 +13,3 @@\n   a = heapq.heappop(q)\n-  if prev < a:\n+  if prev <= a:\n     prev = a\n",
+          "examples_tried": 28,
+          "counterexample": null,
+          "reason": null,
+          "full_pool_examples_tried": 28,
+          "full_pool_counterexample": null
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L14:C2",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -13,3 +13,3 @@\n   a = heapq.heappop(q)\n-  if prev < a:\n+  if True:\n     prev = a\n",
+          "examples_tried": 2,
+          "counterexample": "001.txt",
+          "reason": "wrong output on test case 001.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc262_f/47638667": {
+      "task_id": "abc262_f",
+      "program_id": "47638667",
+      "date": "2022-07-31",
+      "difficulty": 2334,
+      "n_test_cases": 47,
+      "loc": 60,
+      "fault_lines": [
+        29
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 46,
+      "counterexample": "05_hand_01.txt",
+      "mutant_capacity": {
+        "off_by_one": 23,
+        "wrong_comparison": 15,
+        "missing_guard": 12
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L4:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n d = {}\n-for i in range(N):\n+for i in range((N) - 1):\n   d[P[i]] = i\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "reason": "raised KeyError on test case 00_sample_00.txt: 1"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L10:C5",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n   kk = N - k\n-  if min(k,kk) > K:\n+  if min(k,kk) >= K:\n     continue\n",
+          "examples_tried": 13,
+          "counterexample": "01_sall_09.txt",
+          "reason": "wrong output on test case 01_sall_09.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L10:C2",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n   kk = N - k\n-  if min(k,kk) > K:\n+  if False:\n     continue\n",
+          "examples_tried": 35,
+          "counterexample": "03_inc_08.txt",
+          "reason": "wrong output on test case 03_inc_08.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc250_b/45692958": {
+      "task_id": "abc250_b",
+      "program_id": "45692958",
+      "date": "2022-05-08",
+      "difficulty": 109,
+      "n_test_cases": 18,
+      "loc": 11,
+      "fault_lines": [
+        11
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 1,
+      "counterexample": "00_sample_00.txt",
+      "mutant_capacity": {
+        "off_by_one": 7,
+        "wrong_comparison": 4,
+        "missing_guard": 1
+      },
+      "eligible": true,
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L2:C25",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -1,3 +1,3 @@\n n,a,b=map(int,input().split())\n-ans = [[] for _ in range(a*n)]\n+ans = [[] for _ in range((a*n) - 1)]\n for i in range(a*n):\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "reason": "raised IndexError on test case 00_sample_00.txt: list index out of range"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L5:C12",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n     for j in range(b*n):\n-        if ((i//a)%2==0 and (j//b)%2==0) or ((i//a)%2!=0 and (j//b)%2!=0):\n+        if ((i//a)%2!=0 and (j//b)%2==0) or ((i//a)%2!=0 and (j//b)%2!=0):\n             ans[i].append('.')\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L5:C8",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n     for j in range(b*n):\n-        if ((i//a)%2==0 and (j//b)%2==0) or ((i//a)%2!=0 and (j//b)%2!=0):\n+        if True:\n             ans[i].append('.')\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "reason": "wrong output on test case 00_sample_00.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc250_d/45700046": {
+      "task_id": "abc250_d",
+      "program_id": "45700046",
+      "date": "2022-05-08",
+      "difficulty": 797,
+      "n_test_cases": 20,
+      "loc": 52,
+      "fault_lines": [
+        42
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 3,
+      "counterexample": "sample_03.txt",
+      "mutant_capacity": {
+        "off_by_one": 15,
+        "wrong_comparison": 7,
+        "missing_guard": 6
+      },
+      "eligible": true,
+      "stratum": "medium",
+      "mutants_caught": 2,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 3,
+          "site": "L13:C15",
+          "note": "inflates an accumulator's step by one on every update",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n             # \u6b21\u306ei\u3078\n-            i+=1\n+            i+=(1) + 1\n             continue\n",
+          "examples_tried": 3,
+          "counterexample": "sample_03.txt",
+          "reason": "wrong output on test case sample_03.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "equivalent",
+          "attempts": 3,
+          "site": "L47:C10",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -46,3 +46,3 @@\n for i in range(lenAlist):\n-    while i<k and N<Alist[i]*Alist[k]**3:\n+    while i<=k and N<Alist[i]*Alist[k]**3:\n         k-=1\n",
+          "examples_tried": 20,
+          "counterexample": null,
+          "reason": null,
+          "full_pool_examples_tried": 20,
+          "full_pool_counterexample": null
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 2,
+          "site": "L33:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -32,3 +32,3 @@\n         # i\u304c\u7d20\u6570\u306a\u3089\u3070\n-        if IsPrime[i]==True:\n+        if False:\n             # \u30ea\u30b9\u30c8\u3078\u5165\u308c\u308b\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "reason": "wrong output on test case sample_01.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc226_g/48239634": {
+      "task_id": "abc226_g",
+      "program_id": "48239634",
+      "date": "2021-11-07",
+      "difficulty": 2373,
+      "n_test_cases": 48,
+      "loc": 35,
+      "fault_lines": [
+        33
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 2,
+      "counterexample": "hand_00.txt",
+      "mutant_capacity": {
+        "off_by_one": 54,
+        "wrong_comparison": 5,
+        "missing_guard": 4
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L5:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n T=int(readline())\n-for t in range(T):\n+for t in range((T) - 1):\n     A=list(map(int,readline().split()))\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "wrong output on test case example_00.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L9:C7",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -8,3 +8,3 @@\n     ans=\"Yes\"\n-    if A[4]>B[4]:\n+    if A[4]>=B[4]:\n         ans=\"No\"\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "wrong output on test case example_00.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 3,
+          "site": "L28:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -27,3 +27,3 @@\n     B[1]+=mi\n-    if A[2]>B[3]:\n+    if False:\n         ans=\"No\"\n",
+          "examples_tried": 2,
+          "counterexample": "hand_00.txt",
+          "reason": "wrong output on test case hand_00.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc237_a/45267148": {
+      "task_id": "abc237_a",
+      "program_id": "45267148",
+      "date": "2022-01-30",
+      "difficulty": 25,
+      "n_test_cases": 10,
+      "loc": 1,
+      "fault_lines": [
+        1
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": "program admits no mutation site for: off_by_one",
+      "usable": true,
+      "examples_tried": 8,
+      "counterexample": "hand_04.txt",
+      "mutant_capacity": {
+        "off_by_one": 0,
+        "wrong_comparison": 2,
+        "missing_guard": 1
+      },
+      "eligible": false
+    },
+    "abc235_e/44788391": {
+      "task_id": "abc235_e",
+      "program_id": "44788391",
+      "date": "2022-01-15",
+      "difficulty": 1304,
+      "n_test_cases": 13,
+      "loc": 109,
+      "fault_lines": [
+        0
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 3,
+      "counterexample": "01_tree_00.txt",
+      "mutant_capacity": {
+        "off_by_one": 39,
+        "wrong_comparison": 11,
+        "missing_guard": 11
+      },
+      "eligible": true,
+      "stratum": "medium",
+      "mutants_caught": 2,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 3,
+          "site": "L61:C30",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -60,3 +60,3 @@\n n,m,q = imap()\n-edge = [list() for _ in range(m)]\n+edge = [list() for _ in range((m) - 1)]\n query = [list() for  _ in range(q)]\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "reason": "raised IndexError on test case 00_sample_00.txt: list assignment index out of range"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L22:C11",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -21,3 +21,3 @@\n     def find(self, x):\n-        if self.parents[x] < 0:\n+        if self.parents[x] <= 0:\n             return x\n",
+          "examples_tried": 3,
+          "counterexample": "01_tree_00.txt",
+          "reason": "wrong output on test case 01_tree_00.txt"
+        },
+        "missing_guard": {
+          "verdict": "equivalent",
+          "attempts": 3,
+          "site": "L86:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -85,3 +85,3 @@\n         w,u,v,i = query[qpos]\n-        if not uf.same(u,v):\n+        if False:\n             ans[i] = True\n",
+          "examples_tried": 13,
+          "counterexample": null,
+          "reason": null,
+          "full_pool_examples_tried": 13,
+          "full_pool_counterexample": null
+        }
+      },
+      "in_cohort": true
+    },
+    "abc271_g/37700812": {
+      "task_id": "abc271_g",
+      "program_id": "37700812",
+      "date": "2022-10-01",
+      "difficulty": 2323,
+      "n_test_cases": 37,
+      "loc": 74,
+      "fault_lines": [
+        65
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 3,
+      "counterexample": "00_sample_02.txt",
+      "mutant_capacity": {
+        "off_by_one": 63,
+        "wrong_comparison": 10,
+        "missing_guard": 10
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L8:C19",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n     a=[A]\n-    for i in range(len(b)-1):\n+    for i in range((len(b)-1) - 1):\n         a.append((a[-1]**2)%C)\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "reason": "raised IndexError on test case 00_sample_00.txt: list index out of range"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L12:C11",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n     for i in range(len(b)):\n-        if b[-i-1]=='1':\n+        if b[-i-1]!='1':\n             d=(d*a[i])%C\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L12:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n     for i in range(len(b)):\n-        if b[-i-1]=='1':\n+        if False:\n             d=(d*a[i])%C\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "reason": "wrong output on test case 00_sample_00.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc226_a/46153240": {
+      "task_id": "abc226_a",
+      "program_id": "46153240",
+      "date": "2021-11-07",
+      "difficulty": 14,
+      "n_test_cases": 12,
+      "loc": 2,
+      "fault_lines": [
+        2
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": "program admits no mutation site for: off_by_one, wrong_comparison, missing_guard",
+      "usable": true,
+      "examples_tried": 7,
+      "counterexample": "test_03.txt",
+      "mutant_capacity": {
+        "off_by_one": 0,
+        "wrong_comparison": 0,
+        "missing_guard": 0
+      },
+      "eligible": false
+    },
+    "abc283_d/45517172": {
+      "task_id": "abc283_d",
+      "program_id": "45517172",
+      "date": "2022-12-24",
+      "difficulty": 453,
+      "n_test_cases": 26,
+      "loc": 24,
+      "fault_lines": [
+        12
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 7,
+      "counterexample": "random0.txt",
+      "mutant_capacity": {
+        "off_by_one": 4,
+        "wrong_comparison": 4,
+        "missing_guard": 4
+      },
+      "eligible": true,
+      "stratum": "medium",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L6:C19",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -5,3 +5,3 @@\n     stack_i = []\n-    for i in range(len(s)):\n+    for i in range((len(s)) - 1):\n         stack_i.append(i)\n",
+          "examples_tried": 2,
+          "counterexample": "after_contest02.txt",
+          "reason": "wrong output on test case after_contest02.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L13:C18",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n             peak = stack_kakko.pop()\n-            while stack_i[-1] > peak:\n+            while stack_i[-1] >= peak:\n                 idx = stack_i.pop()\n",
+          "examples_tried": 3,
+          "counterexample": "example0.txt",
+          "reason": "raised IndexError on test case example0.txt: list index out of range"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L9:C8",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -8,3 +8,3 @@\n         c = s[i]\n-        if c == '(':\n+        if True:\n             stack_kakko.append(i)\n",
+          "examples_tried": 1,
+          "counterexample": "after_contest01.txt",
+          "reason": "wrong output on test case after_contest01.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc279_g/37231957": {
+      "task_id": "abc279_g",
+      "program_id": "37231957",
+      "date": "2022-11-26",
+      "difficulty": 2431,
+      "n_test_cases": 104,
+      "loc": 17,
+      "fault_lines": [
+        16
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 11,
+      "counterexample": "test_39.txt",
+      "mutant_capacity": {
+        "off_by_one": 10,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 2,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L9:C18",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -8,3 +8,3 @@\n # (j=i-k+2\uff5ei-1)\u2192i \u306e\u9077\u79fb: DP[j]*1\n-for i in range(1, n):\n+for i in range(1, (n) - 1):\n     s = dp[-1]\n",
+          "examples_tried": 1,
+          "counterexample": "test_32.txt",
+          "reason": "wrong output on test case test_32.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "equivalent",
+          "attempts": 1,
+          "site": "L11:C25",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n     s = dp[-1]\n-    t = dp[i - k + 1] if i - k + 1 > 0 else 0\n+    t = dp[i - k + 1] if i - k + 1 >= 0 else 0\n     s -= t\n",
+          "examples_tried": 80,
+          "counterexample": null,
+          "reason": null,
+          "full_pool_examples_tried": 104,
+          "full_pool_counterexample": null
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L11:C8",
+          "note": "collapses a conditional expression onto its else-branch",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n     s = dp[-1]\n-    t = dp[i - k + 1] if i - k + 1 > 0 else 0\n+    t = dp[i - k + 1] if False else 0\n     s -= t\n",
+          "examples_tried": 2,
+          "counterexample": "test_23.txt",
+          "reason": "wrong output on test case test_23.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc225_c/45226527": {
+      "task_id": "abc225_c",
+      "program_id": "45226527",
+      "date": "2021-10-30",
+      "difficulty": 326,
+      "n_test_cases": 28,
+      "loc": 30,
+      "fault_lines": [
+        17
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 25,
+      "counterexample": "after_contest1.txt",
+      "mutant_capacity": {
+        "off_by_one": 25,
+        "wrong_comparison": 3,
+        "missing_guard": 4
+      },
+      "eligible": true,
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L2:C25",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -1,3 +1,3 @@\n n, m = map(int, input().split())\n-b = [None for _ in range(n)]\n+b = [None for _ in range((n) - 1)]\n for i in range(n):\n",
+          "examples_tried": 1,
+          "counterexample": "000.txt",
+          "reason": "raised IndexError on test case 000.txt: list assignment index out of range"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L10:C9",
+          "note": "inverts an inequality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n     for j in range(n - 1):\n-      if c[i][j + 1] != c[i][j] + 7:\n+      if c[i][j + 1] == c[i][j] + 7:\n         return False\n",
+          "examples_tried": 3,
+          "counterexample": "002.txt",
+          "reason": "wrong output on test case 002.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L10:C6",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n     for j in range(n - 1):\n-      if c[i][j + 1] != c[i][j] + 7:\n+      if False:\n         return False\n",
+          "examples_tried": 3,
+          "counterexample": "002.txt",
+          "reason": "wrong output on test case 002.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc232_e/45574605": {
+      "task_id": "abc232_e",
+      "program_id": "45574605",
+      "date": "2021-12-19",
+      "difficulty": 1380,
+      "n_test_cases": 26,
+      "loc": 50,
+      "fault_lines": [
+        32
+      ],
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference raised ModuleNotFoundError on example_00.txt",
+      "usable": false
+    },
+    "abc281_h/41260093": {
+      "task_id": "abc281_h",
+      "program_id": "41260093",
+      "date": "2022-12-10",
+      "difficulty": 3180,
+      "n_test_cases": 75,
+      "loc": 1163,
+      "fault_lines": [
+        1150
+      ],
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference timed out on 00_sample_02.txt",
+      "usable": false
+    },
+    "abc249_a/45104462": {
+      "task_id": "abc249_a",
+      "program_id": "45104462",
+      "date": "2022-04-23",
+      "difficulty": 103,
+      "n_test_cases": 14,
+      "loc": 61,
+      "fault_lines": [
+        54
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 4,
+      "counterexample": "handmade.txt",
+      "mutant_capacity": {
+        "off_by_one": 12,
+        "wrong_comparison": 4,
+        "missing_guard": 4
+      },
+      "eligible": true,
+      "stratum": "easy",
+      "mutants_caught": 2,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "equivalent",
+          "attempts": 3,
+          "site": "L19:C45",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -18,3 +18,3 @@\n def s_list(): return list(s_map())\n-def s_row(N): return [s_input for _ in range(N)]\n+def s_row(N): return [s_input for _ in range((N) - 1)]\n def s_row_str(N): return [s_list() for _ in range(N)]\n",
+          "examples_tried": 14,
+          "counterexample": null,
+          "reason": null,
+          "full_pool_examples_tried": 14,
+          "full_pool_counterexample": null
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 3,
+          "site": "L56:C3",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -55,3 +55,3 @@\n \n-if judge > 0:\n+if judge >= 0:\n     print('Takahashi')\n",
+          "examples_tried": 3,
+          "counterexample": "example_02.txt",
+          "reason": "wrong output on test case example_02.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L45:C0",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -44,3 +44,3 @@\n judge = t_times*a*b\n-if t_mod >= a:\n+if True:\n     judge += a*b\n",
+          "examples_tried": 5,
+          "counterexample": "test_00.txt",
+          "reason": "wrong output on test case test_00.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc241_d/45284602": {
+      "task_id": "abc241_d",
+      "program_id": "45284602",
+      "date": "2022-02-26",
+      "difficulty": 1177,
+      "n_test_cases": 29,
+      "loc": 157,
+      "fault_lines": [
+        152
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 1,
+      "counterexample": "000.txt",
+      "mutant_capacity": {
+        "off_by_one": 58,
+        "wrong_comparison": 26,
+        "missing_guard": 21
+      },
+      "eligible": true,
+      "stratum": "medium",
+      "mutants_caught": 0,
+      "mutants_total": 3,
+      "fault_types_caught": [],
+      "n_missed": 0,
+      "n_equivalent": 3,
+      "n_unavailable": 0,
+      "passes": false,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "equivalent",
+          "attempts": 3,
+          "site": "L35:C68",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -34,3 +34,3 @@\n             p >>= 1\n-        res.append(f\"{[self.sum(p + 1) - self.sum(p) for p in range(self.size)]}\")\n+        res.append(f\"{[self.sum(p + 1) - self.sum(p) for p in range((self.size) - 1)]}\")\n         return \"\\n\".join(res)\n",
+          "examples_tried": 29,
+          "counterexample": null,
+          "reason": null,
+          "full_pool_examples_tried": 29,
+          "full_pool_counterexample": null
+        },
+        "wrong_comparison": {
+          "verdict": "equivalent",
+          "attempts": 3,
+          "site": "L40:C14",
+          "note": "tightens `<=` to `<`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -39,3 +39,3 @@\n         assert p > 0\n-        while p <= self.size:\n+        while p < self.size:\n             self.d[p] += x\n",
+          "examples_tried": 29,
+          "counterexample": null,
+          "reason": null,
+          "full_pool_examples_tried": 29,
+          "full_pool_counterexample": null
+        },
+        "missing_guard": {
+          "verdict": "equivalent",
+          "attempts": 3,
+          "site": "L96:C8",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -95,3 +95,3 @@\n     def remove(self, x, n=1):  # O(log n)\n-        if not self.multi and n != 1:\n+        if False:\n             raise KeyError(n)\n",
+          "examples_tried": 29,
+          "counterexample": null,
+          "reason": null,
+          "full_pool_examples_tried": 29,
+          "full_pool_counterexample": null
+        }
+      },
+      "in_cohort": true
+    },
+    "abc242_g/52939949": {
+      "task_id": "abc242_g",
+      "program_id": "52939949",
+      "date": "2022-03-05",
+      "difficulty": 1828,
+      "n_test_cases": 30,
+      "loc": 82,
+      "fault_lines": [
+        7
+      ],
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference timed out on pair_01.txt",
+      "usable": false
+    },
+    "abc276_a/45957302": {
+      "task_id": "abc276_a",
+      "program_id": "45957302",
+      "date": "2022-11-05",
+      "difficulty": 13,
+      "n_test_cases": 14,
+      "loc": 7,
+      "fault_lines": [
+        3
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 12,
+      "counterexample": "test_08.txt",
+      "mutant_capacity": {
+        "off_by_one": 4,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "eligible": true,
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L3:C22",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -2,3 +2,3 @@\n b=len(a)\n-for i in range(b-1,-1,-1):\n+for i in range(b-1,-1,(-1) - 1):\n     if a[i]==\"a\":\n",
+          "examples_tried": 4,
+          "counterexample": "test_00.txt",
+          "reason": "wrong output on test case test_00.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L4:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n for i in range(b-1,-1,-1):\n-    if a[i]==\"a\":\n+    if a[i]!=\"a\":\n         print(i+1)\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "wrong output on test case example_00.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L4:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n for i in range(b-1,-1,-1):\n-    if a[i]==\"a\":\n+    if False:\n         print(i+1)\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "wrong output on test case example_00.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc238_c/44668354": {
+      "task_id": "abc238_c",
+      "program_id": "44668354",
+      "date": "2022-02-05",
+      "difficulty": 637,
+      "n_test_cases": 28,
+      "loc": 18,
+      "fault_lines": [
+        10
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 3,
+      "counterexample": "sample_03.txt",
+      "mutant_capacity": {
+        "off_by_one": 7,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "eligible": true,
+      "stratum": "medium",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L10:C17",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n \n-for x in range(1,19):\n+for x in range(1,(19) - 1):\n     if 10**x <= N:\n",
+          "examples_tried": 3,
+          "counterexample": "sample_03.txt",
+          "reason": "wrong output on test case sample_03.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L11:C7",
+          "note": "tightens `<=` to `<`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n for x in range(1,19):\n-    if 10**x <= N:\n+    if 10**x < N:\n         ans += S(1,9*10**(x-1))\n",
+          "examples_tried": 12,
+          "counterexample": "test_09.txt",
+          "reason": "wrong output on test case test_09.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L11:C4",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n for x in range(1,19):\n-    if 10**x <= N:\n+    if True:\n         ans += S(1,9*10**(x-1))\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "reason": "wrong output on test case sample_01.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc240_h/29809348": {
+      "task_id": "abc240_h",
+      "program_id": "29809348",
+      "date": "2022-02-20",
+      "difficulty": 3184,
+      "n_test_cases": 80,
+      "loc": 15,
+      "fault_lines": [
+        7
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 31,
+      "counterexample": "030.txt",
+      "mutant_capacity": {
+        "off_by_one": 14,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L4:C21",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n dp=[\"2\"]*(n+1)\n-Q=[[] for _ in range(n)]\n+Q=[[] for _ in range((n) - 1)]\n for l in range(n):\n",
+          "examples_tried": 1,
+          "counterexample": "000.txt",
+          "reason": "raised IndexError on test case 000.txt: list index out of range"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L9:C10",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -8,3 +8,3 @@\n     s=S[l:r+1]\n-    while dp[i]<s:\n+    while dp[i]<=s:\n       i+=1\n",
+          "examples_tried": 3,
+          "counterexample": "002.txt",
+          "reason": "wrong output on test case 002.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L9:C4",
+          "note": "neutralises a loop's entry condition, so its body never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -8,3 +8,3 @@\n     s=S[l:r+1]\n-    while dp[i]<s:\n+    while False:\n       i+=1\n",
+          "examples_tried": 5,
+          "counterexample": "004.txt",
+          "reason": "wrong output on test case 004.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc242_a/45709103": {
+      "task_id": "abc242_a",
+      "program_id": "45709103",
+      "date": "2022-03-05",
+      "difficulty": 37,
+      "n_test_cases": 18,
+      "loc": 7,
+      "fault_lines": [
+        3
+      ],
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference disagrees with the shipped output on sample_01.txt",
+      "usable": false
+    },
+    "abc232_e/45459245": {
+      "task_id": "abc232_e",
+      "program_id": "45459245",
+      "date": "2021-12-19",
+      "difficulty": 1380,
+      "n_test_cases": 26,
+      "loc": 38,
+      "fault_lines": [
+        18
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 5,
+      "counterexample": "test_01.txt",
+      "mutant_capacity": {
+        "off_by_one": 53,
+        "wrong_comparison": 3,
+        "missing_guard": 3
+      },
+      "eligible": true,
+      "stratum": "medium",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L31:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -30,3 +30,3 @@\n         dp[0][3]=1\n-for k in range(K):\n+for k in range((K) - 1):\n     bucket=[0,0,0,0]\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "wrong output on test case example_00.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L21:C3",
+          "note": "inverts an inequality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -20,3 +20,3 @@\n x1,y1,x2,y2=map(int,input().split())\n-if x1!=x2:\n+if x1==x2:\n     if y1!=y2:\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "wrong output on test case example_00.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L21:C0",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -20,3 +20,3 @@\n x1,y1,x2,y2=map(int,input().split())\n-if x1!=x2:\n+if True:\n     if y1!=y2:\n",
+          "examples_tried": 2,
+          "counterexample": "example_01.txt",
+          "reason": "wrong output on test case example_01.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc232_f/54006538": {
+      "task_id": "abc232_f",
+      "program_id": "54006538",
+      "date": "2021-12-19",
+      "difficulty": 1857,
+      "n_test_cases": 53,
+      "loc": 12,
+      "fault_lines": [
+        10
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": "program admits no mutation site for: wrong_comparison",
+      "usable": true,
+      "examples_tried": 10,
+      "counterexample": "009.txt",
+      "mutant_capacity": {
+        "off_by_one": 10,
+        "wrong_comparison": 0,
+        "missing_guard": 1
+      },
+      "eligible": false
+    },
+    "abc251_a/45011950": {
+      "task_id": "abc251_a",
+      "program_id": "45011950",
+      "date": "2022-05-14",
+      "difficulty": 9,
+      "n_test_cases": 13,
+      "loc": 6,
+      "fault_lines": [
+        2
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 1,
+      "counterexample": "000.txt",
+      "mutant_capacity": {
+        "off_by_one": 3,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "eligible": true,
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L2:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -1,3 +1,3 @@\n S = input()\n-for i in range(6+1):\n+for i in range((6+1) - 1):\n     SS = S*i\n",
+          "examples_tried": 1,
+          "counterexample": "000.txt",
+          "reason": "wrong output on test case 000.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L4:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n     SS = S*i\n-    if len(SS) == 6:\n+    if len(SS) != 6:\n         print(SS)\n",
+          "examples_tried": 1,
+          "counterexample": "000.txt",
+          "reason": "wrong output on test case 000.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L4:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n     SS = S*i\n-    if len(SS) == 6:\n+    if False:\n         print(SS)\n",
+          "examples_tried": 1,
+          "counterexample": "000.txt",
+          "reason": "wrong output on test case 000.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc283_d/45462979": {
+      "task_id": "abc283_d",
+      "program_id": "45462979",
+      "date": "2022-12-24",
+      "difficulty": 453,
+      "n_test_cases": 26,
+      "loc": 25,
+      "fault_lines": [
+        15
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": "another fault from this coding task is already in the corpus",
+      "usable": true,
+      "examples_tried": 1,
+      "counterexample": "after_contest01.txt"
+    },
+    "abc232_g/28189928": {
+      "task_id": "abc232_g",
+      "program_id": "28189928",
+      "date": "2021-12-19",
+      "difficulty": 2550,
+      "n_test_cases": 74,
+      "loc": 51,
+      "fault_lines": [
+        5
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 2,
+      "counterexample": "001.txt",
+      "mutant_capacity": {
+        "off_by_one": 28,
+        "wrong_comparison": 5,
+        "missing_guard": 6
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L41:C23",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -40,3 +40,3 @@\n \n-X = [[] for _ in range(2 * N + 1)]\n+X = [[] for _ in range((2 * N + 1) - 1)]\n for i in range(N):\n",
+          "examples_tried": 1,
+          "counterexample": "000.txt",
+          "reason": "raised IndexError on test case 000.txt: list index out of range"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 3,
+          "site": "L21:C19",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -20,3 +20,3 @@\n             if D[j] < 0 or D[j] > nd:\n-                if done[j] == 0:\n+                if done[j] != 0:\n                     hpush(h, (nd << kk) + j)\n",
+          "examples_tried": 1,
+          "counterexample": "000.txt",
+          "reason": "wrong output on test case 000.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 2,
+          "site": "L20:C12",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -19,3 +19,3 @@\n             nd = d + w\n-            if D[j] < 0 or D[j] > nd:\n+            if False:\n                 if done[j] == 0:\n",
+          "examples_tried": 1,
+          "counterexample": "000.txt",
+          "reason": "wrong output on test case 000.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc272_c/45929207": {
+      "task_id": "abc272_c",
+      "program_id": "45929207",
+      "date": "2022-10-08",
+      "difficulty": 167,
+      "n_test_cases": 20,
+      "loc": 15,
+      "fault_lines": [
+        5
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 18,
+      "counterexample": "02_handmade_03.txt",
+      "mutant_capacity": {
+        "off_by_one": 8,
+        "wrong_comparison": 6,
+        "missing_guard": 3
+      },
+      "eligible": true,
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L11:C15",
+          "note": "shifts a subscript index down by one",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n elif len(odd) < 2:\n-    print(even[0]+even[1])\n+    print(even[(0) - 1]+even[1])\n elif len(even) < 2:\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "reason": "wrong output on test case 00_sample_01.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L8:C3",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n even.sort(reverse=True)\n-if len(odd) < 2 and len(even) < 2:\n+if len(odd) <= 2 and len(even) < 2:\n     print(-1)\n",
+          "examples_tried": 3,
+          "counterexample": "01_test_01.txt",
+          "reason": "wrong output on test case 01_test_01.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L8:C0",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n even.sort(reverse=True)\n-if len(odd) < 2 and len(even) < 2:\n+if True:\n     print(-1)\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "reason": "wrong output on test case 00_sample_01.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc248_e/45802660": {
+      "task_id": "abc248_e",
+      "program_id": "45802660",
+      "date": "2022-04-16",
+      "difficulty": 1292,
+      "n_test_cases": 36,
+      "loc": 37,
+      "fault_lines": [
+        23
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 3,
+      "counterexample": "hand_00.txt",
+      "mutant_capacity": {
+        "off_by_one": 9,
+        "wrong_comparison": 11,
+        "missing_guard": 9
+      },
+      "eligible": true,
+      "stratum": "medium",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L7:C58",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n     N, K = map(int, input().split())\n-    XY = [tuple(map(int, input().split())) for _ in range(N)]\n+    XY = [tuple(map(int, input().split())) for _ in range((N) - 1)]\n     if K == 1:\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "raised IndexError on test case example_00.txt: list index out of range"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 2,
+          "site": "L32:C15",
+          "note": "tightens `>=` to `>`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -31,3 +31,3 @@\n                     cnt += 1\n-            if cnt >= K:\n+            if cnt > K:\n                 ans += 1\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "wrong output on test case example_00.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L8:C4",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n     XY = [tuple(map(int, input().split())) for _ in range(N)]\n-    if K == 1:\n+    if False:\n         return 'Infinity'\n",
+          "examples_tried": 2,
+          "counterexample": "example_01.txt",
+          "reason": "wrong output on test case example_01.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc225_h/40522843": {
+      "task_id": "abc225_h",
+      "program_id": "40522843",
+      "date": "2021-10-30",
+      "difficulty": 3061,
+      "n_test_cases": 70,
+      "loc": 172,
+      "fault_lines": [
+        155
+      ],
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference timed out on 013.txt",
+      "usable": false
+    },
+    "abc230_a/44828138": {
+      "task_id": "abc230_a",
+      "program_id": "44828138",
+      "date": "2021-12-03",
+      "difficulty": 5,
+      "n_test_cases": 11,
+      "loc": 6,
+      "fault_lines": [
+        6
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 3,
+      "counterexample": "00_sample_02.txt",
+      "mutant_capacity": {
+        "off_by_one": 1,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "eligible": true,
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L4:C20",
+          "note": "shifts the constant 1 in an index expression by one",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n if N >= 42:\n-    print(f\"AGC{N + 1:03}\")\n+    print(f\"AGC{N + 2:03}\")\n else:\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L3:C3",
+          "note": "tightens `>=` to `>`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -2,3 +2,3 @@\n \n-if N >= 42:\n+if N > 42:\n     print(f\"AGC{N + 1:03}\")\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L3:C0",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -2,3 +2,3 @@\n \n-if N >= 42:\n+if True:\n     print(f\"AGC{N + 1:03}\")\n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_01.txt",
+          "reason": "wrong output on test case 00_sample_01.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc255_c/45907671": {
+      "task_id": "abc255_c",
+      "program_id": "45907671",
+      "date": "2022-06-11",
+      "difficulty": 574,
+      "n_test_cases": 68,
+      "loc": 20,
+      "fault_lines": [
+        20
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 17,
+      "counterexample": "test_13.txt",
+      "mutant_capacity": {
+        "off_by_one": 4,
+        "wrong_comparison": 6,
+        "missing_guard": 6
+      },
+      "eligible": true,
+      "stratum": "medium",
+      "mutants_caught": 2,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L10:C16",
+          "note": "shifts the constant 1 in an index expression by one",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n         print(A-X)\n-    elif A+D*(N-1) < X:\n+    elif A+D*(N-2) < X:\n         print(X-(A+D*(N-1)))\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "reason": "wrong output on test case sample_01.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "equivalent",
+          "attempts": 3,
+          "site": "L10:C9",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n         print(A-X)\n-    elif A+D*(N-1) < X:\n+    elif A+D*(N-1) <= X:\n         print(X-(A+D*(N-1)))\n",
+          "examples_tried": 68,
+          "counterexample": null,
+          "reason": null,
+          "full_pool_examples_tried": 68,
+          "full_pool_counterexample": null
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L3:C0",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -2,3 +2,3 @@\n \n-if D == 0:\n+if False:\n     print(abs(X-A))\n",
+          "examples_tried": 2,
+          "counterexample": "sample_02.txt",
+          "reason": "raised ZeroDivisionError on test case sample_02.txt: integer modulo by zero"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc241_f/51143333": {
+      "task_id": "abc241_f",
+      "program_id": "51143333",
+      "date": "2022-02-26",
+      "difficulty": 1888,
+      "n_test_cases": 48,
+      "loc": 533,
+      "fault_lines": [
+        520
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 1,
+      "counterexample": "000.txt",
+      "mutant_capacity": {
+        "off_by_one": 155,
+        "wrong_comparison": 83,
+        "missing_guard": 60
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 0,
+      "mutants_total": 3,
+      "fault_types_caught": [],
+      "n_missed": 0,
+      "n_equivalent": 3,
+      "n_unavailable": 0,
+      "passes": false,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "equivalent",
+          "attempts": 3,
+          "site": "L72:C33",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -71,3 +71,3 @@\n         root = self.find(x)\n-        return [i for i in range(self.n) if self.find(i) == root]\n+        return [i for i in range((self.n) - 1) if self.find(i) == root]\n \n",
+          "examples_tried": 48,
+          "counterexample": null,
+          "reason": null,
+          "full_pool_examples_tried": 48,
+          "full_pool_counterexample": null
+        },
+        "wrong_comparison": {
+          "verdict": "equivalent",
+          "attempts": 3,
+          "site": "L75:C57",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -74,3 +74,3 @@\n     def roots(self):\n-        return [i for i, x in enumerate(self.parents) if x < 0]\n+        return [i for i, x in enumerate(self.parents) if x <= 0]\n \n",
+          "examples_tried": 48,
+          "counterexample": null,
+          "reason": null,
+          "full_pool_examples_tried": 48,
+          "full_pool_counterexample": null
+        },
+        "missing_guard": {
+          "verdict": "equivalent",
+          "attempts": 3,
+          "site": "L188:C8",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -187,3 +187,3 @@\n     def __contains__(self, x: T) -> bool:\n-        if self.size == 0: return False\n+        if False: return False\n         a, i = self._position(x)\n",
+          "examples_tried": 48,
+          "counterexample": null,
+          "reason": null,
+          "full_pool_examples_tried": 48,
+          "full_pool_counterexample": null
+        }
+      },
+      "in_cohort": true
+    },
+    "abc230_a/45743291": {
+      "task_id": "abc230_a",
+      "program_id": "45743291",
+      "date": "2021-12-03",
+      "difficulty": 5,
+      "n_test_cases": 11,
+      "loc": 6,
+      "fault_lines": [
+        3
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": "another fault from this coding task is already in the corpus",
+      "usable": true,
+      "examples_tried": 1,
+      "counterexample": "00_sample_00.txt"
+    },
+    "abc253_e/45941559": {
+      "task_id": "abc253_e",
+      "program_id": "45941559",
+      "date": "2022-05-28",
+      "difficulty": 1073,
+      "n_test_cases": 20,
+      "loc": 15,
+      "fault_lines": [
+        13
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 15,
+      "counterexample": "02_max_05.txt",
+      "mutant_capacity": {
+        "off_by_one": 27,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "eligible": true,
+      "stratum": "medium",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L4:C31",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n N, M, K = map(int, input().split())\n-dp = [[0]*(M+1) for _ in range(N)]\n+dp = [[0]*(M+1) for _ in range((N) - 1)]\n for a in range(1, M+1):\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "reason": "raised IndexError on test case 00_sample_01.txt: list index out of range"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L13:C26",
+          "note": "inverts an inequality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n         dp[i][a+K] = ac0[a] % mod\n-    for a in range(K+1 if K != 0 else K+2, M+1):\n+    for a in range(K+1 if K == 0 else K+2, M+1):\n         dp[i][a-K] = (dp[i][a-K] + ac1[a]) % mod\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "reason": "wrong output on test case 00_sample_01.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L13:C19",
+          "note": "collapses a conditional expression onto its else-branch",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n         dp[i][a+K] = ac0[a] % mod\n-    for a in range(K+1 if K != 0 else K+2, M+1):\n+    for a in range(K+1 if False else K+2, M+1):\n         dp[i][a-K] = (dp[i][a-K] + ac1[a]) % mod\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "reason": "wrong output on test case 00_sample_01.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc247_f/52972964": {
+      "task_id": "abc247_f",
+      "program_id": "52972964",
+      "date": "2022-04-10",
+      "difficulty": 1697,
+      "n_test_cases": 22,
+      "loc": 84,
+      "fault_lines": [
+        71
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 1,
+      "counterexample": "random_01.txt",
+      "mutant_capacity": {
+        "off_by_one": 81,
+        "wrong_comparison": 7,
+        "missing_guard": 5
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 2,
+          "site": "L54:C35",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -53,3 +53,3 @@\n mod = 998244353\n-dp = [[[0,0],[0,0]] for i in range(N+1)]\n+dp = [[[0,0],[0,0]] for i in range((N+1) - 1)]\n dp[1][0][0] = 1\n",
+          "examples_tried": 1,
+          "counterexample": "random_01.txt",
+          "reason": "raised IndexError on test case random_01.txt: list index out of range"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L10:C11",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n     def find(self, x):\n-        if(self.root[x] < 0):\n+        if(self.root[x] <= 0):\n             return x\n",
+          "examples_tried": 6,
+          "counterexample": "random_06.txt",
+          "reason": "wrong output on test case random_06.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 2,
+          "site": "L76:C2",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -75,3 +75,3 @@\n   r = uf.find(i)\n-  if r not in d:\n+  if False:\n     d[r] = 0\n",
+          "examples_tried": 1,
+          "counterexample": "random_01.txt",
+          "reason": "raised KeyError on test case random_01.txt: 51763"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc261_a/45791113": {
+      "task_id": "abc261_a",
+      "program_id": "45791113",
+      "date": "2022-07-23",
+      "difficulty": 51,
+      "n_test_cases": 11,
+      "loc": 9,
+      "fault_lines": [
+        10
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": "program admits no mutation site for: off_by_one",
+      "usable": true,
+      "examples_tried": 2,
+      "counterexample": "example_01.txt",
+      "mutant_capacity": {
+        "off_by_one": 0,
+        "wrong_comparison": 12,
+        "missing_guard": 4
+      },
+      "eligible": false
+    },
+    "abc245_f/45811431": {
+      "task_id": "abc245_f",
+      "program_id": "45811431",
+      "date": "2022-03-26",
+      "difficulty": 1451,
+      "n_test_cases": 37,
+      "loc": 25,
+      "fault_lines": [
+        12
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 4,
+      "counterexample": "hand_01.txt",
+      "mutant_capacity": {
+        "off_by_one": 21,
+        "wrong_comparison": 2,
+        "missing_guard": 3
+      },
+      "eligible": true,
+      "stratum": "medium",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L4:C31",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n N, M = map(int, input().split())\n-relations = [[] for _ in range(N)]\n+relations = [[] for _ in range((N) - 1)]\n queue = deque([])\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "raised IndexError on test case example_00.txt: list index out of range"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L14:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -13,3 +13,3 @@\n for i in range(N):\n-    if cnt[i] == 0:\n+    if cnt[i] != 0:\n         queue.append(i)\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "wrong output on test case example_00.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L14:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -13,3 +13,3 @@\n for i in range(N):\n-    if cnt[i] == 0:\n+    if False:\n         queue.append(i)\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "wrong output on test case example_00.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc262_f/35966715": {
+      "task_id": "abc262_f",
+      "program_id": "35966715",
+      "date": "2022-07-31",
+      "difficulty": 2334,
+      "n_test_cases": 47,
+      "loc": 97,
+      "fault_lines": [
+        46
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": "another fault from this coding task is already in the corpus",
+      "usable": true,
+      "examples_tried": 9,
+      "counterexample": "01_sall_05.txt"
+    },
+    "abc242_a/45438303": {
+      "task_id": "abc242_a",
+      "program_id": "45438303",
+      "date": "2022-03-05",
+      "difficulty": 37,
+      "n_test_cases": 18,
+      "loc": 7,
+      "fault_lines": [
+        4
+      ],
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference disagrees with the shipped output on sample_01.txt",
+      "usable": false
+    },
+    "abc268_d/46188576": {
+      "task_id": "abc268_d",
+      "program_id": "46188576",
+      "date": "2022-09-10",
+      "difficulty": 1309,
+      "n_test_cases": 37,
+      "loc": 35,
+      "fault_lines": [
+        32
+      ],
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference disagrees with the shipped output on 00_sample_01.txt",
+      "usable": false
+    },
+    "abc257_f/45053747": {
+      "task_id": "abc257_f",
+      "program_id": "45053747",
+      "date": "2022-06-25",
+      "difficulty": 1775,
+      "n_test_cases": 47,
+      "loc": 44,
+      "fault_lines": [
+        25
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 17,
+      "counterexample": "hand_14.txt",
+      "mutant_capacity": {
+        "off_by_one": 24,
+        "wrong_comparison": 5,
+        "missing_guard": 6
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L7:C27",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n     N, M = map(int, input().split())\n-    G = [[] for _ in range(N + 1)]\n+    G = [[] for _ in range((N + 1) - 1)]\n     T = []\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "raised IndexError on test case example_00.txt: list index out of range"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L11:C21",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n         u, v = map(int, input().split())\n-        u = u - 1 if u > 0 else N\n+        u = u - 1 if u >= 0 else N\n         v = v - 1\n",
+          "examples_tried": 17,
+          "counterexample": "hand_14.txt",
+          "reason": "wrong output on test case hand_14.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L38:C12",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -37,3 +37,3 @@\n         for nv in G[v]:\n-            if D[nv] < INF: continue\n+            if False: continue\n             D[nv] = nd\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "timed out after 10.0s on test case example_00.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc287_a/45997981": {
+      "task_id": "abc287_a",
+      "program_id": "45997981",
+      "date": "2023-01-28",
+      "difficulty": 11,
+      "n_test_cases": 14,
+      "loc": 13,
+      "fault_lines": [
+        0
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 1,
+      "counterexample": "00_example_00.txt",
+      "mutant_capacity": {
+        "off_by_one": 2,
+        "wrong_comparison": 2,
+        "missing_guard": 2
+      },
+      "eligible": true,
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L3:C16",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -2,3 +2,3 @@\n count=0\n-for i in range (n):\n+for i in range ((n) - 1):\n     s=input()\n",
+          "examples_tried": 1,
+          "counterexample": "00_example_00.txt",
+          "reason": "wrong output on test case 00_example_00.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 2,
+          "site": "L5:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n     s=input()\n-    if s==\"For\":\n+    if s!=\"For\":\n         count=count+1\n",
+          "examples_tried": 1,
+          "counterexample": "00_example_00.txt",
+          "reason": "wrong output on test case 00_example_00.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L5:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n     s=input()\n-    if s==\"For\":\n+    if False:\n         count=count+1\n",
+          "examples_tried": 1,
+          "counterexample": "00_example_00.txt",
+          "reason": "wrong output on test case 00_example_00.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc272_d/45575170": {
+      "task_id": "abc272_d",
+      "program_id": "45575170",
+      "date": "2022-10-08",
+      "difficulty": 804,
+      "n_test_cases": 30,
+      "loc": 42,
+      "fault_lines": [
+        25
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 3,
+      "counterexample": "test_00.txt",
+      "mutant_capacity": {
+        "off_by_one": 12,
+        "wrong_comparison": 6,
+        "missing_guard": 4
+      },
+      "eligible": true,
+      "stratum": "medium",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 3,
+          "site": "L25:C29",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -24,3 +24,3 @@\n que = deque([(0, 0, 0)])\n-ans = [[-1]*N for _ in range(N)]\n+ans = [[-1]*N for _ in range((N) - 1)]\n \n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "raised IndexError on test case example_00.txt: list index out of range"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L33:C16",
+          "note": "tightens `<=` to `<`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -32,3 +32,3 @@\n         next_i, next_j = now_i + i, now_j + j\n-        if not (0 <= next_i < N and 0 <= next_j < N):\n+        if not (0 < next_i < N and 0 <= next_j < N):\n             continue\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "wrong output on test case example_00.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L33:C8",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -32,3 +32,3 @@\n         next_i, next_j = now_i + i, now_j + j\n-        if not (0 <= next_i < N and 0 <= next_j < N):\n+        if False:\n             continue\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "raised IndexError on test case example_00.txt: list index out of range"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc235_h/29171105": {
+      "task_id": "abc235_h",
+      "program_id": "29171105",
+      "date": "2022-01-15",
+      "difficulty": 2967,
+      "n_test_cases": 35,
+      "loc": 184,
+      "fault_lines": [
+        184
+      ],
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference timed out on random_05.txt",
+      "usable": false
+    },
+    "abc265_c/46154642": {
+      "task_id": "abc265_c",
+      "program_id": "46154642",
+      "date": "2022-08-21",
+      "difficulty": 212,
+      "n_test_cases": 14,
+      "loc": 39,
+      "fault_lines": [
+        33
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 1,
+      "counterexample": "00_sample_00.txt",
+      "mutant_capacity": {
+        "off_by_one": 35,
+        "wrong_comparison": 9,
+        "missing_guard": 9
+      },
+      "eligible": true,
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L3:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -2,3 +2,3 @@\n g=[]\n-for i in range(h):\n+for i in range((h) - 1):\n     tmp=input()\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "reason": "raised IndexError on test case 00_sample_00.txt: list index out of range"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L9:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -8,3 +8,3 @@\n for k in range(10**6):\n-    if visited[i][j]==True:\n+    if visited[i][j]!=True:\n         print(-1)\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L9:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -8,3 +8,3 @@\n for k in range(10**6):\n-    if visited[i][j]==True:\n+    if False:\n         print(-1)\n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_01.txt",
+          "reason": "wrong output on test case 00_sample_01.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc252_d/45257814": {
+      "task_id": "abc252_d",
+      "program_id": "45257814",
+      "date": "2022-05-21",
+      "difficulty": 884,
+      "n_test_cases": 23,
+      "loc": 15,
+      "fault_lines": [
+        9
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 1,
+      "counterexample": "random_01.txt",
+      "mutant_capacity": {
+        "off_by_one": 10,
+        "wrong_comparison": 2,
+        "missing_guard": 2
+      },
+      "eligible": true,
+      "stratum": "medium",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L9:C15",
+          "note": "inflates an accumulator's step by one on every update",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -8,3 +8,3 @@\n     if v == 2:\n-        cnt += (n-2)*v*(v-1)//2 \n+        cnt += ((n-2)*v*(v-1)//2) + 1 \n     if v >= 3:\n",
+          "examples_tried": 1,
+          "counterexample": "random_01.txt",
+          "reason": "wrong output on test case random_01.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L10:C7",
+          "note": "tightens `>=` to `>`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n         cnt += (n-2)*v*(v-1)//2 \n-    if v >= 3:\n+    if v > 3:\n         cnt += v*(v-1)*(v-2)//6\n",
+          "examples_tried": 1,
+          "counterexample": "random_01.txt",
+          "reason": "wrong output on test case random_01.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L8:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n for v in c.values():\n-    if v == 2:\n+    if False:\n         cnt += (n-2)*v*(v-1)//2 \n",
+          "examples_tried": 1,
+          "counterexample": "random_01.txt",
+          "reason": "wrong output on test case random_01.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc238_g/44443541": {
+      "task_id": "abc238_g",
+      "program_id": "44443541",
+      "date": "2022-02-05",
+      "difficulty": 2254,
+      "n_test_cases": 70,
+      "loc": 64,
+      "fault_lines": [
+        33
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 8,
+      "counterexample": "test_07.txt",
+      "mutant_capacity": {
+        "off_by_one": 54,
+        "wrong_comparison": 8,
+        "missing_guard": 7
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 2,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "equivalent",
+          "attempts": 3,
+          "site": "L11:C17",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n     v[i*j]=1\n-for x in range(2,10**6+1):\n+for x in range(2,(10**6+1) - 1):\n   if v[x]==0:\n",
+          "examples_tried": 70,
+          "counterexample": null,
+          "reason": null,
+          "full_pool_examples_tried": 70,
+          "full_pool_counterexample": null
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L8:C7",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n   for j in range(2,10**6):\n-    if i*j>10**6:\n+    if i*j>=10**6:\n       break\n",
+          "examples_tried": 5,
+          "counterexample": "test_04.txt",
+          "reason": "wrong output on test case test_04.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 2,
+          "site": "L8:C4",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n   for j in range(2,10**6):\n-    if i*j>10**6:\n+    if False:\n       break\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "reason": "raised IndexError on test case sample_01.txt: list assignment index out of range"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc287_a/45662090": {
+      "task_id": "abc287_a",
+      "program_id": "45662090",
+      "date": "2023-01-28",
+      "difficulty": 11,
+      "n_test_cases": 14,
+      "loc": 10,
+      "fault_lines": [
+        7
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": "another fault from this coding task is already in the corpus",
+      "usable": true,
+      "examples_tried": 2,
+      "counterexample": "00_example_01.txt"
+    },
+    "abc257_d/46215877": {
+      "task_id": "abc257_d",
+      "program_id": "46215877",
+      "date": "2022-06-25",
+      "difficulty": 1203,
+      "n_test_cases": 40,
+      "loc": 38,
+      "fault_lines": [
+        26
+      ],
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference timed out on 02_max_01.txt",
+      "usable": false
+    },
+    "abc225_f/30550444": {
+      "task_id": "abc225_f",
+      "program_id": "30550444",
+      "date": "2021-10-30",
+      "difficulty": 2612,
+      "n_test_cases": 58,
+      "loc": 43,
+      "fault_lines": [
+        19
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 3,
+      "counterexample": "002.txt",
+      "mutant_capacity": {
+        "off_by_one": 62,
+        "wrong_comparison": 6,
+        "missing_guard": 5
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L12:C17",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n   res = 0\n-  for i in range(len(S)):\n+  for i in range((len(S)) - 1):\n     res += alphabet_to_int(S[~i]) * pow(26, i)\n",
+          "examples_tried": 7,
+          "counterexample": "006.txt",
+          "reason": "wrong output on test case 006.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L35:C11",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -34,3 +34,3 @@\n           dp[i - 1][j] = dp[i][j]\n-        if j < k:\n+        if j <= k:\n           if not dp[i - 1][j + 1] == None:\n",
+          "examples_tried": 1,
+          "counterexample": "000.txt",
+          "reason": "raised IndexError on test case 000.txt: list index out of range"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 2,
+          "site": "L30:C6",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -29,3 +29,3 @@\n     for j in range(k + 1):\n-      if not dp[i][j] == None:\n+      if False:\n         if not dp[i - 1][j] == None:\n",
+          "examples_tried": 1,
+          "counterexample": "000.txt",
+          "reason": "wrong output on test case 000.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc276_c/54054587": {
+      "task_id": "abc276_c",
+      "program_id": "54054587",
+      "date": "2022-11-05",
+      "difficulty": 389,
+      "n_test_cases": 12,
+      "loc": 20,
+      "fault_lines": [
+        4
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 3,
+      "counterexample": "test_00.txt",
+      "mutant_capacity": {
+        "off_by_one": 14,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "eligible": true,
+      "stratum": "easy",
+      "mutants_caught": 2,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 2,
+          "site": "L12:C6",
+          "note": "advances a slice's lower bound by one",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n \n-A = P[N - a - 1:] # \u5909\u5316\u3055\u305b\u308b\u90e8\u5206\n+A = P[(N - a - 1) + 1:] # \u5909\u5316\u3055\u305b\u308b\u90e8\u5206\n A.sort()\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "raised ValueError on test case example_00.txt: 3 is not in list"
+        },
+        "wrong_comparison": {
+          "verdict": "equivalent",
+          "attempts": 1,
+          "site": "L5:C5",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n for i in range(1, N + 1):\n-  if P[-i] > P[-i - 1]:\n+  if P[-i] >= P[-i - 1]:\n     continue\n",
+          "examples_tried": 12,
+          "counterexample": null,
+          "reason": null,
+          "full_pool_examples_tried": 12,
+          "full_pool_counterexample": null
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L5:C2",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n for i in range(1, N + 1):\n-  if P[-i] > P[-i - 1]:\n+  if True:\n     continue\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "raised NameError on test case example_00.txt: name 'a' is not defined"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc275_d/45982640": {
+      "task_id": "abc275_d",
+      "program_id": "45982640",
+      "date": "2022-10-29",
+      "difficulty": 606,
+      "n_test_cases": 15,
+      "loc": 13,
+      "fault_lines": [
+        5
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 2,
+      "counterexample": "00_sample_02.txt",
+      "mutant_capacity": {
+        "off_by_one": 5,
+        "wrong_comparison": 3,
+        "missing_guard": 3
+      },
+      "eligible": true,
+      "stratum": "medium",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L6:C18",
+          "note": "shifts a subscript index down by one",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -5,3 +5,3 @@\n     if x in dp:\n-        return dp[x]\n+        return dp[(x) - 1]\n     if x // 2 not in dp:\n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_02.txt",
+          "reason": "raised KeyError on test case 00_sample_02.txt: -1"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L5:C7",
+          "note": "inverts a membership test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n def f(x):\n-    if x in dp:\n+    if x not in dp:\n         return dp[x]\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "reason": "raised KeyError on test case 00_sample_01.txt: 2"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L5:C4",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n def f(x):\n-    if x in dp:\n+    if False:\n         return dp[x]\n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_02.txt",
+          "reason": "wrong output on test case 00_sample_02.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc224_g/52137623": {
+      "task_id": "abc224_g",
+      "program_id": "52137623",
+      "date": "2021-10-23",
+      "difficulty": 2374,
+      "n_test_cases": 49,
+      "loc": 20,
+      "fault_lines": [
+        14
+      ],
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference disagrees with the shipped output on 000.txt",
+      "usable": false
+    },
+    "abc237_c/45275344": {
+      "task_id": "abc237_c",
+      "program_id": "45275344",
+      "date": "2022-01-30",
+      "difficulty": 267,
+      "n_test_cases": 29,
+      "loc": 28,
+      "fault_lines": [
+        20
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 10,
+      "counterexample": "hand_06.txt",
+      "mutant_capacity": {
+        "off_by_one": 8,
+        "wrong_comparison": 8,
+        "missing_guard": 8
+      },
+      "eligible": true,
+      "stratum": "easy",
+      "mutants_caught": 2,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L21:C10",
+          "note": "narrows a slice's upper bound by one",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -20,3 +20,3 @@\n st, ed = i, n-j-1\n-t = s[i : j+1]\n+t = s[i : (j+1) - 1]\n if t != t[::-1]:\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "wrong output on test case example_00.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "equivalent",
+          "attempts": 3,
+          "site": "L12:C6",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n \texit(0)\n-while i < j:\n+while i <= j:\n \tif s[i] == 'a':\n",
+          "examples_tried": 29,
+          "counterexample": null,
+          "reason": null,
+          "full_pool_examples_tried": 29,
+          "full_pool_counterexample": null
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 3,
+          "site": "L22:C0",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -21,3 +21,3 @@\n t = s[i : j+1]\n-if t != t[::-1]:\n+if False:\n \tprint('No')\n",
+          "examples_tried": 6,
+          "counterexample": "hand_02.txt",
+          "reason": "wrong output on test case hand_02.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc242_e/45535167": {
+      "task_id": "abc242_e",
+      "program_id": "45535167",
+      "date": "2022-03-05",
+      "difficulty": 1365,
+      "n_test_cases": 22,
+      "loc": 33,
+      "fault_lines": [
+        33
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 1,
+      "counterexample": "hack_01.txt",
+      "mutant_capacity": {
+        "off_by_one": 34,
+        "wrong_comparison": 2,
+        "missing_guard": 3
+      },
+      "eligible": true,
+      "stratum": "medium",
+      "mutants_caught": 2,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L11:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n \n-for _ in range(T):\n+for _ in range((T) - 1):\n     N = int(readline())\n",
+          "examples_tried": 1,
+          "counterexample": "hack_01.txt",
+          "reason": "wrong output on test case hack_01.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "equivalent",
+          "attempts": 2,
+          "site": "L30:C11",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -29,3 +29,3 @@\n         tmp = S[:N//2] + S[:N//2][::-1]\n-        if tmp > S:\n+        if tmp >= S:\n             ans -= 1\n",
+          "examples_tried": 22,
+          "counterexample": null,
+          "reason": null,
+          "full_pool_examples_tried": 22,
+          "full_pool_counterexample": null
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L26:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -25,3 +25,3 @@\n         tmp = S[:N//2+1] + S[:N//2][::-1]\n-        if tmp > S:\n+        if False:\n             ans -= 1\n",
+          "examples_tried": 2,
+          "counterexample": "sample_01.txt",
+          "reason": "wrong output on test case sample_01.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc233_h/44313828": {
+      "task_id": "abc233_h",
+      "program_id": "44313828",
+      "date": "2021-12-25",
+      "difficulty": 2530,
+      "n_test_cases": 44,
+      "loc": 239,
+      "fault_lines": [
+        222
+      ],
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference timed out on 003.txt",
+      "usable": false
+    },
+    "abc265_b/45288123": {
+      "task_id": "abc265_b",
+      "program_id": "45288123",
+      "date": "2022-08-21",
+      "difficulty": 152,
+      "n_test_cases": 26,
+      "loc": 23,
+      "fault_lines": [
+        16
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 6,
+      "counterexample": "random_05.txt",
+      "mutant_capacity": {
+        "off_by_one": 8,
+        "wrong_comparison": 2,
+        "missing_guard": 2
+      },
+      "eligible": true,
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L5:C53",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n A = list(map(int, input().split()))\n-XY = [list(map(int, input().split())) for _ in range(M)]\n+XY = [list(map(int, input().split())) for _ in range((M) - 1)]\n \n",
+          "examples_tried": 14,
+          "counterexample": "random_13.txt",
+          "reason": "wrong output on test case random_13.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L16:C7",
+          "note": "tightens `<=` to `<`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -15,3 +15,3 @@\n \n-    if T <= 0:\n+    if T < 0:\n         print('No')\n",
+          "examples_tried": 6,
+          "counterexample": "random_05.txt",
+          "reason": "wrong output on test case random_05.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L16:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -15,3 +15,3 @@\n \n-    if T <= 0:\n+    if False:\n         print('No')\n",
+          "examples_tried": 2,
+          "counterexample": "random_01.txt",
+          "reason": "wrong output on test case random_01.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc266_c/44375735": {
+      "task_id": "abc266_c",
+      "program_id": "44375735",
+      "date": "2022-08-27",
+      "difficulty": 516,
+      "n_test_cases": 34,
+      "loc": 25,
+      "fault_lines": [
+        11
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 1,
+      "counterexample": "random_01.txt",
+      "mutant_capacity": {
+        "off_by_one": 32,
+        "wrong_comparison": 3,
+        "missing_guard": 1
+      },
+      "eligible": true,
+      "stratum": "medium",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L7:C12",
+          "note": "shifts a subscript index down by one",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n def isIntersect(A, B, C, D):\n-    tb = (B[1] - A[1])*(C[0] - A[0])-(C[1] - A[1])*(B[0] - A[0])\n+    tb = (B[(1) - 1] - A[1])*(C[0] - A[0])-(C[1] - A[1])*(B[0] - A[0])\n     td = (D[1] - A[1])*(C[0] - A[0])-(C[1] - A[1])*(D[0] - A[0])\n",
+          "examples_tried": 2,
+          "counterexample": "random_02.txt",
+          "reason": "wrong output on test case random_02.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 3,
+          "site": "L24:C3",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -23,3 +23,3 @@\n \n-if __name__ == \"__main__\":\n+if __name__ != \"__main__\":\n     main()\n",
+          "examples_tried": 1,
+          "counterexample": "random_01.txt",
+          "reason": "wrong output on test case random_01.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L21:C10",
+          "note": "collapses a conditional expression onto its else-branch",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -20,3 +20,3 @@\n \n-    print(\"Yes\" if isIntersect(A, B, C, D) else \"No\")\n+    print(\"Yes\" if False else \"No\")\n \n",
+          "examples_tried": 1,
+          "counterexample": "random_01.txt",
+          "reason": "wrong output on test case random_01.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc286_g/41126621": {
+      "task_id": "abc286_g",
+      "program_id": "41126621",
+      "date": "2023-01-21",
+      "difficulty": 2135,
+      "n_test_cases": 53,
+      "loc": 64,
+      "fault_lines": [
+        48
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 4,
+      "counterexample": "hand_01.txt",
+      "mutant_capacity": {
+        "off_by_one": 38,
+        "wrong_comparison": 9,
+        "missing_guard": 8
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L3:C38",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -2,3 +2,3 @@\n     def __init__(self,n):\n-        self.parent=[i for i in range(n)]#\u81ea\u5206\u306e\u89aa\u9802\u70b9\u306e\u756a\u53f7\n+        self.parent=[i for i in range((n) - 1)]#\u81ea\u5206\u306e\u89aa\u9802\u70b9\u306e\u756a\u53f7\n         self.num=[1]*n#\u81ea\u5206\u3092\u6839\u3068\u3059\u308b\u90e8\u5206\u6728\u306e\u9802\u70b9\u306e\u500b\u6570\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "raised IndexError on test case example_00.txt: list index out of range"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 3,
+          "site": "L7:C11",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n     def find(self,i):\n-        if self.parent[i]==i:\n+        if self.parent[i]!=i:\n             return i\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "raised RecursionError on test case example_00.txt: maximum recursion depth exceeded"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L23:C12",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -22,3 +22,3 @@\n         else:\n-            if a!=b:\n+            if False:\n                 self.rank[a]+=1\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "wrong output on test case example_00.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc264_b/45323702": {
+      "task_id": "abc264_b",
+      "program_id": "45323702",
+      "date": "2022-08-13",
+      "difficulty": 55,
+      "n_test_cases": 17,
+      "loc": 6,
+      "fault_lines": [
+        3
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 5,
+      "counterexample": "004.txt",
+      "mutant_capacity": {
+        "off_by_one": 2,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "eligible": true,
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L2:C12",
+          "note": "shifts the constant 8 in an index expression by one",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -1,3 +1,3 @@\n r,c = list(map(int,input().split(\" \")))\n-if(max([abs(8-r),abs(8-c)])%2 != 0):\n+if(max([abs(9-r),abs(8-c)])%2 != 0):\n     print(\"black\")\n",
+          "examples_tried": 1,
+          "counterexample": "000.txt",
+          "reason": "wrong output on test case 000.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L2:C3",
+          "note": "inverts an inequality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -1,3 +1,3 @@\n r,c = list(map(int,input().split(\" \")))\n-if(max([abs(8-r),abs(8-c)])%2 != 0):\n+if(max([abs(8-r),abs(8-c)])%2 == 0):\n     print(\"black\")\n",
+          "examples_tried": 1,
+          "counterexample": "000.txt",
+          "reason": "wrong output on test case 000.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L2:C0",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -1,3 +1,3 @@\n r,c = list(map(int,input().split(\" \")))\n-if(max([abs(8-r),abs(8-c)])%2 != 0):\n+if(True):\n     print(\"black\")\n",
+          "examples_tried": 5,
+          "counterexample": "004.txt",
+          "reason": "wrong output on test case 004.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc277_d/45573210": {
+      "task_id": "abc277_d",
+      "program_id": "45573210",
+      "date": "2022-11-12",
+      "difficulty": 873,
+      "n_test_cases": 40,
+      "loc": 38,
+      "fault_lines": [
+        31
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 2,
+      "counterexample": "001.txt",
+      "mutant_capacity": {
+        "off_by_one": 11,
+        "wrong_comparison": 5,
+        "missing_guard": 2
+      },
+      "eligible": true,
+      "stratum": "medium",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L22:C19",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -21,3 +21,3 @@\n     s = 0\n-    for i in range(len(aa)):\n+    for i in range((len(aa)) - 1):\n         a = aa[i]\n",
+          "examples_tried": 1,
+          "counterexample": "000.txt",
+          "reason": "wrong output on test case 000.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 2,
+          "site": "L24:C21",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -23,3 +23,3 @@\n         a = aa[i]\n-        if i > 0 and a > aa[i-1] + 1:\n+        if i > 0 and a >= aa[i-1] + 1:\n             ss.append(s)\n",
+          "examples_tried": 4,
+          "counterexample": "003.txt",
+          "reason": "wrong output on test case 003.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L31:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -30,3 +30,3 @@\n         \n-    if len(ss) > 1 and (aa[-1] + 1) % m == aa[0]:\n+    if False:\n         ss.append(ss[0] + ss[-1])\n",
+          "examples_tried": 6,
+          "counterexample": "005.txt",
+          "reason": "wrong output on test case 005.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc264_g/34022331": {
+      "task_id": "abc264_g",
+      "program_id": "34022331",
+      "date": "2022-08-13",
+      "difficulty": 2348,
+      "n_test_cases": 44,
+      "loc": 75,
+      "fault_lines": [
+        73
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 1,
+      "counterexample": "000.txt",
+      "mutant_capacity": {
+        "off_by_one": 27,
+        "wrong_comparison": 2,
+        "missing_guard": 5
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L49:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -48,3 +48,3 @@\n n = int(readline())\n-for _ in range(n):\n+for _ in range((n) - 1):\n     t,p = readline().split()\n",
+          "examples_tried": 16,
+          "counterexample": "015.txt",
+          "reason": "wrong output on test case 015.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L14:C15",
+          "note": "tightens `<=` to `<`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -13,3 +13,3 @@\n         for to,cost in g[v]:\n-            if dist[to] <= dist[v] + cost: continue\n+            if dist[to] < dist[v] + cost: continue\n             dist[to] = dist[v] + cost \n",
+          "examples_tried": 3,
+          "counterexample": "002.txt",
+          "reason": "wrong output on test case 002.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L14:C12",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -13,3 +13,3 @@\n         for to,cost in g[v]:\n-            if dist[to] <= dist[v] + cost: continue\n+            if False: continue\n             dist[to] = dist[v] + cost \n",
+          "examples_tried": 2,
+          "counterexample": "001.txt",
+          "reason": "wrong output on test case 001.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc263_a/45002191": {
+      "task_id": "abc263_a",
+      "program_id": "45002191",
+      "date": "2022-08-06",
+      "difficulty": 27,
+      "n_test_cases": 12,
+      "loc": 5,
+      "fault_lines": [
+        2
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 4,
+      "counterexample": "01_test_02.txt",
+      "mutant_capacity": {
+        "off_by_one": 1,
+        "wrong_comparison": 2,
+        "missing_guard": 1
+      },
+      "eligible": true,
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L2:C43",
+          "note": "shifts a subscript index down by one",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -1,3 +1,3 @@\n x=list(map(int,input().split()))\n-if len(set(x))==2 and x.count(list(set(x))[0])>=2:\n+if len(set(x))==2 and x.count(list(set(x))[(0) - 1])>=2:\n     print(\"Yes\")\n",
+          "examples_tried": 4,
+          "counterexample": "01_test_02.txt",
+          "reason": "wrong output on test case 01_test_02.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L2:C22",
+          "note": "tightens `>=` to `>`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -1,3 +1,3 @@\n x=list(map(int,input().split()))\n-if len(set(x))==2 and x.count(list(set(x))[0])>=2:\n+if len(set(x))==2 and x.count(list(set(x))[0])>2:\n     print(\"Yes\")\n",
+          "examples_tried": 3,
+          "counterexample": "01_test_01.txt",
+          "reason": "wrong output on test case 01_test_01.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L2:C0",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -1,3 +1,3 @@\n x=list(map(int,input().split()))\n-if len(set(x))==2 and x.count(list(set(x))[0])>=2:\n+if True:\n     print(\"Yes\")\n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_02.txt",
+          "reason": "wrong output on test case 00_sample_02.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc258_e/46182612": {
+      "task_id": "abc258_e",
+      "program_id": "46182612",
+      "date": "2022-07-02",
+      "difficulty": 1545,
+      "n_test_cases": 22,
+      "loc": 44,
+      "fault_lines": [
+        40
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 3,
+      "counterexample": "test_00.txt",
+      "mutant_capacity": {
+        "off_by_one": 26,
+        "wrong_comparison": 2,
+        "missing_guard": 2
+      },
+      "eligible": true,
+      "stratum": "medium",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L20:C29",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -19,3 +19,3 @@\n M = 60\n-dp = [[0] * N for _ in range(M)]\n+dp = [[0] * N for _ in range((M) - 1)]\n # dp[k][i]: i \u306e 2^k \u500b\u5f8c\u306e\u7bb1\u306b\u4f55\u500b\u306e\u30b8\u30e3\u30ac\u30a4\u30e2\u304c\u8a70\u3081\u3089\u308c\u308b\u304b\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "raised IndexError on test case example_00.txt: list index out of range"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L28:C10",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -27,3 +27,3 @@\n for i in range(N):\n-    while tmp < X:\n+    while tmp <= X:\n         tmp += W[j % N]\n",
+          "examples_tried": 2,
+          "counterexample": "example_01.txt",
+          "reason": "wrong output on test case example_01.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L41:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -40,3 +40,3 @@\n     for k in range(M)[::-1]:\n-        if K > (1<<k):\n+        if False:\n             i = (i + dp[k][i]) % N\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "wrong output on test case example_00.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc237_f/35962547": {
+      "task_id": "abc237_f",
+      "program_id": "35962547",
+      "date": "2022-01-30",
+      "difficulty": 1857,
+      "n_test_cases": 28,
+      "loc": 141,
+      "fault_lines": [
+        136
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 4,
+      "counterexample": "003.txt",
+      "mutant_capacity": {
+        "off_by_one": 20,
+        "wrong_comparison": 8,
+        "missing_guard": 11
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L116:C19",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -115,3 +115,3 @@\n \n-    for _ in range(n):\n+    for _ in range((n) - 1):\n         np = [0] * ppp\n",
+          "examples_tried": 1,
+          "counterexample": "000.txt",
+          "reason": "wrong output on test case 000.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L124:C27",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -123,3 +123,3 @@\n                     for x in range(m):\n-                        if x > c: continue\n+                        if x >= c: continue\n                         if x <= a:\n",
+          "examples_tried": 3,
+          "counterexample": "002.txt",
+          "reason": "wrong output on test case 002.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 3,
+          "site": "L124:C24",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -123,3 +123,3 @@\n                     for x in range(m):\n-                        if x > c: continue\n+                        if False: continue\n                         if x <= a:\n",
+          "examples_tried": 4,
+          "counterexample": "003.txt",
+          "reason": "wrong output on test case 003.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc277_b/45577199": {
+      "task_id": "abc277_b",
+      "program_id": "45577199",
+      "date": "2022-11-12",
+      "difficulty": 60,
+      "n_test_cases": 19,
+      "loc": 15,
+      "fault_lines": [
+        5
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 10,
+      "counterexample": "random12.txt",
+      "mutant_capacity": {
+        "off_by_one": 3,
+        "wrong_comparison": 3,
+        "missing_guard": 1
+      },
+      "eligible": true,
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L8:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n answer = \"Yes\"\n-for i in range(n):\n+for i in range((n) - 1):\n     c=input()\n",
+          "examples_tried": 7,
+          "counterexample": "random1.txt",
+          "reason": "wrong output on test case random1.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L10:C8",
+          "note": "inverts a negated membership test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n     c=input()\n-    if (c[0] not in first or c[1] not in second or c in tmp):\n+    if (c[0] in first or c[1] not in second or c in tmp):\n         answer = \"No\"\n",
+          "examples_tried": 1,
+          "counterexample": "example0.txt",
+          "reason": "wrong output on test case example0.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L10:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n     c=input()\n-    if (c[0] not in first or c[1] not in second or c in tmp):\n+    if (False):\n         answer = \"No\"\n",
+          "examples_tried": 2,
+          "counterexample": "example1.txt",
+          "reason": "wrong output on test case example1.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc260_d/53288501": {
+      "task_id": "abc260_d",
+      "program_id": "53288501",
+      "date": "2022-07-17",
+      "difficulty": 1074,
+      "n_test_cases": 53,
+      "loc": 31,
+      "fault_lines": [
+        0
+      ],
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference disagrees with the shipped output on sample_01.txt",
+      "usable": false
+    },
+    "abc258_h/50522493": {
+      "task_id": "abc258_h",
+      "program_id": "50522493",
+      "date": "2022-07-02",
+      "difficulty": 2708,
+      "n_test_cases": 31,
+      "loc": 17,
+      "fault_lines": [
+        17
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": "program admits no mutation site for: wrong_comparison",
+      "usable": true,
+      "examples_tried": 1,
+      "counterexample": "example_00.txt",
+      "mutant_capacity": {
+        "off_by_one": 12,
+        "wrong_comparison": 0,
+        "missing_guard": 1
+      },
+      "eligible": false
+    },
+    "abc242_a/45214716": {
+      "task_id": "abc242_a",
+      "program_id": "45214716",
+      "date": "2022-03-05",
+      "difficulty": 37,
+      "n_test_cases": 18,
+      "loc": 7,
+      "fault_lines": [
+        5
+      ],
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference disagrees with the shipped output on sample_01.txt",
+      "usable": false
+    },
+    "abc223_e/53250614": {
+      "task_id": "abc223_e",
+      "program_id": "53250614",
+      "date": "2021-10-17",
+      "difficulty": 1510,
+      "n_test_cases": 48,
+      "loc": 120,
+      "fault_lines": [
+        92
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 4,
+      "counterexample": "test_00.txt",
+      "mutant_capacity": {
+        "off_by_one": 8,
+        "wrong_comparison": 10,
+        "missing_guard": 8
+      },
+      "eligible": true,
+      "stratum": "medium",
+      "mutants_caught": 2,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "equivalent",
+          "attempts": 3,
+          "site": "L38:C55",
+          "note": "shifts the constant 7 in an index expression by one",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -37,3 +37,3 @@\n         import random\n-        self.random_seed = random.randint(0, 10 ** 9 + 7)\n+        self.random_seed = random.randint(0, 10 ** 9 + 8)\n         return\n",
+          "examples_tried": 48,
+          "counterexample": null,
+          "reason": null,
+          "full_pool_examples_tried": 48,
+          "full_pool_counterexample": null
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 3,
+          "site": "L99:C15",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -98,3 +98,3 @@\n             rest = y - yy\n-            if rest > 0 and ceil(bb, rest) + ceil(cc, rest) <= x:\n+            if rest >= 0 and ceil(bb, rest) + ceil(cc, rest) <= x:\n                 ac.yes()\n",
+          "examples_tried": 3,
+          "counterexample": "example_02.txt",
+          "reason": "raised ZeroDivisionError on test case example_02.txt: integer division or modulo by zero"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L99:C12",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -98,3 +98,3 @@\n             rest = y - yy\n-            if rest > 0 and ceil(bb, rest) + ceil(cc, rest) <= x:\n+            if False:\n                 ac.yes()\n",
+          "examples_tried": 8,
+          "counterexample": "test_04.txt",
+          "reason": "wrong output on test case test_04.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc250_g/36759156": {
+      "task_id": "abc250_g",
+      "program_id": "36759156",
+      "date": "2022-05-08",
+      "difficulty": 2219,
+      "n_test_cases": 70,
+      "loc": 12,
+      "fault_lines": [
+        8
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 1,
+      "counterexample": "sample_01.txt",
+      "mutant_capacity": {
+        "off_by_one": 2,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 2,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L9:C15",
+          "note": "inflates an accumulator's step by one on every update",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -8,3 +8,3 @@\n     if q and q[0] < v:\n-        ans += v - heappop(q)\n+        ans += (v - heappop(q)) + 1\n         heappush(q, v)\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "reason": "wrong output on test case sample_01.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "equivalent",
+          "attempts": 1,
+          "site": "L8:C13",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n for v in p:\n-    if q and q[0] < v:\n+    if q and q[0] <= v:\n         ans += v - heappop(q)\n",
+          "examples_tried": 70,
+          "counterexample": null,
+          "reason": null,
+          "full_pool_examples_tried": 70,
+          "full_pool_counterexample": null
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L8:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n for v in p:\n-    if q and q[0] < v:\n+    if False:\n         ans += v - heappop(q)\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "reason": "wrong output on test case sample_01.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc252_a/45686937": {
+      "task_id": "abc252_a",
+      "program_id": "45686937",
+      "date": "2022-05-21",
+      "difficulty": 7,
+      "n_test_cases": 10,
+      "loc": 2,
+      "fault_lines": [
+        1
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": "program admits no mutation site for: wrong_comparison, missing_guard",
+      "usable": true,
+      "examples_tried": 4,
+      "counterexample": "random_04.txt",
+      "mutant_capacity": {
+        "off_by_one": 2,
+        "wrong_comparison": 0,
+        "missing_guard": 0
+      },
+      "eligible": false
+    },
+    "abc234_e/45477719": {
+      "task_id": "abc234_e",
+      "program_id": "45477719",
+      "date": "2022-01-08",
+      "difficulty": 899,
+      "n_test_cases": 71,
+      "loc": 28,
+      "fault_lines": [
+        13
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 4,
+      "counterexample": "hand_03.txt",
+      "mutant_capacity": {
+        "off_by_one": 8,
+        "wrong_comparison": 7,
+        "missing_guard": 5
+      },
+      "eligible": true,
+      "stratum": "medium",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 2,
+          "site": "L10:C19",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n     num = \"\"\n-    for j in range(len(X)):\n+    for j in range((len(X)) - 1):\n       if 0 <= a0 + i * j <= 9:\n",
+          "examples_tried": 1,
+          "counterexample": "after_contest_01.txt",
+          "reason": "wrong output on test case after_contest_01.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 2,
+          "site": "L11:C9",
+          "note": "tightens `<=` to `<`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n     for j in range(len(X)):\n-      if 0 <= a0 + i * j <= 9:\n+      if 0 < a0 + i * j <= 9:\n         num += str(a0 + i * j)\n",
+          "examples_tried": 4,
+          "counterexample": "hand_03.txt",
+          "reason": "wrong output on test case hand_03.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L11:C6",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n     for j in range(len(X)):\n-      if 0 <= a0 + i * j <= 9:\n+      if False:\n         num += str(a0 + i * j)\n",
+          "examples_tried": 1,
+          "counterexample": "after_contest_01.txt",
+          "reason": "raised ValueError on test case after_contest_01.txt: invalid literal for int() with base 10: ''"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc261_h/37948163": {
+      "task_id": "abc261_h",
+      "program_id": "37948163",
+      "date": "2022-07-23",
+      "difficulty": 2531,
+      "n_test_cases": 70,
+      "loc": 72,
+      "fault_lines": [
+        64
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 46,
+      "counterexample": "random_59.txt",
+      "mutant_capacity": {
+        "off_by_one": 41,
+        "wrong_comparison": 8,
+        "missing_guard": 8
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 2,
+          "site": "L22:C24",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -21,3 +21,3 @@\n start -= 1\n-ns = [[] for _ in range(2*n)]\n+ns = [[] for _ in range((2*n) - 1)]\n rns = [[] for _ in range(2*n)]\n",
+          "examples_tried": 1,
+          "counterexample": "after_contest_01.txt",
+          "reason": "raised IndexError on test case after_contest_01.txt: list index out of range"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L51:C11",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -50,3 +50,3 @@\n     for val,v in rns[u]:\n-        if v<n:\n+        if v<=n:\n             # \u6709\u9650\u3067\u7d42\u308f\u3089\u305b\u305f\u3044\n",
+          "examples_tried": 32,
+          "counterexample": "random_27.txt",
+          "reason": "wrong output on test case random_27.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 2,
+          "site": "L43:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -42,3 +42,3 @@\n for u in range(2*n):\n-    if odeg[u]==0:\n+    if False:\n         q.append((0,u))\n",
+          "examples_tried": 1,
+          "counterexample": "after_contest_01.txt",
+          "reason": "wrong output on test case after_contest_01.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc233_b/46206186": {
+      "task_id": "abc233_b",
+      "program_id": "46206186",
+      "date": "2021-12-25",
+      "difficulty": 23,
+      "n_test_cases": 15,
+      "loc": 5,
+      "fault_lines": [
+        5
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": "program admits no mutation site for: wrong_comparison, missing_guard",
+      "usable": true,
+      "examples_tried": 1,
+      "counterexample": "sample_01.txt",
+      "mutant_capacity": {
+        "off_by_one": 5,
+        "wrong_comparison": 0,
+        "missing_guard": 0
+      },
+      "eligible": false
+    },
+    "abc268_d/45999403": {
+      "task_id": "abc268_d",
+      "program_id": "45999403",
+      "date": "2022-09-10",
+      "difficulty": 1309,
+      "n_test_cases": 37,
+      "loc": 28,
+      "fault_lines": [
+        20
+      ],
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference disagrees with the shipped output on 00_sample_01.txt",
+      "usable": false
+    },
+    "abc235_g/28640040": {
+      "task_id": "abc235_g",
+      "program_id": "28640040",
+      "date": "2022-01-15",
+      "difficulty": 2462,
+      "n_test_cases": 38,
+      "loc": 26,
+      "fault_lines": [
+        17
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 6,
+      "counterexample": "01_small_00.txt",
+      "mutant_capacity": {
+        "off_by_one": 20,
+        "wrong_comparison": 3,
+        "missing_guard": 1
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L5:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n invf = [1]*(N+1)\n-for i in range(N):\n+for i in range((N) - 1):\n   fact[i+1] = fact[i] * (i+1) % mod\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L11:C5",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n def comb(n, k):\n-  if n < 0 or k < 0 or n < k:\n+  if n <= 0 or k < 0 or n < k:\n     return 0\n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_01.txt",
+          "reason": "wrong output on test case 00_sample_01.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L11:C2",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n def comb(n, k):\n-  if n < 0 or k < 0 or n < k:\n+  if False:\n     return 0\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "reason": "wrong output on test case 00_sample_00.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc264_b/45507078": {
+      "task_id": "abc264_b",
+      "program_id": "45507078",
+      "date": "2022-08-13",
+      "difficulty": 55,
+      "n_test_cases": 17,
+      "loc": 4,
+      "fault_lines": [
+        2
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": "another fault from this coding task is already in the corpus",
+      "usable": true,
+      "examples_tried": 7,
+      "counterexample": "006.txt"
+    },
+    "abc273_d/45461646": {
+      "task_id": "abc273_d",
+      "program_id": "45461646",
+      "date": "2022-10-15",
+      "difficulty": 1119,
+      "n_test_cases": 29,
+      "loc": 61,
+      "fault_lines": [
+        60
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 2,
+      "counterexample": "001.txt",
+      "mutant_capacity": {
+        "off_by_one": 26,
+        "wrong_comparison": 9,
+        "missing_guard": 9
+      },
+      "eligible": true,
+      "stratum": "medium",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L8:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n \n-for _ in range(N):\n+for _ in range((N) - 1):\n     r,c=map(int,input().split())\n",
+          "examples_tried": 4,
+          "counterexample": "003.txt",
+          "reason": "raised ValueError on test case 003.txt: invalid literal for int() with base 10: '451031618 772593713'"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L41:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -40,3 +40,3 @@\n     l=int(l)\n-    if d=='L':\n+    if d!='L':\n         if x in r_dic:\n",
+          "examples_tried": 1,
+          "counterexample": "000.txt",
+          "reason": "wrong output on test case 000.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L10:C4",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n     r,c=map(int,input().split())\n-    if r not in r_dic:\n+    if True:\n         r_dic[r]=set()\n",
+          "examples_tried": 4,
+          "counterexample": "003.txt",
+          "reason": "wrong output on test case 003.txt"
+        }
+      },
+      "in_cohort": false
+    },
+    "abc247_g/39496981": {
+      "task_id": "abc247_g",
+      "program_id": "39496981",
+      "date": "2022-04-10",
+      "difficulty": 2159,
+      "n_test_cases": 33,
+      "loc": 105,
+      "fault_lines": [
+        100
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 2,
+      "counterexample": "random_01.txt",
+      "mutant_capacity": {
+        "off_by_one": 63,
+        "wrong_comparison": 11,
+        "missing_guard": 9
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L24:C36",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -23,3 +23,3 @@\n         self.inf = inf\n-        self.G = [[] for _ in range(n)]\n+        self.G = [[] for _ in range((n) - 1)]\n         self.H = [] #\u30dd\u30c6\u30f3\u30b7\u30e3\u30eb\n",
+          "examples_tried": 1,
+          "counterexample": "after_contest_01.txt",
+          "reason": "raised IndexError on test case after_contest_01.txt: list index out of range"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L39:C15",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -38,3 +38,3 @@\n             d, now = heappop(hq)\n-            if d > self.H[now]:\n+            if d >= self.H[now]:\n                 continue\n",
+          "examples_tried": 1,
+          "counterexample": "after_contest_01.txt",
+          "reason": "wrong output on test case after_contest_01.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 2,
+          "site": "L54:C8",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -53,3 +53,3 @@\n             now = p\n-        if flow == 0 or now != s:\n+        if False:\n             return 0, 0\n",
+          "examples_tried": 1,
+          "counterexample": "after_contest_01.txt",
+          "reason": "raised TypeError on test case after_contest_01.txt: cannot unpack non-iterable NoneType object"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc239_a/45807134": {
+      "task_id": "abc239_a",
+      "program_id": "45807134",
+      "date": "2022-02-19",
+      "difficulty": 21,
+      "n_test_cases": 10,
+      "loc": 2,
+      "fault_lines": [
+        2
+      ],
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference disagrees with the shipped output on random_01.txt",
+      "usable": false
+    },
+    "abc246_e/45553928": {
+      "task_id": "abc246_e",
+      "program_id": "45553928",
+      "date": "2022-04-02",
+      "difficulty": 1476,
+      "n_test_cases": 60,
+      "loc": 36,
+      "fault_lines": [
+        31
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 10,
+      "counterexample": "test_07.txt",
+      "mutant_capacity": {
+        "off_by_one": 27,
+        "wrong_comparison": 13,
+        "missing_guard": 8
+      },
+      "eligible": true,
+      "stratum": "medium",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L5:C29",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n gy, gx = map(lambda x: int(x) - 1, input().split())\n-S = [ input() for _ in range(N)]\n+S = [ input() for _ in range((N) - 1)]\n queue = deque([(sy, sx)])\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "reason": "raised IndexError on test case sample_01.txt: list index out of range"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L12:C12",
+          "note": "tightens `<=` to `<`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n def is_ok(y : int, x : int, td : int):\n-    if not (0 <= y <= N - 1 and 0 <= x <= N - 1):\n+    if not (0 < y <= N - 1 and 0 <= x <= N - 1):\n         return False\n",
+          "examples_tried": 37,
+          "counterexample": "test_34.txt",
+          "reason": "timed out after 10.0s on test case test_34.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L12:C4",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n def is_ok(y : int, x : int, td : int):\n-    if not (0 <= y <= N - 1 and 0 <= x <= N - 1):\n+    if False:\n         return False\n",
+          "examples_tried": 37,
+          "counterexample": "test_34.txt",
+          "reason": "timed out after 10.0s on test case test_34.txt"
+        }
+      },
+      "in_cohort": false
+    },
+    "abc254_f/51937981": {
+      "task_id": "abc254_f",
+      "program_id": "51937981",
+      "date": "2022-06-04",
+      "difficulty": 1764,
+      "n_test_cases": 72,
+      "loc": 44,
+      "fault_lines": [
+        10
+      ],
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference raised ModuleNotFoundError on example_00.txt",
+      "usable": false
+    },
+    "abc239_d/54197752": {
+      "task_id": "abc239_d",
+      "program_id": "54197752",
+      "date": "2022-02-19",
+      "difficulty": 252,
+      "n_test_cases": 33,
+      "loc": 18,
+      "fault_lines": [
+        2
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 1,
+      "counterexample": "hand_01.txt",
+      "mutant_capacity": {
+        "off_by_one": 6,
+        "wrong_comparison": 3,
+        "missing_guard": 3
+      },
+      "eligible": true,
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 3,
+          "site": "L11:C17",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n \n-for i in range(a,b+1):\n+for i in range(a,(b+1) - 1):\n     for j in range(c,d+1):\n",
+          "examples_tried": 30,
+          "counterexample": "random_27.txt",
+          "reason": "wrong output on test case random_27.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L4:C11",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n     for j in range(2,i):\n-        if i%j==0:\n+        if i%j!=0:\n             break\n",
+          "examples_tried": 1,
+          "counterexample": "hand_01.txt",
+          "reason": "wrong output on test case hand_01.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L4:C8",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n     for j in range(2,i):\n-        if i%j==0:\n+        if False:\n             break\n",
+          "examples_tried": 4,
+          "counterexample": "random_01.txt",
+          "reason": "wrong output on test case random_01.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc260_d/51017696": {
+      "task_id": "abc260_d",
+      "program_id": "51017696",
+      "date": "2022-07-17",
+      "difficulty": 1074,
+      "n_test_cases": 53,
+      "loc": 32,
+      "fault_lines": [
+        10
+      ],
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference raised ModuleNotFoundError on sample_01.txt",
+      "usable": false
+    },
+    "abc238_f/48523335": {
+      "task_id": "abc238_f",
+      "program_id": "48523335",
+      "date": "2022-02-05",
+      "difficulty": 2058,
+      "n_test_cases": 50,
+      "loc": 121,
+      "fault_lines": [
+        116
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 4,
+      "counterexample": "test_01.txt",
+      "mutant_capacity": {
+        "off_by_one": 40,
+        "wrong_comparison": 6,
+        "missing_guard": 7
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 1,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 2,
+      "n_unavailable": 0,
+      "passes": false,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "equivalent",
+          "attempts": 3,
+          "site": "L107:C19",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -106,3 +106,3 @@\n     nf=[[0]*(n+5) for _ in range(n+5)]\n-    for j in range(n+1):\n+    for j in range((n+1) - 1):\n         for k in range(1,n+2):\n",
+          "examples_tried": 50,
+          "counterexample": null,
+          "reason": null,
+          "full_pool_examples_tried": 50,
+          "full_pool_counterexample": null
+        },
+        "wrong_comparison": {
+          "verdict": "equivalent",
+          "attempts": 3,
+          "site": "L109:C15",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -108,3 +108,3 @@\n         for k in range(1,n+2):\n-            if k>b:\n+            if k>=b:\n                 nf[j+1][k]=(nf[j+1][k]+f[j][k])%mod\n",
+          "examples_tried": 50,
+          "counterexample": null,
+          "reason": null,
+          "full_pool_examples_tried": 50,
+          "full_pool_counterexample": null
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 2,
+          "site": "L41:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -40,3 +40,3 @@\n     def flush(self):\n-        if self.writable:\n+        if False:\n             os.write(self._fd, self.buffer.getvalue())\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "reason": "wrong output on test case sample_01.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc245_b/45513233": {
+      "task_id": "abc245_b",
+      "program_id": "45513233",
+      "date": "2022-03-26",
+      "difficulty": 40,
+      "n_test_cases": 16,
+      "loc": 7,
+      "fault_lines": [
+        4
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 7,
+      "counterexample": "006.txt",
+      "mutant_capacity": {
+        "off_by_one": 1,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "eligible": true,
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L4:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n \n-for i in range(2001):\n+for i in range((2001) - 1):\n   if i not in A:\n",
+          "examples_tried": 7,
+          "counterexample": "006.txt",
+          "reason": "wrong output on test case 006.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L5:C5",
+          "note": "inverts a negated membership test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n for i in range(2001):\n-  if i not in A:\n+  if i in A:\n     print(i)\n",
+          "examples_tried": 1,
+          "counterexample": "000.txt",
+          "reason": "wrong output on test case 000.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L5:C2",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n for i in range(2001):\n-  if i not in A:\n+  if False:\n     print(i)\n",
+          "examples_tried": 1,
+          "counterexample": "000.txt",
+          "reason": "wrong output on test case 000.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc269_e/45214207": {
+      "task_id": "abc269_e",
+      "program_id": "45214207",
+      "date": "2022-09-17",
+      "difficulty": 1030,
+      "n_test_cases": 33,
+      "loc": 58,
+      "fault_lines": [
+        11
+      ],
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference raised ValueError on 00_sample_00.txt",
+      "usable": false
+    },
+    "abc245_g/49870441": {
+      "task_id": "abc245_g",
+      "program_id": "49870441",
+      "date": "2022-03-26",
+      "difficulty": 2270,
+      "n_test_cases": 58,
+      "loc": 65,
+      "fault_lines": [
+        39
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 4,
+      "counterexample": "hand_01.txt",
+      "mutant_capacity": {
+        "off_by_one": 40,
+        "wrong_comparison": 9,
+        "missing_guard": 7
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L12:C33",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n ) -> List[int]:\n-    adjList = [[] for _ in range(n)]\n+    adjList = [[] for _ in range((n) - 1)]\n     for u, v, w in edges:\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "raised IndexError on test case example_00.txt: list index out of range"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L31:C15",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -30,3 +30,3 @@\n             nextDist = curDist + weight\n-            if nextDist < dist1[next]:\n+            if nextDist <= dist1[next]:\n                 if fromColor1[next] != curColor:\n",
+          "examples_tried": 4,
+          "counterexample": "hand_01.txt",
+          "reason": "timed out after 10.0s on test case hand_01.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L27:C8",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -26,3 +26,3 @@\n         curDist, cur, curColor = heappop(pq)\n-        if dist1[cur] != curDist and dist2[cur] != curDist:\n+        if False:\n             continue\n",
+          "examples_tried": 29,
+          "counterexample": "killer_02.txt",
+          "reason": "timed out after 10.0s on test case killer_02.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc244_d/45311340": {
+      "task_id": "abc244_d",
+      "program_id": "45311340",
+      "date": "2022-03-20",
+      "difficulty": 165,
+      "n_test_cases": 36,
+      "loc": 7,
+      "fault_lines": [
+        4
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": "program admits no mutation site for: off_by_one",
+      "usable": true,
+      "examples_tried": 1,
+      "counterexample": "BGR_BGR.txt",
+      "mutant_capacity": {
+        "off_by_one": 0,
+        "wrong_comparison": 3,
+        "missing_guard": 1
+      },
+      "eligible": false
+    },
+    "abc248_f/53199737": {
+      "task_id": "abc248_f",
+      "program_id": "53199737",
+      "date": "2022-04-16",
+      "difficulty": 1828,
+      "n_test_cases": 20,
+      "loc": 16,
+      "fault_lines": [
+        16
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": "program admits no mutation site for: wrong_comparison, missing_guard",
+      "usable": true,
+      "examples_tried": 1,
+      "counterexample": "example_00.txt",
+      "mutant_capacity": {
+        "off_by_one": 45,
+        "wrong_comparison": 0,
+        "missing_guard": 0
+      },
+      "eligible": false
+    },
+    "abc273_b/46013086": {
+      "task_id": "abc273_b",
+      "program_id": "46013086",
+      "date": "2022-10-15",
+      "difficulty": 178,
+      "n_test_cases": 74,
+      "loc": 15,
+      "fault_lines": [
+        15
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 1,
+      "counterexample": "sample_01.txt",
+      "mutant_capacity": {
+        "off_by_one": 4,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "eligible": true,
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L4:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n \n-for i in range(k):\n+for i in range((k) - 1):\n     x /= p\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "reason": "wrong output on test case sample_01.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L7:C7",
+          "note": "tightens `<=` to `<`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n     m = x % 10\n-    if m <= 4:\n+    if m < 4:\n         x -= m\n",
+          "examples_tried": 22,
+          "counterexample": "test_18.txt",
+          "reason": "wrong output on test case test_18.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L7:C4",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n     m = x % 10\n-    if m <= 4:\n+    if True:\n         x -= m\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "reason": "wrong output on test case sample_01.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc256_g/32688484": {
+      "task_id": "abc256_g",
+      "program_id": "32688484",
+      "date": "2022-06-18",
+      "difficulty": 2250,
+      "n_test_cases": 30,
+      "loc": 79,
+      "fault_lines": [
+        30
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 22,
+      "counterexample": "random_22.txt",
+      "mutant_capacity": {
+        "off_by_one": 29,
+        "wrong_comparison": 8,
+        "missing_guard": 6
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 2,
+          "site": "L37:C54",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -36,3 +36,3 @@\n def mult_mat(M1, M2):\n-    return [[sum(M1[i][k]*M2[k][j]%MOD for k in range(2)) for j in range(2)] for i in range(2)]\n+    return [[sum(M1[i][k]*M2[k][j]%MOD for k in range((2) - 1)) for j in range(2)] for i in range(2)]\n \n",
+          "examples_tried": 1,
+          "counterexample": "random_01.txt",
+          "reason": "wrong output on test case random_01.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L30:C7",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -29,3 +29,3 @@\n def get_comb(n, r):\n-    if r < 0 or n < r:\n+    if r <= 0 or n < r:\n         return 0\n",
+          "examples_tried": 1,
+          "counterexample": "random_01.txt",
+          "reason": "wrong output on test case random_01.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L30:C4",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -29,3 +29,3 @@\n def get_comb(n, r):\n-    if r < 0 or n < r:\n+    if False:\n         return 0\n",
+          "examples_tried": 1,
+          "counterexample": "random_01.txt",
+          "reason": "wrong output on test case random_01.txt"
+        }
+      },
+      "in_cohort": false
+    },
+    "abc269_a/45960449": {
+      "task_id": "abc269_a",
+      "program_id": "45960449",
+      "date": "2022-09-17",
+      "difficulty": 8,
+      "n_test_cases": 10,
+      "loc": 3,
+      "fault_lines": [
+        2
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": "program admits no mutation site for: off_by_one, wrong_comparison, missing_guard",
+      "usable": true,
+      "examples_tried": 1,
+      "counterexample": "00_sample_00.txt",
+      "mutant_capacity": {
+        "off_by_one": 0,
+        "wrong_comparison": 0,
+        "missing_guard": 0
+      },
+      "eligible": false
+    },
+    "abc272_f/49227972": {
+      "task_id": "abc272_f",
+      "program_id": "49227972",
+      "date": "2022-10-08",
+      "difficulty": 2238,
+      "n_test_cases": 72,
+      "loc": 181,
+      "fault_lines": [
+        161
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 69,
+      "counterexample": "test_66.txt",
+      "mutant_capacity": {
+        "off_by_one": 170,
+        "wrong_comparison": 37,
+        "missing_guard": 33
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 2,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L22:C30",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -21,3 +21,3 @@\n         ls=[0]*n\n-        for i in range(n-2,-1,-1):\n+        for i in range(n-2,-1,(-1) - 1):\n             ls[i]=ls[i+1] if (s[i]==s[i+1]) else (s[i]<s[i+1])\n",
+          "examples_tried": 2,
+          "counterexample": "example_01.txt",
+          "reason": "wrong output on test case example_01.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 3,
+          "site": "L33:C15",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -32,3 +32,3 @@\n             sum_s[i]+=sum_l[i]\n-            if i<upper:\n+            if i<=upper:\n                 sum_l[i+1]+=sum_s[i]\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "raised IndexError on test case example_00.txt: list index out of range"
+        },
+        "missing_guard": {
+          "verdict": "equivalent",
+          "attempts": 3,
+          "site": "L40:C16",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -39,3 +39,3 @@\n             for d in lms:\n-                if d==n:\n+                if False:\n                     continue\n",
+          "examples_tried": 72,
+          "counterexample": null,
+          "reason": null,
+          "full_pool_examples_tried": 72,
+          "full_pool_counterexample": null
+        }
+      },
+      "in_cohort": false
+    },
+    "abc263_b/45056655": {
+      "task_id": "abc263_b",
+      "program_id": "45056655",
+      "date": "2022-08-06",
+      "difficulty": 136,
+      "n_test_cases": 16,
+      "loc": 18,
+      "fault_lines": [
+        18
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 3,
+      "counterexample": "test_00.txt",
+      "mutant_capacity": {
+        "off_by_one": 10,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "eligible": true,
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L7:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n \n-for i in range(n-1):\n+for i in range((n-1) - 1):\n   li[i] -= 1\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "timed out after 10.0s on test case example_00.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L12:C5",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n while(True):\n-  if(li[per] == 0):\n+  if(li[per] != 0):\n     cnt += 1\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "wrong output on test case example_00.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L12:C2",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n while(True):\n-  if(li[per] == 0):\n+  if(True):\n     cnt += 1\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "wrong output on test case example_00.txt"
+        }
+      },
+      "in_cohort": true
+    },
+    "abc258_f/54437029": {
+      "task_id": "abc258_f",
+      "program_id": "54437029",
+      "date": "2022-07-02",
+      "difficulty": 2306,
+      "n_test_cases": 24,
+      "loc": 49,
+      "fault_lines": [
+        40
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 5,
+      "counterexample": "test_02.txt",
+      "mutant_capacity": {
+        "off_by_one": 5,
+        "wrong_comparison": 7,
+        "missing_guard": 3
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L33:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -32,3 +32,3 @@\n T = int(input())\n-for _ in range(T):\n+for _ in range((T) - 1):\n     B, K, sx, sy, gx, gy = map(int, input().split())\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "wrong output on test case example_00.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L8:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n def push(x, y, B, K):\n-    if x % B == 0 or y % B == 0:\n+    if x % B != 0 or y % B == 0:\n         return [(x, y, 0)]\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "wrong output on test case example_00.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 2,
+          "site": "L40:C12",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -39,3 +39,3 @@\n         for gx, gy, gc in goal:\n-            if (sx == gx and sx % B == 0) or (sy == gy and sy % B == 0):\n+            if False:\n                 ans = min(ans, sc + gc + dist(sx, sy, gx, gy))\n",
+          "examples_tried": 2,
+          "counterexample": "example_01.txt",
+          "reason": "wrong output on test case example_01.txt"
+        }
+      },
+      "in_cohort": false
+    },
+    "abc249_a/45778141": {
+      "task_id": "abc249_a",
+      "program_id": "45778141",
+      "date": "2022-04-23",
+      "difficulty": 103,
+      "n_test_cases": 14,
+      "loc": 19,
+      "fault_lines": [
+        13
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": "another fault from this coding task is already in the corpus",
+      "usable": true,
+      "examples_tried": 4,
+      "counterexample": "handmade.txt"
+    },
+    "abc221_g/26339941": {
+      "task_id": "abc221_g",
+      "program_id": "26339941",
+      "date": "2021-10-02",
+      "difficulty": 2914,
+      "n_test_cases": 72,
+      "loc": 29,
+      "fault_lines": [
+        18
+      ],
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference disagrees with the shipped output on example_00.txt",
+      "usable": false
+    },
+    "abc229_a/44996770": {
+      "task_id": "abc229_a",
+      "program_id": "44996770",
+      "date": "2021-11-27",
+      "difficulty": 24,
+      "n_test_cases": 13,
+      "loc": 29,
+      "fault_lines": [
+        26
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 8,
+      "counterexample": "test_06.txt",
+      "mutant_capacity": {
+        "off_by_one": 24,
+        "wrong_comparison": 10,
+        "missing_guard": 6
+      },
+      "eligible": true,
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L14:C6",
+          "note": "inflates an accumulator's step by one on every update",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -13,3 +13,3 @@\n if s[0][0] == \"#\":\n-  o +=1\n+  o +=(1) + 1\n if s[0][1] == \"#\":\n",
+          "examples_tried": 7,
+          "counterexample": "test_05.txt",
+          "reason": "wrong output on test case test_05.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L23:C13",
+          "note": "tightens `>=` to `>`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -22,3 +22,3 @@\n # answer\n-if o == 1 or o >= 3:\n+if o == 1 or o > 3:\n   print(\"Yes\")\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "reason": "wrong output on test case sample_01.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L13:C0",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n o = 0\n-if s[0][0] == \"#\":\n+if False:\n   o +=1\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "reason": "wrong output on test case sample_01.txt"
+        }
+      },
+      "in_cohort": false
+    },
+    "abc236_g/30741132": {
+      "task_id": "abc236_g",
+      "program_id": "30741132",
+      "date": "2022-01-23",
+      "difficulty": 2438,
+      "n_test_cases": 110,
+      "loc": 46,
+      "fault_lines": [
+        31
+      ],
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 7,
+      "counterexample": "014.txt",
+      "mutant_capacity": {
+        "off_by_one": 24,
+        "wrong_comparison": 2,
+        "missing_guard": 3
+      },
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "fault_types_caught": [
+        "off_by_one",
+        "wrong_comparison",
+        "missing_guard"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_unavailable": 0,
+      "passes": true,
+      "mutants": {
+        "off_by_one": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L11:C19",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n     edges = []\n-    for i in range(t):\n+    for i in range((t) - 1):\n         x, y = map(int, input().split())\n",
+          "examples_tried": 2,
+          "counterexample": "036.txt",
+          "reason": "wrong output on test case 036.txt"
+        },
+        "wrong_comparison": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L20:C11",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -19,3 +19,3 @@\n     def mat_pow(m, p):\n-        if p == 1:\n+        if p != 1:\n             return m\n",
+          "examples_tried": 1,
+          "counterexample": "045.txt",
+          "reason": "wrong output on test case 045.txt"
+        },
+        "missing_guard": {
+          "verdict": "caught",
+          "attempts": 1,
+          "site": "L20:C8",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -19,3 +19,3 @@\n     def mat_pow(m, p):\n-        if p == 1:\n+        if False:\n             return m\n",
+          "examples_tried": 1,
+          "counterexample": "045.txt",
+          "reason": "raised RecursionError on test case 045.txt: maximum recursion depth exceeded"
+        }
+      },
+      "in_cohort": false
+    }
+  },
+  "strata_selection": {
+    "proxy": "atcoder_difficulty_tercile",
+    "note": "terciles of the candidate pool's difficulty.txt ratings; a proxy for the paper's pi bands, not a measurement of pi - see scripts/build_strata.py",
+    "cuts": [
+      419,
+      1577
+    ],
+    "n_rated_tasks": 374,
+    "candidates_per_stratum": {
+      "easy": 367,
+      "medium": 323,
+      "hard": 241
+    }
+  }
+}

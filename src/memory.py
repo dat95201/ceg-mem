@@ -15,10 +15,10 @@ import dataclasses
 import random
 
 from src.adapter import TASKS
-from src.oracle import values_equal
+from src.oracle import outputs_equal
 from src.proposer import Attempt
-from src.sandbox import run_call
-from src.typer import edit_location
+from src.sandbox import run_program
+from src.typer import WHOLE_PROGRAM, edit_location
 
 MODES = ("no_memory", "untyped", "typed")
 
@@ -32,23 +32,27 @@ class GuardResult:
 
 
 def _still_refutes(attempt: Attempt, candidate_source: str) -> bool:
-    """Re-run attempt's stored counterexample input against a *new* candidate.
+    """Re-run attempt's stored counterexample against a *new* candidate.
 
-    One sandboxed call, not a fresh Hypothesis search - this is what keeps a
-    guard check cheap relative to a full oracle round (Eq. (2)).
+    One sandboxed run of one test case, not a fresh sample of the whole pool -
+    this is what keeps a guard check cheap relative to a full oracle round
+    (Eq. (2)). The stored counterexample is a case *name* (src/oracle.py), so
+    the input text is looked back up from the task here.
     """
     ft = attempt.fine_type or attempt.coarse_type
     if ft is None:
         return False  # accepted attempts are never stored as refutations
     task = TASKS[ft.task]
     ref = attempt.result.reference
-    if ref is None or not ref.ok:
+    if ref is None or not ref.ok or not attempt.result.args:
         return False  # the stored counterexample was never a valid comparison point
-    full_source = candidate_source + task.harness
-    cand = run_call(full_source, task.entry_point, attempt.result.args)
+    case = task.case(attempt.result.args[0])
+    if case is None:
+        return False  # test data went away under us; do not block on a guess
+    cand = run_program(candidate_source, case.input_text)
     if cand.timed_out or not cand.ok:
         return True
-    return not values_equal(cand.value, ref.value)
+    return not outputs_equal(cand.value, ref.value)
 
 
 class Memory:
@@ -59,8 +63,18 @@ class Memory:
     def __init__(self) -> None:
         self.history: list[Attempt] = []
 
-    def store(self, attempt: Attempt) -> None:
+    def store(self, attempt: Attempt) -> Attempt:
+        """File `attempt` and return it *as filed*.
+
+        The return value matters only for TypedMemory, which may re-file an
+        attempt under a different location than its true one (Def. 3.1's
+        coherence c). Returning it lets src.loop log what memory actually
+        believes alongside what was actually true, which is the only way to
+        measure the anchoring rate without re-deriving the typing-noise RNG
+        outside the loop that owns it.
+        """
         self.history.append(attempt)
+        return attempt
 
     def guard(self, candidate_source: str, buggy_source: str) -> GuardResult:
         return GuardResult(blocked=False, evaluations=0)
@@ -122,14 +136,12 @@ class TypedMemory(Memory):
     def _true_type(self, attempt: Attempt):
         return attempt.failure_type(self.granularity)
 
-    def store(self, attempt: Attempt) -> None:
+    def store(self, attempt: Attempt) -> Attempt:
         if attempt.result.accept:
-            super().store(attempt)
-            return
+            return super().store(attempt)
         ft = self._true_type(attempt)
         if ft is None:
-            super().store(attempt)
-            return
+            return super().store(attempt)
         location = ft.location
         if self.typing_noise_c < 1.0 and self._rng.random() >= self.typing_noise_c:
             # Mistype: file this counterexample under a different location than
@@ -151,6 +163,7 @@ class TypedMemory(Memory):
 
         super().store(attempt)
         self._by_location.setdefault(location, []).append(attempt)
+        return attempt
 
     def eliminated_locations(self) -> set[str]:
         """Snapshot of eliminated buckets E, as stored (post-noise) locations."""
@@ -158,10 +171,10 @@ class TypedMemory(Memory):
 
     def guard(self, candidate_source: str, buggy_source: str) -> GuardResult:
         # Mirror src.typer.theta's own branching exactly: coarse locations are
-        # always the constant "whole_function", never a line range, so the
-        # bucket guess must match that or a coarse-granularity guard would
-        # look up keys that store() never uses and silently never fire.
-        guess = "whole_function" if self.granularity == "coarse" else edit_location(buggy_source, candidate_source)
+        # always the constant WHOLE_PROGRAM, never a line range, so the bucket
+        # guess must match that or a coarse-granularity guard would look up
+        # keys that store() never uses and silently never fire.
+        guess = WHOLE_PROGRAM if self.granularity == "coarse" else edit_location(buggy_source, candidate_source)
         bucket = self._by_location.get(guess, [])
         evaluations = 0
         for attempt in bucket:
@@ -188,17 +201,20 @@ def build_memory(
 
 
 if __name__ == "__main__":
-    from src.adapter import load
+    from src.adapter import SUPPORTED_PROGRAMS, load
     from src.oracle import differential_test
-    from data.mutants import build_mutants
 
-    name = "gcd"
+    if not SUPPORTED_PROGRAMS:
+        raise SystemExit("no ConDefects faults found - see scripts/fetch_condefects.py")
+    # Store the real fault's own refutation, then check the guard blocks a
+    # candidate that reproduces it - here, the faulty program re-proposed.
+    name = SUPPORTED_PROGRAMS[0]
     task = TASKS[name]
     program = load(name)
     mem = build_memory("typed")
-    for mutant in build_mutants(name, program.correct_source):
-        result = differential_test(task, mutant.source, program.correct_source, max_examples=50)
-        attempt = Attempt.from_result(name, program.correct_source, mutant.source, result)
-        guard = mem.guard(mutant.source, program.correct_source)
-        print(f"{mutant.fault_type:18s} accept={result.accept} guard_blocked={guard.blocked} evals={guard.evaluations}")
-        mem.store(attempt)
+    result = differential_test(task, program.buggy_source, program.correct_source, max_examples=30)
+    attempt = Attempt.from_result(name, program.buggy_source, program.buggy_source, result)
+    print(f"{name}: accept={result.accept} reason={result.reason}")
+    mem.store(attempt)
+    guard = mem.guard(program.buggy_source, program.buggy_source)
+    print(f"re-proposing the same patch: blocked={guard.blocked} evals={guard.evaluations}")

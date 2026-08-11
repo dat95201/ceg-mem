@@ -17,15 +17,16 @@ Checks four sub-grids, matching the plan's own experiment definitions
 (all overridable):
   main         (E2): all frozen programs x 3 modes x seeds, guard=on steer=on,
                max_examples=100, typing_noise_c=1.0
-  ablation     (E3): all frozen programs x mode=typed x seeds x
+  ablation     (E3): all frozen programs x mode=typed x 3 seeds x
                {guard=off (steering-only), steer=off (guard-only)}
-  oracle_sweep (E4): a program subset x seeds x max_examples in {300,100,30,10}
+  oracle_sweep (E4): a program subset x seeds x max_examples in {100,20,8,3}
   typing_sweep (E5): the same program subset x seeds x typing_noise_c in {1.0,0.9,0.75,0.5}
 
 --experiment restricts the check to one sub-grid; default "all" checks the
-union of all four. The oracle/typing sweeps default to the first 20 (sorted)
-frozen programs, since the plan says "20 task" without naming which -
-override with --sweep-programs if a different subset was actually run.
+union of all four. The oracle/typing sweeps default to the first 30 (sorted) frozen programs -
+always override with --sweep-programs, and pass the same list run_eval.py was
+given, drawn stratified across the pi bands so a sweep level is not confounded
+with task difficulty.
 """
 from __future__ import annotations
 
@@ -43,18 +44,23 @@ DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 
 DEFAULT_SEEDS_MAIN = (1, 2, 3, 4, 5)
 DEFAULT_SEEDS_SWEEP = (1, 2, 3)
-DEFAULT_MAX_EXAMPLES_SWEEP = (300, 100, 30, 10)
+# 100 is the reference level E2 already ran; 20/8/3 are the sweep's own.
+# 300 is gone: src.oracle._sample returns the whole pool once max_examples
+# reaches len(cases), and the largest test pool in ConDefects is 148 cases, so
+# 300 was never distinguishable from 100 anywhere in the benchmark - it would
+# have expected a whole extra level of cells that duplicate the reference.
+DEFAULT_MAX_EXAMPLES_SWEEP = (100, 20, 8, 3)
 DEFAULT_TYPING_C_SWEEP = (1.0, 0.9, 0.75, 0.5)
-DEFAULT_SWEEP_N_PROGRAMS = 20
+DEFAULT_SWEEP_N_PROGRAMS = 30
 
 
 def _frozen_programs() -> list[str]:
     tasks_json = DATA_DIR / "tasks.json"
     if not tasks_json.exists():
-        raise SystemExit(f"{tasks_json} missing - run scripts/validate_oracle.py first")
+        raise SystemExit(f"{tasks_json} missing - run scripts/select_corpus.py first")
     data = json.loads(tasks_json.read_text())
     if not data.get("frozen"):
-        raise SystemExit(f"{tasks_json} is not frozen - re-run scripts/validate_oracle.py")
+        raise SystemExit(f"{tasks_json} is not frozen - re-run scripts/select_corpus.py")
     return [t["name"] for t in data["tasks"]]
 
 
@@ -84,8 +90,11 @@ def expected_cells(programs: list[str], sweep_programs: list[str], experiment: s
                     cells.add((task, mode, seed, True, True, 100, 1.0, full))
 
     if experiment in ("all", "ablation"):
+        # Three seeds, not five: E3 attributes the effect between guard and
+        # steering, it does not need the main grid's precision, and at B=20 the
+        # two extra seeds would cost as much as the whole typing sweep.
         for task in programs:
-            for seed in DEFAULT_SEEDS_MAIN:
+            for seed in DEFAULT_SEEDS_SWEEP:
                 cells.add((task, "typed", seed, False, True, 100, 1.0, False))  # steering-only
                 cells.add((task, "typed", seed, True, False, 100, 1.0, False))  # guard-only
 
