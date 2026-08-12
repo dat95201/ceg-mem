@@ -23,9 +23,9 @@ import time
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from src.adapter import SUPPORTED_PROGRAMS, TASKS, load
-from src.llm import MODEL as LLM_MODEL
+from src.llm import MODEL as LLM_MODEL, BudgetExceeded
 from src.oracle import differential_test
-from src.proposer import propose
+from src.proposer import TruncatedResponse, propose
 
 DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 
@@ -89,11 +89,42 @@ def measure(
     max_examples: int,
     seed: int,
     corpus_source: str = "",
+    checkpoint=None,
 ) -> dict:
     per_program = {}
     t0 = time.monotonic()
     n_tasks = len(programs)
     task_w = len(str(n_tasks))
+    stopped_early = ""
+
+    def report() -> dict:
+        total_successes = sum(p["successes"] for p in per_program.values())
+        total_calls = sum(p["calls"] for p in per_program.values())
+        total_unparsed = sum(p["unparsed"] for p in per_program.values())
+        return {
+            "programs": list(programs),
+            "corpus_source": corpus_source,
+            "calls_per_program": calls_per_program,
+            "model": model,
+            "seed": seed,
+            "pi_hat_pooled": total_successes / total_calls if total_calls else 0.0,
+            "total_successes": total_successes,
+            "total_calls": total_calls,
+            # Draws that never produced a candidate. Counted as failures in
+            # pi_hat (see the handler below), and reported separately because a
+            # high rate means pi_hat is measuring format compliance rather than
+            # repair ability, and the band it lands the task in is meaningless.
+            "total_unparsed": total_unparsed,
+            "unparsed_rate": total_unparsed / total_calls if total_calls else 0.0,
+            # A screen cut short by the budget cap has fewer calls per program
+            # than asked for. Recorded so a partial screen can never be read as
+            # a complete one - scripts/select_corpus.py --min-calls filters on
+            # the per-program count, which is now the actual one.
+            "complete": not stopped_early,
+            "stopped_early": stopped_early,
+            "elapsed_sec": round(time.monotonic() - t0, 1),
+            "per_program": per_program,
+        }
 
     for t_idx, name in enumerate(programs, start=1):
         prefix = f"[task {t_idx:{task_w}d}/{n_tasks}]"
@@ -106,12 +137,36 @@ def measure(
             # that is the point of the measurement), so without it src.llm's
             # cache would answer calls 2..N with call 1's completion and pi_hat
             # could only ever come out 0.0 or 1.0.
-            patch = propose(
-                name, program.buggy_source, task.name,
-                mode="no_memory", history=[], model=model,
-                nonce=f"pi-pilot|{name}|seed{seed}|call{i}",
-                spec_note=task.spec_note,
-            )
+            try:
+                patch = propose(
+                    name, program.buggy_source, task.name,
+                    mode="no_memory", history=[], model=model,
+                    nonce=f"pi-pilot|{name}|seed{seed}|call{i}",
+                    spec_note=task.spec_note,
+                )
+            except TruncatedResponse as exc:
+                # A reply carrying no usable code block. Counted as a failed
+                # draw rather than skipped, because src.loop.run_episode spends
+                # a round of the budget B on exactly this outcome and moves on -
+                # so pi_hat has to be measured over the same denominator the
+                # loop will realise, or (1-(1-pi)^B) stops predicting success@B.
+                #
+                # Not fatal, unlike the oracle error below: the oracle failing
+                # means nothing can be judged, whereas this is a draw with a
+                # verdict. src.loop already treats it this way; this script used
+                # to let it abort the whole pilot.
+                calls.append({"call": i + 1, "accept": False,
+                              "reason": f"proposal unusable: {exc}", "unparsed": True})
+                print(f"{prefix} {name} [{i + 1:2d}/{calls_per_program}] "
+                      f"unparsed", flush=True)
+                continue
+            except BudgetExceeded as exc:
+                # Stop cleanly and keep what was measured. Re-running resumes
+                # for free: every call is cached under a deterministic nonce.
+                stopped_early = str(exc)
+                print(f"\nBUDGET CAP REACHED ({exc}) - stopping the screen cleanly.",
+                      flush=True)
+                break
             result = differential_test(
                 task, patch, program.correct_source,
                 max_examples=max_examples, seed=seed + i,
@@ -136,28 +191,25 @@ def measure(
                   f"{'accept' if result.accept else 'reject'}", flush=True)
 
         successes = sum(c["accept"] for c in calls)
+        # len(calls), not calls_per_program: the loop can end early, and a
+        # hardcoded denominator would have understated pi_hat for a program the
+        # budget cap cut short.
+        n = len(calls)
         per_program[name] = {
             "successes": successes,
-            "calls": calls_per_program,
-            "pi_hat": successes / calls_per_program,
+            "calls": n,
+            "pi_hat": successes / n if n else 0.0,
+            "unparsed": sum(1 for c in calls if c.get("unparsed")),
             "detail": calls,
         }
+        # Written after every task, not once at the end: a screen is hours long
+        # and anything that stops it used to discard every task already paid for.
+        if checkpoint is not None:
+            checkpoint(report())
+        if stopped_early:
+            break
 
-    total_successes = sum(p["successes"] for p in per_program.values())
-    total_calls = sum(p["calls"] for p in per_program.values())
-
-    return {
-        "programs": list(programs),
-        "corpus_source": corpus_source,
-        "calls_per_program": calls_per_program,
-        "model": model,
-        "seed": seed,
-        "pi_hat_pooled": total_successes / total_calls,
-        "total_successes": total_successes,
-        "total_calls": total_calls,
-        "elapsed_sec": round(time.monotonic() - t0, 1),
-        "per_program": per_program,
-    }
+    return report()
 
 
 def main() -> None:
@@ -202,20 +254,39 @@ def main() -> None:
     if not model:
         raise SystemExit("no model configured - set MODEL in .env or pass --model")
 
+    out_path = args.out or (DATA_DIR / "pi_pilot.json")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    def write(blob: dict) -> None:
+        out_path.write_text(json.dumps(blob, indent=2) + "\n")
+
     report = measure(
         programs, args.calls_per_program,
         model=model, max_examples=args.max_examples, seed=args.seed,
-        corpus_source=corpus_source,
+        corpus_source=corpus_source, checkpoint=write,
     )
-
-    out_path = args.out or (DATA_DIR / "pi_pilot.json")
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps(report, indent=2) + "\n")
+    write(report)
 
     print()
     print(f"pooled pi_hat = {report['pi_hat_pooled']:.3f} over {report['total_calls']} calls")
     for name, p in report["per_program"].items():
-        print(f"  {name:30s} pi_hat={p['pi_hat']:.3f} ({p['successes']}/{p['calls']})")
+        flag = f"  [{p['unparsed']} unparsed]" if p["unparsed"] else ""
+        print(f"  {name:30s} pi_hat={p['pi_hat']:.3f} ({p['successes']}/{p['calls']}){flag}")
+
+    # Loud, because it is the difference between "this model cannot fix these
+    # faults" and "this model cannot follow the output format". Both give a low
+    # pi_hat; only the first is a property of the corpus, and only the first
+    # makes the band assignment in scripts/select_corpus.py mean anything.
+    if report["unparsed_rate"] > 0.05:
+        print(f"\nWARNING: {report['total_unparsed']}/{report['total_calls']} draws "
+              f"({report['unparsed_rate']:.0%}) carried no usable code block and were "
+              f"counted as failures. Above a few percent, pi_hat is measuring format "
+              f"compliance as much as repair ability - check data/calls*.jsonl: "
+              f"finish_reason='length' means the output budget was too small, "
+              f"'stop' means the model simply did not emit a fenced block.")
+    if not report["complete"]:
+        print(f"\nINCOMPLETE screen ({report['stopped_early']}). Partial results are in "
+              f"{out_path}; re-run the same command to resume - cached calls replay free.")
     print(f"wrote {out_path}")
 
 
