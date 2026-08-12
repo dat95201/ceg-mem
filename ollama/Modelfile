@@ -1,0 +1,33 @@
+# Local smoke-test proposer. Build it, do not pull it:
+#
+#   ollama create cegmem-qwen2.5-coder-7b -f ollama/Modelfile
+#   ollama ps        # CONTEXT must read 32768
+#
+# Everything here is a sampling knob that src/llm.py cannot send. Ollama's
+# OpenAI-compatible endpoint carries `temperature` and `max_tokens` and nothing
+# else, so the rest of the distribution would otherwise be whatever the server
+# happened to default to - unrecorded, and unreproducible on another machine.
+# Pinning it under its own model id puts it back on the record: that id reaches
+# src.llm's cache key and RoundRecord.model.
+
+FROM qwen2.5-coder:7b
+
+# The one that corrupts results silently rather than loudly. Ollama serves 4096
+# by default however large the model's own window is, and truncates an
+# over-long prompt rather than refusing it. src/proposer.py's budget_for_source
+# hands out up to 16000 output tokens for the longest corpus programs, and the
+# memory arms add accumulated evidence on top of that, so 4096 would cut the
+# head off exactly the arms whose prompts are longest. qwen2.5-coder:7b
+# supports 32768; ~1.9 GB of KV cache on top of the 4.7 GB of weights.
+PARAMETER num_ctx 32768
+
+# Ollama defaults this to 1.1. The task is rewriting a whole Python program,
+# where the repeated tokens are indentation, `for`, `if` and identifiers the
+# program is supposed to repeat - penalising them fights the task directly.
+PARAMETER repeat_penalty 1.0
+
+# Ollama's own defaults, set explicitly so they are documented rather than
+# inherited. Proposal diversity across rounds is the quantity under study, and
+# these shape it as surely as temperature does.
+PARAMETER top_k 40
+PARAMETER top_p 0.95

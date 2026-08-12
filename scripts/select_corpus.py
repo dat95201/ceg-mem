@@ -78,11 +78,17 @@ DEFAULT_QUOTAS = {"easy": 30, "medium": 20, "hard": 30, "too_easy": 15, "dead": 
 # select anything - a task's band comes from its own measured pi_hat.
 BAND_PI = {"dead": 0.01, "hard": 0.05, "medium": 0.13, "easy": 0.26, "too_easy": 0.60}
 
-# Measured over 4,778 logged calls at claude-haiku-4-5 ($1/$5 per Mtok):
-# mean $0.00513, median 620 in / 831 out tokens. Output is ~87% of cost, so the
-# memory arms - which add evidence to the *input* - run ~15-20% dearer, not 2x.
-USD_PER_CALL_NO_MEMORY = 0.0051
-USD_PER_CALL_MEMORY = 0.0060
+# Priced for gpt-4o-mini ($0.15/$0.60 per Mtok) from the token profile measured
+# over 4,778 logged calls: median 620 in / 831 out for a no-memory call, ~900
+# more input tokens for a memory-arm call. Output is still ~85% of cost, so the
+# memory arms - which add evidence to the *input* - run ~25% dearer, not 2x.
+#
+# The token counts are measured; the dollar figures are that profile repriced,
+# not yet re-measured on gpt-4o-mini. Re-derive them from data/calls.jsonl once
+# the screen has run - the previous rate card was for claude-haiku-4-5 at
+# $1/$5, which made this projection read ~9x high.
+USD_PER_CALL_NO_MEMORY = 0.00059
+USD_PER_CALL_MEMORY = 0.00073
 
 
 def expected_rounds(pi: float, budget: int) -> float:

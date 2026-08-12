@@ -260,13 +260,17 @@ def _extract_code(text: str) -> str:
 # 3.5 chars/token is measured on this corpus's Python; the 15% margin covers the
 # model's own formatting.
 #
-# The ceiling is the SDK's, not the model's. claude-haiku-4-5 will emit 64k
-# output tokens, but only on a streamed request - the SDK refuses a
-# non-streaming call whose max_tokens it estimates will outrun the HTTP timeout,
-# and src.llm does not stream. Rather than add streaming for one outlier, the
-# draw refuses to select a program that would need more (MAX_SOURCE_CHARS in
-# scripts/select_hard_tasks.py, derived from this number), so nothing in the
-# corpus can reach the cap.
+# The 16000 ceiling is now the tighter of two real limits rather than the
+# streaming quirk of the Anthropic SDK it was originally written against:
+# gpt-4o-mini's own output cap is 16384, and the local smoke-test backend serves
+# a 32768-token window (ollama/Modelfile) that has to hold the prompt as well.
+# src.llm raises ContextOverflow rather than letting a backend truncate silently
+# when a program's budget plus its prompt would not fit.
+#
+# The draw that kept any single program from reaching this cap lived in
+# scripts/select_hard_tasks.py, which was deleted in the results reset (748cabc)
+# and has no replacement - so the ceiling is currently enforced only here and by
+# that ContextOverflow check, not at corpus-selection time.
 
 _CHARS_PER_TOKEN = 3.5
 _BUDGET_MARGIN = 1.15

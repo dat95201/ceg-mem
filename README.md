@@ -22,6 +22,23 @@ cp .env.example .env                      # API key, model, BUDGET_USD_CAP
 python3 scripts/fetch_condefects.py       # clone the benchmark, check the layout
 ```
 
+The proposer talks OpenAI chat-completions and the reported runs use
+`gpt-4o-mini`. The same code path serves a local [Ollama](https://ollama.com)
+for free smoke-testing — it differs only in `LLM_BASE_URL`, `LLM_API_KEY` and
+`MODEL`, all of which can be set on the command line without touching `.env`:
+
+```bash
+ollama pull qwen2.5-coder:7b
+bash scripts/smoke_local.sh               # builds ollama/Modelfile, runs a 6-cell grid
+```
+
+Build the local model from `ollama/Modelfile` rather than using the pulled tag
+directly. Ollama serves a 4096-token window by default whatever the model
+supports, and **truncates** an over-long prompt instead of refusing it — which
+would silently cut the memory arms' evidence, the one thing the experiment
+measures. The Modelfile pins the window; `LLM_CONTEXT_TOKENS` makes a missing
+pin an error rather than a quiet wrong answer.
+
 `fetch_condefects.py` can only clone the *code*. ConDefects ships its contest
 test data as a separate `Test.zip` (~6.4 GB, OneDrive or Baidu — the script
 prints both links); drop that archive into `external/ConDefects/` and re-run the
@@ -52,6 +69,8 @@ no oracle.
 | `scripts/measure_coherence.py` `measure_anchoring.py` `label_tool.py` | RQ2: coherence and the anchoring failure mode |
 | `scripts/check_consistency.py` | asserts every reported number matches the frozen data |
 | `scripts/watch_eval.sh` | live monitor for a long run |
+| `scripts/smoke_local.sh` | end-to-end pipeline check against a local model, free |
+| `ollama/Modelfile` | the local model's pinned context window and sampling knobs |
 | `figures/make_figures.py` | the paper's figures |
 | `cache/`, `external/` | model-response cache and the vendored benchmark; not tracked |
 

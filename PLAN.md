@@ -367,27 +367,30 @@ measurement in the repo that reaches it with human ground truth.
 
 | step | calls | cost |
 |---|---|---|
-| 3 screen π̂ | ~11,200 | $57 |
-| 6 E1 | ~11,500 | $59 |
-| 7 E2 | ~10,200 | $61 |
-| 8 E3 | ~6,100 | $37 |
-| 9 E4+E5 | ~4,300 | $26 |
-| **total** | **~43,300** | **~$240** |
+| 3 screen π̂ | ~11,200 | $7 |
+| 6 E1 | ~11,500 | $7 |
+| 7 E2 | ~10,200 | $7 |
+| 8 E3 | ~6,100 | $5 |
+| 9 E4+E5 | ~4,300 | $3 |
+| **total** | **~43,300** | **~$30** |
 
 Projections are upper bounds: E[rounds] = (1 − (1−π)^B)/π is evaluated at π
 rather than at the per-round rate q the memory arms actually achieve, and q ≥ π
 whenever steering helps at all. Only E1's figure is exact.
 
-Rate card, measured over 4,778 logged calls at `claude-haiku-4-5` ($1/$5 per
-Mtok): mean **$0.0051** per no-memory call, **$0.0060** per memory-arm call,
-median 620 in / 831 out tokens. Output is ~87% of cost, so the memory arms — which
-add evidence to the *input* — run 15–20% dearer, not 2×.
+Rate card for `gpt-4o-mini` ($0.15/$0.60 per Mtok): **$0.00059** per no-memory
+call, **$0.00073** per memory-arm call. The token profile behind it is measured —
+4,778 logged calls, median 620 in / 831 out, ~900 more input tokens on a memory
+arm — but those calls were `claude-haiku-4-5`, so the dollar figures are that
+profile repriced, not yet re-measured. Re-derive them from `data/calls.jsonl`
+after the screen. Output is ~85% of cost, so the memory arms — which add evidence
+to the *input* — run ~25% dearer, not 2×.
 
 `llm.spent()` sums the whole of `data/calls.jsonl`, so **prior spend counts
 against `BUDGET_USD_CAP`**. Set the cap to the projection plus whatever that file
 already carries.
 
-> **Two budget hazards before the first billable command.**
+> **Three hazards before the first billable command.**
 >
 > 1. `data/calls.jsonl` was deleted in the reset, so `llm.spent()` now returns
 >    $0.00 and the ledger no longer knows about spend that already happened. The
@@ -395,17 +398,30 @@ already carries.
 >    `{text, model, temperature, nonce}` — no token counts — so the ledger cannot
 >    be rebuilt from them. Decide deliberately whether to carry the old spend
 >    forward.
-> 2. **The plan costs ~$240 of fresh spend. Check `BUDGET_USD_CAP` against that
->    before starting.** If the cap binds mid-grid, `run_eval.py` raises
+> 2. **The plan costs ~$30 of fresh spend at `gpt-4o-mini` rates** — down from
+>    ~$240 at `claude-haiku-4-5`. If the cap binds mid-grid, `run_eval.py` raises
 >    `BudgetExceeded` and stops cleanly — but that leaves a *partial* arm, and a
 >    partially-run condition is not comparable to a complete one. Either raise the
 >    cap to cover the whole plan, or trim scope up front (screen a slice of the
 >    pool, or drop a sweep level) so every arm that starts also finishes.
+> 3. **Nothing replays.** The ~6,900 cached completions are `claude-haiku-4-5`
+>    responses and the model id is part of `src.llm`'s cache key, so every call
+>    in the table above is a fresh one. That is the intended behaviour, not a
+>    fault — but it also means the frozen corpus is stale in a way money cannot
+>    fix: `data/tasks.json` stratifies tasks by π̂ measured on Haiku, and π is a
+>    property of the model. **Step 3 has to run again and the corpus has to be
+>    re-frozen before E1**, or the "Hard" band the primary comparison rests on is
+>    not the Hard band.
 
 Wall clock binds harder than money: ~10.7 s/call, most of it sandbox execution
 rather than API latency, and neither `run_eval.py` nor `measure_pi.py`
 parallelises. Budget ~100 hours for the full grid, run it under `tmux`, and watch
 it with `scripts/watch_eval.sh`.
+
+Debug the pipeline against the local backend first — it is free, so a broken
+flag costs nothing to discover. See `scripts/smoke_local.sh`. It is a *smoke
+test only*: `qwen2.5-coder:7b` at ~16 tok/s would need well over a month of
+wall clock for the grid above, and its π is not the reported model's.
 
 **Run the billable steps one at a time.** They all append to
 `data/episodes.jsonl` and all read `llm.spent()` from `data/calls.jsonl`, so
@@ -459,6 +475,6 @@ Recorded here rather than silently carried:
   `data/results_real.json`. §10's re-derivability guarantee names the former.
 - **`data/schema.md` does not exist**, though §10 promises it documents the task
   and result formats.
-- `requirements.txt` pins `anthropic` and `python-dotenv`; §10 states the
+- `requirements.txt` pins `openai` and `python-dotenv`; §10 states the
   artifact depends *solely* on numpy, scipy and matplotlib. That claim describes
   the synthetic artifact and does not survive the move to a real LLM proposer.

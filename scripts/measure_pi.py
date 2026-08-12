@@ -37,7 +37,8 @@ DEFAULT_CALLS_PER_PROGRAM = 40
 #   tasks.json    the gated corpus - every fault in it has cleared stage 1
 #                 (usable) and stage 2 (mutation gate). Authoritative when it
 #                 exists.
-#   hard_120.json the pre-gate draw (scripts/select_hard_tasks.py): the right
+#   hard_120.json the pre-gate draw (was scripts/select_hard_tasks.py, deleted
+#                 in the results reset 748cabc and not replaced): the right
 #                 120 faults, but none of them checked yet. Measuring pi on it
 #                 is legitimate - a pilot is allowed to run ahead of the gates
 #                 - as long as the report says so, because some of these faults
