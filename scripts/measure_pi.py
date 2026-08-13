@@ -63,6 +63,43 @@ def _frozen_programs() -> tuple[tuple[str, ...], str]:
     return (), ""
 
 
+def _programs_from_file(path: pathlib.Path, *, block: int | None) -> tuple[tuple[str, ...], str]:
+    """Read the program list from a file, preserving its order.
+
+    Preferred over `--programs` for anything larger than a handful, for two
+    reasons that are not convenience. The order in data/candidates.json is the
+    seeded traversal order (scripts/select_candidates.py), so every prefix is
+    balanced on K_proxy - passing names on the command line and truncating by
+    hand loses that. And the report records the *path*, so a screen can be
+    traced back to the pool it came from; `--programs` can only record the
+    string "--programs", which is the provenance gap the paper complains about.
+
+    Accepts data/candidates.json, data/tasks.json, or a plain text file with
+    one "<task>/<program>" per line (# comments allowed).
+    """
+    if path.suffix == ".json":
+        data = json.loads(path.read_text())
+        entries = data.get("candidates") or data.get("tasks") or data.get("selected") or []
+        if not entries:
+            raise SystemExit(f"{path} carries no candidates/tasks/selected list")
+        if block is not None:
+            entries = [e for e in entries if e.get("block") == block]
+            if not entries:
+                raise SystemExit(f"{path} has no entries with block == {block}")
+        names = tuple(e["name"] for e in entries)
+        qualifier = f", block {block}" if block is not None else ""
+        return names, f"{path} ({len(names)} entries{qualifier})"
+    if block is not None:
+        raise SystemExit("--block applies only to a .json pool, not a name list")
+    names = tuple(
+        line.strip() for line in path.read_text().splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    )
+    if not names:
+        raise SystemExit(f"{path} is empty")
+    return names, f"{path} ({len(names)} names)"
+
+
 def _resolve_programs(names: list[str] | None) -> tuple[tuple[str, ...], str]:
     """No --programs, or "--programs all" -> the frozen corpus. pi_hat has to
     cover every frozen task, not a hand-picked subset, because
@@ -217,6 +254,21 @@ def main() -> None:
     parser.add_argument("--programs", nargs="+", default=None,
                         help="default: the gated corpus in data/tasks.json, "
                              "falling back to the draw in data/hard_120.json")
+    parser.add_argument("--programs-from", type=pathlib.Path, default=None,
+                        help="read the list from a file instead, preserving its "
+                             "order: data/candidates.json, data/tasks.json, or "
+                             "one '<task>/<program>' per line. Preferred for "
+                             "large screens - it records the path as the corpus "
+                             "source, and it avoids the shell (zsh does not "
+                             "word-split $VAR, so a 527-name variable arrives as "
+                             "a single argument).")
+    parser.add_argument("--block", type=int, default=None, choices=(1, 2),
+                        help="with --programs-from on a pool that has blocks: "
+                             "1 = primary, 2 = pre-declared reserve")
+    parser.add_argument("--limit", type=int, default=None,
+                        help="screen only the first N in file order. The order "
+                             "in data/candidates.json is stratified, so a prefix "
+                             "is a balanced pilot rather than an arbitrary slice.")
     parser.add_argument("--calls-per-program", type=int, default=DEFAULT_CALLS_PER_PROGRAM)
     parser.add_argument("--model", default=None)
     parser.add_argument("--max-examples", type=int, default=100)
@@ -227,7 +279,17 @@ def main() -> None:
                              "the next; scripts/select_corpus.py merges them.")
     args = parser.parse_args()
 
-    programs, corpus_source = _resolve_programs(args.programs)
+    if args.programs_from and args.programs:
+        raise SystemExit("pass --programs or --programs-from, not both")
+    if args.programs_from:
+        programs, corpus_source = _programs_from_file(args.programs_from, block=args.block)
+    else:
+        if args.block is not None:
+            raise SystemExit("--block requires --programs-from")
+        programs, corpus_source = _resolve_programs(args.programs)
+    if args.limit is not None:
+        programs = programs[:args.limit]
+        corpus_source += f" [first {len(programs)} in file order]"
     print(f"corpus: {len(programs)} faults from {corpus_source}", flush=True)
     unknown = [p for p in programs if p not in TASKS]
     if unknown:
