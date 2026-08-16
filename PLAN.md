@@ -117,35 +117,33 @@ AtCoder rating correlates at only ρ = −0.35, which cannot place a task in a b
 
 **Anchor.** §5 Task suite and stratification; Theorem 4.3(a).
 
-```bash
-# stage A — everything at k=20
-python3 scripts/measure_pi.py --calls-per-program 20 --out data/screen_a.json \
-    --programs $(python3 -c "import json;print(' '.join(t['name'] for t in json.load(open('data/pool/tasks.json'))['tasks']))")
+**[SCREENING.md](SCREENING.md) is the runbook.** It holds the protocol every
+machine has to agree on, the per-machine rehearsal, and the merge audit. In
+outline:
 
-# stage B — deepen only the low end to k=40. Cache replay makes A's 20 draws
-# free, so this costs 20 *new* calls per task.
-python3 scripts/measure_pi.py --calls-per-program 40 --out data/screen_b.json \
-    --programs $(python3 -c "import json;d=json.load(open('data/screen_a.json'))['per_program'];print(' '.join(k for k,v in d.items() if v['successes']<=4))")
+```bash
+bash scripts/screen_shard.sh --from 1 --to 132   # one index range, one machine
+python3 scripts/consolidate_screens.py           # -> data/screen_merged.json
 ```
 
-`measure_pi.py` has no `--pool` flag — it resolves its corpus from
-`data/tasks.json` only — so the pool must be passed explicitly via `--programs`,
-as above. (Its own error message points at `scripts/select_hard_tasks.py`, which
-is retired; ignore it.)
+The screen runs against a **local** `qwen2.5-coder:7b`, so it costs wall clock
+rather than money: ~5,300 draws at `--calls 10` over the 527 candidates, ~29 h
+on one machine and ~7 h each across four. It is cut into index ranges over
+`data/candidates.json` — the seeded `K_proxy`-stratified order, so any
+contiguous range is already balanced.
 
-**Stage B replays stage A for free only if the flags match.** The cache nonce is
-`pi-pilot|{name}|seed{seed}|call{i}`, so changing `--seed` or `--max-examples`
-between the two stages re-buys every stage-A draw at full price. Change only
-`--calls-per-program` and `--out`.
+Two things carry over into every later step. π̂ lives on a grid of `1/k`, and
+**at k = 10 the entire `hard` band [0.02, 0.08) is unreachable** — `0/10` is
+`dead`, `1/10` is `medium`. `hard` is where the paper predicts A₁₂ = 1.00, so it
+has to be deepened to k = 38 before the corpus is frozen; `consolidate_screens.py`
+computes that and the per-task cost. Deepening is cheap because draws are nonced
+`pi-pilot|{name}|seed{seed}|call{i}`, so a re-run at larger k replays `0..k-1`
+from cache — but only if `--seed`, `--max-examples`, the model id and the
+temperature are unchanged. Those are the cache key.
 
-Two stages because π̂ lives on a grid of 1/k. **At k = 20 the entire `hard` band
-[0.02, 0.08) is reachable by exactly one outcome** (1 success in 20), and a
-genuinely hard task lands there only ~35% of the time; at k = 40, ~70%. The top
-of the range needs no deepening — `easy` is 0.17 wide and `too_easy` is
-open-ended. `hard` is where the paper predicts A₁₂ = 1.00, so mislabelling it is
-the expensive mistake.
-
-Scale: ~11,200 calls ≈ **$57**.
+**π is a property of the model.** A corpus stratified on π̂ measured with
+`qwen2.5-coder:7b` is not stratified for `gpt-4o-mini`. Whichever proposer the
+reported runs use, the screen has to be the same one.
 
 ## 4. Freeze the corpus · no API calls
 

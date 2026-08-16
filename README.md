@@ -39,9 +39,12 @@ serve --help` — and **truncates** an over-long prompt instead of refusing it,
 which would silently cut the memory arms' evidence, the one thing the experiment
 measures. The window reaches neither the cache key nor the report, so the same
 model id on two machines can be two different instruments with nothing to say
-so. `screen_shard.sh` therefore starts its own server with `OLLAMA_CONTEXT_LENGTH`
-pinned, reads back what `/api/ps` actually serves, and refuses to spend on a
-mismatch; `LLM_CONTEXT_TOKENS` is the client-side half of the same check.
+so. `screen_shard.sh` therefore pins `OLLAMA_CONTEXT_LENGTH`, reads back what
+`/api/ps` actually serves, and refuses to spend on a mismatch.
+
+[SCREENING.md](SCREENING.md) is the runbook: the protocol every machine has to
+agree on, how to verify a new one before giving it real work, and how the shards
+merge.
 
 `fetch_condefects.py` can only clone the *code*. ConDefects ships its contest
 test data as a separate `Test.zip` (~6.4 GB, OneDrive or Baidu — the script
@@ -160,6 +163,11 @@ patch landing in one is accepted while being wrong. Report the rate as an **uppe
 bound** on invisible overfitting, not an estimate of it — some share of any
 planted edit changes no behaviour at all, and separating the two needs coverage
 data this pipeline does not collect.
+
+## Screening
+
+See [SCREENING.md](SCREENING.md) — how the π screen is sharded across machines,
+the protocol every machine has to agree on, and how the partial results merge.
 
 ## Corpus selection
 
