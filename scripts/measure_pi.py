@@ -15,7 +15,9 @@ after it.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import os
 import pathlib
 import sys
 import time
@@ -23,13 +25,33 @@ import time
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from src.adapter import SUPPORTED_PROGRAMS, TASKS, load
-from src.llm import MODEL as LLM_MODEL, BudgetExceeded
+from src.llm import MODEL as LLM_MODEL, TEMPERATURE as LLM_TEMPERATURE, BudgetExceeded
 from src.oracle import differential_test
 from src.proposer import TruncatedResponse, propose
+from src.sandbox import DEFAULT_TIMEOUT as SANDBOX_TIMEOUT
 
 DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 
-DEFAULT_CALLS_PER_PROGRAM = 40
+# One number for the whole screen, and scripts/screen_shard.sh passes the same
+# one explicitly. 10 is a first pass: it places a task roughly, and deepening is
+# cheap because a re-run at a larger K replays draws 0..K-1 from cache and buys
+# only the difference. It is deliberately not enough to resolve every band -
+# pi_hat lives on a grid of 1/K and [0.02, 0.08) contains no multiple of 1/10 -
+# and scripts/consolidate_screens.py says so, with the K that would.
+DEFAULT_CALLS_PER_PROGRAM = 10
+
+# Facts about the backend that the launcher observed and this process cannot:
+# the served context window, the model blob digest behind the tag, the
+# quantisation, the server version. Written straight into the report so a shard
+# run on another machine can be checked against this one rather than trusted.
+#
+# The window is the one that corrupts silently. Ollama picks its default from
+# available VRAM ("4k/32k/256k", per `ollama serve --help`) and TRUNCATES an
+# over-long prompt instead of refusing it, so the same model id on two machines
+# can be two different instruments. scripts/screen_shard.sh reads it back from
+# /api/ps and refuses to start if it is not the pinned value; this records what
+# it saw.
+RUNTIME = json.loads(os.environ.get("SCREEN_RUNTIME", "{}"))
 
 
 # Two freezes can name a corpus, and they are not interchangeable:
@@ -144,6 +166,19 @@ def measure(
             "calls_per_program": calls_per_program,
             "model": model,
             "seed": seed,
+            # The rest of the protocol, recorded because a screen is now run in
+            # shards across several machines and merged
+            # (scripts/consolidate_screens.py). Two shards that disagree on any
+            # of these did not measure the same quantity: `max_examples` is how
+            # strong the oracle judging each draw was, `temperature` is the
+            # distribution the draw came from and part of src.llm's cache key,
+            # and `sandbox_timeout_sec` decides whether a slow candidate counts
+            # as wrong or as never judged. None of them was written down before,
+            # so a mixed merge could not even be detected after the fact.
+            "max_examples": max_examples,
+            "temperature": LLM_TEMPERATURE,
+            "sandbox_timeout_sec": SANDBOX_TIMEOUT,
+            "runtime": RUNTIME,
             "pi_hat_pooled": total_successes / total_calls if total_calls else 0.0,
             "total_successes": total_successes,
             "total_calls": total_calls,
@@ -237,6 +272,16 @@ def measure(
             "calls": n,
             "pi_hat": successes / n if n else 0.0,
             "unparsed": sum(1 for c in calls if c.get("unparsed")),
+            # The two inputs that decide the prompt, and therefore the cache
+            # key: src.llm keys on the prompt text, and the prompt is the faulty
+            # source plus the worked examples Task.spec_note picks. Both are
+            # deterministic given the checkout, so a shard whose digests differ
+            # from another's for the same program was run against a different
+            # external/ConDefects - which means its draws were bought under
+            # different keys and its pi_hat measured a different program.
+            # Cheap to record here, undetectable afterwards if not.
+            "source_sha256": hashlib.sha256(program.buggy_source.encode()).hexdigest()[:16],
+            "spec_sha256": hashlib.sha256(task.spec_note.encode()).hexdigest()[:16],
             "detail": calls,
         }
         # Written after every task, not once at the end: a screen is hours long

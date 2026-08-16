@@ -18,10 +18,12 @@ Sampling temperature is passed explicitly instead of left to the SDK default,
 and recorded in the cache key and in data/calls.jsonl, so the distribution
 every reported number was drawn from is on the record. The rest of the sampling
 configuration is not sendable over this endpoint - Ollama's num_ctx, top_k and
-repeat_penalty are server-side defaults - so for the local backend it is pinned
-in ollama/Modelfile under a distinct model id, which *does* reach the cache key
-and the metrics row. See LLM_CONTEXT_TOKENS below for the one that can corrupt
-a run silently.
+repeat_penalty are server-side, and so reach neither the cache key nor the
+metrics row. The local runs therefore take the model's own shipped defaults,
+which is what makes `qwen2.5-coder:7b` mean the same thing to anyone who pulls
+it; the one exception is the context window, which is not a default anybody can
+look up. See LLM_CONTEXT_TOKENS below - it is the setting that can corrupt a run
+silently.
 """
 import os, json, time, math, hashlib, pathlib
 from dotenv import load_dotenv
@@ -52,15 +54,23 @@ MAX_RETRIES = int(os.environ.get("LLM_MAX_RETRIES", 5))
 
 # Total context the server is actually serving, or 0 to disable the check.
 #
-# This exists because Ollama truncates rather than refuses. It serves 4096
-# tokens by default whatever the model supports, and the OpenAI-compatible
-# endpoint has no field to raise it, so an over-long prompt silently loses its
-# head and the call returns a plausible answer to a question that was never
-# asked. That failure is worst exactly where it does the most damage: the typed
-# and untyped arms carry accumulated evidence and so have the longest prompts,
-# so the truncation is differential across arms and lands on the comparison the
-# experiment exists to make. ollama/Modelfile pins num_ctx; this is the check
-# that the pin is actually in force.
+# This exists because Ollama truncates rather than refuses. The window is a
+# server-side default picked from available VRAM - "4k/32k/256k", per `ollama
+# serve --help` - and the OpenAI-compatible endpoint has no field to raise it,
+# so an over-long prompt silently loses its head and the call returns a
+# plausible answer to a question that was never asked. Worse, the window reaches
+# neither the cache key nor the report, so the same model id on a machine that
+# happened to serve 4096 is a different instrument and nothing says so.
+#
+# That failure is worst exactly where it does the most damage: the typed and
+# untyped arms carry accumulated evidence and so have the longest prompts, so
+# the truncation is differential across arms and lands on the comparison the
+# experiment exists to make.
+#
+# Pin the server with OLLAMA_CONTEXT_LENGTH and verify it at /api/ps -
+# scripts/screen_shard.sh does both and refuses to start on a mismatch. This
+# check is the client-side half: it catches a prompt that would not fit before
+# the server can crop it.
 CONTEXT_TOKENS = int(os.environ.get("LLM_CONTEXT_TOKENS", 0))
 
 # Same figures src.proposer sizes max_tokens with - 3.5 chars/token measured on
@@ -153,8 +163,8 @@ def complete(
             raise ContextOverflow(
                 f"~{estimate} prompt + {max_tokens} output tokens exceeds the "
                 f"{CONTEXT_TOKENS}-token window (LLM_CONTEXT_TOKENS). Raise the "
-                f"server's context - see ollama/Modelfile - rather than letting "
-                f"it truncate the prompt."
+                f"server's own window - OLLAMA_CONTEXT_LENGTH for Ollama - rather "
+                f"than letting it truncate the prompt."
             )
 
     t0 = time.time()

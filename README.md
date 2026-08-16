@@ -22,22 +22,26 @@ cp .env.example .env                      # API key, model, BUDGET_USD_CAP
 python3 scripts/fetch_condefects.py       # clone the benchmark, check the layout
 ```
 
-The proposer talks OpenAI chat-completions and the reported runs use
-`gpt-4o-mini`. The same code path serves a local [Ollama](https://ollama.com)
-for free smoke-testing — it differs only in `LLM_BASE_URL`, `LLM_API_KEY` and
-`MODEL`, all of which can be set on the command line without touching `.env`:
+The proposer talks OpenAI chat-completions, and the same code path serves a
+local [Ollama](https://ollama.com) — it differs only in `LLM_BASE_URL`,
+`LLM_API_KEY` and `MODEL`, none of which needs `.env` edited. The π screen runs
+against `qwen2.5-coder:7b` locally:
 
 ```bash
 ollama pull qwen2.5-coder:7b
-bash scripts/smoke_local.sh               # builds ollama/Modelfile, runs a 6-cell grid
+bash scripts/screen_shard.sh --from 1 --to 132    # one shard of the screen
+python3 scripts/consolidate_screens.py            # merge the shards
 ```
 
-Build the local model from `ollama/Modelfile` rather than using the pulled tag
-directly. Ollama serves a 4096-token window by default whatever the model
-supports, and **truncates** an over-long prompt instead of refusing it — which
-would silently cut the memory arms' evidence, the one thing the experiment
-measures. The Modelfile pins the window; `LLM_CONTEXT_TOKENS` makes a missing
-pin an error rather than a quiet wrong answer.
+The one thing a local backend must not be left to decide for itself is the
+context window. Ollama picks it from available VRAM — `4k/32k/256k`, per `ollama
+serve --help` — and **truncates** an over-long prompt instead of refusing it,
+which would silently cut the memory arms' evidence, the one thing the experiment
+measures. The window reaches neither the cache key nor the report, so the same
+model id on two machines can be two different instruments with nothing to say
+so. `screen_shard.sh` therefore starts its own server with `OLLAMA_CONTEXT_LENGTH`
+pinned, reads back what `/api/ps` actually serves, and refuses to spend on a
+mismatch; `LLM_CONTEXT_TOKENS` is the client-side half of the same check.
 
 `fetch_condefects.py` can only clone the *code*. ConDefects ships its contest
 test data as a separate `Test.zip` (~6.4 GB, OneDrive or Baidu — the script
@@ -69,8 +73,8 @@ no oracle.
 | `scripts/measure_coherence.py` `measure_anchoring.py` `label_tool.py` | RQ2: coherence and the anchoring failure mode |
 | `scripts/check_consistency.py` | asserts every reported number matches the frozen data |
 | `scripts/watch_eval.sh` | live monitor for a long run |
-| `scripts/smoke_local.sh` | end-to-end pipeline check against a local model, free |
-| `ollama/Modelfile` | the local model's pinned context window and sampling knobs |
+| `scripts/screen_shard.sh` | one shard of the π screen: pins the backend, verifies it, runs, shuts it down |
+| `scripts/consolidate_screens.py` | merges the shards and audits the join |
 | `figures/make_figures.py` | the paper's figures |
 | `cache/`, `external/` | model-response cache and the vendored benchmark; not tracked |
 

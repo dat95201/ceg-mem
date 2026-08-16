@@ -270,8 +270,8 @@ def _extract_code(text: str) -> str:
 #
 # The 16000 ceiling is now the tighter of two real limits rather than the
 # streaming quirk of the Anthropic SDK it was originally written against:
-# gpt-4o-mini's own output cap is 16384, and the local smoke-test backend serves
-# a 32768-token window (ollama/Modelfile) that has to hold the prompt as well.
+# gpt-4o-mini's own output cap is 16384, and the local backend is pinned to a
+# 32768-token window (scripts/screen_shard.sh) that has to hold the prompt too.
 # src.llm raises ContextOverflow rather than letting a backend truncate silently
 # when a program's budget plus its prompt would not fit.
 #

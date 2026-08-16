@@ -419,9 +419,12 @@ parallelises. Budget ~100 hours for the full grid, run it under `tmux`, and watc
 it with `scripts/watch_eval.sh`.
 
 Debug the pipeline against the local backend first — it is free, so a broken
-flag costs nothing to discover. See `scripts/smoke_local.sh`. It is a *smoke
-test only*: `qwen2.5-coder:7b` at ~16 tok/s would need well over a month of
-wall clock for the grid above, and its π is not the reported model's.
+flag costs nothing to discover. `scripts/screen_shard.sh` is the worked example:
+it pins `qwen2.5-coder:7b`, verifies the served context window, and runs one
+shard of the π screen. Note that a local run is not a cheap substitute for the
+grid above — `qwen2.5-coder:7b` at ~16 tok/s would need well over a month of
+wall clock for it — and that **π is a property of the model**, so a corpus
+stratified on a local π̂ is not stratified for `gpt-4o-mini`.
 
 **Run the billable steps one at a time.** They all append to
 `data/episodes.jsonl` and all read `llm.spent()` from `data/calls.jsonl`, so
