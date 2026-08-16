@@ -1,0 +1,642 @@
+{
+  "programs": [
+    "abc293_e/45761832",
+    "abc356_e/54889247",
+    "abc339_e/52923119",
+    "arc154_b/43445291",
+    "abc285_e/48880084",
+    "arc165_b/45995987",
+    "arc176_a/55106959",
+    "abc298_c/45807883",
+    "abc298_g/41059627",
+    "abc337_b/54984614",
+    "arc167_b/51380686",
+    "abc307_f/48677305",
+    "abc297_f/49316217",
+    "abc302_g/41887698",
+    "abc355_c/54860926",
+    "abc345_c/54753666",
+    "abc330_c/54071794",
+    "abc342_g/50740919",
+    "arc163_a/45935608",
+    "abc303_c/45578518",
+    "abc328_e/51767048",
+    "arc180_a/55121294",
+    "abc320_c/55010802",
+    "abc299_f/41069355",
+    "abc321_b/54705590",
+    "abc308_a/46165457",
+    "abc356_g/54133842",
+    "abc359_c/55101823",
+    "arc174_c/54909674",
+    "abc345_f/51504279",
+    "abc356_d/54865160",
+    "arc171_b/50078211",
+    "abc358_f/54701655",
+    "abc328_b/54041719",
+    "arc172_c/51141760",
+    "arc173_d/52512786",
+    "abc290_b/46211702",
+    "abc349_c/54901128",
+    "arc175_c/53001483",
+    "abc297_a/46009520",
+    "abc309_d/46051654",
+    "arc157_e/39201856",
+    "abc354_e/54930119",
+    "abc320_d/54919763",
+    "abc322_d/46190250",
+    "abc332_b/54879479",
+    "abc291_c/45751656",
+    "abc359_g/54889351",
+    "abc329_c/54204891",
+    "abc291_d/46165699",
+    "arc166_b/51949905",
+    "agc063_a/44148214",
+    "abc325_f/47205844",
+    "abc352_f/53476783",
+    "abc359_e/55124422",
+    "arc159_b/45431609",
+    "abc353_g/53993648",
+    "abc352_b/55135076",
+    "arc165_a/45736644",
+    "abc286_g/41126621",
+    "abc297_d/45529790",
+    "abc312_f/46140996",
+    "abc310_c/45695385",
+    "arc153_b/44454861",
+    "abc309_c/45895898",
+    "arc159_a/41991860",
+    "abc343_e/54516497",
+    "abc346_b/55138933",
+    "abc304_d/45574429",
+    "arc153_a/45913281",
+    "abc314_b/45977913",
+    "abc322_b/55147333",
+    "abc323_a/54513324",
+    "arc157_a/45521757",
+    "abc325_d/52936269",
+    "abc286_d/45471607",
+    "arc152_a/42092015",
+    "abc256_g/32688484",
+    "abc253_f/45527428",
+    "abc271_c/45808178",
+    "abc279_e/44892540",
+    "abc259_d/52382935",
+    "abc278_b/45297542",
+    "arc139_d/31251082",
+    "abc271_g/37700812",
+    "abc272_b/53303936",
+    "abc261_e/46034687",
+    "abc265_f/43487741",
+    "abc246_a/45745121",
+    "abc270_c/54301518",
+    "abc271_d/46008428",
+    "abc279_d/44854241",
+    "arc148_e/39108367",
+    "agc060_a/37682454",
+    "abc269_e/45214207",
+    "abc259_e/45515452",
+    "abc255_g/35788058",
+    "arc143_c/37392747",
+    "arc142_c/40185010",
+    "arc151_a/44901492",
+    "abc281_b/45944008",
+    "abc263_d/45558657",
+    "abc273_d/45461646",
+    "arc152_c/44122587",
+    "abc257_b/45964870",
+    "arc148_a/44882552",
+    "abc263_b/45056655",
+    "abc249_e/51504381",
+    "abc275_f/45458655",
+    "arc151_c/36321896",
+    "abc279_g/37231890",
+    "abc264_g/42294250",
+    "abc272_e/45548360",
+    "abc262_g/33776994",
+    "abc268_g/34968864",
+    "arc144_a/42090105",
+    "abc258_e/44667415",
+    "arc143_d/32782502",
+    "abc278_c/45320717",
+    "arc151_b/36899282",
+    "abc247_e/45003873",
+    "arc152_d/36680742",
+    "abc269_b/45961458",
+    "agc058_a/46230782",
+    "abc280_d/46193678",
+    "arc140_b/45660608",
+    "abc278_d/44926075",
+    "arc138_d/33049315",
+    "abc283_c/45277024",
+    "abc247_g/39496981",
+    "abc266_c/45028964",
+    "abc273_b/45948106"
+  ],
+  "corpus_source": "data/shards/shard_265_396.txt (132 names)",
+  "calls_per_program": 10,
+  "model": "qwen2.5-coder:7b",
+  "seed": 20260717,
+  "max_examples": 100,
+  "temperature": 1.0,
+  "sandbox_timeout_sec": 30.0,
+  "runtime": {
+    "backend": "ollama",
+    "context_length": 32768,
+    "model_digest": "dae161e27b0e90dd",
+    "num_parallel": 1,
+    "ollama_version": "0.32.13",
+    "parameter_size": "7.6B",
+    "quantization": "Q4_K_M"
+  },
+  "pi_hat_pooled": 0.0875,
+  "total_successes": 7,
+  "total_calls": 80,
+  "total_unparsed": 0,
+  "unparsed_rate": 0.0,
+  "complete": true,
+  "stopped_early": "",
+  "elapsed_sec": 2881.6,
+  "per_program": {
+    "abc293_e/45761832": {
+      "successes": 1,
+      "calls": 10,
+      "pi_hat": 0.1,
+      "unparsed": 0,
+      "source_sha256": "a58313157f9dc3db",
+      "spec_sha256": "548d869cc0ce8e21",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case testcase06.txt"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "wrong output on test case testcase06.txt"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case after_contest_01.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case testcase06.txt"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "wrong output on test case testcase06.txt"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "raised SystemExit on test case after_contest_01.txt: SyntaxError: invalid syntax"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case testcase06.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case after_contest_01.txt"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case after_contest_01.txt"
+        },
+        {
+          "call": 10,
+          "accept": true,
+          "reason": null
+        }
+      ]
+    },
+    "abc356_e/54889247": {
+      "successes": 0,
+      "calls": 10,
+      "pi_hat": 0.0,
+      "unparsed": 0,
+      "source_sha256": "77e3ea09d461a603",
+      "spec_sha256": "5904592031423214",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "raised IndexError on test case random_01.txt: list index out of range"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "timed out after 30.0s on test case random_01.txt"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "raised IndexError on test case random_01.txt: list index out of range"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        }
+      ]
+    },
+    "abc339_e/52923119": {
+      "successes": 3,
+      "calls": 10,
+      "pi_hat": 0.3,
+      "unparsed": 0,
+      "source_sha256": "19065520ae21b18d",
+      "spec_sha256": "008d21095d513adb",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case sample00.txt"
+        },
+        {
+          "call": 2,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case sample00.txt"
+        },
+        {
+          "call": 5,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 6,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case sample01.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case sample00.txt"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        }
+      ]
+    },
+    "arc154_b/43445291": {
+      "successes": 1,
+      "calls": 10,
+      "pi_hat": 0.1,
+      "unparsed": 0,
+      "source_sha256": "b832ed4d2caaf6e4",
+      "spec_sha256": "87bebfa435a2f5cc",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case example_01.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case example_01.txt"
+        },
+        {
+          "call": 9,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        }
+      ]
+    },
+    "abc285_e/48880084": {
+      "successes": 1,
+      "calls": 10,
+      "pi_hat": 0.1,
+      "unparsed": 0,
+      "source_sha256": "a5e21c4f45c1fab2",
+      "spec_sha256": "8e462e275cf7e7b2",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case sample_01.txt"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "raised IndexError on test case sample_01.txt: list assignment index out of range"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case test_29.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "raised IndexError on test case sample_01.txt: list assignment index out of range"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "raised IndexError on test case sample_01.txt: list index out of range"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "wrong output on test case test_29.txt"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "raised IndexError on test case sample_01.txt: list index out of range"
+        },
+        {
+          "call": 8,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case test_29.txt"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case test_29.txt"
+        }
+      ]
+    },
+    "arc165_b/45995987": {
+      "successes": 1,
+      "calls": 10,
+      "pi_hat": 0.1,
+      "unparsed": 0,
+      "source_sha256": "aabdf9c7968cb0eb",
+      "spec_sha256": "3ee884706a48e844",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "raised IndexError on test case 00_sample_01.txt: list index out of range"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_01.txt"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case aftercontest_02.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_03.txt"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "wrong output on test case 03_maxi_is_not_last_01.txt"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_01.txt"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_01.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_01.txt"
+        },
+        {
+          "call": 9,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "raised SystemExit on test case 00_sample_01.txt: SyntaxError: invalid character '\u2190' (U+2190)"
+        }
+      ]
+    },
+    "arc176_a/55106959": {
+      "successes": 0,
+      "calls": 10,
+      "pi_hat": 0.0,
+      "unparsed": 0,
+      "source_sha256": "7f67915c642df864",
+      "spec_sha256": "67dee3b83512cbc1",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        }
+      ]
+    },
+    "abc298_c/45807883": {
+      "successes": 0,
+      "calls": 10,
+      "pi_hat": 0.0,
+      "unparsed": 0,
+      "source_sha256": "58b361475b3a8f01",
+      "spec_sha256": "004fcf04de4baa22",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case testcase06.txt"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "raised SystemExit on test case sample00.txt: SyntaxError: '[' was never closed"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case testcase06.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case sample00.txt"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "raised AttributeError on test case sample00.txt: 'set' object has no attribute 'sort'"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "wrong output on test case testcase06.txt"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case testcase06.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "raised IndexError on test case sample00.txt: list index out of range"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case sample00.txt"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case testcase06.txt"
+        }
+      ]
+    }
+  }
+}
