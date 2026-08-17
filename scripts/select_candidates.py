@@ -38,6 +38,16 @@ a failure of theta to be *computable*, not of K to be *large*.
 
 What each gate is for
 ---------------------
+G1 is the floor: the coding task must ship at least one expected output. With
+none, there is no ground truth at all and Eq. (1)'s oracle is undefined rather
+than weak. It names AtCoder's interactive problems, whose in/ files hold the
+judge's data in the judge's format and whose out/ does not exist - the reference
+cannot even parse them, so src/oracle.py's run-the-reference fallback fails too
+and the fault stalls the screen with NoUsableTestCase. Only this half of G1 is
+checkable here; the rest (does the reference actually pass, is the faulty
+version actually refuted) needs to run code and belongs to
+scripts/validate_oracle.py.
+
 G3 carries the real weight, and its justification is (ii) above: a program long
 enough that a diff-recovered edit location means something, and short enough to
 fit a prompt. G4 is Definition 3.1's rho - too few shipped cases and the
@@ -134,7 +144,8 @@ class Fault:
     lines: int
     stmts: int
     branches: int
-    ncase: int
+    ncase: int          # inputs shipped under Test/<contest>/<L>/in
+    nscored: int        # of those, how many have a matching out/ file
     k_proxy: int
     n_families: int
     cap: dict[str, int]
@@ -234,7 +245,16 @@ def enumerate_faults() -> tuple[list[Fault], collections.Counter]:
         if not in_dir.is_dir():
             skipped["no_test_dir"] += 1
             continue
-        ncase = len(os.listdir(in_dir))
+        inputs = set(os.listdir(in_dir))
+        # The shipped expected outputs, matched by filename. src/adapter.py
+        # pairs them exactly this way, and src/oracle.py falls back to *running
+        # the reference* for an input with no out/ file - so this count is how
+        # much of the pool is scored against AtCoder's own answer rather than
+        # against a second run of the program under test.
+        out_dir = TEST_DIR / contest / letter.upper() / "out"
+        outputs = set(os.listdir(out_dir)) if out_dir.is_dir() else set()
+        ncase = len(inputs)
+        nscored = len(inputs & outputs)
         lang_dir = CODE_DIR / task / LANGUAGE_DIR
         if not lang_dir.is_dir():
             continue
@@ -254,7 +274,7 @@ def enumerate_faults() -> tuple[list[Fault], collections.Counter]:
                 date=dates.get(task, "0000-00-00"),
                 lines=len(source.splitlines()),
                 stmts=structure[0], branches=structure[1],
-                ncase=ncase, k_proxy=k_proxy, cap=cap,
+                ncase=ncase, nscored=nscored, k_proxy=k_proxy, cap=cap,
                 n_families=sum(1 for v in cap.values() if v > 0),
             ))
     return faults, skipped
@@ -269,6 +289,30 @@ def first_failed_gate(f: Fault, *, date_min: str) -> str | None:
     """
     # Ordered most-fundamental first, so the funnel table attributes a fault to
     # the deepest reason it is unusable rather than to whichever gate ran first.
+    #
+    # Nothing is deeper than this one: with no shipped expected output anywhere,
+    # there is no ground truth to compare a patch against, so Eq. (1)'s oracle
+    # is not merely weak but undefined. It is the static half of G1 - the only
+    # half Stage 0 can check, since the rest of G1 requires running the
+    # reference, which this stage must not do.
+    #
+    # In practice it names AtCoder's *interactive* problems. Those have no fixed
+    # expected output at all, so ConDefects ships in/ without out/, and the in/
+    # files hold the judge's own data in the judge's format rather than the
+    # contestant's stdin. src/oracle.py's fallback - run the reference to
+    # produce the expected value - therefore cannot rescue them either: the
+    # reference is handed input it was never written to parse and dies on the
+    # first line. That surfaces as src.oracle.NoUsableTestCase, which
+    # scripts/measure_pi.py treats as fatal, so one such fault stalls a whole
+    # shard of the screen.
+    #
+    # Deliberately `== 0`, not `< NCASE_MIN`. A task shipping *some* outputs has
+    # a working oracle that is merely thinner, and the reference-run fallback is
+    # the documented design for the rest. Gating those on partial coverage would
+    # be a different and stronger claim; main() reports them instead so the
+    # decision stays visible rather than buried in a threshold.
+    if f.nscored == 0:
+        return "G1_no_expected_output"
     if not (LINES_MIN <= f.lines <= LINES_MAX):
         return "G3_lines"
     if f.stmts < STMTS_MIN:
@@ -410,8 +454,9 @@ def main() -> None:
 
     print(f"faults with test data       {len(faults):6d}"
           f"   ({len({f.task for f in faults})} coding tasks)")
-    for gate in ("G3_lines", "G3_stmts", "G4_cases", "G2_families", "G5_date"):
-        print(f"  dropped at {gate:14} {funnel[gate]:6d}")
+    for gate in ("G1_no_expected_output", "G3_lines", "G3_stmts", "G4_cases",
+                 "G2_families", "G5_date"):
+        print(f"  dropped at {gate:22} {funnel[gate]:6d}")
     print(f"  passed all gates            {funnel['passed']:6d}")
     print(f"  dropped at G6_dedup         {dropped_dup:6d}")
     print(f"CANDIDATES                  {len(ordered):6d}"
@@ -432,14 +477,40 @@ def main() -> None:
           " K-hat stratifies the frozen corpus,\n     and R(K) is estimated"
           " rather than assumed (see SELECTION.md SS 6.1).")
 
+    # Partial out/ coverage is not gated (see first_failed_gate) but it is not
+    # nothing either: on those cases src/oracle.py scores the candidate against
+    # a fresh run of the reference rather than against AtCoder's answer. That is
+    # a sound differential test only where the answer is unique - on a problem
+    # accepting several valid answers it refutes correct patches, which depresses
+    # pi_hat on exactly the tasks it touches. Printed so the threat is on the
+    # record and the threshold stays a decision rather than a default.
+    partial = sorted((f for f in ordered if f.nscored < f.ncase),
+                     key=lambda f: f.nscored / f.ncase)
+    if partial:
+        print(f"\n{len(partial)} candidate(s) ship expected output for only part of"
+              f" their test pool:")
+        for f in partial:
+            print(f"  {f.name:26s} {f.nscored:4d}/{f.ncase:<4d} scored against"
+                  f" AtCoder's answer, the rest against a reference re-run")
+        print("  -> not gated: the oracle still works, it is thinner. But a problem"
+              " admitting\n     several valid answers will refute correct patches"
+              " on the unscored cases.")
+
     payload = {
         "seed": args.seed,
         "gates": {
             "k_proxy_gate": None, "lines": [LINES_MIN, LINES_MAX],
             "stmts_min": STMTS_MIN, "ncase_min": NCASE_MIN,
+            "nscored_min": 1,
             "n_families": N_FAMILIES, "date_min": args.date_min,
             "block1_date": BLOCK1_DATE,
         },
+        # Reported, not gated - see the note printed by main() and the comment
+        # in first_failed_gate.
+        "partial_expected_output": [
+            {"name": f.name, "ncase": f.ncase, "nscored": f.nscored}
+            for f in ordered if f.nscored < f.ncase
+        ],
         "test_dir": str(TEST_DIR),
         "funnel": dict(funnel),
         "dropped_at_G6_dedup": dropped_dup,
@@ -468,7 +539,7 @@ def main() -> None:
         # excluded.
         "examined": [
             {"name": f.name, "date": f.date, "lines": f.lines,
-             "k_proxy": f.k_proxy, "ncase": f.ncase,
+             "k_proxy": f.k_proxy, "ncase": f.ncase, "nscored": f.nscored,
              "gate": first_failed_gate(f, date_min=args.date_min) or "passed"}
             for f in faults
         ],
