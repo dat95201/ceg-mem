@@ -173,7 +173,8 @@ the protocol every machine has to agree on, and how the partial results merge.
 
 See [SELECTION.md](SELECTION.md) for why measured π has to drive selection, the
 band table, and the discipline that keeps the selecting π̂ independent of the
-reported one.
+reported one, and [CORPUS.md](CORPUS.md) for the runbook — the oracle gate, the
+band quotas, and why the screen's depth decides which bands can be filled at all.
 
 ## Running it
 

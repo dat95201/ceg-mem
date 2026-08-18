@@ -87,18 +87,23 @@ real benchmark it has to be demonstrated before a cent is spent through it.
 
 **Anchor.** Assumption 1 (§4); oracle definition Eq. (1) (§3.1).
 
+**[CORPUS.md](CORPUS.md) is the runbook** for this step and for step 4 below.
+
 ```bash
-python3 scripts/validate_oracle.py --select none --corpus-size 360 \
-        --min-siblings 1 --data-dir data/pool --jobs 6
+python3 scripts/validate_oracle.py \
+    --programs $(python3 -c "import json;print(' '.join(c['name'] for c in json.load(open('data/candidates.json'))['candidates']))") \
+    --corpus-size 360 --min-siblings 1 --data-dir data/pool --jobs 6
 ```
 
 Writes `data/pool/tasks.json` (the frozen **candidate pool** — not the corpus)
 and `data/pool/oracle_validation.json`.
 
 `--corpus-size 360` is not optional: `select_corpus.py`'s quotas total 115, the
-measured π̂ distribution is bimodal, and screening drops candidates, so a smaller
-pool cannot fill the middle bands. `--select none` samples across every rating —
-a rating floor collapses the pool from 646 usable coding tasks to 188.
+measured π̂ distribution is bimodal, and the gate drops candidates, so a smaller
+pool cannot fill the middle bands. `--programs` hands the script the Stage-0
+candidate list in its own seeded order — the order the screen was sharded on and
+the order the band walk uses; left to itself it would build a different one over
+faults the screen never measured.
 
 Gate: a fault passes at ≥2/3 of its scoreable natural mutants caught; the pool
 freezes at ≥75% of the cohort passing.
@@ -106,6 +111,9 @@ freezes at ≥75% of the cohort passing.
 Run a publication freeze with `--jobs 1`: a timeout is a verdict, not a retry, so
 a program near the sandbox wall-clock limit can fail under parallel load when it
 would not have serially. Serial is ~6–12 h; `--jobs 6` is ~2 h.
+
+This step needs no model calls and does not depend on the screen, so it can run
+at any time on any spare machine — including while screening is still going.
 
 ## 3. E0b — screen π̂ · **BILLABLE**
 
@@ -151,12 +159,19 @@ reported runs use, the screen has to be the same one.
 Easy/Medium/Hard, and Prop 4.5's guard gap that *"grows with task difficulty"*.
 
 ```bash
-python3 scripts/select_corpus.py --screen data/screen_a.json data/screen_b.json
+python3 scripts/select_corpus.py --pool data/pool/tasks.json \
+        --screen data/screen_merged.json --min-calls 38
 python3 scripts/build_strata.py
 ```
 
 Writes `data/tasks.json` (the frozen corpus) and `data/screening.json` (every
 candidate screened, its π̂, its band, and why it was or was not taken).
+
+`--min-calls` must match the depth the screen actually reached, and that depth
+decides which bands can be filled at all: π̂ lives on a grid of 1/K, so at K = 10
+**no outcome lands in `hard`** and the primary band comes out empty. K = 38 is
+the first depth with three interior points in it. [CORPUS.md](CORPUS.md) carries
+the rest — quotas, the audit file, and the pre-freeze checklist.
 
 | stratum | π̂ | quota | role |
 |---|---|---|---|
