@@ -1,11 +1,11 @@
 {
-  "frozen": true,
+  "frozen": false,
   "benchmark": "ConDefects (Python)",
   "test_dir": "external/ConDefects/Test",
   "strata_selection": null,
-  "criterion": "a program is selected if it catches >= 0.67 of the scoreable natural mutants caught; the corpus is frozen only if >= 243/324 programs passing",
+  "criterion": "a program is selected if it catches >= 0.67 of the scoreable natural mutants caught; the corpus is frozen only if >= 270/360 programs passing",
   "usability_criterion": "test data present; reference passes its own cases; the faulty version is refuted by the shipped pool; neither version times out",
-  "selection": "at most one fault per coding task; the gate is measured on the first 324 stage-1 survivors (324 passed), and the corpus is topped up past that cohort until 324 passing programs are held",
+  "selection": "at most one fault per coding task; the gate is measured on the first 324 stage-1 survivors (324 passed), and the corpus is topped up past that cohort until 360 passing programs are held",
   "n_selected": 324,
   "n_cohort": 324,
   "n_cohort_passing": 324,
@@ -7878,12 +7878,5 @@
         "arc145_b/43068920"
       ]
     }
-  ],
-  "refrozen": {
-    "requested_corpus_size": null,
-    "walked_cohort": 324,
-    "frozen_at": 324,
-    "reason": "the candidate list ran out of validatable faults before the requested cohort size was reached (--min-siblings 1 makes a fault with no sibling wrong submission ineligible), so the size was lowered to what the walk seated. Per-fault verdicts are independent of corpus_size and were not recomputed; the pass bar was not lowered.",
-    "pass_rate_at_freeze": "324/324 (needs >= 243)"
-  }
+  ]
 }
