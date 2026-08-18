@@ -1,0 +1,2618 @@
+{
+  "note": "every candidate in the pool and what became of it - the full screened distribution SS VI-A-c requires to be reported, including everything excluded",
+  "model": "qwen2.5-coder:7b",
+  "bands": {
+    "dead": [
+      0.0,
+      0.02
+    ],
+    "hard": [
+      0.02,
+      0.08
+    ],
+    "medium": [
+      0.08,
+      0.18
+    ],
+    "easy": [
+      0.18,
+      0.3501
+    ],
+    "too_easy": [
+      0.3501,
+      1.01
+    ]
+  },
+  "quotas": {
+    "easy": 30,
+    "medium": 20,
+    "hard": 30,
+    "too_easy": 15,
+    "dead": 20
+  },
+  "counts": {
+    "easy": 30,
+    "medium": 20,
+    "hard": 0,
+    "too_easy": 15,
+    "dead": 20
+  },
+  "candidates": [
+    {
+      "name": "agc065_c/48625236",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc339_b/54672032",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc320_f/47539324",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc355_b/55109474",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc330_c/54071794",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc336_d/53237033",
+      "pi_hat": 0.6,
+      "calls": 10,
+      "successes": 6,
+      "band": "too_easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc314_d/46143343",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc339_e/52923119",
+      "pi_hat": 0.3,
+      "calls": 10,
+      "successes": 3,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc339_f/52897763",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc309_e/46214263",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc360_d/55161015",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc287_e/54006112",
+      "pi_hat": 0.3,
+      "calls": 10,
+      "successes": 3,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc287_g/40891564",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc324_d/54390162",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc313_b/45739272",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc356_e/54889247",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc308_c/45926524",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "selected"
+    },
+    {
+      "name": "arc155_a/40182881",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc295_e/54729841",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc332_f/49265039",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc348_c/54707785",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "selected"
+    },
+    {
+      "name": "arc159_b/45431609",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "selected"
+    },
+    {
+      "name": "arc172_a/54670313",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc346_b/55138933",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc304_b/46153900",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "selected"
+    },
+    {
+      "name": "arc173_e/51134374",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc325_b/54778964",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc301_f/51429838",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "selected"
+    },
+    {
+      "name": "arc155_c/40890958",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc297_e/46197532",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "selected"
+    },
+    {
+      "name": "arc171_d/51665861",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc170_c/49600906",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc157_d/39202960",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc349_b/54895344",
+      "pi_hat": 0.3,
+      "calls": 10,
+      "successes": 3,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc357_a/55021619",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc358_d/55035534",
+      "pi_hat": 0.3,
+      "calls": 10,
+      "successes": 3,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc352_f/53476783",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc308_a/46165457",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc310_d/53176077",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc303_g/41906923",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc307_b/45983540",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc304_g/41991921",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc160_c/41518740",
+      "pi_hat": 0.7,
+      "calls": 10,
+      "successes": 7,
+      "band": "too_easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc337_d/54495605",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "arc174_b/51697010",
+      "pi_hat": 1.0,
+      "calls": 10,
+      "successes": 10,
+      "band": "too_easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc291_f/46006070",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc300_b/45723196",
+      "pi_hat": 0.8,
+      "calls": 10,
+      "successes": 8,
+      "band": "too_easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "arc159_d/45445288",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc298_b/45483068",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc165_c/45734816",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc331_e/53576352",
+      "pi_hat": 0.8,
+      "calls": 10,
+      "successes": 8,
+      "band": "too_easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc353_b/54945668",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc292_c/45291809",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc298_d/45710768",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc355_d/54769975",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc356_b/55010067",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc170_b/50713909",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc354_f/54039651",
+      "pi_hat": 0.4,
+      "calls": 10,
+      "successes": 4,
+      "band": "too_easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc356_c/54900882",
+      "pi_hat": 0.8,
+      "calls": 10,
+      "successes": 8,
+      "band": "too_easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc330_f/48327716",
+      "pi_hat": 0.3,
+      "calls": 10,
+      "successes": 3,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc352_d/54879664",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc325_f/47205844",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc335_f/54448133",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc292_b/45575109",
+      "pi_hat": 0.3,
+      "calls": 10,
+      "successes": 3,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc303_c/45578518",
+      "pi_hat": 0.6,
+      "calls": 10,
+      "successes": 6,
+      "band": "too_easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc331_d/53655797",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc300_c/45723345",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "agc062_a/44358952",
+      "pi_hat": 0.9,
+      "calls": 10,
+      "successes": 9,
+      "band": "too_easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc326_d/53955700",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc334_c/55003175",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc170_d/49588055",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc360_e/55140371",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc153_b/44454861",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc154_c/38909905",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc168_b/47858758",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc310_b/45953433",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc299_f/41069355",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc353_a/55010639",
+      "pi_hat": 0.6,
+      "calls": 10,
+      "successes": 6,
+      "band": "too_easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc299_g/43242154",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc350_f/54219104",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc343_c/54944365",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc302_g/41887698",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc286_g/38690639",
+      "disposition": "not_screened"
+    },
+    {
+      "name": "abc312_f/46140996",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc161_a/44901264",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc173_b/51178140",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc287_c/45520506",
+      "pi_hat": 0.3,
+      "calls": 10,
+      "successes": 3,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "agc062_c/41610915",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc303_d/45489398",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc287_d/45092019",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc360_b/55141723",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc300_f/45948997",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc327_b/55112773",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc337_f/50099741",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc175_b/51713549",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc351_c/55122758",
+      "pi_hat": 0.3,
+      "calls": 10,
+      "successes": 3,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "arc175_a/52661518",
+      "pi_hat": 0.9,
+      "calls": 10,
+      "successes": 9,
+      "band": "too_easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc341_e/53935483",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc289_c/45901971",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc312_d/54754384",
+      "pi_hat": 0.7,
+      "calls": 10,
+      "successes": 7,
+      "band": "too_easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc345_a/54949643",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc286_e/45217169",
+      "disposition": "not_screened"
+    },
+    {
+      "name": "abc284_e/46171224",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc342_d/54693725",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc355_c/54860926",
+      "pi_hat": 0.8,
+      "calls": 10,
+      "successes": 8,
+      "band": "too_easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc307_d/45446603",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc327_c/55003503",
+      "pi_hat": 1.0,
+      "calls": 10,
+      "successes": 10,
+      "band": "too_easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc320_g/45654657",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc312_c/46161992",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc179_b/54728093",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "arc179_a/54889248",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc338_c/54491236",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc346_f/53286789",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc290_c/45228128",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc322_d/46190250",
+      "pi_hat": 0.9,
+      "calls": 10,
+      "successes": 9,
+      "band": "too_easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc348_b/54681082",
+      "pi_hat": 0.3,
+      "calls": 10,
+      "successes": 3,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "arc176_d/52897913",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc326_c/54454360",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc299_c/45695018",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc346_e/54144246",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc301_d/45732372",
+      "pi_hat": 0.6,
+      "calls": 10,
+      "successes": 6,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc174_a/54196806",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc303_f/50087974",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc177_a/53803564",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc325_g/46914169",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc319_f/45769357",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc358_c/54954465",
+      "pi_hat": 1.0,
+      "calls": 10,
+      "successes": 10,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc172_b/50474956",
+      "pi_hat": 0.4,
+      "calls": 10,
+      "successes": 4,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc342_g/50740919",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc319_b/46206496",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc157_a/45521757",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc307_f/48677305",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc322_e/53004931",
+      "pi_hat": 0.6,
+      "calls": 10,
+      "successes": 6,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc289_e/46186786",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc333_g/50750395",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc163_b/43944210",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc289_d/46033056",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc296_f/45226037",
+      "pi_hat": 0.5,
+      "calls": 10,
+      "successes": 5,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc326_b/54706855",
+      "pi_hat": 0.7,
+      "calls": 10,
+      "successes": 7,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc344_d/54876594",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc301_a/45433034",
+      "pi_hat": 0.3,
+      "calls": 10,
+      "successes": 3,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc333_b/54467069",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc342_e/52012139",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc166_b/51949905",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc302_c/45476546",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc338_d/52942487",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc296_d/45933759",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc358_g/54886527",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc173_c/51460321",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc288_d/45491325",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc314_g/45264890",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc307_g/42993063",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc160_a/45909573",
+      "pi_hat": 0.4,
+      "calls": 10,
+      "successes": 4,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc166_a/50268055",
+      "pi_hat": 0.8,
+      "calls": 10,
+      "successes": 8,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc347_c/55146553",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc334_e/52777689",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc321_f/52979507",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc291_d/46165699",
+      "pi_hat": 0.3,
+      "calls": 10,
+      "successes": 3,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "arc173_a/53665831",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc339_c/54482593",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc332_c/54741421",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc340_d/54249756",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc293_e/45761832",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc322_b/55147333",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc154_b/43445291",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc353_f/54723688",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc285_e/48880084",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc309_f/52944581",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc337_b/54984614",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc295_b/45457264",
+      "pi_hat": 0.8,
+      "calls": 10,
+      "successes": 8,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc297_f/49316217",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc167_b/51380686",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc343_g/51192628",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc163_a/45935608",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc329_e/54232904",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc300_e/45250612",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc180_a/55121294",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc321_b/54705590",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc319_d/45774151",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc346_d/53744023",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc359_c/55101823",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc356_d/54865160",
+      "pi_hat": 0.5,
+      "calls": 10,
+      "successes": 5,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc174_c/54909674",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc328_b/54041719",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc171_b/50078211",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc175_c/53001483",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc290_b/46211702",
+      "pi_hat": 0.9,
+      "calls": 10,
+      "successes": 9,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc297_a/46009520",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc347_e/53797654",
+      "pi_hat": 0.4,
+      "calls": 10,
+      "successes": 4,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc323_f/50223990",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc354_e/54930119",
+      "pi_hat": 0.5,
+      "calls": 10,
+      "successes": 5,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc308_d/54718266",
+      "pi_hat": 0.3,
+      "calls": 10,
+      "successes": 3,
+      "band": "easy",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc360_g/55104573",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc329_c/54204891",
+      "pi_hat": 0.5,
+      "calls": 10,
+      "successes": 5,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc290_g/39049178",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "selected"
+    },
+    {
+      "name": "abc291_c/45751656",
+      "pi_hat": 0.4,
+      "calls": 10,
+      "successes": 4,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc354_d/54915651",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc325_d/52936269",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc352_b/55135076",
+      "pi_hat": 0.5,
+      "calls": 10,
+      "successes": 5,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc159_a/41991860",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "selected"
+    },
+    {
+      "name": "arc164_e/43433582",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc310_c/45695385",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc309_c/45895898",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "selected"
+    },
+    {
+      "name": "arc153_a/45913281",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc157_b/44930646",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc345_d/53727420",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc314_b/45977913",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc323_a/54513324",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc156_b/39326078",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc286_d/45471607",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc271_c/45808178",
+      "pi_hat": 0.4,
+      "calls": 10,
+      "successes": 4,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc259_d/52382935",
+      "pi_hat": 0.5,
+      "calls": 10,
+      "successes": 5,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc278_b/45297542",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc148_e/39108367",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc255_g/35788058",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc143_c/37392747",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc281_b/45944008",
+      "pi_hat": 0.5,
+      "calls": 10,
+      "successes": 5,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc263_d/45558657",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc273_d/45461646",
+      "pi_hat": 0.3,
+      "calls": 10,
+      "successes": 3,
+      "band": "easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc152_c/44122587",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc148_a/44882552",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc263_b/45056655",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc249_e/51504381",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc151_c/36321896",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc279_g/37231890",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc264_g/42294250",
+      "pi_hat": 1.0,
+      "calls": 10,
+      "successes": 10,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc272_e/45548360",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc144_a/42090105",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc258_e/44667415",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc278_c/45320717",
+      "pi_hat": 0.4,
+      "calls": 10,
+      "successes": 4,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc151_b/36899282",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc247_e/45003873",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc280_d/46193678",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc140_b/45660608",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc283_c/45277024",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc266_c/45028964",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc273_b/45948106",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc140_d/31743854",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc251_g/46368168",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc267_d/45550363",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc283_d/45462979",
+      "disposition": "not_screened"
+    },
+    {
+      "name": "arc148_b/43079503",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc252_c/46168111",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc253_e/45032521",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc249_c/44911089",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "agc058_b/34060327",
+      "pi_hat": 0.3,
+      "calls": 10,
+      "successes": 3,
+      "band": "easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc279_b/45923979",
+      "pi_hat": 1.0,
+      "calls": 10,
+      "successes": 10,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc146_b/40312293",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc262_f/47638667",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc142_a/44613596",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc250_d/44996552",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc254_g/32247391",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc150_a/42990587",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc254_e/44691275",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc267_b/45974485",
+      "pi_hat": 0.9,
+      "calls": 10,
+      "successes": 9,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc258_f/46362422",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "agc060_b/41598368",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc246_e/45962991",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc260_b/53041244",
+      "pi_hat": 0.3,
+      "calls": 10,
+      "successes": 3,
+      "band": "easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc256_f/42749759",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc257_e/45047426",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc270_d/45974029",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc250_g/31608048",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc267_c/45068144",
+      "pi_hat": 0.5,
+      "calls": 10,
+      "successes": 5,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc257_d/46215877",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc151_a/44901492",
+      "pi_hat": 0.9,
+      "calls": 10,
+      "successes": 9,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc152_b/46130280",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "agc057_a/35335100",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc249_b/45657791",
+      "pi_hat": 0.4,
+      "calls": 10,
+      "successes": 4,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc272_d/45114386",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc256_d/46018107",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc149_a/43012792",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc246_g/33284569",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc145_c/34717448",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc264_c/44997229",
+      "pi_hat": 0.6,
+      "calls": 10,
+      "successes": 6,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc144_b/42258051",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc141_b/38039113",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc138_b/39937104",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc246_d/45039073",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc272_g/52009362",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc148_c/38559514",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc252_b/45243368",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc277_b/45577199",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc263_g/43726575",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc255_c/45934299",
+      "pi_hat": 0.3,
+      "calls": 10,
+      "successes": 3,
+      "band": "easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc268_e/45307852",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc150_b/40750419",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc147_e/40546012",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc265_d/45966660",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc258_d/45080402",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc250_e/46017900",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc277_d/45573210",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc248_e/45230444",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc141_c/34662508",
+      "pi_hat": 0.8,
+      "calls": 10,
+      "successes": 8,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc272_c/46144815",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc139_a/41107434",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc276_d/45111251",
+      "pi_hat": 0.4,
+      "calls": 10,
+      "successes": 4,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc277_e/46166743",
+      "pi_hat": 0.5,
+      "calls": 10,
+      "successes": 5,
+      "band": "too_easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc257_f/45053747",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc139_b/44587414",
+      "pi_hat": 0.3,
+      "calls": 10,
+      "successes": 3,
+      "band": "easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc247_f/55036523",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc274_d/46033282",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc252_d/45257814",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc265_b/45798886",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc145_a/45268312",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc271_a/45793366",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc253_d/46046758",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc250_c/45205318",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc143_a/44409934",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc261_d/45285878",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc138_a/45260317",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc148_d/34805310",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc258_b/45801553",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc259_c/46054515",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc140_a/45466035",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc281_d/45212447",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc283_g/38648014",
+      "disposition": "not_screened"
+    },
+    {
+      "name": "abc261_b/45997045",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc270_b/46011140",
+      "pi_hat": 0.1,
+      "calls": 10,
+      "successes": 1,
+      "band": "medium",
+      "disposition": "band_full"
+    },
+    {
+      "name": "agc057_b/31505448",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc270_g/52785891",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc281_f/45038482",
+      "pi_hat": 0.2,
+      "calls": 10,
+      "successes": 2,
+      "band": "easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "abc253_g/32999272",
+      "pi_hat": 0.3,
+      "calls": 10,
+      "successes": 3,
+      "band": "easy",
+      "disposition": "band_full"
+    },
+    {
+      "name": "arc145_b/41639432",
+      "pi_hat": 0.0,
+      "calls": 10,
+      "successes": 0,
+      "band": "dead",
+      "disposition": "band_full"
+    }
+  ]
+}
