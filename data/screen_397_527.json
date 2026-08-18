@@ -148,14 +148,14 @@
     "parameter_size": "7.6B",
     "quantization": "Q4_K_M"
   },
-  "pi_hat_pooled": 0.155,
-  "total_successes": 31,
-  "total_calls": 200,
-  "total_unparsed": 0,
-  "unparsed_rate": 0.0,
+  "pi_hat_pooled": 0.15333333333333332,
+  "total_successes": 46,
+  "total_calls": 300,
+  "total_unparsed": 1,
+  "unparsed_rate": 0.0033333333333333335,
   "complete": true,
   "stopped_early": "",
-  "elapsed_sec": 2147.7,
+  "elapsed_sec": 2431.4,
   "per_program": {
     "arc145_d/33635092": {
       "successes": 0,
@@ -1354,6 +1354,607 @@
           "call": 10,
           "accept": false,
           "reason": "wrong output on test case 03_sym_00.txt"
+        }
+      ]
+    },
+    "abc250_d/44996552": {
+      "successes": 1,
+      "calls": 10,
+      "pi_hat": 0.1,
+      "unparsed": 0,
+      "source_sha256": "78d813eca2655174",
+      "spec_sha256": "3a2fdd7bf84e53fb",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case sample_01.txt"
+        },
+        {
+          "call": 2,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case sample_01.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case sample_01.txt"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "wrong output on test case sample_01.txt"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "wrong output on test case sample_01.txt"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case sample_01.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case sample_01.txt"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case sample_01.txt"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case sample_01.txt"
+        }
+      ]
+    },
+    "abc254_g/32247391": {
+      "successes": 0,
+      "calls": 10,
+      "pi_hat": 0.0,
+      "unparsed": 0,
+      "source_sha256": "64054b90a2ef5cfe",
+      "spec_sha256": "6dcd58d7df83e357",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case test_00.txt"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "wrong output on test case test_00.txt"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case test_00.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "raised ValueError on test case example_00.txt: too many values to unpack (expected 3)"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "wrong output on test case test_00.txt"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case test_00.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case test_00.txt"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case test_00.txt"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        }
+      ]
+    },
+    "arc150_a/42990587": {
+      "successes": 1,
+      "calls": 10,
+      "pi_hat": 0.1,
+      "unparsed": 0,
+      "source_sha256": "94a9056ccc04219d",
+      "spec_sha256": "9cb0d881ac07f60d",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case 01-all-001.txt"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "wrong output on test case 00-sample-001.txt"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case 00-sample-001.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case 00-sample-001.txt"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "wrong output on test case 01-all-001.txt"
+        },
+        {
+          "call": 6,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "raised SystemExit on test case 00-sample-001.txt: SyntaxError: invalid syntax"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case 00-sample-001.txt"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "raised IndexError on test case 00-sample-001.txt: string index out of range"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case 01-all-001.txt"
+        }
+      ]
+    },
+    "abc254_e/44691275": {
+      "successes": 1,
+      "calls": 10,
+      "pi_hat": 0.1,
+      "unparsed": 0,
+      "source_sha256": "0dcdcd4dae7c24a6",
+      "spec_sha256": "9abfc9083a1415c9",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 6,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        }
+      ]
+    },
+    "abc267_b/45974485": {
+      "successes": 9,
+      "calls": 10,
+      "pi_hat": 0.9,
+      "unparsed": 0,
+      "source_sha256": "52a0d03ddf4338da",
+      "spec_sha256": "1c63ef5fdcdabbde",
+      "detail": [
+        {
+          "call": 1,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 2,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 3,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 4,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 5,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 6,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 7,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 8,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 9,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case example_03.txt"
+        }
+      ]
+    },
+    "abc258_f/46362422": {
+      "successes": 0,
+      "calls": 10,
+      "pi_hat": 0.0,
+      "unparsed": 0,
+      "source_sha256": "bf095e74a60b9e0e",
+      "spec_sha256": "3035da28436e6165",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case test_02.txt"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "wrong output on test case test_02.txt"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case test_02.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case test_02.txt"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "wrong output on test case test_02.txt"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "wrong output on test case test_02.txt"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case test_02.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case test_02.txt"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case test_02.txt"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case test_02.txt"
+        }
+      ]
+    },
+    "agc060_b/41598368": {
+      "successes": 0,
+      "calls": 10,
+      "pi_hat": 0.0,
+      "unparsed": 1,
+      "source_sha256": "9c05864e628f0bb2",
+      "spec_sha256": "53ea6517ddcf154b",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case 00-sample-001.txt"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "wrong output on test case 00-sample-001.txt"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case 00-sample-001.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case 00-sample-001.txt"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "wrong output on test case 00-sample-001.txt"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "proposal unusable: no ```python code block in a 219-char reply - either the output budget cut it off or the model answered in prose; finish_reason in data/calls.jsonl says which (ends: 'uld you please provide more details or the correct code to help with the repair?')",
+          "unparsed": true
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case 00-sample-001.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case 00-sample-001.txt"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case 00-sample-001.txt"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case 00-sample-001.txt"
+        }
+      ]
+    },
+    "abc246_e/45962991": {
+      "successes": 0,
+      "calls": 10,
+      "pi_hat": 0.0,
+      "unparsed": 0,
+      "source_sha256": "8c25682acd719350",
+      "spec_sha256": "c1db57ce3fbeb59e",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "timed out after 30.0s on test case sample_01.txt"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "wrong output on test case test_07.txt"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "raised TypeError on test case sample_01.txt: 'int' object does not support item assignment"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "raised TypeError on test case sample_01.txt: 'int' object does not support item assignment"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "raised TypeError on test case sample_01.txt: 'int' object does not support item assignment"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "raised TypeError on test case sample_01.txt: 'int' object does not support item assignment"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case test_07.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "raised TypeError on test case sample_01.txt: unsupported operand type(s) for +: 'int' and 'str'"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "raised TypeError on test case sample_01.txt: 'int' object does not support item assignment"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case sample_01.txt"
+        }
+      ]
+    },
+    "abc254_f/51937981": {
+      "successes": 0,
+      "calls": 10,
+      "pi_hat": 0.0,
+      "unparsed": 0,
+      "source_sha256": "4216333583886498",
+      "spec_sha256": "bea5f126ed006a5c",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case example_00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case example_00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case example_00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case example_00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case example_00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case example_00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case example_00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case example_00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case example_00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case example_00.txt: No module named 'atcoder'"
+        }
+      ]
+    },
+    "abc260_b/53041244": {
+      "successes": 3,
+      "calls": 10,
+      "pi_hat": 0.3,
+      "unparsed": 0,
+      "source_sha256": "d5d50647936c8269",
+      "spec_sha256": "2be5ec9583f6d6f5",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case sample_01.txt"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "wrong output on test case test_03.txt"
+        },
+        {
+          "call": 3,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case test_03.txt"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "wrong output on test case test_03.txt"
+        },
+        {
+          "call": 6,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case sample_01.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case test_03.txt"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case test_03.txt"
+        },
+        {
+          "call": 10,
+          "accept": true,
+          "reason": null
         }
       ]
     }
