@@ -31,6 +31,51 @@ exactly as the screen was.
 
 ---
 
+## 0. What must already be true
+
+This file starts at E1. Three steps come before it, each with its own runbook,
+and E1 rests on all three. They are done — this is how to confirm it on the
+machine you are about to spend 150 hours on, and none of these commands costs
+anything.
+
+| step | what it earns | runbook | artifact | state |
+|---|---|---|---|---|
+| **E0** — candidate pool + oracle gate | Assumption 1: the oracle actually refutes wrong patches | [CORPUS.md](CORPUS.md) | `data/pool/tasks.json`, `data/pool/oracle_validation.json` | **done** — 526 examined, 451 usable, pool frozen at 324, **324/324 passed** the ≥2/3-natural-mutants bar (the corpus gate needed 243) |
+| **E0b** — the π̂ screen | the difficulty axis §5 stratifies on | [SCREENING.md](SCREENING.md) | `data/screen_merged.json` | **done** — 5,249 draws over 526 candidates at K=10, pooled π̂ = 0.118, `complete: true` |
+| **freeze the corpus** | the 85 tasks E1–E5 walk | [CORPUS.md](CORPUS.md) | `data/tasks.json`, `data/screening.json` | **done** — 85 selected, `hard` band empty (§2) |
+
+```bash
+python3 - <<'PY'
+import json
+pool   = json.load(open('data/pool/tasks.json'))
+screen = json.load(open('data/screen_merged.json'))
+corpus = json.load(open('data/tasks.json'))
+print(f"E0    pool frozen={pool['frozen']}  {pool['n_cohort_passing']}/{pool['n_cohort']} passed the gate")
+print(f"E0b   screen complete={screen['complete']}  model={screen['model']}  "
+      f"K={screen['min_calls_per_program']}  pi_hat={screen['pi_hat_pooled']:.3f}")
+print(f"corpus frozen={corpus['frozen']}  {corpus['n_selected']} tasks  "
+      f"model={corpus['model']}")
+assert screen['model'] == corpus['model'], "the corpus was banded under a different model than the screen measured"
+PY
+```
+
+The assertion at the end is the one that matters, and it is the reason E0b is
+listed here rather than assumed: **π is a property of the model**. The bands in
+`data/tasks.json` mean something only if E1–E5 run under the same proposer the
+screen measured, which is what §1 pins and `eval_shard.sh` enforces.
+
+E0 needs no model at all — it is CPU-only and takes ~1.7 h at `--jobs 6` — so if
+you ever need to re-run it (a new `Test/` unpack, a different `--min-siblings`),
+it does not go through this file's machinery. The gate is what earns the paper's
+Assumption 1: the paper takes oracle soundness as given, and on a real benchmark
+it has to be demonstrated before anything is spent through it.
+
+One no-model step is still **outstanding**, and it belongs to this file rather
+than to CORPUS.md because it measures the frozen corpus rather than selecting it:
+the oracle's blind spot, §4.2.
+
+---
+
 ## 1. The protocol contract
 
 ```
@@ -258,7 +303,7 @@ Clear the rehearsal (the cached completions stay, and E1 replays them free):
 rm -f data/episodes_trial.jsonl data/overfit_trial.jsonl data/calls_trial.jsonl
 ```
 
-### 4.2 E0c — the oracle's blind spot · no model calls
+### 4.2 The oracle's blind spot (PLAN.md §5) · no model calls
 
 The one free measurement still outstanding. Reads the frozen corpus, plants
 mutants, drops nothing.
@@ -516,7 +561,7 @@ parallelism.
 | step | calls | one machine | three machines |
 |---|---|---|---|
 | trial | ~90 | ~0.5 h | — |
-| E0c pool strength | 0 model calls | ~2 h | — |
+| oracle blind spot | 0 model calls | ~2 h | — |
 | E1 | 8,500 (exact) | ~54 h | ~18 h each |
 | E2 | ≤7,250 | ≤46 h | ≤16 h each |
 | E3 | ≤4,350 | ≤28 h | ≤10 h each |
