@@ -1,0 +1,6 @@
+# trial_programs: 3 programs, round-robin across strata
+# corpus: data/tasks.json
+# corpus_sha256: 7e190e2bcad5bf6a8e93b34870270257aec421364dec24a94621bccc953b1d2c
+agc065_c/48625236
+abc330_c/54071794
+abc339_b/54672032

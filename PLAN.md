@@ -226,13 +226,15 @@ separating the two needs coverage data this run does not collect.
 **Anchor.** §5 Baselines; Theorem 4.3(a) (1/π); RQ3 (theory fit).
 
 **[EXPERIMENT.md](EXPERIMENT.md) is the runbook** for this step and for steps 7–9
-below: the protocol E1–E5 must share with the screen, bringing the local proposer
-up with its context window verified, the trial run that tests every flag before
-the grid does, monitoring and resume, and the failure modes.
+below. It holds the protocol E1–E5 must share with the screen, how the grid is
+cut into shards, the trial that tests every flag before 150 hours does, the merge
+audit, and the failure modes. `scripts/eval_shard.sh` runs one shard end to end —
+it starts the local proposer, verifies the served context window, runs the grid,
+and tears the server back down, the way `screen_shard.sh` does for the screen.
 
 ```bash
-python3 scripts/run_eval.py --modes no_memory --force-full-budget \
-        --seeds 1 2 3 4 5 --budget 20
+bash scripts/eval_shard.sh --exp E1 --from 1 --to 30    # one shard
+bash scripts/eval_shard.sh --exp E1                     # or the whole corpus
 ```
 
 `--force-full-budget` is what makes this an estimator. The no-memory prompt
@@ -256,8 +258,7 @@ Scale: 115 × 5 × 20 = 11,500 calls ≈ **$59**.
 success, Prop 4.5 guard evaluations.
 
 ```bash
-python3 scripts/run_eval.py --modes untyped typed --check-overfit \
-        --seeds 1 2 3 4 5 --budget 20
+bash scripts/eval_shard.sh --exp E2
 ```
 
 `--check-overfit` re-runs the full pool on every accept and writes the verdict to
@@ -276,8 +277,8 @@ savings but leaves redundant attempts untouched; steering-only drives redundant
 attempts to zero and lifts proposal-budget success to ~0.95.
 
 ```bash
-python3 scripts/run_eval.py --modes typed --steer off --seeds 1 2 3 --budget 20   # guard-only
-python3 scripts/run_eval.py --modes typed --guard off --seeds 1 2 3 --budget 20   # steering-only
+bash scripts/eval_shard.sh --exp E3-guard-only     # --steer off
+bash scripts/eval_shard.sh --exp E3-steer-only     # --guard off
 ```
 
 Scale: ~6,100 calls ≈ **$37**.
@@ -293,34 +294,26 @@ Declare the subset once, stratified across the π bands so a sweep is not
 confounded with difficulty, and pass the identical list to the driver and to the
 freeze.
 
-Write it to a **file**, not a shell variable: the grid takes ~100 hours across
-several sessions, and `freeze_results.py --sweep-programs` must receive the
-identical list days later. Its default is "the first 30 frozen programs sorted",
-which is *not* the stratified subset — a mismatch silently freezes the wrong
-tasks.
+Write it to a **file**, and pass the file — `--programs-from`,
+`--sweep-programs-from` — never a shell variable. Two independent reasons, and
+both fail silently. The grid takes ~150 hours across several sessions, and
+`freeze_results.py` must receive the identical list days later; its own default
+is "the first 30 frozen programs sorted", which is *not* the stratified subset.
+And zsh word-splits an unquoted `$(...)` but **not** an unquoted `$VAR`, so
+`--programs $SWEEP` arrives as one 24-name string. `scripts/eval_shard.sh` cuts
+the file (`data/sweep_programs.txt`) and hands it to both.
 
 ```bash
-python3 - <<'PY' > data/sweep_programs.txt
-import json, collections
-by = collections.defaultdict(list)
-for t in json.load(open('data/tasks.json'))['tasks']:
-    by[t['stratum']].append(t['name'])
-print('\n'.join(n for s in ('dead','hard','medium','easy','too_easy')
-                  for n in sorted(by[s])[:6]))
-PY
-
-SWEEP=$(cat data/sweep_programs.txt)
-
-for k in 20 8 3; do        # E4 — oracle informativeness (rho proxy)
-  python3 scripts/run_eval.py --modes typed --max-examples $k --check-overfit \
-          --seeds 1 2 3 --budget 20 --programs $SWEEP
-done
-
-for c in 0.9 0.75 0.5; do  # E5 — typing coherence
-  python3 scripts/run_eval.py --modes typed --typing-noise-c $c \
-          --seeds 1 2 3 --budget 20 --programs $SWEEP
-done
+bash scripts/eval_shard.sh --exp E4-k20      # E4 — oracle informativeness (rho proxy)
+bash scripts/eval_shard.sh --exp E4-k8
+bash scripts/eval_shard.sh --exp E4-k3
+bash scripts/eval_shard.sh --exp E5-c90      # E5 — typing coherence
+bash scripts/eval_shard.sh --exp E5-c75
+bash scripts/eval_shard.sh --exp E5-c50
 ```
+
+Each preset walks `data/sweep_programs.txt`, which the same script cuts from the
+frozen corpus — six per band, spaced evenly so any shard of it is balanced too.
 
 E4's reference level is `--max-examples 100` and E5's is `c = 1.0`; both are the
 typed cell E2 already ran, so neither sweep pays for its own baseline —
@@ -347,6 +340,7 @@ Order matters: the freeze needs the strata, `fit_theory` needs the frozen
 results, and `build_strata`'s drift audit needs `fit_theory`.
 
 ```bash
+python3 scripts/consolidate_evals.py                     # -> data/episodes.jsonl
 python3 scripts/freeze_results.py --experiment main      # -> data/results_real.json
 python3 scripts/analyze.py                               # -> data/analysis.json
 python3 scripts/fit_theory.py                            # -> data/theory_fit.json
@@ -357,8 +351,10 @@ python3 figures/make_figures.py
 python3 scripts/check_consistency.py
 
 python3 scripts/freeze_results.py --experiment ablation
-python3 scripts/freeze_results.py --experiment oracle_sweep --sweep-programs $SWEEP
-python3 scripts/freeze_results.py --experiment typing_sweep --sweep-programs $SWEEP
+python3 scripts/freeze_results.py --experiment oracle_sweep \
+        --sweep-programs-from data/sweep_programs.txt
+python3 scripts/freeze_results.py --experiment typing_sweep \
+        --sweep-programs-from data/sweep_programs.txt
 ```
 
 `check_consistency.py` rebuilds every frozen file from `data/episodes.jsonl` and

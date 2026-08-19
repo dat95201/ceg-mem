@@ -76,7 +76,9 @@ no oracle.
 | `scripts/measure_coherence.py` `measure_anchoring.py` `label_tool.py` | RQ2: coherence and the anchoring failure mode |
 | `scripts/check_consistency.py` | asserts every reported number matches the frozen data |
 | `scripts/watch_eval.sh` | live monitor for a long run |
-| `scripts/serve_local.sh` | brings the local proposer up for E1–E5 with the context window pinned and verified |
+| `scripts/eval_shard.sh` | one shard of one experiment: pins the backend, verifies it, runs the grid, shuts it down |
+| `scripts/consolidate_evals.py` | merges the experiment shards and audits the join |
+| `scripts/serve_local.sh` | the local proposer on its own: start / verify / unload / stop |
 | `scripts/screen_shard.sh` | one shard of the π screen: pins the backend, verifies it, runs, shuts it down |
 | `scripts/consolidate_screens.py` | merges the shards and audits the join |
 | `figures/make_figures.py` | the paper's figures |
