@@ -29,3 +29,6 @@ data/*_smoke.jsonl
 # rewrites it from scratch. Churn, not an artifact - consolidate_screens.py's
 # glob ignores it too.
 *.json.bak
+
+# Partial Test/ archives for a cloud run - built by hand, tens of GB.
+/test_*.zip
