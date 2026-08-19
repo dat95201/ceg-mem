@@ -116,6 +116,11 @@ done
 
 [[ -n "$FROM" && -n "$TO" ]] || { echo "--from and --to are required" >&2; usage >&2; exit 2; }
 [[ "$FROM" =~ ^[0-9]+$ && "$TO" =~ ^[0-9]+$ ]] || { echo "--from/--to must be integers" >&2; exit 2; }
+# 10#: this script's own outputs are zero-padded (shard_001_132.txt), and bash
+# reads a leading-zero literal as octal in (( )) and printf while the heredoc
+# below reads it as decimal - so `--from 031` would screen tasks 31.. under a
+# report named 025.., and `--from 085` would die blaming the range.
+FROM=$((10#$FROM)); TO=$((10#$TO))
 [[ -f "$POOL" ]] || { echo "$POOL missing - run scripts/select_candidates.py first" >&2; exit 2; }
 
 N_POOL="$(python3 -c "import json;print(len(json.load(open('$POOL'))['candidates']))")"

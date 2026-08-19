@@ -30,6 +30,7 @@ from src.adapter import TASKS, load
 from src.memory import build_memory
 from src.metrics import RoundRecord, append_round
 from src.oracle import differential_test
+from src.llm import ContextOverflow
 from src.proposer import Attempt, TruncatedResponse, propose
 
 MODES = ("no_memory", "untyped", "typed")
@@ -173,16 +174,29 @@ def run_episode(
                 nonce=proposal_nonce(task_name, seed, round_index),
                 spec_note=task.spec_note,
             )
-        except TruncatedResponse as exc:
+        except (TruncatedResponse, ContextOverflow) as exc:
             # The harness failed, not the proposal. Log the round - it did spend
             # a model call - and move on without touching memory, so a reply the
             # response budget cut short can never enter the evidence block or an
             # eliminated bucket (paper SS VI-D-a).
+            #
+            # ContextOverflow gets the same treatment for a different reason.
+            # src.llm raises it rather than let the server silently crop the
+            # prompt, and the arms that reach it are the memory arms deep into a
+            # never-accepting episode, where twenty rounds of evidence have
+            # accumulated. Uncaught it would abort the whole shard mid-grid -
+            # and because the prompt is deterministic, every re-run would abort
+            # at the identical round, so the shard could never get past that
+            # task. Recorded as a spent round with no refutation instead, which
+            # is what it is; the count is a threat-to-validity number, not a
+            # crash. EXPERIMENT.md SS 7.
+            kind = ("context_overflow" if isinstance(exc, ContextOverflow)
+                    else "truncated_response")
             append_round(_record(
                 round_index=round_index, patch="", accept=False,
                 counterexample_args=None, reason=f"proposal unusable: {exc}",
                 examples_tried=0, coarse_type=None, fine_type=None,
-                proposal_error="truncated_response",
+                proposal_error=kind,
             ), **kwargs)
             continue
 

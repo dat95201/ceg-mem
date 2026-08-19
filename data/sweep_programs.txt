@@ -1,6 +1,6 @@
-# sweep_programs: 24 programs, round-robin across strata
+# sweep_programs: 24 programs, strata interleaved evenly
 # corpus: data/tasks.json
-# corpus_sha256: 7e190e2bcad5bf6a8e93b34870270257aec421364dec24a94621bccc953b1d2c
+# corpus_sha256: 16c7ca5686948b9123d68f130d54aec6dadc5884dc76b13cde65bff561f82cdf
 abc287_g/40891564
 abc285_e/48880084
 abc287_c/45520506

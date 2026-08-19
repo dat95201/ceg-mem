@@ -172,6 +172,24 @@ def main() -> None:
     expected = expected_cells(programs, sweep_programs, args.experiment)
 
     rows = load_rounds(args.episodes_path)
+
+    # `model` is in scripts/run_eval.py's cell key but NOT in _cell_key here -
+    # summarize_episode does not carry it - so without this check episodes from
+    # a different proposer silently satisfy expected cells, and the frozen
+    # artifact never states which model produced the numbers in it. Both matter:
+    # pi is a property of the model, so two models in one freeze is two
+    # experiments reported as one.
+    models = sorted({r.get("model") for r in rows if r.get("model")})
+    if len(models) > 1:
+        raise SystemExit(
+            f"{args.episodes_path} holds episodes from {len(models)} models: "
+            f"{', '.join(map(repr, models))}.\n"
+            "pi is a property of the model, so these are two experiments, not one "
+            "grid. Move the\nforeign rows aside (match on the `model` field) and "
+            "re-run. scripts/consolidate_evals.py\nrefuses the same join at merge "
+            "time; a hand-run scripts/run_eval.py is the usual way past it."
+        )
+
     episodes = group_by_episode(rows)
     summaries = [summarize_episode(ep_rows) for ep_rows in episodes.values()]
     have = {_cell_key(s) for s in summaries}
@@ -203,6 +221,9 @@ def main() -> None:
         "frozen": True,
         "experiment": args.experiment,
         "episodes_path": str(args.episodes_path),
+        # Which proposer produced these numbers. SS VI-D-b of the paper asks for
+        # it, and nothing else in this file records it.
+        "model": models[0] if models else None,
         "n_episodes": len(summaries),
         "n_expected_cells": len(expected),
         "n_missing_cells": len(missing),

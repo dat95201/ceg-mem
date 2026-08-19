@@ -67,7 +67,10 @@ if [[ "$MODE" == "unload" || "$MODE" == "stop" ]]; then
   OLLAMA_HOST="$HOST" ollama stop "$MODEL" >/dev/null 2>&1 || true
   echo "unloaded $MODEL"
   if [[ "$MODE" == "stop" ]]; then
-    PIDS="$(lsof -t -i ":${PORT}" 2>/dev/null || true)"
+    # -sTCP:LISTEN, not every socket on the port: an unqualified lsof also lists
+    # CLIENTS connected to it - a running driver, another shard's python - and
+    # SIGTERMing those would kill the very run that asked for the teardown.
+    PIDS="$(lsof -t -i ":${PORT}" -sTCP:LISTEN 2>/dev/null || true)"
     if [[ -n "$PIDS" ]]; then
       # shellcheck disable=SC2086
       kill $PIDS 2>/dev/null || true

@@ -135,7 +135,10 @@ EPISODES=""; MERGEABLE=1
 case "$EXP" in
   trial)
     MODES="no_memory untyped typed"; EXTRA="--check-overfit"
-    UNIVERSE="trial"; DEF_SEEDS="1"; DEF_BUDGET=5; MERGEABLE=0 ;;
+    UNIVERSE="trial"; DEF_SEEDS="1"; DEF_BUDGET=5; MERGEABLE=0
+    # A rehearsal that skips cells because another machine already ran them
+    # rehearses nothing. This is the one preset that ignores the merged history.
+    RESUME_MERGED=0 ;;
   E1)
     MODES="no_memory"; EXTRA="--force-full-budget"; DEF_SEEDS="1 2 3 4 5" ;;
   E2)
@@ -165,7 +168,11 @@ python3 - "$TASKS" <<'PY'
 import hashlib, json, pathlib, sys
 
 tasks = json.loads(pathlib.Path(sys.argv[1]).read_text())["tasks"]
-digest = hashlib.sha256("\n".join(t["name"] for t in tasks).encode()).hexdigest()
+# Name AND stratum: the stratum decides where a task lands in the interleave
+# below, so a re-freeze that kept every name but re-banded one task would leave
+# this digest unchanged while every shard index shifted underneath it.
+digest = hashlib.sha256(
+    "\n".join(f"{t['name']}\t{t['stratum']}" for t in tasks).encode()).hexdigest()
 
 # Interleave the strata, in the frozen order within each. Deterministic, so
 # every machine cuts the same shard from the same index range - and balanced, so
@@ -203,7 +210,7 @@ trial = [by[b][0] for b in ("dead", "medium", "easy") if by[b]]
 for name, names in (("eval_order", order), ("sweep_programs", sweep),
                     ("trial_programs", trial)):
     path = pathlib.Path(f"data/{name}.txt")
-    body = (f"# {name}: {len(names)} programs, round-robin across strata\n"
+    body = (f"# {name}: {len(names)} programs, strata interleaved evenly\n"
             f"# corpus: data/tasks.json\n"
             f"# corpus_sha256: {digest}\n" + "\n".join(names) + "\n")
     if path.exists():
@@ -237,6 +244,13 @@ N_UNIVERSE="$(grep -cve '^#' -e '^$' "$LIST_SRC" || true)"
 FROM="${FROM:-1}"
 TO="${TO:-$N_UNIVERSE}"
 [[ "$FROM" =~ ^[0-9]+$ && "$TO" =~ ^[0-9]+$ ]] || { echo "--from/--to must be integers" >&2; exit 2; }
+# 10#: every file this script writes is zero-padded (E1_031_060.txt), so re-issuing
+# a shard by copying its own tag is the natural move - and bash reads a leading-zero
+# literal as OCTAL in (( )) and printf while the python heredoc reads it as decimal.
+# `--from 031 --to 060` would otherwise walk tasks 31-60 while naming every artifact
+# 025_048, and `--from 085` would die on "value too great for base" with a message
+# blaming the range.
+FROM=$((10#$FROM)); TO=$((10#$TO))
 (( FROM >= 1 && TO >= FROM && TO <= N_UNIVERSE )) || {
   echo "range $FROM-$TO is outside 1-$N_UNIVERSE for --exp $EXP" >&2; exit 2; }
 

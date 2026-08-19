@@ -168,24 +168,33 @@ def check_conflicts(shards: list[tuple[pathlib.Path, list[dict]]]) -> list[dict]
     the three that must be reproducible across machines.
     """
     FIELDS = ("patch", "accept", "reason", "guarded", "examples_tried")
-    first: dict[tuple[str, int], tuple[str, dict]] = {}
-    conflicts = []
+    # Collapse WITHIN each file first. A cell that died halfway and was re-run
+    # inside one shard appends a second copy of its early rounds under the same
+    # deterministic episode id, and the later copy is the authoritative one
+    # (src.metrics.load_rounds). Comparing another shard against the superseded
+    # first copy would report a disagreement that the merge itself resolves.
+    per_file: list[tuple[str, dict[tuple[str, int], dict]]] = []
     for path, rows in shards:
+        last: dict[tuple[str, int], dict] = {}
         for row in rows:
-            key = (row["episode_id"], row["round_index"])
-            prev = first.get(key)
+            last[(row["episode_id"], row["round_index"])] = row
+        per_file.append((path.name, last))
+
+    seen: dict[tuple[str, int], tuple[str, dict]] = {}
+    conflicts = []
+    for name, last in per_file:
+        for key, row in last.items():
+            prev = seen.get(key)
             if prev is None:
-                first[key] = (path.name, row)
+                seen[key] = (name, row)
                 continue
             prev_name, prev_row = prev
-            if prev_name == path.name:
-                continue          # a re-run inside one shard: last write wins, by design
             differing = [f for f in FIELDS if prev_row.get(f) != row.get(f)]
             if differing:
                 conflicts.append({
                     "episode_id": key[0], "round": key[1], "task": row["task"],
                     "mode": row["mode"], "seed": row.get("seed"),
-                    "fields": differing, "a": prev_name, "b": path.name,
+                    "fields": differing, "a": prev_name, "b": name,
                 })
     return conflicts
 
@@ -240,9 +249,15 @@ def check_coverage(rows: list[dict], budget: int) -> tuple[int, int]:
         detail = (f"guard={'on' if arm[1] else 'off'} steer={'on' if arm[2] else 'off'} "
                   f"k={arm[3]} c={arm[4]} ffb={int(arm[5])}")
         n_expected = len(universe) * len(seeds)
+        # A seed nobody ran at all leaves no rows, so it cannot appear in
+        # `seeds` - the count alone would report a three-seed arm as complete.
+        # Named against the preset instead.
+        missing_seeds = ([x for x in range(1, expect_seeds + 1) if x not in seeds]
+                         if arm_name(arm) != "?" else [])
         print(f"\n  {label} {detail}")
-        print(f"    seeds {seeds}" + (f"   <- preset runs {expect_seeds}"
-                                      if len(seeds) != expect_seeds else ""))
+        print(f"    seeds {seeds}"
+              + (f"   <- SEEDS MISSING {missing_seeds} (preset runs "
+                 f"1..{expect_seeds})" if missing_seeds else ""))
         print(f"    complete {len(done)}/{n_expected} cells over the {uni_name} universe")
 
         foreign = sorted({t for t, _ in done} - set(universe))
@@ -307,9 +322,20 @@ def main() -> None:
                              "accounts for")
     args = parser.parse_args()
 
-    paths = [pathlib.Path(p) for p in (args.episodes or
-             sorted(glob.glob(str(DATA_DIR / "episodes_eval_*.jsonl"))))]
-    paths = [p for p in paths if p.resolve() != args.out.resolve()]
+    if args.episodes:
+        # Explicit list: honoured as given, including --out itself. That is the
+        # documented way to KEEP rounds the shard logs no longer account for, so
+        # filtering it out here - as an earlier version did - made the orphan
+        # guard's own first remedy a silent no-op that fired again identically.
+        # Ordering matters under last-write-wins: the existing merged file goes
+        # FIRST, so a re-run shard's corrected rounds beat the copy it replaces.
+        paths = [pathlib.Path(x) for x in args.episodes]
+        paths = ([q for q in paths if q.resolve() == args.out.resolve()]
+                 + [q for q in paths if q.resolve() != args.out.resolve()])
+    else:
+        paths = [q for q in map(pathlib.Path,
+                                sorted(glob.glob(str(DATA_DIR / "episodes_eval_*.jsonl"))))
+                 if q.resolve() != args.out.resolve()]
     if not paths:
         raise SystemExit(
             f"no shard logs found (looked for {DATA_DIR}/episodes_eval_*.jsonl).\n"
@@ -373,15 +399,21 @@ def main() -> None:
                 "Three ways out, and they are not equivalent:\n"
                 f"  keep them   re-run with the file listed as an input:\n"
                 f"              --episodes data/episodes_eval_*.jsonl {args.out}\n"
+                "              (only if those rounds ran under the same model and\n"
+                "              granularity - otherwise the protocol check stops you,\n"
+                "              which is the right answer)\n"
                 "  set aside   mv it somewhere, then merge into a clean path\n"
                 "  --force     DISCARDS those rounds - only if you know they are stale")
 
     merge_jsonl(paths, args.out, lambda r: (r["episode_id"], r["round_index"]),
                 label="episodes")
 
-    ledgers = [pathlib.Path(p) for p in (args.ledgers if args.ledgers is not None else
-               sorted(glob.glob(str(DATA_DIR / "calls_eval_*.jsonl"))))]
-    ledgers = [p for p in ledgers if p.resolve() != args.ledger_out.resolve()]
+    if args.ledgers is not None:
+        ledgers = [pathlib.Path(x) for x in args.ledgers]      # honoured as given
+    else:
+        ledgers = [q for q in map(pathlib.Path,
+                                  sorted(glob.glob(str(DATA_DIR / "calls_eval_*.jsonl"))))
+                   if q.resolve() != args.ledger_out.resolve()]
     if ledgers:
         # Deduplicated on cache_key: a cache hit is never logged, so a duplicate
         # key means two machines genuinely bought the same draw because neither
