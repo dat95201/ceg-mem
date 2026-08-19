@@ -128,6 +128,15 @@ def main() -> None:
     parser.add_argument("--episodes-path", type=pathlib.Path, default=DEFAULT_METRICS_LOG)
     parser.add_argument("--sweep-programs", nargs="+", default=None,
                          help=f"default: first {DEFAULT_SWEEP_N_PROGRAMS} frozen programs, sorted")
+    parser.add_argument("--sweep-programs-from", type=pathlib.Path, default=None,
+                         help="read the sweep subset from a file, one name per "
+                              "line - data/sweep_programs.txt, the list "
+                              "scripts/eval_shard.sh actually ran E4/E5 over. "
+                              "Use this rather than --sweep-programs $VAR: the "
+                              "default here is NOT the stratified subset, and a "
+                              "shell that does not split the variable turns 24 "
+                              "names into one, so both mistakes freeze the wrong "
+                              "tasks silently")
     parser.add_argument("--out", type=pathlib.Path, default=DATA_DIR / "results_real.json")
     parser.add_argument("--force", action="store_true", help="overwrite an already-frozen output file")
     parser.add_argument("--allow-partial", action="store_true",
@@ -139,8 +148,27 @@ def main() -> None:
         if existing.get("frozen"):
             raise SystemExit(f"{args.out} is already frozen - pass --force to overwrite")
 
+    if args.sweep_programs and args.sweep_programs_from:
+        raise SystemExit("pass --sweep-programs or --sweep-programs-from, not both")
+
     programs = _frozen_programs()
-    sweep_programs = args.sweep_programs or sorted(programs)[:DEFAULT_SWEEP_N_PROGRAMS]
+    if args.sweep_programs_from:
+        sweep_programs = [
+            line.strip() for line in args.sweep_programs_from.read_text().splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        ]
+        if not sweep_programs:
+            raise SystemExit(f"{args.sweep_programs_from} is empty")
+        print(f"sweep subset: {len(sweep_programs)} programs from {args.sweep_programs_from}")
+    else:
+        sweep_programs = args.sweep_programs or sorted(programs)[:DEFAULT_SWEEP_N_PROGRAMS]
+    unknown = [p for p in sweep_programs if p not in set(programs)]
+    if unknown:
+        raise SystemExit(
+            f"sweep subset names {len(unknown)} program(s) that are not in the frozen "
+            f"corpus, e.g. {unknown[0]!r} - the sweeps were run over a different list "
+            "than the one being frozen"
+        )
     expected = expected_cells(programs, sweep_programs, args.experiment)
 
     rows = load_rounds(args.episodes_path)

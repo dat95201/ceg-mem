@@ -6,7 +6,12 @@
 #
 #   bash scripts/serve_local.sh          # start (or adopt) and verify
 #   bash scripts/serve_local.sh --check  # verify only, start nothing
-#   bash scripts/serve_local.sh --stop   # unload the weights, stop our server
+#   bash scripts/serve_local.sh --unload # unload the weights, leave the server up
+#   bash scripts/serve_local.sh --stop   # unload, and stop whatever serves the port
+#
+# scripts/eval_shard.sh drives all four of these around one shard, so a run
+# started by hand and a run started by a shard verify the same way. Use this
+# script directly when chaining several things against one warm server.
 #
 # Why a script and not just .env
 # ------------------------------
@@ -41,8 +46,9 @@ MODE="start"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --check) MODE="check"; shift ;;
-    --stop)  MODE="stop";  shift ;;
+    --check)  MODE="check";  shift ;;
+    --unload) MODE="unload"; shift ;;
+    --stop)   MODE="stop";   shift ;;
     --port)  PORT="$2"; HOST="127.0.0.1:${PORT}"; URL="http://${HOST}"; shift 2 ;;
     -h|--help) sed -n '2,10p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
@@ -52,15 +58,21 @@ done
 command -v ollama >/dev/null || { echo "ollama not on PATH" >&2; exit 2; }
 command -v curl   >/dev/null || { echo "curl not on PATH" >&2; exit 2; }
 
-if [[ "$MODE" == "stop" ]]; then
-  # The weights are what matter on a shared machine: the server process is a
-  # few MB, the resident model is 6.4 GB.
+if [[ "$MODE" == "unload" || "$MODE" == "stop" ]]; then
+  # Unloading the weights and stopping the server are two different things, and
+  # on a shared machine the first is the one that matters: the server process is
+  # a few MB, the resident model is 6.4 GB. So --unload is the polite default
+  # for a run that borrowed someone else's server, and --stop is for one that
+  # started its own.
   OLLAMA_HOST="$HOST" ollama stop "$MODEL" >/dev/null 2>&1 || true
   echo "unloaded $MODEL"
-  PIDS="$(pgrep -f "ollama serve" || true)"
-  if [[ -n "$PIDS" ]] && lsof -i ":${PORT}" >/dev/null 2>&1; then
-    lsof -t -i ":${PORT}" | xargs -r kill 2>/dev/null || true
-    echo "stopped the server on ${HOST}"
+  if [[ "$MODE" == "stop" ]]; then
+    PIDS="$(lsof -t -i ":${PORT}" 2>/dev/null || true)"
+    if [[ -n "$PIDS" ]]; then
+      # shellcheck disable=SC2086
+      kill $PIDS 2>/dev/null || true
+      echo "stopped the server on ${HOST}"
+    fi
   fi
   exit 0
 fi
@@ -95,6 +107,8 @@ sys.exit(0 if any(m['name'] == want for m in json.load(sys.stdin)['models']) els
   [[ "$MODE" == "check" ]] && { echo "$MODEL is not on ${HOST}" >&2; exit 1; }
   echo "$MODEL is not on this server - pulling it"
   OLLAMA_HOST="$HOST" ollama pull "$MODEL"
+else
+  echo "$MODEL already present - nothing to download"
 fi
 
 echo "loading $MODEL and verifying the served window"
@@ -126,4 +140,4 @@ PY
 echo "  ok: $RUNTIME"
 echo
 echo "ready. .env already points at ${URL} with MODEL=${MODEL}."
-echo "next: EXPERIMENT.md §3 - the run order."
+echo "next: EXPERIMENT.md - the run order, or bash scripts/eval_shard.sh --exp trial."

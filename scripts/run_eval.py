@@ -58,6 +58,37 @@ def _frozen_programs() -> list[str]:
     return [t["name"] for t in data["tasks"]]
 
 
+def _programs_from_file(path: pathlib.Path) -> tuple[list[str], str]:
+    """Read the program list from a file, preserving its order.
+
+    Mirrors scripts/measure_pi.py::_programs_from_file, and exists for the same
+    two reasons, neither of which is convenience. The order in a shard list is
+    the balanced traversal order (scripts/eval_shard.sh cuts the corpus
+    round-robin across strata), so every contiguous range is a smaller grid
+    rather than a skewed one - passing names on the command line and truncating
+    by hand loses that. And a file is quotable: zsh does not word-split an
+    unquoted $VAR, so `--programs $SWEEP` arrives as a single 24-name argument
+    and the driver rejects it as one unknown program.
+
+    Accepts data/tasks.json, data/candidates.json, or a plain text file with one
+    "<task>/<program>" per line (# comments allowed).
+    """
+    if path.suffix == ".json":
+        data = json.loads(path.read_text())
+        entries = data.get("tasks") or data.get("candidates") or data.get("selected") or []
+        if not entries:
+            raise SystemExit(f"{path} carries no tasks/candidates/selected list")
+        names = [e["name"] for e in entries]
+        return names, f"{path} ({len(names)} entries)"
+    names = [
+        line.strip() for line in path.read_text().splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+    if not names:
+        raise SystemExit(f"{path} is empty")
+    return names, f"{path} ({len(names)} names)"
+
+
 def cell_key(task: str, mode: str, seed: int, guard_on: bool, steer_on: bool,
              max_examples: int, typing_noise_c: float, force_full_budget: bool,
              model: str | None, granularity: str) -> tuple:
@@ -92,15 +123,26 @@ def _cell_key(row: dict) -> tuple:
     )
 
 
-def _completed_cells(episodes_path: pathlib.Path, budget: int, force_full_budget: bool) -> set[tuple]:
+def _completed_cells(episodes_path: pathlib.Path, budget: int, force_full_budget: bool,
+                     also: list[pathlib.Path] | None = None) -> set[tuple]:
     """Cells where src.loop.run_episode would not need to do any more work.
 
     A cell is done if it already ran to the full budget, or - when the loop
     is allowed to stop early - it already contains an accepted round.
+
+    `also` are read-only logs consulted for the same question: the merged
+    history, or another shard's log. A grid this long is run in shards across
+    sessions and machines (scripts/eval_shard.sh), and re-cutting the shard
+    boundaries would otherwise re-walk cells another shard already finished.
+    Model calls would replay from cache, but the oracle would not - re-running
+    a finished cell costs its sandbox execution over again, which is most of the
+    wall clock. Rounds from `also` are never written here; they only answer
+    "has this cell been done anywhere".
     """
     by_cell: dict[tuple, list[dict]] = {}
-    for row in load_rounds(episodes_path):
-        by_cell.setdefault(_cell_key(row), []).append(row)
+    for path in [episodes_path, *(also or [])]:
+        for row in load_rounds(path):
+            by_cell.setdefault(_cell_key(row), []).append(row)
 
     done = set()
     for cell, rows in by_cell.items():
@@ -127,8 +169,9 @@ def run_sweep(
     check_overfit: bool,
     episodes_path: pathlib.Path,
     overfit_path: pathlib.Path,
+    resume_from: list[pathlib.Path] | None = None,
 ) -> None:
-    done = _completed_cells(episodes_path, budget, force_full_budget)
+    done = _completed_cells(episodes_path, budget, force_full_budget, also=resume_from)
     total = len(programs) * len(modes) * len(seeds)
     n = 0
 
@@ -189,6 +232,11 @@ def run_sweep(
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--programs", nargs="+", default=None, help="default: the frozen list in data/tasks.json")
+    parser.add_argument("--programs-from", type=pathlib.Path, default=None,
+                        help="read the program list from a file instead, in file "
+                             "order: a shard list from scripts/eval_shard.sh, "
+                             "data/tasks.json, or one '<task>/<program>' per line. "
+                             "Preferred over --programs for anything past a handful")
     parser.add_argument("--modes", nargs="+", default=list(MODES), choices=list(MODES))
     parser.add_argument("--seeds", nargs="+", type=int, default=list(DEFAULT_SEEDS))
     parser.add_argument("--budget", type=int, default=DEFAULT_BUDGET)
@@ -202,12 +250,30 @@ def main() -> None:
     parser.add_argument("--check-overfit", action="store_true", help="run is_truly_correct on every accept (E2)")
     parser.add_argument("--episodes-path", type=pathlib.Path, default=DEFAULT_METRICS_LOG)
     parser.add_argument("--overfit-path", type=pathlib.Path, default=DEFAULT_OVERFIT_LOG)
+    parser.add_argument("--resume-from", type=pathlib.Path, nargs="*", default=None,
+                        help="extra episode logs consulted for what is already "
+                             "done, and never written to - the merged history, or "
+                             "another shard's log. Skipping a finished cell saves "
+                             "its oracle runs, which the response cache cannot")
     args = parser.parse_args()
 
-    programs = args.programs or _frozen_programs()
+    if args.programs and args.programs_from:
+        raise SystemExit("pass --programs or --programs-from, not both")
+    if args.programs_from:
+        programs, corpus_source = _programs_from_file(args.programs_from)
+    else:
+        programs, corpus_source = (args.programs, "--programs") if args.programs \
+            else (_frozen_programs(), "data/tasks.json (frozen corpus)")
+    print(f"corpus: {len(programs)} faults from {corpus_source}", flush=True)
+
     unknown = [p for p in programs if p not in TASKS]
     if unknown:
-        raise SystemExit(f"unknown program(s): {unknown}")
+        raise SystemExit(
+            f"unknown program(s): {unknown}\n"
+            "If that looks like several names inside one string, the shell did not "
+            "split them: zsh word-splits an unquoted $(...) but not an unquoted "
+            "$VAR. Use --programs-from FILE."
+        )
 
     # Resolve the model here rather than letting src.llm fall back inside every
     # call: the id has to reach the metrics row, or the artifact cannot state
@@ -238,6 +304,7 @@ def main() -> None:
         guard_on=args.guard == "on", steer_on=args.steer == "on",
         force_full_budget=args.force_full_budget, check_overfit=args.check_overfit,
         episodes_path=args.episodes_path, overfit_path=args.overfit_path,
+        resume_from=args.resume_from,
     )
     print(f"\ntotal spent so far: ${spent():.4f}")
 
