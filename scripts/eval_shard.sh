@@ -363,7 +363,13 @@ python3 - "$META" "$RUNTIME_FILE" "$EXP" "$FROM" "$TO" "$LIST_SRC" "$SHARD" \
 import json, pathlib, sys
 (meta, runtime_file, exp, lo, hi, universe, shard, model, temperature,
  context, sandbox, granularity, budget, seeds, modes, extra, episodes) = sys.argv[1:18]
-runtime = json.loads(pathlib.Path(runtime_file).read_text())
+raw = pathlib.Path(runtime_file).read_text().strip()
+if not raw:
+    sys.exit("scripts/serve_local.sh did not report the runtime it verified.\n"
+             "It writes $RUNTIME_OUT only if that variable reaches it; without the\n"
+             "record this shard would be unauditable, so it stops here rather than\n"
+             "spending hours producing episodes nobody can check the window on.")
+runtime = json.loads(raw)
 header = [l for l in pathlib.Path(shard).read_text().splitlines() if l.startswith("#")]
 digest = next((l.split(": ", 1)[1] for l in header if l.startswith("# corpus_sha256: ")), None)
 pathlib.Path(meta).write_text(json.dumps({

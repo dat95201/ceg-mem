@@ -141,6 +141,10 @@ print(json.dumps({"backend": "ollama", "context_length": got,
 PY
 )"
 echo "  ok: $RUNTIME"
+# A caller that has to record what was verified (scripts/eval_shard.sh writes
+# it into the shard's .meta.json) asks for it here rather than re-deriving it:
+# this is the value the assertion above passed on.
+[[ -n "${RUNTIME_OUT:-}" ]] && printf '%s\n' "$RUNTIME" > "$RUNTIME_OUT"
 echo
 echo "ready. .env already points at ${URL} with MODEL=${MODEL}."
 echo "next: EXPERIMENT.md - the run order, or bash scripts/eval_shard.sh --exp trial."
