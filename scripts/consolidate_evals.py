@@ -160,6 +160,60 @@ def check_protocol(shards: list[tuple[pathlib.Path, list[dict]]]) -> bool:
     return ok
 
 
+# The protocol fields a RoundRecord does NOT carry. Each one changes the numbers
+# and leaves no trace in the response cache, so scripts/eval_shard.sh writes them
+# to a per-shard record at the moment it verifies them, and they are checked here
+# - the same contract scripts/consolidate_screens.py enforces for the screen.
+META_FIELDS = ("model", "temperature", "context_length", "sandbox_timeout_sec",
+               "granularity")
+RUNTIME_FIELDS = ("context_length", "model_digest", "quantization", "backend")
+
+
+def check_shard_meta(paths: list[pathlib.Path]) -> bool:
+    """Every shard's recorded protocol and verified runtime agree. Hard stop if not."""
+    metas = {}
+    for meta_path in sorted(DATA_DIR.glob("eval_shards/*.meta.json")):
+        blob = json.loads(meta_path.read_text())
+        ep = blob.get("episodes_path")
+        if ep:
+            metas.setdefault(pathlib.Path(ep).name, []).append((meta_path.name, blob))
+
+    print("\nshard protocol records")
+    unrecorded = [p.name for p in paths if p.name not in metas]
+    if unrecorded:
+        print(f"  {len(unrecorded)} shard log(s) have no record: "
+              f"{', '.join(unrecorded[:4])}" + (" ..." if len(unrecorded) > 4 else ""))
+        print("    Written by scripts/eval_shard.sh at the moment it verifies the "
+              "served context\n    window. A log without one was produced by a "
+              "hand-run scripts/run_eval.py, so\n    the window, the temperature and "
+              "the sandbox timeout it ran under are unknown.")
+
+    ok = True
+    for label, fields, pick in (("protocol", META_FIELDS, lambda b: b.get("protocol", {})),
+                                ("runtime", RUNTIME_FIELDS, lambda b: b.get("runtime", {}))):
+        for field in fields:
+            seen: dict[object, list[str]] = {}
+            for shard_logs in metas.values():
+                for meta_name, blob in shard_logs:
+                    seen.setdefault(pick(blob).get(field), []).append(meta_name)
+            if not seen:
+                continue
+            if len(seen) == 1:
+                print(f"  {label:8s} {field:20s} {next(iter(seen))}")
+                continue
+            ok = False
+            print(f"  {label:8s} {field:20s} DISAGREEMENT:")
+            for value, files in sorted(seen.items(), key=lambda kv: str(kv[0])):
+                print(f"    {str(value):24s} {', '.join(sorted(set(files))[:3])}")
+    if not ok:
+        print("\n  None of these reach the response cache, so the shards that "
+              "differ replayed each\n  other's draws and re-judged them against a "
+              "different instrument. `context_length`\n  in particular decides "
+              "whether the prompt arrived whole - and it lands hardest on the\n"
+              "  memory arms, which carry the most evidence.")
+    return ok
+
+
 def check_conflicts(shards: list[tuple[pathlib.Path, list[dict]]]) -> list[dict]:
     """The same (episode, round) collected twice, with different content.
 
@@ -350,7 +404,7 @@ def main() -> None:
     if not shards:
         raise SystemExit("every shard log is empty")
 
-    protocol_ok = check_protocol(shards)
+    protocol_ok = check_protocol(shards) & check_shard_meta(paths)
 
     conflicts = check_conflicts(shards)
     if conflicts:

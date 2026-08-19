@@ -197,11 +197,20 @@ Each shard writes five files, all tagged with the experiment and the range:
 
 ```
 data/eval_shards/<exp>_<from>_<to>.txt        the exact program list, with digests
+data/eval_shards/<exp>_<from>_<to>.meta.json  the protocol, and the runtime as verified
 data/episodes_eval_<exp>_<from>_<to>.jsonl    this shard's rounds
 data/overfit_eval_<exp>_<from>_<to>.jsonl     this shard's overfit verdicts
 data/calls_eval_<exp>_<from>_<to>.jsonl       this shard's call ledger
 logs/eval_<exp>_<from>_<to>.log               the trace
 ```
+
+The `.meta.json` is what makes a shard auditable rather than merely present. A
+`RoundRecord` carries `model`, `granularity` and `max_examples`, but **not** the
+served context window, the model digest, the temperature or the sandbox timeout —
+which is exactly the half of §1 that moves the numbers while leaving no trace in
+the response cache. `eval_shard.sh` writes them at the moment it verifies them,
+and `consolidate_evals.py` refuses a merge across a disagreement. The screen has
+the same contract, in `consolidate_screens.py`.
 
 ---
 
@@ -237,7 +246,9 @@ bash scripts/eval_shard.sh --exp E1 --from 1 --to 30 --dry-run
 
 Not a smoke test of the model; a test of the *flags* and of the server. Three
 tasks, one seed, B=5, over all three arms — on a log named so it can never be
-merged into reported data.
+merged into reported data, and the one preset that ignores the merged history: a
+rehearsal that skips cells because another machine already ran them rehearses
+nothing.
 
 ```bash
 bash scripts/eval_shard.sh --exp trial
@@ -421,6 +432,8 @@ What the audit catches:
 | | what it means |
 |---|---|
 | protocol disagreement | a shard ran under a different `model` or `granularity`. Both are in the cell key, so those rows would never pool with the rest — they are a second grid sharing one file. **Hard stop** |
+| runtime disagreement | two shards' `.meta.json` differ on the served context window, the model digest, the temperature or the sandbox timeout. None of these reaches the cache, so the shards replayed each other's draws and re-judged them against a different instrument. **Hard stop** |
+| no protocol record | a shard log with no `.meta.json` — produced by a hand-run `run_eval.py` rather than by `eval_shard.sh`, so what it ran under is unknown. Reported, not fatal |
 | `GAPS` | (task, seed) cells missing from an arm, printed as index runs against the universe the shard was cut from — a shard that was killed, or never run |
 | `TRUNCATED` | episodes that neither accepted nor reached the budget. The rows are real and every round-averaged estimator will happily average them, as a task that took fewer rounds than it did |
 | `DISAGREEMENT` | the same (episode, round) collected twice with different results. Draws are cached under deterministic nonces and the loop is seeded, so this cannot happen unless the machines are not interchangeable — usually `SANDBOX_TIMEOUT_SEC` firing on the slower one. Fix and re-run both; do not pick a winner |
@@ -535,14 +548,39 @@ healthy run. The cap is left low on purpose as a tripwire: if it fires, somethin
 has repointed the client at a paid endpoint mid-run. Find out what, rather than
 raising the cap.
 
-**`ContextOverflow`** — a prompt exceeded `LLM_CONTEXT_TOKENS`. This is the
-client-side guard doing its job: it turns a would-be silent truncation into a
-refusal. Expect it, if at all, on a `dead`-band task deep into a memory arm,
-where 20 rounds of evidence are in the prompt. Record it; do not raise the
-window, which would make that task a different instrument from the other 84.
+**`context_overflow` in a round's `proposal_error`** — a prompt exceeded
+`LLM_CONTEXT_TOKENS`. That is the client-side guard doing its job: it turns a
+would-be silent truncation into a refusal. Expect it, if at all, on a `dead`-band
+task deep into a memory arm, where twenty rounds of accumulated evidence are in
+the prompt — so the arms that hit it are the ones being measured.
+
+`src/loop.py` records such a round as spent-but-inconclusive and carries on, the
+same treatment a truncated response gets. It has to: uncaught, the exception
+would abort the whole shard mid-grid, and because the prompt is deterministic
+every re-run would abort at the identical round, so that shard could never get
+past that task. Count them and report the count — it is a threat-to-validity
+number for the memory arms specifically. Do **not** raise the window to make them
+go away: that would make those tasks a different instrument from the rest.
+
+```bash
+python3 -c "
+import json,collections
+c=collections.Counter()
+for l in open('data/episodes.jsonl'):
+    r=json.loads(l)
+    if r.get('proposal_error'): c[(r['mode'], r['proposal_error'])]+=1
+print(c or 'none')"
+```
 
 **`data/tasks.json is not frozen` / `missing`** — the corpus freeze did not
 complete. [CORPUS.md](CORPUS.md), not this file.
+
+**`freeze_results.py` refuses a log holding two models** — `model` is in the
+driver's cell key but not in the freeze's, so without that check episodes from
+another proposer would silently satisfy expected cells and the frozen artifact
+would never say which model produced its numbers. π is a property of the model:
+two models in one freeze is two experiments reported as one. Move the foreign
+rows aside (match on the `model` field) and re-run.
 
 **`analyze.py` refuses to pool two `no_memory` arms** — one was run without
 `--force-full-budget`. They are different cells, and averaging them would mix an

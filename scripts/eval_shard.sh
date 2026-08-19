@@ -345,7 +345,43 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-MODEL="$MODEL" CONTEXT_LENGTH="$CONTEXT_LENGTH" bash scripts/serve_local.sh --port "$PORT"
+RUNTIME_FILE="$(mktemp)"
+MODEL="$MODEL" CONTEXT_LENGTH="$CONTEXT_LENGTH" RUNTIME_OUT="$RUNTIME_FILE" \
+  bash scripts/serve_local.sh --port "$PORT"
+
+# ── the shard's protocol record ─────────────────────────────────────────────
+# RoundRecord carries model, granularity and max_examples, but NOT the served
+# context window, the model digest, the temperature or the sandbox timeout - and
+# those are precisely the half that changes the numbers while leaving no trace in
+# the cache. The screen solves this by recording them in every shard report and
+# refusing to merge across a disagreement (consolidate_screens.py); this is the
+# same record, and consolidate_evals.py checks it the same way.
+META="data/eval_shards/${TAG}.meta.json"
+python3 - "$META" "$RUNTIME_FILE" "$EXP" "$FROM" "$TO" "$LIST_SRC" "$SHARD" \
+         "$MODEL" "$TEMPERATURE" "$CONTEXT_LENGTH" "$SANDBOX_TIMEOUT_SEC" \
+         "$GRANULARITY" "$BUDGET" "$SEEDS" "$MODES" "$EXTRA" "$EPISODES" <<'PY'
+import json, pathlib, sys
+(meta, runtime_file, exp, lo, hi, universe, shard, model, temperature,
+ context, sandbox, granularity, budget, seeds, modes, extra, episodes) = sys.argv[1:18]
+runtime = json.loads(pathlib.Path(runtime_file).read_text())
+header = [l for l in pathlib.Path(shard).read_text().splitlines() if l.startswith("#")]
+digest = next((l.split(": ", 1)[1] for l in header if l.startswith("# corpus_sha256: ")), None)
+pathlib.Path(meta).write_text(json.dumps({
+    "experiment": exp, "from": int(lo), "to": int(hi),
+    "universe": universe, "shard_list": shard, "corpus_sha256": digest,
+    "episodes_path": episodes,
+    "protocol": {
+        "model": model, "temperature": float(temperature),
+        "context_length": int(context), "sandbox_timeout_sec": float(sandbox),
+        "granularity": granularity,
+    },
+    "runtime": runtime,
+    "grid": {"budget": int(budget), "seeds": [int(x) for x in seeds.split()],
+             "modes": modes.split(), "extra": extra.split()},
+}, indent=2, sort_keys=True) + "\n")
+print(f"protocol record -> {meta}")
+PY
+rm -f "$RUNTIME_FILE"
 
 # ── run ─────────────────────────────────────────────────────────────────────
 # python-dotenv does not override an existing environment variable, so these win
