@@ -76,6 +76,7 @@ no oracle.
 | `scripts/measure_coherence.py` `measure_anchoring.py` `label_tool.py` | RQ2: coherence and the anchoring failure mode |
 | `scripts/check_consistency.py` | asserts every reported number matches the frozen data |
 | `scripts/watch_eval.sh` | live monitor for a long run |
+| `scripts/serve_local.sh` | brings the local proposer up for E1–E5 with the context window pinned and verified |
 | `scripts/screen_shard.sh` | one shard of the π screen: pins the backend, verifies it, runs, shuts it down |
 | `scripts/consolidate_screens.py` | merges the shards and audits the join |
 | `figures/make_figures.py` | the paper's figures |
@@ -178,7 +179,10 @@ band quotas, and why the screen's depth decides which bands can be filled at all
 
 ## Running it
 
-See [PLAN.md](PLAN.md).
+See [PLAN.md](PLAN.md) for the ordered plan and what each step is for, and
+[EXPERIMENT.md](EXPERIMENT.md) for the runbook of the experiment proper — the
+protocol E1–E5 have to share with the screen, the trial run that tests the flags
+before 150 hours does, the run order, and what to do when a step refuses.
 
 ## Data availability
 

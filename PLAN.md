@@ -225,6 +225,11 @@ separating the two needs coverage data this run does not collect.
 
 **Anchor.** §5 Baselines; Theorem 4.3(a) (1/π); RQ3 (theory fit).
 
+**[EXPERIMENT.md](EXPERIMENT.md) is the runbook** for this step and for steps 7–9
+below: the protocol E1–E5 must share with the screen, bringing the local proposer
+up with its context window verified, the trial run that tests every flag before
+the grid does, monitoring and resume, and the failure modes.
+
 ```bash
 python3 scripts/run_eval.py --modes no_memory --force-full-budget \
         --seeds 1 2 3 4 5 --budget 20
