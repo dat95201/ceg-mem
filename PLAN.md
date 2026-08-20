@@ -453,6 +453,38 @@ These are not bugs; they are the places where a real LLM forced a departure from
 the formal model, and each one weakens a specific claim. They belong in threats
 to validity, not in a footnote.
 
+**The untyped arm shows the proposer nothing — corrected 2026-08-20.** Section
+5 defines the untyped baseline as *"a flat counterexample log that guards by
+re-running all stored counterexamples but **cannot steer the proposer**"*, and
+Algorithm 1 draws `p_t ~ G(·|E)` with `E` empty for an agent that has no types —
+the same unconditional distribution no memory draws from. Section 6 reports the
+consequence directly: *"untyped collapses to 0.68, indistinguishable from no
+memory"*, and Table 4 puts Guard-only at the same 0.68. Both only hold if
+neither arm's proposals are conditioned on memory.
+
+`src/proposer.py::_evidence_block` used to read "cannot steer" as "gets no
+exclusion instruction" and put the full transcript — every refuted patch's
+source plus its counterexample — into the untyped arm's prompt; the same reading
+kept that evidence under `--steer off`. It now shows nothing in either case, so
+`no_memory`, `untyped` and `guard-only` build byte-identical prompts and differ
+only in which guard runs.
+
+Two consequences worth planning around. Those three arms share `src.llm`'s cache
+entries under the same draw nonce, so **the untyped and guard-only arms cost no
+model calls at all** once E1 has run — only oracle time. And their budgeted
+success must come out *exactly* equal to no-memory's, because a guard can only
+block a candidate that provably fails a stored counterexample and a correct
+patch fails none: any gap is a guard-soundness bug
+(`src/memory.py::_still_refutes` also blocks on a sandbox timeout), not a
+result.
+
+What the old arm measured is a real question — transcript memory as actually
+used by conversational repair agents — and on the first 30 tasks it answered
+loudly: the proposer re-emitted near-copies of the patch it had just been shown,
+the guard blocked 16–19 of its 20 rounds, and budgeted success fell *below* no
+memory (0.50 vs 0.63). That belongs in the paper as its own condition, not as
+this baseline. Adding it means a fourth mode, not a relabelling.
+
 **Steering is a prompt instruction, not Eq. (3).** The paper renormalises the
 proposer's support onto the not-yet-eliminated types, so Theorem 4.2(i)
 non-repetition holds *by construction* — an eliminated class cannot be drawn.

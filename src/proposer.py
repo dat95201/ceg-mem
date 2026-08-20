@@ -7,10 +7,7 @@ template; they only change two sections of it:
 
   evidence_block   - what past refuted attempts are shown, if any
     no_memory: nothing (a fresh, independent proposal every time)
-    untyped:   the full flat transcript of every past attempt - patch source
-               plus the counterexample that refuted it - exactly the "prior
-               patches and error messages concatenated into the prompt"
-               transcript this project's memory is contrasted against
+    untyped:   nothing either - see "What steering means" below
     typed:     one representative counterexample per distinct failure type
                seen so far (src.typer.theta), not the raw patches - this is
                the "type-matched evidence" a typed guard would retrieve
@@ -22,6 +19,46 @@ template; they only change two sections of it:
     typed:     one line per eliminated failure type, telling the proposer
                not to repeat that (edit location, violated property) pair -
                the prompted analogue of Eq. (3)'s steering
+
+What steering means, and why the untyped arm shows the proposer nothing
+-----------------------------------------------------------------------
+Steering in the paper is a property of the proposal DISTRIBUTION, not of the
+wording of an instruction: Algorithm 1 line 3 draws p_t ~ G(.|E) over the
+not-yet-eliminated types, and E is empty without types, so an untyped agent
+draws from the unconditional G - the same distribution no memory draws from.
+Section 5 says so in as many words ("a flat counterexample log that guards by
+re-running all stored counterexamples but *cannot steer the proposer*... we
+grant it a validation guard, making it a strong, not straw, baseline"), and
+Section 3.3 repeats it ("untyped/flat memory can guard but cannot steer,
+because it has no class to remove from the proposal").
+
+Anything placed in the prompt conditions the distribution. An earlier version
+of this module put the full transcript - every refuted patch's source plus its
+counterexample - into the untyped arm's prompt, reading "cannot steer" as
+"gets no exclusion instruction". That is not the same arm the theory is about,
+and the measured consequence was large: on the first 30 tasks the transcript
+arm's proposer re-emitted a near-copy of the patch it had just been shown, the
+guard blocked 16-19 of its 20 rounds, and budgeted success fell BELOW the
+no-memory baseline (0.50 vs 0.63) - where the paper has the two tied
+("untyped collapses to 0.68, indistinguishable from no memory", Section 6).
+
+The same reading error applied to the E3 ablation: Table 4 reports Guard-only
+at budgeted success 0.68, identical to no memory, which is only possible if
+guard-only's proposals are unconditioned too. So `disable_steering` now
+suppresses the evidence block as well as the exclusion block.
+
+The consequence to know when re-running: with no evidence in the prompt, the
+untyped and guard-only arms build byte-identical prompts to no_memory's, under
+the same draw nonce - so they share src.llm's cache entries with E1 and cost no
+model calls at all. They also give a free soundness test: their success@B must
+equal no_memory's exactly, because a guard can only block a candidate that
+provably fails a stored counterexample, and a correct patch fails none. Any
+gap is a guard-soundness bug (src.memory._still_refutes blocks on timeout too),
+not a result.
+
+The transcript condition remains a legitimate question about real LLM agents -
+just not this paper's untyped baseline. To ask it, add it as its own mode
+rather than by relabelling this one.
 
 Never place the reference implementation (task's correct_source) here - see
 src/adapter.py's module docstring.
@@ -128,12 +165,11 @@ def _evidence_block(mode: str, history: list[Attempt], granularity: str) -> str:
         return ""
 
     if mode == "untyped":
-        lines = ["Past attempts that were tried and refuted (do not blindly repeat them):"]
-        for i, a in enumerate(refuted, 1):
-            lines.append(
-                f"\nAttempt {i}:\n```python\n{a.patch}\n```\nCounterexample: {_format_counterexample(a)}"
-            )
-        return "\n".join(lines)
+        # Nothing. Untyped memory guards; it does not reach the proposer at all
+        # (Section 3.3, Section 5's baseline definition, and Algorithm 1's
+        # p_t ~ G(.|E) with E empty). See this module's docstring for why
+        # putting the transcript here made a different arm than the theory's.
+        return ""
 
     if mode == "typed":
         by_type: dict[str, Attempt] = {}
@@ -176,7 +212,7 @@ def build_prompt(
     history: list[Attempt],
     *,
     granularity: str = "fine",
-    disable_exclusion: bool = False,
+    disable_steering: bool = False,
     spec_note: str = "",
 ) -> str:
     """program_label: how the fault is named to the model. ConDefects programs
@@ -189,17 +225,20 @@ def build_prompt(
     be refuted for a defensible reading rather than for a bug. Applied
     identically in all three modes, so it cannot confound the comparison.
 
-    disable_exclusion: steering ablation (E3, "guard-only") - keep the typed
-    evidence_block but suppress exclusion_block, so the proposer sees what was
-    refuted without being told to avoid it.
+    disable_steering: the E3 "guard-only" ablation - the guard still runs, but
+    the proposer is not conditioned on memory at all: no exclusion instruction
+    AND no evidence. Both, because Table 4 puts guard-only's budgeted success
+    at 0.68, exactly no memory's, which only holds if its proposals come from
+    the unconditional G. Showing the evidence while withholding the
+    instruction is a third condition, not the paper's ablation.
     """
     if mode not in MODES:
         raise ValueError(f"mode must be one of {MODES}, got {mode!r}")
     if granularity not in GRANULARITIES:
         raise ValueError(f"granularity must be one of {GRANULARITIES}, got {granularity!r}")
 
-    evidence_block = _evidence_block(mode, history, granularity)
-    exclusion_block = "" if disable_exclusion else _exclusion_block(mode, history, granularity)
+    evidence_block = "" if disable_steering else _evidence_block(mode, history, granularity)
+    exclusion_block = "" if disable_steering else _exclusion_block(mode, history, granularity)
 
     sections = [
         "You are repairing a single buggy Python program. It reads its input "
@@ -302,7 +341,7 @@ def propose(
     model: str | None = None,
     granularity: str = "fine",
     max_tokens: int | None = None,
-    disable_exclusion: bool = False,
+    disable_steering: bool = False,
     nonce: str = "",
     temperature: float | None = None,
     spec_note: str = "",
@@ -318,7 +357,7 @@ def propose(
     """
     prompt = build_prompt(
         task_name, buggy_source, program_label, mode, history,
-        granularity=granularity, disable_exclusion=disable_exclusion,
+        granularity=granularity, disable_steering=disable_steering,
         spec_note=spec_note,
     )
     if max_tokens is None:

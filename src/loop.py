@@ -170,7 +170,7 @@ def run_episode(
             patch = propose(
                 task_name, program.buggy_source, task.name,
                 mode, memory.history, model=model, granularity=granularity,
-                disable_exclusion=not steer_on,
+                disable_steering=not steer_on,
                 nonce=proposal_nonce(task_name, seed, round_index),
                 spec_note=task.spec_note,
             )

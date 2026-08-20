@@ -115,6 +115,27 @@ of buying the same answer three times. The moment the evidence and exclusion
 blocks appear the prompts diverge, and the prompt is itself in the cache key, so
 nothing is shared that should not be.
 
+### What each arm puts in the prompt
+
+Memory reaches the proposer only through typing. Three of the five arms
+therefore build a byte-identical prompt, and differ only in which guard runs:
+
+| arm | prompt | guard |
+|---|---|---|
+| `no_memory` | unconditioned | none |
+| `untyped` | **unconditioned** | flat scan of every stored counterexample |
+| `E3-guard-only` | **unconditioned** | type-indexed bucket |
+| `E3-steer-only` | typed classes + exclusion | none |
+| `typed` | typed classes + exclusion | type-indexed bucket |
+
+That is the paper's own factorisation (§3.3, §5's baseline definitions,
+Table 4), and it buys two things. The three unconditioned arms share cache
+entries under the same draw nonce, so **`untyped` and `guard-only` cost no model
+calls once E1 has run**. And their `success@B` must equal `no_memory`'s exactly —
+a guard only blocks candidates that provably fail a stored counterexample, and a
+correct patch fails none. A gap is a guard-soundness bug, not a finding; check
+`src/memory.py::_still_refutes`, which also blocks on a sandbox timeout.
+
 **The oracle is not cached at all.** Re-running a finished cell replays its model
 calls for free but re-executes every candidate against the test pool, and that
 sandbox time is most of the wall clock here. This is why `eval_shard.sh` passes
@@ -574,6 +595,14 @@ print(c or 'none')"
 
 **`data/tasks.json is not frozen` / `missing`** — the corpus freeze did not
 complete. [CORPUS.md](CORPUS.md), not this file.
+
+**Two arms look complete but were run under an older prompt** — the experiment
+cell key covers the flags, the model and the granularity, but not the version of
+`build_prompt`. Change what a mode puts in the prompt and the affected cells stay
+"complete" to `--resume-from`, silently. There is no automatic detector: after
+any change to `src/proposer.py`, delete the affected rows from the shard logs
+(match on `mode`, `guard_on`, `steer_on`) before re-running, or re-run into a
+fresh `--episodes-path`.
 
 **`freeze_results.py` refuses a log holding two models** — `model` is in the
 driver's cell key but not in the freeze's, so without that check episodes from
