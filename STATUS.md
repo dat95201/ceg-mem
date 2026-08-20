@@ -1,11 +1,26 @@
 # Project status — CEGMem
 
-**State: clean. No results are held.**
+**State: clean. No results are held.** `data/` contains source only
+(`mutants.py`, the planted-mutant operators). Every candidate list, gate report,
+screen, corpus freeze, episode log, call ledger and analysis output was removed,
+so nothing in this checkout was measured under a superseded design.
 
-Every pilot result, run log, oracle report and corpus freeze was deleted on
-2026-08-11 so that planning is anchored on `paper/main_proposal.txt` alone and
-not on measurements taken under a superseded design. `data/` now contains source
-only (`mutants.py`).
+The response cache (`cache/`, untracked) is deliberately kept. It is
+content-addressed on `(model, temperature, max_tokens, nonce, prompt)`, so a
+re-run does not *reuse* an old result — it gets the identical completion the same
+request would have produced, without paying for it again. To force a cold run,
+`rm -rf cache` first.
+
+## Where to look
+
+| | |
+|---|---|
+| `bash scripts/pipeline.sh` | which stage has run, and what runs next |
+| [PLAN.md](PLAN.md) | the ordered plan: which command serves which paper claim, and what it costs |
+| [SELECTION.md](SELECTION.md) | why the benchmark is filtered at all, and on what |
+| [CORPUS.md](CORPUS.md) | the oracle gate and the corpus freeze |
+| [SCREENING.md](SCREENING.md) | the π̂ screen, sharded across machines |
+| [EXPERIMENT.md](EXPERIMENT.md) | E1–E5: protocol, shards, merge audit, failure modes |
 
 ## Which numbers are synthetic
 
@@ -13,66 +28,47 @@ All numbers **in the paper** are synthetic. §5 states it plainly: the proposer
 and the oracle are simulated, no model is prompted and no test suite is executed.
 That is deliberate — soundness and non-repetition are only checkable against a
 known candidate space and a known set of correct patches, which no real benchmark
-provides.
+provides. §9 names the next step, and this repository is that step: instantiate
+the type function and the counterexample oracle on a real benchmark, and measure
+how coherent real failure types actually are.
 
-No number in this repository is currently real either, because no run has been
-made since the reset. When one is, `scripts/check_consistency.py` rebuilds every
-frozen file from `data/episodes.jsonl` and deep-diffs it against what is on disk,
-so a reported number cannot drift from the artifact that produced it.
+No number in this repository is real either, because it holds no results. When it
+does, `scripts/check_consistency.py` rebuilds every frozen file from
+`data/episodes.jsonl` and deep-diffs it against what is on disk, so a reported
+number cannot drift from the artifact that produced it.
 
-## Steps to a real implementation
+## What a run has to decide before it starts
 
-[PLAN.md](PLAN.md) — the ordered run plan, each step naming the paper claim it
-serves and what it costs. Summary of the sequence:
+These are choices, not defaults to accept silently. Each is argued where it is
+made; they are collected here because all four are cheap to fix beforehand and
+expensive to fix afterwards.
 
-| | step | API cost |
-|---|---|---|
-| 1 | prerequisites; commit the two working-tree fixes | — |
-| 2 | E0 — candidate pool + oracle gate | none |
-| 3 | E0b — screen π̂ | ~$57 |
-| 4 | freeze the corpus on the π bands | none |
-| 5 | oracle blind-spot measurement | none |
-| 6 | E1 — no-memory arm | ~$59 |
-| 7 | E2 — memory arms | ~$61 |
-| 8 | E3 — guard/steer ablation | ~$37 |
-| 9 | E4/E5 — ρ and c sweeps | ~$26 |
-| 10 | analysis, figures, consistency | none |
+1. **Screen depth K.** π̂ lives on a grid of `1/K`, so a band is fillable only if
+   some multiple of `1/K` falls inside it. Check the band counts after the freeze
+   and before E1 — EXPERIMENT.md §2 has the one-liner. A primary band that comes
+   out empty is a measurement limit, and the fix is a deeper screen, not a
+   smaller claim.
+2. **The proposer.** π is a property of the model, so the screen and E1–E5 must
+   run under the same one. `data/tasks.json` records which model it was banded
+   under; `eval_shard.sh` pins it and verifies the served context window.
+3. **Budget B and the seed counts.** PLAN.md §0 pre-registers both deviations
+   from the paper and the reason for each.
+4. **Whether to report the transcript condition.** PLAN.md's fidelity caveats
+   explain why the paper's untyped baseline shows the proposer nothing, and what
+   a transcript-in-the-prompt arm would measure instead. It is a fourth mode, not
+   a relabelling of `untyped`.
 
-## Open items
+## Known gaps against the paper's §10
 
-1. **Two fixes are uncommitted** in the working tree and must land before any
-   billable run. Both corrupt the quantities the paper's claims are read off:
-   `src/loop.py` included `budget` in the episode id, which double-counted rounds
-   in every round-averaged estimator; `scripts/run_eval.py` built a resume key
-   the index could never match, so every cell re-ran at full price.
-2. **The corpus must be rebuilt from scratch** — steps 2–4 of PLAN.md. The
-   previous corpus was calibrated by AtCoder rating, which SELECTION.md explains
-   is the wrong instrument.
-3. **Real type coherence is unmeasured**, and §9 calls it the single decisive
-   quantity. `measure_coherence.py` gives an automated proxy but cannot separate
-   ρ from c; `label_tool.py` is the only route to human ground truth.
-4. **Gaps against the paper's §10** (`gen_synthetic.py`, `data/results.json`,
-   `data/schema.md` all absent) are recorded at the end of PLAN.md.
+Recorded here rather than silently carried:
 
-## The deletion is staged, not committed
-
-`data/episodes.jsonl` is deleted in the index but the commit has not been made. A
-stray `git checkout -- data/` or a stash pop restores the superseded B=12 round
-log into **the exact path E1 appends to** — silently recreating the double-count
-that fix (1) exists to remove. Commit the deletion before running anything, or
-verify `data/episodes.jsonl` is absent immediately before step 6.
-
-## Recovering the deleted artifacts
-
-Everything deleted was either tracked in git or copied to a backup archive first.
-Tracked artifacts come back with:
-
-```bash
-git checkout HEAD -- data/tasks.json data/pool data/pilot_v0 data/retired \
-                     data/hard_120.json data/oracle_validation.json \
-                     data/pool_strength.json data/episodes.jsonl \
-                     scripts/select_hard_tasks.py scripts/salvage_test_zip.py
-```
-
-Do not rewrite or amend the commit that carries those blobs, or the recovery path
-goes with it.
+- **`scripts/gen_synthetic.py` does not exist.** It produced every number in the
+  paper. This repo replaced the synthetic corpus with the real-benchmark chain,
+  so the paper's own four-command reproduce sequence cannot be run here.
+- **`data/results.json` is never produced** — the frozen artifact is
+  `data/results_real.json`. §10's re-derivability guarantee names the former.
+- **`data/schema.md` does not exist**, though §10 promises it documents the task
+  and result formats.
+- `requirements.txt` pins `openai` and `python-dotenv`; §10 states the artifact
+  depends *solely* on numpy, scipy and matplotlib. That claim describes the
+  synthetic artifact and does not survive the move to a real LLM proposer.

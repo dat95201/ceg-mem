@@ -20,7 +20,23 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env                      # API key, model, BUDGET_USD_CAP
 python3 scripts/fetch_condefects.py       # clone the benchmark, check the layout
+bash scripts/pipeline.sh                  # what has run, and what runs next
 ```
+
+`scripts/pipeline.sh` is the entry point for the whole study. It runs one stage
+at a time, refuses to start a stage whose input artifact is missing, and reads
+the parameters that link two stages off the artifact rather than letting them be
+retyped. The stages, in order:
+
+```
+benchmark  ->  candidates  ->  gate  ->  screen  ->  corpus  ->  eval  ->  analyse
+```
+
+The first real decision is **`candidates`**: `select_candidates.py` decides which
+faults the study is ever allowed to see, and its output order is the seeded
+stratified traversal every later index range is cut from. It spends nothing and
+runs once — [SELECTION.md](SELECTION.md) argues each gate, and why filtering on
+them is dose-range selection rather than outcome selection.
 
 The proposer talks OpenAI chat-completions, and the same code path serves a
 local [Ollama](https://ollama.com) — it differs only in `LLM_BASE_URL`,
@@ -66,21 +82,23 @@ no oracle.
 | `src/llm.py` | model client with an on-disk cache and a cost meter |
 | `src/metrics.py` | the per-round evidence log every metric is computed from |
 | `data/mutants.py` | planted-mutant operators, one per fault type of §3.5 (source, not data) |
-| `scripts/validate_oracle.py` | usability + natural-mutant gate; freezes the candidate pool |
-| `scripts/measure_pi.py` | the π screen — N i.i.d. no-memory draws per candidate |
+| **`scripts/pipeline.sh`** | **one entry point: stage status, the order guard, and the wiring between stages** |
+| `scripts/fetch_condefects.py` | clones the benchmark and verifies the layout |
+| `scripts/select_candidates.py` | Stage 0 — which faults the study may ever see, and in what order |
+| `scripts/oracle_gate.sh` → `validate_oracle.py` | E0 — usability + natural-mutant gate; freezes the candidate pool |
+| `scripts/refreeze_pool.py` | re-freezes a finished gate at the cohort size the candidate list could seat |
+| `scripts/screen_shard.sh` → `measure_pi.py` | E0b — one shard of the π screen: N i.i.d. no-memory draws per candidate |
+| `scripts/consolidate_screens.py` | merges the screen shards and audits the join |
 | `scripts/select_corpus.py` | fills the π bands; freezes the corpus and the screening audit |
 | `scripts/build_strata.py` | absolute π bands, and the selection-vs-reported drift audit |
 | `scripts/measure_pool_strength.py` | planted mutants on the frozen corpus: how blind is the pool |
-| `scripts/run_eval.py` | the experiment driver — one grid, `(task × condition × seed)` |
+| `scripts/eval_shard.sh` → `run_eval.py` | E1–E5 — one shard of one experiment, over `(task × condition × seed)` |
+| `scripts/serve_local.sh` | the local proposer on its own: start / verify / unload / stop |
+| `scripts/consolidate_evals.py` | merges the experiment shards and audits the join |
+| `scripts/summarize.py` `watch_eval.sh` | per-arm means mid-run; live progress and ETA |
 | `scripts/freeze_results.py` `analyze.py` `fit_theory.py` | the analysis chain |
 | `scripts/measure_coherence.py` `measure_anchoring.py` `label_tool.py` | RQ2: coherence and the anchoring failure mode |
 | `scripts/check_consistency.py` | asserts every reported number matches the frozen data |
-| `scripts/watch_eval.sh` | live monitor for a long run |
-| `scripts/eval_shard.sh` | one shard of one experiment: pins the backend, verifies it, runs the grid, shuts it down |
-| `scripts/consolidate_evals.py` | merges the experiment shards and audits the join |
-| `scripts/serve_local.sh` | the local proposer on its own: start / verify / unload / stop |
-| `scripts/screen_shard.sh` | one shard of the π screen: pins the backend, verifies it, runs, shuts it down |
-| `scripts/consolidate_screens.py` | merges the shards and audits the join |
 | `figures/make_figures.py` | the paper's figures |
 | `cache/`, `external/` | model-response cache and the vendored benchmark; not tracked |
 
@@ -181,10 +199,11 @@ band quotas, and why the screen's depth decides which bands can be filled at all
 
 ## Running it
 
-See [PLAN.md](PLAN.md) for the ordered plan and what each step is for, and
+`bash scripts/pipeline.sh` first — it names the stage you are on. Then
+[PLAN.md](PLAN.md) for the ordered plan and what each step is for, and
 [EXPERIMENT.md](EXPERIMENT.md) for the runbook of the experiment proper — the
 protocol E1–E5 have to share with the screen, the trial run that tests the flags
-before 150 hours does, the run order, and what to do when a step refuses.
+before the grid does, the run order, and what to do when a step refuses.
 
 ## Data availability
 

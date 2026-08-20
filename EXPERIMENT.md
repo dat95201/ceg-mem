@@ -7,9 +7,9 @@ run it. [SCREENING.md](SCREENING.md) is the sibling runbook for E0b, and
 [CORPUS.md](CORPUS.md) for the pool and the freeze.
 
 This checkout runs **entirely on a local proposer**, and `.env` is already that
-profile — no per-command prefixes, no key. The grid is ~24,000 model calls and
-~150 hours, so it is cut into index ranges over the corpus and run in shards,
-exactly as the screen was.
+profile — no per-command prefixes, no key. The grid is tens of thousands of model
+calls and days of wall clock, so it is cut into index ranges over the corpus and
+run in shards, exactly as the screen was.
 
 | | |
 |---|---|
@@ -33,16 +33,17 @@ exactly as the screen was.
 
 ## 0. What must already be true
 
-This file starts at E1. Three steps come before it, each with its own runbook,
-and E1 rests on all three. They are done — this is how to confirm it on the
-machine you are about to spend 150 hours on, and none of these commands costs
-anything.
+This file starts at E1. Four stages come before it, each with its own runbook,
+and E1 rests on all of them. `bash scripts/pipeline.sh` reports which have run;
+the block below is the check worth doing by hand before committing days of
+compute. None of it costs anything.
 
-| step | what it earns | runbook | artifact | state |
-|---|---|---|---|---|
-| **E0** — candidate pool + oracle gate | Assumption 1: the oracle actually refutes wrong patches | [CORPUS.md](CORPUS.md) | `data/pool/tasks.json`, `data/pool/oracle_validation.json` | **done** — 526 examined, 451 usable, pool frozen at 324, **324/324 passed** the ≥2/3-natural-mutants bar (the corpus gate needed 243) |
-| **E0b** — the π̂ screen | the difficulty axis §5 stratifies on | [SCREENING.md](SCREENING.md) | `data/screen_merged.json` | **done** — 5,249 draws over 526 candidates at K=10, pooled π̂ = 0.118, `complete: true` |
-| **freeze the corpus** | the 85 tasks E1–E5 walk | [CORPUS.md](CORPUS.md) | `data/tasks.json`, `data/screening.json` | **done** — 85 selected, `hard` band empty (§2) |
+| stage | what it earns | runbook | artifact |
+|---|---|---|---|
+| **Stage 0** — candidates | the fault list every later index range is cut from | [SELECTION.md](SELECTION.md) | `data/candidates.json` |
+| **E0** — the oracle gate | Assumption 1: the oracle actually refutes wrong patches | [CORPUS.md](CORPUS.md) | `data/pool/tasks.json`, `data/pool/oracle_validation.json` |
+| **E0b** — the π̂ screen | the difficulty axis §5 stratifies on | [SCREENING.md](SCREENING.md) | `data/screen_merged.json` |
+| **freeze the corpus** | the task list E1–E5 walk | [CORPUS.md](CORPUS.md) | `data/tasks.json`, `data/screening.json` |
 
 ```bash
 python3 - <<'PY'
@@ -64,15 +65,15 @@ listed here rather than assumed: **π is a property of the model**. The bands in
 `data/tasks.json` mean something only if E1–E5 run under the same proposer the
 screen measured, which is what §1 pins and `eval_shard.sh` enforces.
 
-E0 needs no model at all — it is CPU-only and takes ~1.7 h at `--jobs 6` — so if
-you ever need to re-run it (a new `Test/` unpack, a different `--min-siblings`),
-it does not go through this file's machinery. The gate is what earns the paper's
-Assumption 1: the paper takes oracle soundness as given, and on a real benchmark
-it has to be demonstrated before anything is spent through it.
+E0 needs no model at all — it is CPU-only — so if you ever need to re-run it (a
+new `Test/` unpack, a different `--min-siblings`), it does not go through this
+file's machinery. The gate is what earns the paper's Assumption 1: the paper
+takes oracle soundness as given, and on a real benchmark it has to be
+demonstrated before anything is spent through it.
 
-One no-model step is still **outstanding**, and it belongs to this file rather
-than to CORPUS.md because it measures the frozen corpus rather than selecting it:
-the oracle's blind spot, §4.2.
+One no-model step belongs to this file rather than to CORPUS.md, because it
+measures the frozen corpus rather than selecting it: the oracle's blind spot,
+§4.2.
 
 ---
 
@@ -144,30 +145,44 @@ is skipped rather than re-walked.
 
 ---
 
-## 2. What the corpus is, and what it is missing
+## 2. What the corpus is, and the one thing to check before E1
 
-`data/tasks.json`, frozen, 85 tasks:
+`select_corpus.py` fills five bands on π̂ and writes `data/tasks.json`:
 
-| stratum | π̂ band | quota | taken | role |
-|---|---|---|---|---|
-| `dead` | [0.00, 0.02) | 20 | **20** | control — B binds hardest, memory grows longest |
-| `hard` | [0.02, 0.08) | 30 | **0** | primary — largest predicted effect |
-| `medium` | [0.08, 0.18) | 20 | **20** | primary |
-| `easy` | [0.18, 0.35] | 30 | **30** | primary |
-| `too_easy` | (0.35, 1.00] | 15 | **15** | control — predicted null, all arms coincide |
+| stratum | π̂ band | role |
+|---|---|---|
+| `dead` | [0.00, 0.02) | control — B binds hardest, memory grows longest |
+| `hard` | [0.02, 0.08) | primary — largest predicted effect |
+| `medium` | [0.08, 0.18) | primary |
+| `easy` | [0.18, 0.35] | primary |
+| `too_easy` | (0.35, 1.00] | control — predicted null, all arms coincide |
 
-**`hard` is empty, and this is a measurement limit, not an accident.** π̂ lives on
-a grid of 1/K and the screen ran at K = 10, where `0/10 = 0.000` is `dead` and
-`1/10 = 0.100` is `medium` — no outcome can land in [0.02, 0.08) at all. `hard`
-is where the paper predicts its largest effect (A₁₂ = 1.00, oracle calls
-23.07 → 6.50), so running as-is means reporting two primary bands, not three.
+Each band takes `min(quota, available)`, so the corpus is as large as the screen
+lets it be and no larger. The two control bands are kept, not discarded: an
+effect that appears only where the mechanism has room to operate is stronger
+evidence than a uniform one.
 
-The fix is [SCREENING.md](SCREENING.md) §5 — deepen the same shards to
-`--calls 38`, re-merge, re-run `select_corpus.py --min-calls 38` and
-`build_strata.py` — and it costs ~28 extra draws per candidate (~82 h on one
-machine) because the first 10 replay from cache. **It has to happen before E1**,
-not after: re-freezing the corpus once episodes exist invalidates them, and
-`eval_shard.sh` will refuse to cut a shard from a corpus whose digest no longer
+**Check the band counts before spending anything on E1.** π̂ lives on a grid of
+1/K, where K is the depth the screen reached, so a band can only be filled if
+some multiple of 1/K falls inside it. At K = 10, for instance, `0/10 = 0.000` is
+`dead` and `1/10 = 0.100` is `medium` — nothing can land in [0.02, 0.08) at all,
+and the `hard` band, where the paper predicts its largest effect (A₁₂ = 1.00),
+comes out empty with nothing to say so.
+
+```bash
+python3 -c "
+import json, collections
+d = json.load(open('data/tasks.json'))
+print(d['n_selected'], 'tasks;', dict(collections.Counter(t['stratum'] for t in d['tasks'])))
+print('screen depth K =', d['selection']['min_calls'])"
+```
+
+An empty primary band is fixed by deepening the screen, not by proceeding:
+[SCREENING.md](SCREENING.md) §5 computes the depth that puts three interior
+points in `hard` and prints the per-task cost, and re-running a shard at a larger
+`--calls` replays every draw already bought. **It has to happen before E1**, not
+after: re-freezing the corpus once episodes exist invalidates them, and
+`eval_shard.sh` refuses to cut a shard from a corpus whose digest no longer
 matches the one its index order was built from.
 
 Decide that first. Everything below assumes the corpus you intend to report.
@@ -185,9 +200,10 @@ reported as a threat to validity.
 ## 3. Sharding
 
 A shard is a contiguous index range over that experiment's **universe** —
-`data/eval_order.txt` (the 85-task corpus) for E1/E2/E3, `data/sweep_programs.txt`
-(24 tasks) for E4/E5. Both files are written by `eval_shard.sh` on first use,
-deterministically, with the corpus digest that produced them in the header.
+`data/eval_order.txt` (the whole frozen corpus) for E1/E2/E3,
+`data/sweep_programs.txt` (six tasks per band) for E4/E5. Both files are written
+by `eval_shard.sh` on first use, deterministically, with the corpus digest that
+produced them in the header.
 
 **The order is not `data/tasks.json`'s order.** That file is grouped by stratum —
 twenty `dead`, then `medium`, then `easy`, then `too_easy` — so index ranges cut
@@ -195,13 +211,17 @@ from it would hand one machine every `dead` task (twenty rounds in every cell, b
 construction) and another every `too_easy` one (usually one round). The shards
 would differ ~10× in wall clock, and a run that finished three shards of four
 would hold a *stratum-biased* grid rather than a smaller one. So each band is
-spaced evenly over the whole order first. Every prefix and every suffix is then
-proportional:
+spaced evenly over the whole order first, which leaves every prefix and every
+suffix proportional. To see it for the corpus you actually froze:
 
-```
-positions   1-30    dead 7  medium 7  easy 11  too_easy 5
-positions  31-60    dead 7  medium 7  easy 10  too_easy 6
-positions  61-85    dead 6  medium 6  easy  9  too_easy 4
+```bash
+python3 -c "
+import json, collections
+strat = {t['name']: t['stratum'] for t in json.load(open('data/tasks.json'))['tasks']}
+order = [l.strip() for l in open('data/eval_order.txt') if l.strip() and not l.startswith('#')]
+n = len(order)
+for lo, hi in ((0, n//3), (n//3, 2*n//3), (2*n//3, n)):
+    print(f'positions {lo+1:>3}-{hi:<3}', dict(collections.Counter(strat[t] for t in order[lo:hi])))"
 ```
 
 Rules, the same three the screen has:
@@ -238,7 +258,8 @@ the same contract, in `consolidate_screens.py`.
 ## 4. The run order
 
 Everything here is free — the backend is local, and `.env` prices calls at zero.
-What it costs is wall clock: **~150 hours**, §8.
+What it costs is wall clock — days of it. §8 is how to project it for the
+corpus you froze.
 
 ### 4.0 Once, before the first shard
 
@@ -246,15 +267,12 @@ What it costs is wall clock: **~150 hours**, §8.
 cd ~/Study/research/ceg-mem && source .venv/bin/activate
 ```
 
-Move the pilot rows aside. `data/episodes.jsonl` holds 56 rounds from a
-three-task pilot run under the model id `cegmem-qwen2.5-coder-7b`. That id is in
-the cell key, so they cannot be mistaken for real cells — but they *would* be
-read by `summarize.py`, and `consolidate_evals.py` will refuse to overwrite a log
-holding rounds no shard accounts for:
-
-```bash
-mv data/episodes.jsonl data/episodes_pilot_qwen_custom.jsonl.bak
-```
+`data/episodes.jsonl` must not already exist. It is the *merged* log
+`consolidate_evals.py` writes, and every shard consults it for cells that are
+already finished — so rows left over from an earlier run, a rehearsal or a
+superseded corpus would be read as work already done. If one is there, move it
+aside deliberately; `consolidate_evals.py` refuses to overwrite a log holding
+rounds no shard accounts for, which is the same check after the fact.
 
 Then plan a shard without starting anything. This writes the order files and the
 shard list, and prints the protocol it would run under:
@@ -326,7 +344,8 @@ bash scripts/eval_shard.sh --exp trial
 
 Every cell must print `already complete, skipping`, and it must finish in
 seconds. Anything else means the resume key does not match the index — the bug
-PLAN.md §1 records, which re-ran every cell at full price — and 150 hours is the
+PLAN.md §1 records, which re-ran every cell at full price — and a multi-day grid
+is the
 wrong place to discover it.
 
 Clear the rehearsal (the cached completions stay, and E1 replays them free):
@@ -620,29 +639,31 @@ and re-run.
 
 ## 8. Cost
 
-Wall clock, not money. At the screen's measured rate on this machine — **median
-16.5 s, mean 22.8 s per call**, most of it model generation rather than sandbox
-execution. Nothing parallelises within a shard; the sharding *is* the
-parallelism.
+Wall clock, not money — the backend is local and `.env` prices calls at zero.
+Nothing parallelises within a shard; the sharding *is* the parallelism.
 
-| step | calls | one machine | three machines |
-|---|---|---|---|
-| trial | ~90 | ~0.5 h | — |
-| oracle blind spot | 0 model calls | ~2 h | — |
-| E1 | 8,500 (exact) | ~54 h | ~18 h each |
-| E2 | ≤7,250 | ≤46 h | ≤16 h each |
-| E3 | ≤4,350 | ≤28 h | ≤10 h each |
-| E4 + E5 | ≤3,670 | ≤23 h | ≤8 h each |
-| **total** | **≤23,800** | **≤150 h ≈ 6.3 days** | **≈ 2 days each** |
+`select_corpus.py` prints the projection for the corpus it just froze (its
+`--budget`, `--seeds-main`, `--seeds-abl` and `--sweep-size` flags are what that
+projection is evaluated at), and the per-call rate to multiply it by is the one
+your own screen measured:
 
-Only E1's figure is exact — it runs every round of every episode by construction.
-The rest are upper bounds: they stop at the first accept, and the per-task
-expectation `E[rounds] = (1 − (1−π)^20)/π` is evaluated at the screen's π̂,
-whereas the memory arms achieve a per-round rate `q ≥ π` whenever steering helps
-at all. If the paper's mechanism works, these steps finish early — itself a weak
-signal worth noticing in the logs.
+```bash
+python3 -c "
+import json, statistics
+sec = [json.loads(l)['sec'] for l in open('data/calls_screen.jsonl')]
+print(f'{len(sec)} calls: median {statistics.median(sec):.1f}s, mean {statistics.mean(sec):.1f}s')"
+```
 
-Where the hours actually go: the 20 `dead` tasks burn the full 20 rounds in every
-cell and account for a third of the grid on their own. They are kept because a
-control band where B binds hardest and memory grows longest is where the guard's
-predicted advantage should be most visible — not despite the cost, but for it.
+Only E1's call count is exact — `--force-full-budget` runs every round of every
+episode by construction, so it is `tasks × seeds × B`. The rest are upper bounds:
+they stop at the first accept, and the per-task expectation
+`E[rounds] = (1 − (1−π)^B)/π` is evaluated at the screen's π̂, whereas the memory
+arms achieve a per-round rate `q ≥ π` whenever steering helps at all. If the
+paper's mechanism works, those steps finish early — itself a weak signal worth
+noticing in the logs.
+
+Where the hours actually go: `dead`-band tasks burn the full budget in every
+cell, by construction, and dominate the total out of proportion to their count.
+They are kept because a control band where B binds hardest and memory grows
+longest is where the guard's predicted advantage should be most visible — not
+despite the cost, but for it.

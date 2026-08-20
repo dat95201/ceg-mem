@@ -227,7 +227,7 @@ separating the two needs coverage data this run does not collect.
 
 **[EXPERIMENT.md](EXPERIMENT.md) is the runbook** for this step and for steps 7–9
 below. It holds the protocol E1–E5 must share with the screen, how the grid is
-cut into shards, the trial that tests every flag before 150 hours does, the merge
+cut into shards, the trial that tests every flag before the grid does, the merge
 audit, and the failure modes. `scripts/eval_shard.sh` runs one shard end to end —
 it starts the local proposer, verifies the served context window, runs the grid,
 and tears the server back down, the way `screen_shard.sh` does for the screen.
@@ -296,7 +296,7 @@ freeze.
 
 Write it to a **file**, and pass the file — `--programs-from`,
 `--sweep-programs-from` — never a shell variable. Two independent reasons, and
-both fail silently. The grid takes ~150 hours across several sessions, and
+both fail silently. The grid runs across several sessions, and
 `freeze_results.py` must receive the identical list days later; its own default
 is "the first 30 frozen programs sorted", which is *not* the stratified subset.
 And zsh word-splits an unquoted `$(...)` but **not** an unquoted `$VAR`, so

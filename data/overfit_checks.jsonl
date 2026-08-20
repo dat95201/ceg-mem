@@ -1,3 +1,0 @@
-{"episode_id": "549f9d56983a", "task": "abc320_f/47539324", "mode": "untyped", "seed": 1, "first_accept_round": 2, "truly_correct": true, "overfit": false}
-{"episode_id": "8e3329f96507", "task": "abc320_f/47539324", "mode": "typed", "seed": 1, "first_accept_round": 2, "truly_correct": true, "overfit": false}
-{"episode_id": "ca8cbf179f78", "task": "abc358_d/55035534", "mode": "typed", "seed": 1, "first_accept_round": 2, "truly_correct": true, "overfit": false}
