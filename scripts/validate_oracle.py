@@ -141,7 +141,7 @@ DEFAULT_REFERENCE_CASES = 20   # cases the reference must pass to count as one
 # the oracle must refute. The proposal's criterion was "2 of 3"; held as the
 # fraction so it means the same thing for a task that supplies one sibling as
 # for one that supplies three - the corpus guarantees at least one but not
-# three (SELECTION.md). At 2/3 a task with a single mutant must have it caught,
+# three (DESIGN.md). At 2/3 a task with a single mutant must have it caught,
 # and a task with two must have both.
 MUTANTS_PER_TASK = 3
 MUTANT_CATCH_FRACTION = 2 / 3

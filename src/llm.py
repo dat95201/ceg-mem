@@ -116,7 +116,7 @@ def spent() -> float:
     Read from the file once, then kept in memory and advanced by complete().
     Re-reading on every call made this O(n^2) over a sweep that logs tens of
     thousands of them. The consequence is that spend by a *concurrently*
-    running driver is invisible here - PLAN.md already requires the billable
+    running driver is invisible here - DESIGN.md already requires the billable
     steps be run one at a time, for the same reason.
     """
     global _spent

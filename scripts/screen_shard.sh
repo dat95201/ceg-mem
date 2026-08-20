@@ -323,7 +323,7 @@ export SCREEN_RUNTIME="$RUNTIME"
 # files concatenate cleanly at merge time.
 export CALLS_LOG="$LEDGER"
 # Local backend, so the calls are free. The ledger still records tokens,
-# finish_reason and seconds - the token profile PLAN.md's rate card needs.
+# finish_reason and seconds - the token profile DESIGN.md's rate card needs.
 export PRICE_IN_PER_MTOK="0"
 export PRICE_OUT_PER_MTOK="0"
 export BUDGET_USD_CAP="1"

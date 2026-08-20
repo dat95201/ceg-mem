@@ -156,7 +156,7 @@ def check_protocol(shards: list[tuple[pathlib.Path, list[dict]]]) -> bool:
         print("\n  `model` and `granularity` are both in the experiment cell key "
               "(scripts/run_eval.py::cell_key),\n  so these rows will never pool: "
               "they are a second grid sharing one file. Move the odd\n  shard's log "
-              "aside, or re-run it under the protocol in EXPERIMENT.md §1.")
+              "aside, or re-run it under the protocol in RUNBOOK.md.")
     return ok
 
 

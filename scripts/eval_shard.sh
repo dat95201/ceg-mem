@@ -123,10 +123,10 @@ while [[ $# -gt 0 ]]; do
 done
 
 [[ -n "$EXP" ]] || { echo "--exp is required" >&2; usage >&2; exit 2; }
-[[ -f "$TASKS" ]] || { echo "$TASKS missing - freeze the corpus first (CORPUS.md)" >&2; exit 2; }
+[[ -f "$TASKS" ]] || { echo "$TASKS missing - freeze the corpus first (RUNBOOK.md)" >&2; exit 2; }
 
 # ── the presets ─────────────────────────────────────────────────────────────
-# One driver, many experiments: PLAN.md steps 6-9 are this same grid with
+# One driver, many experiments: DESIGN.md steps 6-9 are this same grid with
 # different flags. Encoded here rather than retyped per shard, because a flag
 # retyped wrong on shard 3 of 4 is a cell that never joins the others - it lands
 # in a different cell key and analysis simply reports it missing, days later.
@@ -196,7 +196,7 @@ def interleave(groups):
 
 order = interleave(by)
 
-# The E4/E5 subset: six per band, by name, per PLAN.md SS 9 - then put through
+# The E4/E5 subset: six per band, by name, per DESIGN.md - then put through
 # the same round-robin so a sweep shard is balanced too. Frozen to a file
 # because scripts/freeze_results.py --sweep-programs-from must receive the
 # identical list days later, and its own default is a different set.
@@ -403,7 +403,7 @@ export CACHE_DIR="cache"
 # files concatenate cleanly at merge time.
 export CALLS_LOG="$LEDGER"
 # Local backend, so the calls are free. The ledger still records tokens,
-# finish_reason and seconds - the token profile PLAN.md's rate card needs. The
+# finish_reason and seconds - the token profile DESIGN.md's rate card needs. The
 # cap can then never bind; it is left low as a tripwire, so a client somehow
 # repointed at a paid endpoint stops instead of spending.
 export PRICE_IN_PER_MTOK="0"

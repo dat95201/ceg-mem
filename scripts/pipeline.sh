@@ -7,7 +7,7 @@
 #   bash scripts/pipeline.sh screen --from 1 --to 132
 #   bash scripts/pipeline.sh --dry-run corpus     # print the command, run nothing
 #
-# The stages are PLAN.md's, in order. This script does not reimplement any of
+# The stages are DESIGN.md's, in order. This script does not reimplement any of
 # them - each is its own program with its own flags, and passing extra arguments
 # through is the normal way to use them. What it owns is the three things that
 # are easy to get wrong between stages and silent when they are:
@@ -26,7 +26,7 @@
 #                to a model.
 #
 # Sharded stages take an index range and are run once per shard, possibly on
-# several machines; see SCREENING.md and EXPERIMENT.md. Everything else is
+# several machines; see RUNBOOK.md and RUNBOOK.md. Everything else is
 # single-shot and CPU-only.
 set -euo pipefail
 
@@ -136,7 +136,7 @@ case "$STAGE" in
       echo "the screen is sharded: give it an index range over data/candidates.json." >&2
       echo "  bash scripts/pipeline.sh screen --from 1 --to 132" >&2
       echo "  bash scripts/pipeline.sh screen --merge        # once every shard is in" >&2
-      echo "SCREENING.md is the runbook." >&2
+      echo "RUNBOOK.md is the runbook." >&2
       exit 2
     else
       run bash scripts/screen_shard.sh "$@"
@@ -173,7 +173,7 @@ case "$STAGE" in
       echo "  bash scripts/pipeline.sh eval --exp trial" >&2
       echo "  bash scripts/pipeline.sh eval --exp E1 --from 1 --to 30" >&2
       echo "  bash scripts/pipeline.sh eval --merge          # once every shard is in" >&2
-      echo "EXPERIMENT.md is the runbook; --exp -h lists the presets." >&2
+      echo "RUNBOOK.md is the runbook; --exp -h lists the presets." >&2
       exit 2
     else
       run bash scripts/eval_shard.sh "$@"

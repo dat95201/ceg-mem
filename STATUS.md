@@ -16,11 +16,9 @@ request would have produced, without paying for it again. To force a cold run,
 | | |
 |---|---|
 | `bash scripts/pipeline.sh` | which stage has run, and what runs next |
-| [PLAN.md](PLAN.md) | the ordered plan: which command serves which paper claim, and what it costs |
-| [SELECTION.md](SELECTION.md) | why the benchmark is filtered at all, and on what |
-| [CORPUS.md](CORPUS.md) | the oracle gate and the corpus freeze |
-| [SCREENING.md](SCREENING.md) | the π̂ screen, sharded across machines |
-| [EXPERIMENT.md](EXPERIMENT.md) | E1–E5: protocol, shards, merge audit, failure modes |
+| [RUNBOOK.md](RUNBOOK.md) | how to run every stage, in order |
+| [DESIGN.md](DESIGN.md) | why each stage exists and what it may assume |
+| [README.md](README.md) | what the repository is, setup, layout |
 
 ## Which numbers are synthetic
 
@@ -45,15 +43,15 @@ expensive to fix afterwards.
 
 1. **Screen depth K.** π̂ lives on a grid of `1/K`, so a band is fillable only if
    some multiple of `1/K` falls inside it. Check the band counts after the freeze
-   and before E1 — EXPERIMENT.md §2 has the one-liner. A primary band that comes
+   and before E1 — RUNBOOK.md §5 has the one-liner. A primary band that comes
    out empty is a measurement limit, and the fix is a deeper screen, not a
    smaller claim.
 2. **The proposer.** π is a property of the model, so the screen and E1–E5 must
    run under the same one. `data/tasks.json` records which model it was banded
    under; `eval_shard.sh` pins it and verifies the served context window.
-3. **Budget B and the seed counts.** PLAN.md §0 pre-registers both deviations
+3. **Budget B and the seed counts.** DESIGN.md §1 pre-registers both deviations
    from the paper and the reason for each.
-4. **Whether to report the transcript condition.** PLAN.md's fidelity caveats
+4. **Whether to report the transcript condition.** DESIGN.md's fidelity caveats
    explain why the paper's untyped baseline shows the proposer nothing, and what
    a transcript-in-the-prompt arm would measure instead. It is a fourth mode, not
    a relabelling of `untyped`.

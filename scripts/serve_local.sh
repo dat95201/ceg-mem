@@ -35,7 +35,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-# ── PROTOCOL - must match data/tasks.json and SCREENING.md §1 ───────────────
+# ── PROTOCOL - must match data/tasks.json and RUNBOOK.md ───────────────
 MODEL="${MODEL:-qwen2.5-coder:7b}"
 CONTEXT_LENGTH="${CONTEXT_LENGTH:-32768}"
 PORT="${PORT:-11435}"                        # own port, not the desktop app's
@@ -147,4 +147,4 @@ echo "  ok: $RUNTIME"
 [[ -n "${RUNTIME_OUT:-}" ]] && printf '%s\n' "$RUNTIME" > "$RUNTIME_OUT"
 echo
 echo "ready. .env already points at ${URL} with MODEL=${MODEL}."
-echo "next: EXPERIMENT.md - the run order, or bash scripts/eval_shard.sh --exp trial."
+echo "next: RUNBOOK.md - the run order, or bash scripts/eval_shard.sh --exp trial."

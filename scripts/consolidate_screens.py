@@ -312,7 +312,7 @@ def merge_ledgers(paths: list[pathlib.Path], out: pathlib.Path) -> None:
           + (f" · {dupes} duplicate call(s) dropped" if dupes else ""))
     if rows:
         print(f"  median profile: {tin // len(rows)} in / {tout // len(rows)} out "
-              f"per call - this is what PLAN.md's rate card must be re-derived from")
+              f"per call - this is what DESIGN.md's rate card must be re-derived from")
 
 
 def main() -> None:

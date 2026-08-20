@@ -475,7 +475,7 @@ def main() -> None:
     print("  -> K_proxy is largely a size measure, which is why it gates nothing."
           " It spreads the\n     screening order over a range of K; measured"
           " K-hat stratifies the frozen corpus,\n     and R(K) is estimated"
-          " rather than assumed (see SELECTION.md SS 6.1).")
+          " rather than assumed (see DESIGN.md).")
 
     # Partial out/ coverage is not gated (see first_failed_gate) but it is not
     # nothing either: on those cases src/oracle.py scores the candidate against

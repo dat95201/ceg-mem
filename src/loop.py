@@ -189,7 +189,7 @@ def run_episode(
             # at the identical round, so the shard could never get past that
             # task. Recorded as a spent round with no refutation instead, which
             # is what it is; the count is a threat-to-validity number, not a
-            # crash. EXPERIMENT.md SS 7.
+            # crash. RUNBOOK.md.
             kind = ("context_overflow" if isinstance(exc, ContextOverflow)
                     else "truncated_response")
             append_round(_record(

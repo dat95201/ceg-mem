@@ -15,7 +15,7 @@
 # Earns Assumption 1. The paper takes oracle soundness as given; here it is
 # demonstrated - up to three natural mutants per fault, judged by the same
 # sampling oracle the repair loop calls, and a fault passes at >= 2/3 caught.
-# CORPUS.md is the runbook; this file is that runbook made executable.
+# RUNBOOK.md is the runbook; this file is that runbook made executable.
 #
 # There is no resume
 # ------------------
@@ -48,7 +48,7 @@
 # Same reasoning for --max-examples, --mutants-per-task and --reference-cases:
 # each one changes what "the oracle caught it" means, so each is stated rather
 # than defaulted. --corpus-size is both the cohort size the pass rate is measured
-# on and the number of passing faults to freeze - see CORPUS.md section 2.
+# on and the number of passing faults to freeze - see RUNBOOK.md section 2.
 #
 # Do not run this next to a screen shard
 # --------------------------------------
@@ -89,7 +89,7 @@ usage: bash scripts/oracle_gate.sh [options]
                     fault near the wall-clock limit can fail under parallel load
                     when it would have passed serially.
   --corpus-size N   cohort size for the gate AND passing faults to freeze
-                    (default 360). See CORPUS.md section 2 for why not 115.
+                    (default 360). See RUNBOOK.md section 2 for why not 115.
   --data-dir PATH   where tasks.json is written (default data/pool). Point a
                     rehearsal somewhere else so it cannot overwrite a freeze.
   --pool PATH       candidate list (default data/candidates.json)

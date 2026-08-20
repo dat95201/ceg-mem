@@ -10,7 +10,7 @@ type function and the counterexample oracle on a real benchmark, and measure how
 coherent real failure types actually are. This repository is that step.
 
 **No results are currently held.** `data/` contains source only. See
-[PLAN.md](PLAN.md) for the ordered run plan — which command serves which
+[RUNBOOK.md](RUNBOOK.md) for the ordered run plan — which command serves which
 experiment, which paper claim it anchors to, and what it costs.
 
 ## Setup
@@ -35,7 +35,7 @@ benchmark  ->  candidates  ->  gate  ->  screen  ->  corpus  ->  eval  ->  analy
 The first real decision is **`candidates`**: `select_candidates.py` decides which
 faults the study is ever allowed to see, and its output order is the seeded
 stratified traversal every later index range is cut from. It spends nothing and
-runs once — [SELECTION.md](SELECTION.md) argues each gate, and why filtering on
+runs once — [DESIGN.md](DESIGN.md) §2 argues each gate, and why filtering on
 them is dose-range selection rather than outcome selection.
 
 The proposer talks OpenAI chat-completions, and the same code path serves a
@@ -58,7 +58,7 @@ model id on two machines can be two different instruments with nothing to say
 so. `screen_shard.sh` therefore pins `OLLAMA_CONTEXT_LENGTH`, reads back what
 `/api/ps` actually serves, and refuses to spend on a mismatch.
 
-[SCREENING.md](SCREENING.md) is the runbook: the protocol every machine has to
+[RUNBOOK.md](RUNBOOK.md) is the runbook: the protocol every machine has to
 agree on, how to verify a new one before giving it real work, and how the shards
 merge.
 
@@ -132,80 +132,15 @@ statement, so its intended output format is underdetermined by the source alone.
 Every prompt therefore includes two worked input/output examples from the task's
 test data (`src.adapter.Task.spec_note`), identically in all three conditions.
 
-## Oracle validation
+## Where to go next
 
-`scripts/validate_oracle.py` runs two stages before it will freeze anything.
-
-The first asks whether a fault is **usable**: test data present, reference passes
-its own cases, faulty version actually refuted, nothing times out.
-
-The second asks whether the oracle **catches bugs it has not seen**. Up to three
-*natural mutants* are taken from the coding task itself — other people's wrong
-submissions to the same problem (`src.adapter.sibling_faults`) — and the same
-sampling oracle the repair loop calls is asked to refute each.
-
-Natural, not planted, and the trade is deliberate. A natural mutant is a real
-developer's real mistake, with a real mistake's detectability; a planted edit is
-easier and less representative. The cost is coverage: a coding task with a single
-submission has no sibling to borrow, hence `--min-siblings`.
-
-A mutant the sample accepts gets a second opinion from the whole shipped pool,
-which separates two different failures. If the pool refutes it, the sample was
-too small — a real property of the oracle at this `max_examples`, and reported.
-If the pool does not refute it either, no oracle could have caught it: it is
-excluded from the denominator rather than charged against the oracle.
-
-A program passes at ≥2/3 of its scoreable mutants caught — held as a fraction,
-not "2 of 3", because a task supplies between one and three siblings and the
-criterion must mean the same thing for each. The pool freezes at ≥75% of the
-cohort passing. The gate is measured on the cohort and the pool is then topped up
-past it, because a pass rate computed over a set already filtered on passing
-would be vacuous.
-
-### What that cannot say — `scripts/measure_pool_strength.py`
-
-A natural mutant is a submission AtCoder *rejected*, so the shipped pool refutes
-it by construction. Asking the pool about a program it is already known to reject
-cannot reveal a case the pool would miss.
-
-The unanswered question is whether the pool can tell a *small perturbation* of
-the correct program from the correct program itself — which is the population the
-repair loop actually judges, since an LLM patch is a near miss rather than a
-stranger's from-scratch reimplementation. `measure_pool_strength.py` answers it
-by planting mutants on the **already-frozen** corpus.
-
-It is a measurement, not a gate: it selects nothing, drops nothing, and a task
-whose pool turns out to be weak is reported rather than removed — removing it
-would be selecting the corpus on a property measured after the freeze.
-
-The verdict it exists to produce is `equivalent`: the mutant is wrong and no test
-in the pool distinguishes it. That is a hole in the oracle, and in the loop a
-patch landing in one is accepted while being wrong. Report the rate as an **upper
-bound** on invisible overfitting, not an estimate of it — some share of any
-planted edit changes no behaviour at all, and separating the two needs coverage
-data this pipeline does not collect.
-
-## Screening
-
-See [SCREENING.md](SCREENING.md) — how the π screen is sharded across machines,
-the protocol every machine has to agree on, and how the partial results merge.
-
-## Corpus selection
-
-See [SELECTION.md](SELECTION.md) for why measured π has to drive selection, the
-band table, and the discipline that keeps the selecting π̂ independent of the
-reported one, and [CORPUS.md](CORPUS.md) for the runbook — the oracle gate, the
-band quotas, and why the screen's depth decides which bands can be filled at all.
-
-## Running it
-
-`bash scripts/pipeline.sh` first — it names the stage you are on. Then
-[PLAN.md](PLAN.md) for the ordered plan and what each step is for, and
-[EXPERIMENT.md](EXPERIMENT.md) for the runbook of the experiment proper — the
-protocol E1–E5 have to share with the screen, the trial run that tests the flags
-before the grid does, the run order, and what to do when a step refuses.
+| | |
+|---|---|
+| [RUNBOOK.md](RUNBOOK.md) | **how to run the whole study** — every stage in order, the protocol every machine shares, sharding and merge audits, and what to do when a step refuses |
+| [DESIGN.md](DESIGN.md) | **why each stage exists** — which paper claim it anchors, why the benchmark is filtered and on what, the pre-registered deviations and commitments, and where the implementation is not the model |
+| [STATUS.md](STATUS.md) | what this checkout currently holds, and the four things a run has to decide before it starts |
 
 ## Data availability
 
 See §10 of the paper. Gaps between §10 and this repository are recorded at the
-end of [PLAN.md](PLAN.md) rather than papered over.
+end of [DESIGN.md](DESIGN.md) rather than papered over.
