@@ -1,0 +1,8 @@
+# shard 325-329 of 526 (1-based, inclusive)
+# pool: data/candidates.json
+# candidate_order_sha256: ac1bd4508978fc80798487a534fdb7b43deff2a17438aa3b33f73c97062db21d
+arc164_e/43433582
+abc310_c/45695385
+abc310_f/50729164
+abc309_c/45895898
+arc153_a/45913281
