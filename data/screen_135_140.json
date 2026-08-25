@@ -1,0 +1,1296 @@
+{
+  "programs": [
+    "abc286_g/38690639",
+    "agc064_a/46045029",
+    "abc338_e/54041010",
+    "abc332_d/53758957",
+    "abc329_f/52733588",
+    "abc312_f/46140996"
+  ],
+  "corpus_source": "data/shards/shard_135_140.txt (6 names)",
+  "calls_per_program": 40,
+  "model": "qwen2.5-coder:7b",
+  "seed": 20260717,
+  "max_examples": 100,
+  "temperature": 1.0,
+  "sandbox_timeout_sec": 30.0,
+  "runtime": {
+    "backend": "ollama",
+    "context_length": 32768,
+    "model_digest": "dae161e27b0e90dd",
+    "num_parallel": 1,
+    "ollama_version": "0.32.15",
+    "parameter_size": "7.6B",
+    "quantization": "Q4_K_M"
+  },
+  "pi_hat_pooled": 0.07916666666666666,
+  "total_successes": 19,
+  "total_calls": 240,
+  "total_unparsed": 0,
+  "unparsed_rate": 0.0,
+  "complete": true,
+  "stopped_early": "",
+  "elapsed_sec": 21508.4,
+  "per_program": {
+    "abc286_g/38690639": {
+      "successes": 18,
+      "calls": 40,
+      "pi_hat": 0.45,
+      "unparsed": 0,
+      "source_sha256": "9f1a83c49c7d3129",
+      "spec_sha256": "404f2064cb8cb0f5",
+      "detail": [
+        {
+          "call": 1,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "wrong output on test case example_01.txt"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case example_01.txt"
+        },
+        {
+          "call": 4,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 5,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 6,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 7,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 8,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case hand_01.txt"
+        },
+        {
+          "call": 10,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 11,
+          "accept": false,
+          "reason": "wrong output on test case example_01.txt"
+        },
+        {
+          "call": 12,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 13,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 14,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 15,
+          "accept": false,
+          "reason": "wrong output on test case hand_01.txt"
+        },
+        {
+          "call": 16,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 17,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 18,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 19,
+          "accept": false,
+          "reason": "raised NameError on test case example_00.txt: name 'defaultdict' is not defined"
+        },
+        {
+          "call": 20,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 21,
+          "accept": false,
+          "reason": "wrong output on test case example_01.txt"
+        },
+        {
+          "call": 22,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 23,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 24,
+          "accept": false,
+          "reason": "raised NameError on test case example_00.txt: name 'UnionFind' is not defined"
+        },
+        {
+          "call": 25,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 26,
+          "accept": false,
+          "reason": "wrong output on test case example_01.txt"
+        },
+        {
+          "call": 27,
+          "accept": false,
+          "reason": "wrong output on test case example_01.txt"
+        },
+        {
+          "call": 28,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 29,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 30,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 31,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 32,
+          "accept": false,
+          "reason": "raised SystemExit on test case example_00.txt: SyntaxError: invalid syntax. Perhaps you forgot a comma?"
+        },
+        {
+          "call": 33,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 34,
+          "accept": false,
+          "reason": "wrong output on test case example_01.txt"
+        },
+        {
+          "call": 35,
+          "accept": false,
+          "reason": "wrong output on test case example_01.txt"
+        },
+        {
+          "call": 36,
+          "accept": false,
+          "reason": "wrong output on test case example_01.txt"
+        },
+        {
+          "call": 37,
+          "accept": false,
+          "reason": "wrong output on test case example_01.txt"
+        },
+        {
+          "call": 38,
+          "accept": false,
+          "reason": "wrong output on test case example_01.txt"
+        },
+        {
+          "call": 39,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 40,
+          "accept": false,
+          "reason": "raised NameError on test case example_00.txt: name 'defaultdict' is not defined"
+        }
+      ]
+    },
+    "agc064_a/46045029": {
+      "successes": 0,
+      "calls": 40,
+      "pi_hat": 0.0,
+      "unparsed": 0,
+      "source_sha256": "350306499d1be729",
+      "spec_sha256": "911452fcbec8bc31",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "timed out after 30.0s on test case 000.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "raised KeyError on test case 000.txt: 1"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        },
+        {
+          "call": 11,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        },
+        {
+          "call": 12,
+          "accept": false,
+          "reason": "timed out after 30.0s on test case 000.txt"
+        },
+        {
+          "call": 13,
+          "accept": false,
+          "reason": "raised KeyError on test case 000.txt: 4"
+        },
+        {
+          "call": 14,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 15,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        },
+        {
+          "call": 16,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        },
+        {
+          "call": 17,
+          "accept": false,
+          "reason": "timed out after 30.0s on test case 000.txt"
+        },
+        {
+          "call": 18,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 19,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        },
+        {
+          "call": 20,
+          "accept": false,
+          "reason": "raised KeyError on test case 000.txt: 4"
+        },
+        {
+          "call": 21,
+          "accept": false,
+          "reason": "timed out after 30.0s on test case 000.txt"
+        },
+        {
+          "call": 22,
+          "accept": false,
+          "reason": "raised KeyError on test case 000.txt: 4"
+        },
+        {
+          "call": 23,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        },
+        {
+          "call": 24,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        },
+        {
+          "call": 25,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        },
+        {
+          "call": 26,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        },
+        {
+          "call": 27,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        },
+        {
+          "call": 28,
+          "accept": false,
+          "reason": "raised KeyError on test case 000.txt: 1"
+        },
+        {
+          "call": 29,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        },
+        {
+          "call": 30,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        },
+        {
+          "call": 31,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        },
+        {
+          "call": 32,
+          "accept": false,
+          "reason": "timed out after 30.0s on test case 000.txt"
+        },
+        {
+          "call": 33,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        },
+        {
+          "call": 34,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 35,
+          "accept": false,
+          "reason": "raised KeyError on test case 000.txt: 1"
+        },
+        {
+          "call": 36,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        },
+        {
+          "call": 37,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        },
+        {
+          "call": 38,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        },
+        {
+          "call": 39,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 40,
+          "accept": false,
+          "reason": "wrong output on test case 001.txt"
+        }
+      ]
+    },
+    "abc338_e/54041010": {
+      "successes": 0,
+      "calls": 40,
+      "pi_hat": 0.0,
+      "unparsed": 0,
+      "source_sha256": "77b21fe4555e25ee",
+      "spec_sha256": "583ceaf56377206f",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "raised NameError on test case 00_sample_00.txt: name 'sys' is not defined. Did you forget to import 'sys'?"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "raised SystemExit on test case 00_sample_00.txt: SyntaxError: unmatched ')'"
+        },
+        {
+          "call": 11,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 12,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 13,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 14,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 15,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_01.txt"
+        },
+        {
+          "call": 16,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 17,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 18,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 19,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 20,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 21,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 22,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 23,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 24,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 25,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 26,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 27,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 28,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 29,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 30,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 31,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 32,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 33,
+          "accept": false,
+          "reason": "raised KeyError on test case 00_sample_00.txt: 3"
+        },
+        {
+          "call": 34,
+          "accept": false,
+          "reason": "raised SystemExit on test case 00_sample_00.txt: SyntaxError: unmatched ')'"
+        },
+        {
+          "call": 35,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 36,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 37,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 38,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 39,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        },
+        {
+          "call": 40,
+          "accept": false,
+          "reason": "wrong output on test case 02_random2_10.txt"
+        }
+      ]
+    },
+    "abc332_d/53758957": {
+      "successes": 0,
+      "calls": 40,
+      "pi_hat": 0.0,
+      "unparsed": 0,
+      "source_sha256": "249cb23046959f14",
+      "spec_sha256": "b45534dbe1362093",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 11,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 12,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 13,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 14,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 15,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 16,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 17,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 18,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 19,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 20,
+          "accept": false,
+          "reason": "raised SystemExit on test case 000.txt: SyntaxError: closing parenthesis ')' does not match opening parenthesis '['"
+        },
+        {
+          "call": 21,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 22,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 23,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 24,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 25,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 26,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 27,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 28,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 29,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 30,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 31,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 32,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 33,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 34,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 35,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 36,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 37,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 38,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 39,
+          "accept": false,
+          "reason": "wrong output on test case 000.txt"
+        },
+        {
+          "call": 40,
+          "accept": false,
+          "reason": "raised SystemExit on test case 000.txt: SyntaxError: invalid syntax"
+        }
+      ]
+    },
+    "abc329_f/52733588": {
+      "successes": 1,
+      "calls": 40,
+      "pi_hat": 0.025,
+      "unparsed": 0,
+      "source_sha256": "9149f65ec9648bb1",
+      "spec_sha256": "99acc4611b47c3f7",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 11,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 12,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 13,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 14,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 15,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 16,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 17,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 18,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 19,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 20,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 21,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 22,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 23,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 24,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 25,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 26,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 27,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 28,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 29,
+          "accept": false,
+          "reason": "wrong output on test case sample00.txt"
+        },
+        {
+          "call": 30,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 31,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 32,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 33,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 34,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 35,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 36,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 37,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 38,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 39,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        },
+        {
+          "call": 40,
+          "accept": false,
+          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
+        }
+      ]
+    },
+    "abc312_f/46140996": {
+      "successes": 0,
+      "calls": 40,
+      "pi_hat": 0.0,
+      "unparsed": 0,
+      "source_sha256": "578c0e13fcc150b2",
+      "spec_sha256": "b3006fbcd150a54b",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "wrong output on test case sample00.txt"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 11,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 12,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 13,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 14,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 15,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 16,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 17,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 18,
+          "accept": false,
+          "reason": "wrong output on test case sample02.txt"
+        },
+        {
+          "call": 19,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 20,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 21,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 22,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 23,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 24,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 25,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 26,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 27,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 28,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 29,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 30,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 31,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 32,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 33,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 34,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 35,
+          "accept": false,
+          "reason": "wrong output on test case sample00.txt"
+        },
+        {
+          "call": 36,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 37,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        },
+        {
+          "call": 38,
+          "accept": false,
+          "reason": "wrong output on test case sample00.txt"
+        },
+        {
+          "call": 39,
+          "accept": false,
+          "reason": "raised IndexError on test case sample00.txt: list index out of range"
+        },
+        {
+          "call": 40,
+          "accept": false,
+          "reason": "wrong output on test case testcase00.txt"
+        }
+      ]
+    }
+  }
+}
