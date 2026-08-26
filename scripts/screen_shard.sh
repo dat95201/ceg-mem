@@ -54,6 +54,13 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+# ── BACKEND - ollama (default; what the reported screen runs under) or cloud.
+#    A second proposer needs its OWN screen, because pi is a property of the
+#    model: the bands the corpus is cut on are meaningless under a model that
+#    did not produce them. --backend cloud is how that second screen is run,
+#    and --out is how it is kept in its own report file.
+BACKEND="${BACKEND:-ollama}"
+
 # ── PROTOCOL - in src.llm's cache key, or in what pi_hat means. Identical on
 #    every machine and for the life of the screen, or the shards do not merge.
 MODEL="${MODEL:-qwen2.5-coder:7b}"
@@ -62,6 +69,13 @@ SEED="${SEED:-20260717}"
 CONTEXT_LENGTH="${CONTEXT_LENGTH:-32768}"
 MAX_EXAMPLES="${MAX_EXAMPLES:-100}"          # oracle strength; not in the key
 SANDBOX_TIMEOUT_SEC="${SANDBOX_TIMEOUT_SEC:-30.0}"
+REASONING_EFFORT="${REASONING_EFFORT:-}"     # o-series only; in the cache key
+# Cloud only; asserted non-empty on that path. Left unset here so the local
+# branch keeps its own zero/tripwire pair.
+PRICE_IN_PER_MTOK="${PRICE_IN_PER_MTOK:-}"
+PRICE_OUT_PER_MTOK="${PRICE_OUT_PER_MTOK:-}"
+BUDGET_USD_CAP="${BUDGET_USD_CAP:-}"
+LLM_BASE_URL_CLOUD="${LLM_BASE_URL:-}"       # empty = api.openai.com
 # ── knobs that are free to differ per machine ───────────────────────────────
 CALLS="${CALLS:-10}"                         # draws per task; deepen later
 PORT="${PORT:-11435}"                        # own port, not the desktop app's
@@ -78,10 +92,15 @@ usage: bash scripts/screen_shard.sh --from N --to M [options]
   --calls K         draws per task (default 10). Raising it later re-uses every
                     draw already bought - see "Incremental" in this file.
   --out PATH        override the report path
+  --backend B       ollama (default) or cloud
+  --model ID        proposer id. A different id is a DIFFERENT SCREEN - pi is a
+                    property of the model - so pair it with --out.
+  --reasoning-effort E   low|medium|high, o-series only (o4-mini, o3, ...)
   --port P          ollama port (default 11435). A server already listening
                     there is reused and left running; otherwise one is started
                     and torn down at the end. Either way the served context
-                    window is verified before anything is spent.
+                    window is verified before anything is spent. Ignored by
+                    --backend cloud.
   --stop-model      unload the model from memory on exit (default)
   --no-stop-model   leave it loaded, to warm-start the next shard
   --keep-serving    leave our own server up on exit (the process, not the weights;
@@ -89,9 +108,26 @@ usage: bash scripts/screen_shard.sh --from N --to M [options]
   --dry-run         print the plan and the shard list, start nothing
   -h, --help        this
 
-Pinned, and not overridable per run without also changing every other machine:
+Pinned for the reported screen, and not overridable per run without also
+changing every other machine:
   MODEL=qwen2.5-coder:7b  TEMPERATURE=1.0  SEED=20260717
   CONTEXT_LENGTH=32768    MAX_EXAMPLES=100 SANDBOX_TIMEOUT_SEC=30.0
+
+--backend cloud
+  No server is started or verified; LLM_BASE_URL is passed through (empty =
+  api.openai.com) and LLM_API_KEY, PRICE_IN_PER_MTOK, PRICE_OUT_PER_MTOK and
+  BUDGET_USD_CAP must all be set - on this path the calls cost money and
+  src.llm's cap is what stops a runaway screen. The cap is per process, and
+  each shard has its own ledger, so N shards at once need total/N each.
+
+  A second-proposer screen, kept in its own report so consolidate_screens.py
+  never pools it with the local one:
+
+    LLM_API_KEY=sk-... PRICE_IN_PER_MTOK=0.15 PRICE_OUT_PER_MTOK=0.60 \
+    BUDGET_USD_CAP=5 CONTEXT_LENGTH=128000 \
+    bash scripts/screen_shard.sh --from 1 --to 320 --calls 10 \
+         --backend cloud --model gpt-4o-mini \
+         --out data/screen_gpt4omini_001_320.json
 
 Merge the shards with:
   python3 scripts/consolidate_screens.py
@@ -104,6 +140,9 @@ while [[ $# -gt 0 ]]; do
     --to)      TO="$2"; shift 2 ;;
     --calls)   CALLS="$2"; shift 2 ;;
     --out)     OUT="$2"; shift 2 ;;
+    --backend) BACKEND="$2"; shift 2 ;;
+    --model)   MODEL="$2"; shift 2 ;;
+    --reasoning-effort) REASONING_EFFORT="$2"; shift 2 ;;
     --port)    PORT="$2"; shift 2 ;;
     --stop-model)    STOP_MODEL=1; shift ;;
     --no-stop-model) STOP_MODEL=0; shift ;;
@@ -113,6 +152,32 @@ while [[ $# -gt 0 ]]; do
     *) echo "unknown argument: $1" >&2; usage >&2; exit 2 ;;
   esac
 done
+
+[[ "$BACKEND" == "ollama" || "$BACKEND" == "cloud" ]] || {
+  echo "--backend must be ollama or cloud, got '$BACKEND'" >&2; exit 2; }
+if [[ "$BACKEND" == "cloud" ]]; then
+  : "${LLM_API_KEY:?--backend cloud needs LLM_API_KEY (export it; do not commit it)}"
+  for v in PRICE_IN_PER_MTOK PRICE_OUT_PER_MTOK BUDGET_USD_CAP; do
+    [[ -n "${!v}" ]] || {
+      echo "--backend cloud needs $v set - these calls cost money and src.llm's" >&2
+      echo "cap is what stops a runaway screen. See --help for an example." >&2
+      exit 2; }
+  done
+  [[ "$CONTEXT_LENGTH" != "32768" ]] || {
+    echo "--backend cloud with CONTEXT_LENGTH=32768 (the local default). Set it to" >&2
+    echo "the hosted model's real window - 128000 for gpt-4o-mini, 200000 for o4-mini." >&2
+    exit 2; }
+  [[ -n "$OUT" ]] || {
+    echo "--backend cloud needs an explicit --out. pi is a property of the model," >&2
+    echo "so a second proposer's screen is a SECOND screen: written into the default" >&2
+    echo "data/screen_<range>.json it would sit beside the local one under the same" >&2
+    echo "name, and consolidate_screens.py would find two protocols in one merge." >&2
+    exit 2; }
+fi
+if [[ -n "$REASONING_EFFORT" && "$BACKEND" != "cloud" ]]; then
+  echo "REASONING_EFFORT is set but --backend is $BACKEND; o-series models are cloud-only." >&2
+  exit 2
+fi
 
 [[ -n "$FROM" && -n "$TO" ]] || { echo "--from and --to are required" >&2; usage >&2; exit 2; }
 [[ "$FROM" =~ ^[0-9]+$ && "$TO" =~ ^[0-9]+$ ]] || { echo "--from/--to must be integers" >&2; exit 2; }
@@ -127,11 +192,21 @@ N_POOL="$(python3 -c "import json;print(len(json.load(open('$POOL'))['candidates
 (( FROM >= 1 && TO >= FROM && TO <= N_POOL )) || {
   echo "range $FROM-$TO is outside 1-$N_POOL" >&2; exit 2; }
 
+# A second proposer's shard must not land on the first one's filenames. The
+# range alone is not a unique tag once the model can vary: a cloud screen of
+# 1-20 and a local screen of 1-20 would share one ledger, so llm.spent() would
+# total two models' calls together and the token profile would average two
+# instruments. The model id is folded in whenever it is not the pinned local
+# one - so every existing local shard keeps the exact name it already has.
+SLUG=""
+if [[ "$MODEL" != "qwen2.5-coder:7b" ]]; then
+  SLUG="_$(printf '%s' "$MODEL" | tr -c 'A-Za-z0-9' '-' | sed 's/-\{1,\}/-/g;s/^-//;s/-$//')"
+fi
 TAG="$(printf '%03d_%03d' "$FROM" "$TO")"
 SHARD="data/shards/shard_${TAG}.txt"
-OUT="${OUT:-data/screen_${TAG}.json}"
-LEDGER="data/calls_screen_${TAG}.jsonl"
-LOG="logs/screen_${TAG}.log"
+OUT="${OUT:-data/screen${SLUG}_${TAG}.json}"
+LEDGER="data/calls_screen${SLUG}_${TAG}.jsonl"
+LOG="logs/screen${SLUG}_${TAG}.log"
 mkdir -p data/shards logs
 
 # ── the shard list ──────────────────────────────────────────────────────────
@@ -185,12 +260,74 @@ fi
 # What the distinction does decide is teardown. We stop what we started and
 # leave alone what we did not: unloading someone else's warm model is exactly
 # what they started it by hand to avoid.
-command -v ollama >/dev/null || { echo "ollama not on PATH" >&2; exit 2; }
-command -v curl   >/dev/null || { echo "curl not on PATH" >&2; exit 2; }
-
 HOST="127.0.0.1:${PORT}"
 URL="http://${HOST}"
 SERVE_PID=""
+
+# Defined before either branch, so a cloud shard gets the same "here is your
+# report" line and the same interrupt handling. Everything ollama-specific
+# inside is guarded, rather than the trap being installed on only one path.
+cleanup() {
+  local rc=$?
+  echo
+  if [[ "$BACKEND" == "cloud" ]]; then
+    echo "backend=cloud: nothing local to tear down. Spend is in $LEDGER."
+  else
+    # Unloading the weights and shutting the server down are two different things,
+    # and the first is the one that matters on a shared machine: the server process
+    # is a few MB, the resident model is 6.4 GB. So it happens by default on both
+    # paths - including when the server was already there and we are only borrowing
+    # it, because a shard that walks away leaving 6.4 GB pinned on a machine it did
+    # not start is a bad guest. --no-stop-model opts out, for chaining shards warm.
+    if (( STOP_MODEL )); then
+      echo "unloading $MODEL"
+      OLLAMA_HOST="$HOST" ollama stop "$MODEL" >/dev/null 2>&1 || true
+    else
+      echo "--no-stop-model: leaving $MODEL loaded"
+    fi
+    if [[ -z "$SERVE_PID" ]]; then
+      echo "leaving the pre-existing server on ${HOST} up"
+    elif (( KEEP_SERVING )); then
+      echo "--keep-serving: leaving our server up (pid $SERVE_PID)"
+    else
+      echo "stopping the server we started (pid $SERVE_PID)"
+      kill "$SERVE_PID" 2>/dev/null || true
+      wait "$SERVE_PID" 2>/dev/null || true
+    fi
+  fi
+  [[ -f "$OUT" ]] && echo "report: $OUT  (merge with scripts/consolidate_screens.py)"
+  exit "$rc"
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+if [[ "$BACKEND" == "cloud" ]]; then
+  # Nothing to start, nothing to unload, and no window to read back - a hosted
+  # endpoint refuses an over-long prompt rather than cropping it, which is the
+  # failure mode the /api/ps assertion below exists to prevent. What still has
+  # to happen is the runtime record: consolidate_screens.py refuses to merge
+  # shards whose runtimes disagree, and a shard with none is unauditable.
+  STOP_MODEL=0
+  RUNTIME="$(python3 - "$LLM_BASE_URL_CLOUD" "$CONTEXT_LENGTH" "$REASONING_EFFORT" <<'PY'
+import json, sys
+base, context, effort = sys.argv[1:4]
+print(json.dumps({
+    "backend": "openai",
+    "api_base": base or "https://api.openai.com/v1",
+    "context_length": int(context),
+    "reasoning_effort": effort or None,
+    "num_parallel": 1,
+}, sort_keys=True))
+PY
+)"
+  echo "backend=cloud: ${LLM_BASE_URL_CLOUD:-https://api.openai.com/v1}, model=$MODEL"
+  echo "  ok: $RUNTIME"
+fi
+
+if [[ "$BACKEND" == "ollama" ]]; then
+command -v ollama >/dev/null || { echo "ollama not on PATH" >&2; exit 2; }
+command -v curl   >/dev/null || { echo "curl not on PATH" >&2; exit 2; }
 
 if curl -sf "${URL}/api/tags" >/dev/null 2>&1; then
   echo "reusing the ollama server already on ${HOST} (leaving it up on exit)"
@@ -203,37 +340,6 @@ else
     ollama serve >>"$LOG" 2>&1 &
   SERVE_PID=$!
 fi
-
-cleanup() {
-  local rc=$?
-  echo
-  # Unloading the weights and shutting the server down are two different things,
-  # and the first is the one that matters on a shared machine: the server process
-  # is a few MB, the resident model is 6.4 GB. So it happens by default on both
-  # paths - including when the server was already there and we are only borrowing
-  # it, because a shard that walks away leaving 6.4 GB pinned on a machine it did
-  # not start is a bad guest. --no-stop-model opts out, for chaining shards warm.
-  if (( STOP_MODEL )); then
-    echo "unloading $MODEL"
-    OLLAMA_HOST="$HOST" ollama stop "$MODEL" >/dev/null 2>&1 || true
-  else
-    echo "--no-stop-model: leaving $MODEL loaded"
-  fi
-  if [[ -z "$SERVE_PID" ]]; then
-    echo "leaving the pre-existing server on ${HOST} up"
-  elif (( KEEP_SERVING )); then
-    echo "--keep-serving: leaving our server up (pid $SERVE_PID)"
-  else
-    echo "stopping the server we started (pid $SERVE_PID)"
-    kill "$SERVE_PID" 2>/dev/null || true
-    wait "$SERVE_PID" 2>/dev/null || true
-  fi
-  [[ -f "$OUT" ]] && echo "report: $OUT  (merge with scripts/consolidate_screens.py)"
-  exit "$rc"
-}
-trap cleanup EXIT
-trap 'exit 130' INT
-trap 'exit 143' TERM
 
 for _ in $(seq 60); do
   curl -sf "${URL}/api/tags" >/dev/null 2>&1 && break
@@ -300,6 +406,7 @@ print(json.dumps({
 PY
 )"
 echo "  ok: $RUNTIME"
+fi   # end of the ollama-only server lifecycle
 
 # ── run ─────────────────────────────────────────────────────────────────────
 # measure_pi.py rewrites $OUT after every task, so an interrupted shard leaves a
@@ -311,10 +418,7 @@ echo "  ok: $RUNTIME"
 # python-dotenv does not override an existing environment variable, so these win
 # over .env without touching it.
 export MODEL TEMPERATURE
-export LLM_BASE_URL="${URL}/v1"
-export LLM_API_KEY="unused"            # Ollama ignores it; the SDK demands one
 export LLM_CONTEXT_TOKENS="$CONTEXT_LENGTH"
-export LLM_TIMEOUT_SEC="1800"
 export SANDBOX_TIMEOUT_SEC
 export CACHE_DIR="cache"
 export SCREEN_RUNTIME="$RUNTIME"
@@ -322,11 +426,25 @@ export SCREEN_RUNTIME="$RUNTIME"
 # two machines sharing one file would interleave lines and mis-total. Separate
 # files concatenate cleanly at merge time.
 export CALLS_LOG="$LEDGER"
-# Local backend, so the calls are free. The ledger still records tokens,
-# finish_reason and seconds - the token profile DESIGN.md's rate card needs.
-export PRICE_IN_PER_MTOK="0"
-export PRICE_OUT_PER_MTOK="0"
-export BUDGET_USD_CAP="1"
+if [[ "$BACKEND" == "ollama" ]]; then
+  export LLM_BASE_URL="${URL}/v1"
+  export LLM_API_KEY="unused"          # Ollama ignores it; the SDK demands one
+  export LLM_TIMEOUT_SEC="1800"
+  # Local backend, so the calls are free. The ledger still records tokens,
+  # finish_reason and seconds - the token profile DESIGN.md's rate card needs.
+  export PRICE_IN_PER_MTOK="0"
+  export PRICE_OUT_PER_MTOK="0"
+  export BUDGET_USD_CAP="1"
+else
+  export LLM_BASE_URL="$LLM_BASE_URL_CLOUD"   # empty = api.openai.com
+  # LLM_API_KEY comes from the caller; asserted non-empty at the top.
+  export LLM_TIMEOUT_SEC="${LLM_TIMEOUT_SEC:-300}"
+  export REASONING_EFFORT
+  # Real rates and a real cap, all three asserted non-empty at the top. The cap
+  # binds per process against this shard's own ledger, so N shards at once need
+  # total/N each.
+  export PRICE_IN_PER_MTOK PRICE_OUT_PER_MTOK BUDGET_USD_CAP
+fi
 
 [[ -d .venv ]] && source .venv/bin/activate
 

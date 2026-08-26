@@ -26,7 +26,12 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 from scripts.select_corpus import BANDS, PRIMARY_BANDS  # noqa: E402
 
 DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
-MODES = ("no_memory", "untyped", "typed")
+# `transcript` is the ChatRepair baseline (src/memory.py), reported beside the
+# paper's three arms rather than in place of one. An episode log that holds no
+# transcript arm simply produces empty cells for it - _per_task_means skips a
+# mode with no episodes and bootstrap_ci returns n=0 - so this list is safe to
+# widen before E6 has ever been run.
+MODES = ("no_memory", "untyped", "typed", "transcript")
 def _strata_in_use() -> tuple[tuple[str, ...], tuple[str, ...]]:
     """(all strata, strata the BH family corrects across), read off the freeze.
 
@@ -92,12 +97,58 @@ def vargha_delaney_a12(xs: list[float], ys: list[float]) -> float | None:
 
 def wilcoxon_paired(xs: list[float], ys: list[float]) -> dict:
     """scipy's paired Wilcoxon signed-rank test; degenerates to p=1.0 when
-    every pair is tied (scipy raises on an all-zero difference vector)."""
+    every pair is tied (scipy raises on an all-zero difference vector).
+
+    Reports `n_effective` next to `n`, and that distinction is not cosmetic.
+    scipy's default zero_method='wilcox' DISCARDS tied pairs before ranking, so
+    the test's real sample size is the number of pairs that actually differ -
+    while `n` counts every task fed in. DESIGN.md SS7 pre-registers a typed arm
+    expected at exactly 0, which makes ties the common case rather than the
+    rare one: on redundancy the two arms can agree on most tasks and disagree
+    on a handful, and quoting `n` there overstates the evidence by an order of
+    magnitude. Both are reported; `n_effective` is the one to put in the paper.
+    """
     xs, ys = np.asarray(xs, dtype=float), np.asarray(ys, dtype=float)
+    n_effective = int(np.count_nonzero(xs - ys)) if xs.size else 0
     if xs.size == 0 or np.allclose(xs, ys):
-        return {"statistic": None, "pvalue": 1.0, "n": int(xs.size)}
-    stat, p = scipy_stats.wilcoxon(xs, ys)
-    return {"statistic": float(stat), "pvalue": float(p), "n": int(xs.size)}
+        return {"statistic": None, "pvalue": 1.0, "n": int(xs.size), "n_effective": n_effective}
+    stat, p = scipy_stats.wilcoxon(xs, ys, zero_method="wilcox")
+    return {"statistic": float(stat), "pvalue": float(p),
+            "n": int(xs.size), "n_effective": n_effective}
+
+
+def paired_rate_ratio(xs: list[float], ys: list[float], *, n_resamples: int = 10_000,
+                      seed: int = 0) -> dict:
+    """sum(xs)/sum(ys) with a paired cluster bootstrap over tasks.
+
+    DESIGN.md SS7's pre-registered primary estimand, and it exists because the
+    rank tests degenerate against an arm expected at exactly 0: A12 saturates at
+    1.00 for any nonzero comparator and carries no magnitude, and a bootstrap CI
+    on the zero arm is [0, 0]. A ratio of totals still has a scale, and
+    resampling *tasks* (not pairs) respects the fact that seeds within a task
+    are not independent.
+
+    Returns ratio=0.0 when the numerator is zero and the denominator is not -
+    that is the result, not a failure - and None when the denominator is zero,
+    where the ratio is undefined rather than infinite.
+    """
+    xs, ys = np.asarray(xs, dtype=float), np.asarray(ys, dtype=float)
+    if xs.size == 0:
+        return {"ratio": None, "lo": None, "hi": None, "n": 0}
+    order = np.argsort(ys, kind="stable")   # canonical realization; see bootstrap_ci
+    xs, ys = xs[order], ys[order]
+    denom = ys.sum()
+    point = float(xs.sum() / denom) if denom else None
+    rng = np.random.default_rng(seed)
+    idx = rng.integers(0, xs.size, size=(n_resamples, xs.size))
+    num_r, den_r = xs[idx].sum(axis=1), ys[idx].sum(axis=1)
+    ok = den_r > 0
+    if not ok.any():
+        return {"ratio": point, "lo": None, "hi": None, "n": int(xs.size)}
+    ratios = num_r[ok] / den_r[ok]
+    lo, hi = np.percentile(ratios, [2.5, 97.5])
+    return {"ratio": point, "lo": float(lo), "hi": float(hi), "n": int(xs.size),
+            "n_resamples_usable": int(ok.sum())}
 
 
 def benjamini_hochberg(pvalues: list[float], *, alpha: float = 0.05) -> list[bool]:
@@ -131,6 +182,14 @@ def _is_main_grid(ep: dict) -> bool:
         ep["guard_on"] and ep["steer_on"]
         and ep["max_examples"] == 100 and ep["typing_noise_c"] == 1.0
         and ep.get("force_full_budget", False) == (ep["mode"] == "no_memory")
+        # E8-audit and the windowed transcript run every knob above at its
+        # main-grid value, so without these three they pooled straight into the
+        # typed/untyped task means - and E8's whole point is that its guarded
+        # rounds carry a type the main grid's do not, so one task mean ended up
+        # averaging censored episodes with uncensored ones.
+        and not ep.get("audit_guarded", False)
+        and not ep.get("typing_random", False)
+        and ep.get("transcript_window", 0) == 0
     )
 
 
@@ -154,7 +213,10 @@ def _per_task_means(episodes: list[dict], mode: str, stratum: str | None, metric
             continue
         if metric == "oracle_calls_to_accept" and not ep["accepted"]:
             continue
-        value = ep[metric]
+        # .get, not [...]: a results file frozen before the token/redundancy
+        # fields existed simply has no key, and that should read as "not
+        # measured on this artifact" rather than crash the whole report.
+        value = ep.get(metric)
         if value is None:
             continue
         by_task.setdefault(ep["task"], []).append(value)
@@ -182,7 +244,13 @@ def compare_conditions(episodes: list[dict], metric: str) -> dict:
             ys = [per_mode[b][t] for t in shared_tasks]
             wilcoxon = wilcoxon_paired(xs, ys)
             a12 = vargha_delaney_a12(xs, ys)
-            comparisons[f"{a}_vs_{b}"] = {"n_tasks": len(shared_tasks), "a12": a12, **wilcoxon}
+            comparisons[f"{a}_vs_{b}"] = {
+                "n_tasks": len(shared_tasks), "a12": a12, **wilcoxon,
+                # The pre-registered estimand (DESIGN.md SS7). Only meaningful for
+                # a count metric, which is why it is skipped for the two rates.
+                "rate_ratio": (paired_rate_ratio(xs, ys)
+                               if metric not in ("success_at_b",) else None),
+            }
             if stratum_label in BH_STRATA:
                 pending_bh.setdefault((a, b), []).append((stratum_label, wilcoxon["pvalue"]))
 
@@ -198,10 +266,162 @@ def compare_conditions(episodes: list[dict], metric: str) -> dict:
     return out
 
 
+def _load_truly_correct(path: pathlib.Path | None = None) -> dict[str, bool]:
+    """episode_id -> truly_correct, from data/overfit_checks.jsonl.
+
+    Keyed on episode_id and nothing else. (task, mode, seed) is NOT unique: E2
+    and E4-k20/k8/k3 all run mode="typed" over the sweep subset at seeds 1-3, so
+    four legitimate audits collapse to one arbitrary survivor.
+    """
+    path = path or DATA_DIR / "overfit_checks.jsonl"
+    if not path.exists():
+        return {}
+    out: dict[str, bool] = {}
+    for line in path.read_text().splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        if "episode_id" in row and "truly_correct" in row:
+            out[row["episode_id"]] = bool(row["truly_correct"])
+    return out
+
+
+def cost_of_pass(episodes: list[dict], *, price_in: float | None = None,
+                 price_out: float | None = None) -> dict:
+    """v = C / R, the expected spend per correct patch, per arm.
+
+    The formula is *Efficient Agents*' cost-of-pass, used as published rather
+    than reinvented: C is the mean cost of one episode and R the fraction of
+    episodes that produced a correct patch, so v is dollars per success and
+    diverges - reported as None - for an arm that never succeeds.
+
+    Two honesty requirements are built in:
+
+      R uses `truly_correct` where the overfit audit ran, not `accepted`.
+      Accepting is not repairing (DESIGN.md SS4): the loop accepts when no
+      *sampled* case refutes. Scoring an overfitted patch as a pass would
+      reward exactly the arm that produces more of them.
+
+      The audit lives in data/overfit_checks.jsonl, NOT on the frozen episode -
+      scripts/freeze_results.py builds episodes from summarize_episode alone and
+      neither writes `truly_correct`, so this used to read it off a key that was
+      never there and fall through to the accept rate on every run, silently.
+      It is joined here, on episode_id, and the denominator is EVERY episode:
+      the audit only exists for episodes that accepted, so dividing by the
+      audited ones would compute the correct/plausible ratio and call it a
+      resolve rate. On 100 episodes / 40 accepts / 30 correct that is 0.75
+      instead of 0.30, understating v by 2.5x.
+
+      The prices are the caller's, defaulting to $PRICE_IN_PER_MTOK /
+      $PRICE_OUT_PER_MTOK. Both zero is the local backend, where the honest
+      answer is that v was NOT measured: v is reported as None rather than as a
+      confident $0.00 per correct patch. `repriced` says a real rate card was
+      applied to a local run's token counts, so a caption can say so.
+    """
+    import os
+    price_in = float(os.environ.get("PRICE_IN_PER_MTOK", 0)) if price_in is None else price_in
+    price_out = float(os.environ.get("PRICE_OUT_PER_MTOK", 0)) if price_out is None else price_out
+    # Was: `price_in == 0 and price_out == 0`, which was True in exactly the case
+    # where nothing had been repriced - a caption generator reading the flag got
+    # the opposite of the truth.
+    unpriced = price_in == 0 and price_out == 0
+
+    out: dict = {"price_in_per_mtok": price_in, "price_out_per_mtok": price_out,
+                 "unpriced": unpriced, "repriced": not unpriced, "arms": {}}
+    audit = _load_truly_correct()
+    for mode in MODES:
+        rows = [e for e in episodes if e["mode"] == mode and _is_main_grid(e)]
+        priced = [e for e in rows if e.get("tokens_in") is not None]
+        if not rows:
+            continue
+        # truly_correct when the audit ran on this episode, else fall back to
+        # accepted and say so, so a missing audit never silently inflates R.
+        # Denominator is every episode, numerator is the audited successes.
+        n_audited = sum(1 for e in rows if e["episode_id"] in audit)
+        if n_audited:
+            successes = sum(1 for e in rows if audit.get(e["episode_id"]) is True)
+            r = successes / len(rows)
+            basis = f"truly_correct, over all {len(rows)} episodes ({n_audited} audited)"
+        else:
+            r = sum(1.0 if e["accepted"] else 0.0 for e in rows) / len(rows)
+            basis = "accepted (no overfit audit found - R is an upper bound)"
+        per_episode = [e["tokens_in"] / 1e6 * price_in + e["tokens_out"] / 1e6 * price_out
+                       for e in priced]
+        c = float(np.mean(per_episode)) if per_episode else None
+        # None, not 0.0: with both prices at zero nothing was measured, and a
+        # table that prints $0.00 per correct patch has invented a result.
+        v = None if (unpriced or c is None or r <= 0) else float(c / r)
+        out["arms"][mode] = {
+            "n_episodes": len(rows), "n_priced": len(priced), "n_audited": n_audited,
+            "resolve_rate": r, "resolve_basis": basis,
+            "usd_per_episode": c,
+            "cost_of_pass": v,
+            # The plan asks for a bootstrap CI on v and bootstrap_ci is right
+            # here; resampling the per-episode cost carries C's uncertainty at
+            # a fixed R, which is the dominant term.
+            "usd_per_episode_ci": (bootstrap_ci(per_episode) if per_episode else None),
+            "cost_of_pass_ci": (
+                {k: (None if v_ is None else v_ / r) for k, v_ in
+                 bootstrap_ci(per_episode).items() if k in ("lo", "hi")}
+                if per_episode and r > 0 and not unpriced else None),
+        }
+    return out
+
+
+def context_tokens_by_round(episodes: list[dict]) -> dict:
+    """#16: mean prompt tokens at round 1, 2, 3, ... per arm.
+
+    A transcript arm's prompt grows by one attempt per round, a typed index's
+    does not, and that difference is the mechanism this paper is about. Reported
+    with the per-round n, because the tail of the curve is thin: only episodes
+    that ran that long contribute, and those are the hard tasks.
+
+    `slope_per_round` is an OLS fit over the rounds that have data - the single
+    number the claim reduces to. Flat is the prediction for typed.
+    """
+    out: dict = {"note": "mean prompt tokens by 1-based round index, main grid only",
+                 "arms": {}}
+    for mode in MODES:
+        curves = [e["prompt_tokens_by_round"] for e in episodes
+                  if e["mode"] == mode and _is_main_grid(e)
+                  and e.get("prompt_tokens_by_round")]
+        if not curves:
+            out["arms"][mode] = {"n_episodes": 0, "mean_by_round": None, "slope_per_round": None}
+            continue
+        width = max(len(c) for c in curves)
+        means, counts = [], []
+        for i in range(width):
+            vals = [c[i] for c in curves if i < len(c) and c[i] is not None]
+            means.append(float(np.mean(vals)) if vals else None)
+            counts.append(len(vals))
+        xs = [i + 1 for i, m in enumerate(means) if m is not None]
+        ys = [m for m in means if m is not None]
+        slope = float(np.polyfit(xs, ys, 1)[0]) if len(xs) >= 2 else None
+        out["arms"][mode] = {
+            "n_episodes": len(curves), "mean_by_round": means, "n_by_round": counts,
+            "slope_per_round": slope,
+            # How much of each curve is missing because the round replayed a
+            # cache entry written before the ledger join existed. Reported, not
+            # hidden: the arms that share E1's draws are the holed ones, so the
+            # missingness is differential exactly across the comparison #16 is
+            # for. scripts/backfill_cache_tokens.py closes it.
+            "n_rounds_unmeasured": sum(1 for c in curves for v in c if v is None),
+            "n_rounds_total": sum(len(c) for c in curves),
+        }
+    return out
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--results-path", type=pathlib.Path, default=DATA_DIR / "results_real.json")
     parser.add_argument("--out", type=pathlib.Path, default=DATA_DIR / "analysis.json")
+    parser.add_argument("--price-in", type=float, default=None,
+                        help="USD per Mtok input, for cost-of-pass. Defaults to "
+                             "$PRICE_IN_PER_MTOK. Set both explicitly to reprice a "
+                             "local (free) run against a hosted rate card - the "
+                             "report records which was used")
+    parser.add_argument("--price-out", type=float, default=None,
+                        help="USD per Mtok output, for cost-of-pass")
     args = parser.parse_args()
 
     if not args.results_path.exists():
@@ -224,13 +444,44 @@ def main() -> None:
         #                           measured best exactly where the round count
         #                           is measured worst.
         #   proposals               model calls, the other budget a practitioner pays.
+        #
+        # Everything below the original five is recoverable from the same
+        # episode summaries at no extra cost, and each answers a question a
+        # reviewer asks:
+        #   blocked_known_counterexample  the arm-neutral redundancy count
+        #                           (DESIGN.md SS6): rounds blocked because they
+        #                           provably reproduced a stored counterexample.
+        #                           Unlike redundant_attempts it means the same
+        #                           thing in the flat and the typed arm.
+        #   type_repeats            rounds whose theta repeats an earlier one.
+        #                           Comparable across arms only under
+        #                           --audit-guarded (E8); otherwise censored in
+        #                           whichever arm guards more.
+        #   tokens_in/out/total     what a practitioner actually pays. Input
+        #                           dominates agentic cost, and it is where a
+        #                           typed index should beat a transcript.
+        #   wall_sec                model + oracle + guard seconds.
         "metrics": {
             "oracle_calls_to_accept": compare_conditions(episodes, "oracle_calls_to_accept"),
             "redundant_attempts": compare_conditions(episodes, "redundant_attempts"),
             "success_at_b": compare_conditions(episodes, "success_at_b"),
             "guard_evaluations": compare_conditions(episodes, "guard_evaluations"),
             "proposals": compare_conditions(episodes, "proposals"),
+            "blocked_known_counterexample": compare_conditions(episodes, "blocked_known_counterexample"),
+            "type_repeats": compare_conditions(episodes, "type_repeats"),
+            "tokens_in": compare_conditions(episodes, "tokens_in"),
+            "tokens_out": compare_conditions(episodes, "tokens_out"),
+            "tokens_total": compare_conditions(episodes, "tokens_total"),
+            "redundant_token_share": compare_conditions(episodes, "redundant_token_share"),
+            "wall_sec": compare_conditions(episodes, "wall_sec"),
         },
+        # #16, reported as a curve rather than through compare_conditions: the
+        # claim is about the SHAPE - a typed index is flat in the round index
+        # where a transcript grows linearly - and two arms can have close totals
+        # with nothing alike about their curves. This is the measurement the
+        # typed-vs-transcript comparison rests on, so it is its own section.
+        "context_tokens_by_round": context_tokens_by_round(episodes),
+        "cost_of_pass": cost_of_pass(episodes, price_in=args.price_in, price_out=args.price_out),
     }
     args.out.write_text(json.dumps(report, indent=2) + "\n")
 

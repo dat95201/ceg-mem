@@ -247,6 +247,25 @@ A transcript-in-the-prompt condition is a legitimate and interesting question
 about real LLM agents — it is what §2 of the paper says reflective agents
 actually do — but it is a **fourth mode**, not a relabelling of this baseline.
 
+That fourth mode now exists: `transcript` (`src/memory.py`, preset
+`E6-transcript`). It subclasses `UntypedMemory` and changes exactly one thing —
+`src/proposer.py` shows the model every refuted patch and its counterexample —
+so any gap between the two arms is attributable to the steering channel alone.
+It is the ChatRepair condition and it is reported **beside** `untyped`, never in
+place of it: `untyped` is what the theory is about, `transcript` is what a
+reviewer will otherwise say the theory ignores. `freeze_results.py` treats it as
+its own sub-grid (`--experiment transcript`) rather than a fourth cell of the
+main grid, for that reason.
+
+Two things about it that must reach the write-up. It is the **only** arm that
+cannot share E1's cached draws, so its cost is real rather than free. And
+`--transcript-window K` is a declared design decision, in the cell key: an
+unbounded transcript is the one arm that can hit the context ceiling, and where
+it does, `src/llm.py` raises `ContextOverflow` rather than letting the backend
+crop — so the run reports the overflow instead of silently measuring a cropped
+prompt. Count `proposal_error="context_overflow"` per arm before reporting
+anything about this condition.
+
 **Steering is a prompt instruction, not Eq. (3).** The paper renormalises the
 proposer's support onto the not-yet-eliminated types, so Theorem 4.2(i)
 non-repetition holds *by construction* — an eliminated class cannot be drawn.
@@ -306,20 +325,39 @@ log.
 
 Known, and recorded rather than carried silently.
 
-- **`redundant_attempts` is not one definition.** `summarize_episode` counts
-  every guarded round as redundant, justified by "its type matched a bucket
-  memory had already eliminated". That holds for the typed guard, which looks up
-  a bucket by location — but the untyped guard has no type index at all: it
-  replays stored counterexamples, and a candidate with a brand-new failure type
-  routinely fails an old failing input. So the column measures type repeats for
-  one arm and guard firings for another, and Theorem 4.3(b) assigns both the same
-  `R`. Fix before any comparison on redundancy is reported: log the candidate's
-  edit location on every round including guarded ones (it is a pure diff, free),
-  and report one definition for every arm.
-- **`analyze.py` calls `scipy.stats.wilcoxon` with the default
-  `zero_method='wilcox'`**, which drops tied pairs, while `n` reports the
-  untrimmed count. With a degenerate typed arm most pairs may be tied, so the
-  printed `n` can materially overstate the `n` actually used.
+- ~~**`redundant_attempts` is not one definition.**~~ **Fixed.** The problem was
+  real: `summarize_episode` counted every guarded round as redundant, which
+  holds for the typed guard (it looks up a bucket by location) but not for the
+  untyped one, which replays stored counterexamples — and a candidate with a
+  brand-new failure type routinely fails an old failing input. The column
+  measured type repeats for one arm and guard firings for the other while
+  Theorem 4.3(b) assigned both the same `R`.
+
+  Two things now exist instead, and the paper should report both:
+
+  `blocked_known_counterexample` — rounds blocked because they **provably
+  reproduced a stored counterexample**, labelled by that counterexample's type.
+  `GuardResult.blocked_by` carries the attempt that fired, and an `Attempt`
+  holds `theta_both`'s verdict regardless of which memory stored it, so this
+  means the same thing in every arm and needs no extra run.
+
+  `type_repeats` — rounds whose own θ repeats an earlier one. Honest, but
+  **censored exactly where an arm guards**, since a guarded round never reaches
+  the oracle and so carries no type. `--audit-guarded` (`E8-audit`) pays the
+  oracle on guarded rounds for the record only — the verdict never reaches
+  memory and never ends the episode — which un-censors it at the cost of
+  sandbox time and no model calls. `scripts/measure_redundancy.py` prints the
+  censoring rate per arm and refuses to let it pass unremarked.
+
+  `redundant_attempts` is kept under its own name so nothing that already reads
+  it silently changes meaning, but it is not the column to compare arms on.
+- ~~**`analyze.py` calls `scipy.stats.wilcoxon` with the default
+  `zero_method='wilcox'`**~~ **Fixed.** It now reports `n_effective` — the count
+  of pairs that actually differ, which is the test's real sample size — beside
+  the untrimmed `n`. `n_effective` is the one that belongs in the paper. The
+  pre-registered `paired_rate_ratio` (§7) is also computed now, for the same
+  underlying reason: against an arm expected at exactly 0, the rank tests
+  degenerate and only a ratio of totals carries magnitude.
 - **`fit_theory.py` compares observed no-memory oracle calls against `1/π̂` where
   π̂ is estimated from the same episodes** — an in-sample fit. The π̂ used for the
   prediction must come from screening draws.
@@ -332,6 +370,33 @@ Known, and recorded rather than carried silently.
   (lower π, more repetitive failures, more skewed `q`) — a legitimate choice that
   must be declared, and ideally checked against a stronger model on a subset so
   the effect is not an artefact of proposer weakness.
+
+  The machinery for that check now exists: `--backend cloud --model <id>` on
+  both shard scripts, with `model`, `backend` and `reasoning_effort` in the cell
+  key, in the shard `.meta.json` and in the merge audit, and the model id folded
+  into the shard filename so two proposers cannot land in one log. What has
+  *not* been decided is whether to run it, and the choice is not free in either
+  direction:
+
+  π is a property of the model, so a second proposer's bands are not this
+  corpus's bands. On the local model the screen measured 113 of 207 tasks in
+  `dead` and 40 in `hard` — and those are the two bands where the predicted
+  effect is largest (§V-F's own A₁₂ of 1.00 on Hard; Prop. 4.5's guard-cost gap
+  "grows with task difficulty"). A stronger proposer drains both. So a
+  second-proposer arm on the *existing* bands is a robustness check whose band
+  labels describe the local model's difficulty and must be reported as such; a
+  second-proposer arm on its *own* screen is a second experiment. Neither is a
+  drop-in replacement for the first, and the wrong one to pick is the one that
+  quietly re-labels the corpus.
+
+- **Reasoning models are supported but untested here.** `src/llm.py` routes
+  o-series ids to `max_completion_tokens`, drops `temperature`, and records
+  `reasoning_out` separately; `src/proposer.py` raises the output ceiling so
+  reasoning is not spent out of the answer's budget. None of that has been
+  exercised against a live o-series endpoint. Before a paid run, probe the three
+  parameter shapes (RUNBOOK.md §9 has the one-liner) — the o-series' handling of
+  an explicitly-passed `temperature=1.0` has varied across snapshots, and the
+  failure mode is a whole shard of rejected calls.
 
 ### Gaps against the paper's §10
 

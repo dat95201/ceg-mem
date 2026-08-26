@@ -164,8 +164,15 @@ def check_protocol(shards: list[tuple[pathlib.Path, list[dict]]]) -> bool:
 # and leaves no trace in the response cache, so scripts/eval_shard.sh writes them
 # to a per-shard record at the moment it verifies them, and they are checked here
 # - the same contract scripts/consolidate_screens.py enforces for the screen.
+#
+# backend and reasoning_effort joined the list when the driver gained a cloud
+# path. Neither reaches a RoundRecord's comparable fields on its own: two shards
+# of the same o-series model at different efforts share a model id and a
+# backend, and a local shard and a cloud shard of the same *chat* model differ
+# in latency and rate card while agreeing on everything a round records. Both
+# change the numbers, so both are merge-blocking.
 META_FIELDS = ("model", "temperature", "context_length", "sandbox_timeout_sec",
-               "granularity")
+               "granularity", "backend", "reasoning_effort")
 RUNTIME_FIELDS = ("context_length", "model_digest", "quantization", "backend")
 
 

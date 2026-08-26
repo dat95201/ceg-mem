@@ -50,6 +50,15 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+# ── BACKEND - which proposer this shard talks to. Everything below keys off it.
+#    ollama: a local server this script starts, pins and verifies (the default,
+#            and what the pi screen and the reported grid run under).
+#    cloud:  an OpenAI-compatible endpoint. No server lifecycle, no window to
+#            verify, and calls cost money - so the prices and the cap become
+#            real numbers instead of the zero/tripwire pair the local path uses.
+#    Set it per run; never edit this file to switch.
+BACKEND="${BACKEND:-ollama}"
+
 # ── PROTOCOL - in src.llm's cache key, or in what the metrics mean. Identical
 #    on every machine and for the life of the grid, or the shards do not merge.
 #    Same values the screen ran under: pi is a property of the model, and the
@@ -59,12 +68,22 @@ TEMPERATURE="${TEMPERATURE:-1.0}"
 CONTEXT_LENGTH="${CONTEXT_LENGTH:-32768}"
 SANDBOX_TIMEOUT_SEC="${SANDBOX_TIMEOUT_SEC:-30.0}"
 GRANULARITY="${GRANULARITY:-fine}"
+# o-series only, and empty for everything else. In src.llm's cache key and in
+# run_eval's cell key, because it changes the proposal distribution.
+REASONING_EFFORT="${REASONING_EFFORT:-}"
+# Cloud only. Zero on the local path, where calls are free and the cap is a
+# tripwire (see the export block near the bottom).
+PRICE_IN_PER_MTOK="${PRICE_IN_PER_MTOK:-}"
+PRICE_OUT_PER_MTOK="${PRICE_OUT_PER_MTOK:-}"
+BUDGET_USD_CAP="${BUDGET_USD_CAP:-}"
+LLM_BASE_URL_CLOUD="${LLM_BASE_URL:-}"       # empty = api.openai.com
 # ── knobs that are free to differ per machine ───────────────────────────────
 PORT="${PORT:-11435}"                        # own port, not the desktop app's
 TASKS="data/tasks.json"
 MERGED="data/episodes.jsonl"
 
 EXP=""; FROM=""; TO=""; SEEDS=""; BUDGET=""; DRY_RUN=0
+CHECK_REGRESSION=0; REGRESSION_CAP=
 KEEP_SERVING=0; STOP_MODEL=1; RESUME_MERGED=1
 
 # ── the universes ───────────────────────────────────────────────────────────
@@ -95,10 +114,15 @@ universe_size() {
   echo "${n:-0}"
 }
 
-# Expanded, not quoted: the universe sizes below are substituted at print
-# time. Nothing else in this text may carry a $, a backtick or a backslash.
+# The universe sizes are read off the frozen lists rather than written down -
+# but the text around them carries backticks, a $ and line continuations in the
+# cloud examples, and an expanded heredoc would run `model` as a command and
+# swallow the backslashes. So the heredoc stays QUOTED and the three counts are
+# substituted afterwards, through @N_...@ placeholders.
 usage() {
-  cat <<USAGE
+  sed -e "s/@N_CORPUS@/$(printf '%-5s' "$(universe_size corpus)")/" \
+      -e "s/@N_SWEEP@/$(printf  '%-5s' "$(universe_size sweep)")/" \
+      -e "s/@N_TRIAL@/$(printf  '%-5s' "$(universe_size trial)")/" <<'USAGE'
 usage: bash scripts/eval_shard.sh --exp NAME [--from N --to M] [options]
 
   --exp NAME        which experiment. One of:
@@ -109,23 +133,50 @@ usage: bash scripts/eval_shard.sh --exp NAME [--from N --to M] [options]
                       E3-steer-only   typed with --guard off
                       E4-k20 E4-k8 E4-k3      typed at --max-examples K
                       E5-c90 E5-c75 E5-c50    typed at --typing-noise-c C
+                      E5-c25 E5-c00           two more c levels, for the
+                                              crossover c* and the slope
+                      E5-random       the c axis's NULL: classes assigned at
+                                      random. c=0.00 is not this - see the
+                                      preset's comment for why
+                      E6-transcript   ChatRepair baseline: the whole refuted
+                                      transcript in the prompt, same guard as
+                                      untyped. Its own mode, not a relabelling
+                      E8-audit        untyped+typed with --audit-guarded: pays
+                                      the oracle on guarded rounds so their
+                                      failure type is on the record. Subset
+                                      only - it defeats the saving E2 measures
   --from N --to M   1-based inclusive range over that experiment's universe
-                    (default: all of it). E1/E2/E3 walk the whole frozen
-                    corpus, E4/E5 the stratified sweep subset, six per band.
+                    (default: all of it). E1/E2/E3/E6 walk the whole frozen
+                    corpus, E4/E5/E8 the stratified sweep subset, six per band.
                     Neither size belongs to this script - a re-freeze with
                     different quotas, or a band that under-filled, changes
                     both - so they are read off the lists, never written here:
-                      corpus  data/eval_order.txt       $(universe_size corpus)
-                      sweep   data/sweep_programs.txt   $(universe_size sweep)
-                      trial   data/trial_programs.txt   $(universe_size trial)
+                      corpus  data/eval_order.txt       @N_CORPUS@
+                      sweep   data/sweep_programs.txt   @N_SWEEP@
+                      trial   data/trial_programs.txt   @N_TRIAL@
                     A "-" means that list has not been cut yet; the first
                     shard of that universe writes it from data/tasks.json.
   --seeds "1 2 3"   override the preset's seeds
   --budget B        override the preset's budget (default 20; trial 5)
+  --backend B       ollama (default) or cloud. See the block below.
+  --model ID        proposer id. Must match the model the corpus was banded
+                    under, unless you are deliberately running a second-proposer
+                    arm - `model` is in the cell key, so the two never pool.
+  --reasoning-effort E   low|medium|high, o-series only (o4-mini, o3, ...)
+  --transcript-window K  E6 only: show the K most recent attempts, 0 = all
+  --check-regression     #22: score every accepted patch on both halves of the
+                    shipped pool - the cases the faulty version fails, and the
+                    ones it passes that nothing in the loop ever checks. Sandbox
+                    time only, no model calls, and NOT in the cell key, so it
+                    can be switched on without invalidating finished cells.
+  --regression-cap N     cases per program for the above; 0 = the whole pool.
+                    Recorded in every row, because a capped audit is a weaker
+                    measurement than an uncapped one.
   --port P          ollama port (default 11435). A server already listening
                     there is reused and left running; otherwise one is started
                     and torn down at the end. Either way the served context
-                    window is verified before anything is spent.
+                    window is verified before anything is spent. Ignored by
+                    --backend cloud.
   --no-resume-merged  do not consult data/episodes.jsonl for finished cells
   --stop-model      unload the model from memory on exit (default)
   --no-stop-model   leave it loaded, to warm-start the next shard
@@ -134,9 +185,34 @@ usage: bash scripts/eval_shard.sh --exp NAME [--from N --to M] [options]
   --dry-run         print the plan and the shard list, start nothing
   -h, --help        this
 
-Pinned, and not overridable per run without also changing every other machine:
+Pinned for the reported grid, and not overridable per run without also changing
+every other machine:
   MODEL=qwen2.5-coder:7b  TEMPERATURE=1.0  CONTEXT_LENGTH=32768
   SANDBOX_TIMEOUT_SEC=30.0  GRANULARITY=fine
+
+--backend cloud
+  No server is started, stopped or verified; LLM_BASE_URL is passed through
+  (empty = api.openai.com) and LLM_API_KEY must be set. Three variables become
+  required rather than optional, because on this path the calls cost money and
+  src.llm's cap is the only thing that stops a runaway grid:
+
+    PRICE_IN_PER_MTOK  PRICE_OUT_PER_MTOK  BUDGET_USD_CAP
+
+  The cap is PER PROCESS: llm.spent() sums only this shard's own ledger, and
+  every shard gets its own. Running N shards at once therefore needs
+  BUDGET_USD_CAP = total/N, or the real ceiling is N times what you set.
+
+  gpt-4o-mini, whole corpus, E1+E2:
+    LLM_API_KEY=sk-... PRICE_IN_PER_MTOK=0.15 PRICE_OUT_PER_MTOK=0.60 \
+    BUDGET_USD_CAP=25 CONTEXT_LENGTH=128000 \
+    bash scripts/eval_shard.sh --exp E2 --backend cloud --model gpt-4o-mini
+
+  o4-mini (reasoning; src.llm switches to max_completion_tokens and drops
+  temperature on its own, and src.proposer raises the output ceiling):
+    LLM_API_KEY=sk-... PRICE_IN_PER_MTOK=1.10 PRICE_OUT_PER_MTOK=4.40 \
+    BUDGET_USD_CAP=60 CONTEXT_LENGTH=200000 \
+    bash scripts/eval_shard.sh --exp E2 --backend cloud --model o4-mini \
+         --reasoning-effort medium
 
 Merge the shards with:
   python3 scripts/consolidate_evals.py
@@ -150,6 +226,12 @@ while [[ $# -gt 0 ]]; do
     --to)      TO="$2"; shift 2 ;;
     --seeds)   SEEDS="$2"; shift 2 ;;
     --budget)  BUDGET="$2"; shift 2 ;;
+    --backend) BACKEND="$2"; shift 2 ;;
+    --model)   MODEL="$2"; shift 2 ;;
+    --reasoning-effort) REASONING_EFFORT="$2"; shift 2 ;;
+    --transcript-window) TRANSCRIPT_WINDOW="$2"; shift 2 ;;
+    --check-regression)  CHECK_REGRESSION=1; shift ;;
+    --regression-cap)    REGRESSION_CAP="$2"; shift 2 ;;
     --port)    PORT="$2"; shift 2 ;;
     --no-resume-merged) RESUME_MERGED=0; shift ;;
     --stop-model)    STOP_MODEL=1; shift ;;
@@ -163,6 +245,37 @@ done
 
 [[ -n "$EXP" ]] || { echo "--exp is required" >&2; usage >&2; exit 2; }
 [[ -f "$TASKS" ]] || { echo "$TASKS missing - freeze the corpus first (RUNBOOK.md)" >&2; exit 2; }
+[[ "$BACKEND" == "ollama" || "$BACKEND" == "cloud" ]] || {
+  echo "--backend must be ollama or cloud, got '$BACKEND'" >&2; exit 2; }
+
+# Checked here, before a shard list is written or a server touched, because
+# every one of these is unrecoverable after the fact: an unpriced ledger cannot
+# be repriced (the token counts are there but which rate applied is not), and a
+# cap left at the local tripwire stops a paid grid three calls in.
+if [[ "$BACKEND" == "cloud" ]]; then
+  : "${LLM_API_KEY:?--backend cloud needs LLM_API_KEY (export it; do not commit it)}"
+  for v in PRICE_IN_PER_MTOK PRICE_OUT_PER_MTOK BUDGET_USD_CAP; do
+    [[ -n "${!v}" ]] || {
+      echo "--backend cloud needs $v set - these calls cost money and src.llm's" >&2
+      echo "cap is what stops a runaway grid. See --help for the two rate cards." >&2
+      exit 2; }
+  done
+  # The window check is an ollama-specific defence (it truncates rather than
+  # refusing); a hosted endpoint returns a context_length_exceeded error
+  # instead. But LLM_CONTEXT_TOKENS still has to be right, because src.llm uses
+  # it to refuse an over-long prompt *before* sending it - which is how the
+  # transcript arm reports an overflow rather than paying for a rejected call.
+  [[ "$CONTEXT_LENGTH" != "32768" ]] || {
+    echo "--backend cloud with CONTEXT_LENGTH=32768 (the local default)." >&2
+    echo "Set it to the hosted model's real window - 128000 for gpt-4o-mini," >&2
+    echo "200000 for o4-mini - or the transcript arm will refuse prompts that fit." >&2
+    exit 2; }
+fi
+if [[ -n "$REASONING_EFFORT" && "$BACKEND" != "cloud" ]]; then
+  echo "REASONING_EFFORT is set but --backend is $BACKEND. o-series models are" >&2
+  echo "cloud-only; src.llm would refuse the combination anyway." >&2
+  exit 2
+fi
 
 # ── the presets ─────────────────────────────────────────────────────────────
 # One driver, many experiments: DESIGN.md steps 6-9 are this same grid with
@@ -192,10 +305,57 @@ case "$EXP" in
   E5-c90) MODES="typed"; EXTRA="--typing-noise-c 0.9";  UNIVERSE="sweep" ;;
   E5-c75) MODES="typed"; EXTRA="--typing-noise-c 0.75"; UNIVERSE="sweep" ;;
   E5-c50) MODES="typed"; EXTRA="--typing-noise-c 0.5";  UNIVERSE="sweep" ;;
+  # Two more c levels. Four points (1.0 from E2, then .9/.75/.5) give a slope
+  # but not a crossover: c* is where typed stops beating untyped, and nothing
+  # in that range crosses. These reach far enough down that it should.
+  E5-c25) MODES="typed"; EXTRA="--typing-noise-c 0.25"; UNIVERSE="sweep" ;;
+  E5-c00) MODES="typed"; EXTRA="--typing-noise-c 0.0";  UNIVERSE="sweep" ;;
+  # The c axis's NULL, which c=0.00 is not. TypedMemory.store noises only the
+  # location half of a type and the first store of an episode has nowhere else
+  # to file itself, so the bottom of the sweep is a lower bound on the damage
+  # rather than random assignment. This arm files every refutation under a
+  # location drawn uniformly from those seen so far, its own included: memory
+  # still partitions the evidence and the guard is still O(1), but the partition
+  # carries no information about failure type. Without it, "typing helps because
+  # the classes are right" is not separable from "any partition helps" - which
+  # is the first question a reviewer asks about a typed index.
+  E5-random)
+    MODES="typed"; EXTRA="--typing-random"; UNIVERSE="sweep" ;;
+  # The ChatRepair baseline. Full seeds, whole corpus - it is reported beside
+  # untyped in the main table, not as an ablation. This is the ONE arm that
+  # cannot share E1's cached draws: its prompt carries the transcript, so every
+  # round past the first is a new cache key and a real model call.
+  E6-transcript)
+    MODES="transcript"; EXTRA="--check-overfit"; DEF_SEEDS="1 2 3 4 5" ;;
+  # Redundancy audit: pay the oracle on guarded rounds too, so a guarded round
+  # carries the failure type it would have had. Without it every type-based
+  # redundancy count is censored in exactly the arms that guard, and an arm
+  # that guards often looks less redundant for procedural reasons. Sweep subset
+  # only - it spends the oracle time E2 exists to show can be saved.
+  E8-audit)
+    MODES="untyped typed"; EXTRA="--audit-guarded"; UNIVERSE="sweep" ;;
   *) echo "unknown --exp: $EXP" >&2; usage >&2; exit 2 ;;
 esac
 SEEDS="${SEEDS:-$DEF_SEEDS}"
 BUDGET="${BUDGET:-$DEF_BUDGET}"
+
+# Appended after the preset so it survives --exp E6-transcript's own EXTRA.
+# Only ever passed for the transcript arm: run_eval rejects it otherwise,
+# because the window is in the cell key and would fork arms it does not touch.
+if [[ -n "${TRANSCRIPT_WINDOW:-}" && "$MODES" == *transcript* ]]; then
+  EXTRA="$EXTRA --transcript-window $TRANSCRIPT_WINDOW"
+fi
+if [[ -n "$REASONING_EFFORT" ]]; then
+  EXTRA="$EXTRA --reasoning-effort $REASONING_EFFORT"
+fi
+# #22. Appended, not folded into a preset: the F2P/P2P audit is orthogonal to
+# which arm is running and it is not in the cell key, so it composes with any
+# --exp instead of needing one of its own. The cap rides along whenever it is
+# set, so the shard's own log says which measurement this was.
+if (( CHECK_REGRESSION )); then
+  EXTRA="$EXTRA --check-regression"
+  [[ -n "${REGRESSION_CAP:-}" ]] && EXTRA="$EXTRA --regression-cap $REGRESSION_CAP"
+fi
 
 # ── the universe, and the shard cut out of it ───────────────────────────────
 # Written to files, never held in a shell variable: run_eval.py records the
@@ -292,7 +452,17 @@ FROM=$((10#$FROM)); TO=$((10#$TO))
 (( FROM >= 1 && TO >= FROM && TO <= N_UNIVERSE )) || {
   echo "range $FROM-$TO is outside 1-$N_UNIVERSE for --exp $EXP" >&2; exit 2; }
 
-TAG="$(printf '%s_%03d_%03d' "$EXP" "$FROM" "$TO")"
+# The model id joins the tag whenever it is not the pinned local one. Without
+# it a second proposer's E2 shard writes to the same episodes file, ledger and
+# meta as the local E2 shard of the same range - two grids appending to one
+# log, which freeze_results.py would later refuse to freeze without being able
+# to say which rows came from where. `model` is already in the cell key; this
+# keeps the *files* apart too.
+SLUG=""
+if [[ "$MODEL" != "qwen2.5-coder:7b" ]]; then
+  SLUG="_$(printf '%s' "$MODEL" | tr -c 'A-Za-z0-9' '-' | sed 's/-\{1,\}/-/g;s/^-//;s/-$//')"
+fi
+TAG="$(printf '%s%s_%03d_%03d' "$EXP" "$SLUG" "$FROM" "$TO")"
 SHARD="data/eval_shards/${TAG}.txt"
 LOG="logs/eval_${TAG}.log"
 if (( MERGEABLE )); then
@@ -336,8 +506,9 @@ experiment   $EXP
 shard        $FROM-$TO of $N_UNIVERSE ($N_TASKS tasks, universe $LIST_SRC)
 grid         modes="$MODES"  seeds="$SEEDS"  budget=$BUDGET
              $(( N_TASKS * N_SEEDS * N_MODES )) cells$([[ -n "$EXTRA" ]] && echo "  ·  $EXTRA")
+backend      $BACKEND$([[ "$BACKEND" == "cloud" ]] && echo "  ·  \$${PRICE_IN_PER_MTOK}/\$${PRICE_OUT_PER_MTOK} per Mtok  ·  cap \$${BUDGET_USD_CAP} (this process only)")
 protocol     model=$MODEL  temperature=$TEMPERATURE  context=$CONTEXT_LENGTH
-             granularity=$GRANULARITY  sandbox_timeout=$SANDBOX_TIMEOUT_SEC
+             granularity=$GRANULARITY  sandbox_timeout=$SANDBOX_TIMEOUT_SEC$([[ -n "$REASONING_EFFORT" ]] && echo "  reasoning_effort=$REASONING_EFFORT")
 episodes     $EPISODES$( (( MERGEABLE )) || echo "   (trial - never merged)")
 ledger       $LEDGER
 resume       ${RESUME:-none (--no-resume-merged, or no merged history yet)}
@@ -356,10 +527,15 @@ fi
 # teardown: we stop what we started and leave alone what we did not, because
 # unloading someone else's warm model is exactly what they started it by hand to
 # avoid.
-command -v curl >/dev/null || { echo "curl not on PATH" >&2; exit 2; }
-URL="http://127.0.0.1:${PORT}"
 STARTED_SERVER=0
-curl -sf "${URL}/api/tags" >/dev/null 2>&1 || STARTED_SERVER=1
+if [[ "$BACKEND" == "ollama" ]]; then
+  command -v curl >/dev/null || { echo "curl not on PATH" >&2; exit 2; }
+  URL="http://127.0.0.1:${PORT}"
+  curl -sf "${URL}/api/tags" >/dev/null 2>&1 || STARTED_SERVER=1
+else
+  URL=""            # src.llm's own default, or LLM_BASE_URL if the caller set one
+  STOP_MODEL=0      # nothing local to unload
+fi
 
 cleanup() {
   local rc=$?
@@ -367,7 +543,9 @@ cleanup() {
   # at the bottom would otherwise re-enter it through EXIT.
   trap - EXIT INT TERM
   echo
-  if (( STOP_MODEL )); then
+  if [[ "$BACKEND" == "cloud" ]]; then
+    echo "backend=cloud: nothing local to tear down. Spend is in $LEDGER."
+  elif (( STOP_MODEL )); then
     bash scripts/serve_local.sh --unload --port "$PORT" || true
   else
     echo "--no-stop-model: leaving $MODEL loaded"
@@ -384,8 +562,27 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 RUNTIME_FILE="$(mktemp)"
-MODEL="$MODEL" CONTEXT_LENGTH="$CONTEXT_LENGTH" RUNTIME_OUT="$RUNTIME_FILE" \
-  bash scripts/serve_local.sh --port "$PORT"
+if [[ "$BACKEND" == "ollama" ]]; then
+  MODEL="$MODEL" CONTEXT_LENGTH="$CONTEXT_LENGTH" RUNTIME_OUT="$RUNTIME_FILE" \
+    bash scripts/serve_local.sh --port "$PORT"
+else
+  # The cloud path has no window to verify - but it still has to leave a runtime
+  # record, because consolidate_evals.py hard-stops on shards whose runtimes
+  # disagree and a shard with no record at all is unauditable. What is knowable
+  # here is the endpoint, the id and the effort; the digest and quantisation
+  # have no hosted analogue and are omitted rather than faked.
+  python3 - "$RUNTIME_FILE" "$LLM_BASE_URL_CLOUD" "$CONTEXT_LENGTH" "$REASONING_EFFORT" <<'PY'
+import json, pathlib, sys
+out, base, context, effort = sys.argv[1:5]
+pathlib.Path(out).write_text(json.dumps({
+    "backend": "openai",
+    "api_base": base or "https://api.openai.com/v1",
+    "context_length": int(context),
+    "reasoning_effort": effort or None,
+}, sort_keys=True) + "\n")
+PY
+  echo "backend=cloud: ${LLM_BASE_URL_CLOUD:-https://api.openai.com/v1}, model=$MODEL"
+fi
 
 # ── the shard's protocol record ─────────────────────────────────────────────
 # RoundRecord carries model, granularity and max_examples, but NOT the served
@@ -397,10 +594,13 @@ MODEL="$MODEL" CONTEXT_LENGTH="$CONTEXT_LENGTH" RUNTIME_OUT="$RUNTIME_FILE" \
 META="data/eval_shards/${TAG}.meta.json"
 python3 - "$META" "$RUNTIME_FILE" "$EXP" "$FROM" "$TO" "$LIST_SRC" "$SHARD" \
          "$MODEL" "$TEMPERATURE" "$CONTEXT_LENGTH" "$SANDBOX_TIMEOUT_SEC" \
-         "$GRANULARITY" "$BUDGET" "$SEEDS" "$MODES" "$EXTRA" "$EPISODES" <<'PY'
+         "$GRANULARITY" "$BUDGET" "$SEEDS" "$MODES" "$EXTRA" "$EPISODES" \
+         "$BACKEND" "$REASONING_EFFORT" "${PRICE_IN_PER_MTOK:-0}" \
+         "${PRICE_OUT_PER_MTOK:-0}" "${BUDGET_USD_CAP:-1}" <<'PY'
 import json, pathlib, sys
 (meta, runtime_file, exp, lo, hi, universe, shard, model, temperature,
- context, sandbox, granularity, budget, seeds, modes, extra, episodes) = sys.argv[1:18]
+ context, sandbox, granularity, budget, seeds, modes, extra, episodes,
+ backend, effort, price_in, price_out, cap) = sys.argv[1:23]
 raw = pathlib.Path(runtime_file).read_text().strip()
 if not raw:
     sys.exit("scripts/serve_local.sh did not report the runtime it verified.\n"
@@ -418,6 +618,16 @@ pathlib.Path(meta).write_text(json.dumps({
         "model": model, "temperature": float(temperature),
         "context_length": int(context), "sandbox_timeout_sec": float(sandbox),
         "granularity": granularity,
+        # backend and reasoning_effort belong to the protocol, not the runtime:
+        # they change what the proposer IS, and consolidate_evals.py must refuse
+        # to pool two shards that disagree on either. The rate card is recorded
+        # so a ledger can be re-priced later - the token counts survive, but
+        # which rate applied does not, unless it is written down here.
+        "backend": backend,
+        "reasoning_effort": effort or None,
+        "price_in_per_mtok": float(price_in),
+        "price_out_per_mtok": float(price_out),
+        "budget_usd_cap": float(cap),
     },
     "runtime": runtime,
     "grid": {"budget": int(budget), "seeds": [int(x) for x in seeds.split()],
@@ -431,22 +641,36 @@ rm -f "$RUNTIME_FILE"
 # python-dotenv does not override an existing environment variable, so these win
 # over .env without touching it - and pin the protocol even if .env drifts.
 export MODEL TEMPERATURE SANDBOX_TIMEOUT_SEC
-export LLM_BASE_URL="${URL}/v1"
-export LLM_API_KEY="unused"            # Ollama ignores it; the SDK demands one
 export LLM_CONTEXT_TOKENS="$CONTEXT_LENGTH"
-export LLM_TIMEOUT_SEC="1800"
 export CACHE_DIR="cache"
+if [[ "$BACKEND" == "ollama" ]]; then
+  export LLM_BASE_URL="${URL}/v1"
+  export LLM_API_KEY="unused"          # Ollama ignores it; the SDK demands one
+  export LLM_TIMEOUT_SEC="1800"        # a local 7B needs ~1000s for the longest budget
+else
+  export LLM_BASE_URL="$LLM_BASE_URL_CLOUD"   # empty = api.openai.com
+  # LLM_API_KEY is already exported by the caller; asserted at the top.
+  export LLM_TIMEOUT_SEC="${LLM_TIMEOUT_SEC:-300}"
+  export REASONING_EFFORT
+fi
 # One ledger per shard: src.llm appends to CALLS_LOG and llm.spent() sums it, so
 # two machines sharing one file would interleave lines and mis-total. Separate
 # files concatenate cleanly at merge time.
 export CALLS_LOG="$LEDGER"
-# Local backend, so the calls are free. The ledger still records tokens,
-# finish_reason and seconds - the token profile DESIGN.md's rate card needs. The
-# cap can then never bind; it is left low as a tripwire, so a client somehow
-# repointed at a paid endpoint stops instead of spending.
-export PRICE_IN_PER_MTOK="0"
-export PRICE_OUT_PER_MTOK="0"
-export BUDGET_USD_CAP="1"
+if [[ "$BACKEND" == "ollama" ]]; then
+  # Local backend, so the calls are free. The ledger still records tokens,
+  # finish_reason and seconds - the token profile DESIGN.md's rate card needs. The
+  # cap can then never bind; it is left low as a tripwire, so a client somehow
+  # repointed at a paid endpoint stops instead of spending.
+  export PRICE_IN_PER_MTOK="0"
+  export PRICE_OUT_PER_MTOK="0"
+  export BUDGET_USD_CAP="1"
+else
+  # Real rates, asserted non-empty at the top. The cap binds per process and
+  # llm.spent() sums only this shard's ledger, so N parallel shards need
+  # total/N each - see --help.
+  export PRICE_IN_PER_MTOK PRICE_OUT_PER_MTOK BUDGET_USD_CAP
+fi
 
 [[ -d .venv ]] && source .venv/bin/activate
 

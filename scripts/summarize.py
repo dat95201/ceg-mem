@@ -49,11 +49,18 @@ def arm_of(summary: dict) -> tuple:
         summary["max_examples"], summary["typing_noise_c"],
         summary.get("granularity", "fine"),
         summary.get("force_full_budget", False),
+        # The three knobs added with the baseline and the audit. Each makes an
+        # episode a different experiment, so without them a transcript arm at
+        # window 5 and one at window 0, or an audited cell and an unaudited one,
+        # would average together in this table under one label.
+        summary.get("transcript_window", 0),
+        summary.get("audit_guarded", False),
+        summary.get("reasoning_effort"),
     )
 
 
 def arm_label(arm: tuple) -> str:
-    mode, guard, steer, k, c, gran, full = arm
+    mode, guard, steer, k, c, gran, full, tw, audit, effort = arm
     bits = [mode]
     if not guard:
         bits.append("steer-only")      # guard off, steering on (E3)
@@ -67,6 +74,12 @@ def arm_label(arm: tuple) -> str:
         bits.append(gran)
     if full:
         bits.append("full-budget")     # E1
+    if tw:
+        bits.append(f"w={tw}")         # E6 transcript window
+    if audit:
+        bits.append("audit")           # E8 --audit-guarded
+    if effort:
+        bits.append(f"eff={effort}")   # o-series reasoning effort
     return " ".join(bits)
 
 
@@ -93,6 +106,8 @@ def aggregate(summaries: list[dict]) -> list[dict]:
             "mode": arm[0], "guard_on": arm[1], "steer_on": arm[2],
             "max_examples": arm[3], "typing_noise_c": arm[4],
             "granularity": arm[5], "force_full_budget": arm[6],
+            "transcript_window": arm[7], "audit_guarded": arm[8],
+            "reasoning_effort": arm[9],
             "n_episodes": len(group),
             "n_tasks": len({s["task"] for s in group}),
             "n_seeds": len({s["seed"] for s in group}),
@@ -111,13 +126,23 @@ def aggregate(summaries: list[dict]) -> list[dict]:
             "guard_evaluations": _mean([s["guard_evaluations"] for s in group]),
             "proposals": _mean([s["proposals"] for s in group]),
             "n_inconclusive": sum(s["n_inconclusive"] for s in group),
+            # The arm-neutral redundancy count (DESIGN.md SS6): rounds blocked
+            # because they provably reproduced a stored counterexample. Unlike
+            # redundant_attempts it means the same thing in the flat and the
+            # typed arm, so it is the one to compare across arms.
+            "blocked_known_counterexample": _mean(
+                [s.get("blocked_known_counterexample") for s in group]),
+            # What the run cost. None when the freeze predates the ledger join.
+            "tokens_in": _mean([s.get("tokens_in") for s in group]),
+            "tokens_out": _mean([s.get("tokens_out") for s in group]),
+            "wall_sec": _mean([s.get("wall_sec") for s in group]),
         })
     return rows
 
 
 def print_table(rows: list[dict]) -> None:
     head = (f"{'arm':32s} {'n':>3s} {'succ@B':>7s} {'oracle→ok':>10s} {'oracle':>7s} "
-            f"{'redund':>7s} {'guarded':>7s} {'gEval':>6s}")
+            f"{'redund':>7s} {'blkKnwn':>7s} {'guarded':>7s} {'gEval':>6s} {'tok_in':>8s}")
     print(head)
     print("-" * len(head))
     for row in rows:
@@ -126,8 +151,10 @@ def print_table(rows: list[dict]) -> None:
               f"{_fmt(row['oracle_calls_to_accept']):>10s} "
               f"{_fmt(row['n_oracle_calls']):>7s} "
               f"{_fmt(row['redundant_attempts']):>7s} "
+              f"{_fmt(row['blocked_known_counterexample']):>7s} "
               f"{_fmt(row['n_guarded']):>7s} "
-              f"{_fmt(row['guard_evaluations']):>6s}")
+              f"{_fmt(row['guard_evaluations']):>6s} "
+              f"{_fmt(row['tokens_in'], '.0f'):>8s}")
 
 
 def print_by_task(summaries: list[dict]) -> None:

@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import dataclasses
 import hashlib
+import time
 import random
 
 from src.adapter import TASKS, load
@@ -33,7 +34,7 @@ from src.oracle import differential_test
 from src.llm import ContextOverflow
 from src.proposer import Attempt, TruncatedResponse, propose
 
-MODES = ("no_memory", "untyped", "typed")
+MODES = ("no_memory", "untyped", "typed", "transcript")
 
 
 def cell_signature(
@@ -48,6 +49,11 @@ def cell_signature(
     steer_on: bool,
     budget: int,
     force_full_budget: bool,
+    transcript_window: int = 0,
+    audit_guarded: bool = False,
+    reasoning_effort: str | None = None,
+    typing_random: bool = False,
+    model: str | None = None,
 ) -> str:
     """Canonical string identity of one experiment cell.
 
@@ -67,12 +73,35 @@ def cell_signature(
     parameter stays in the signature because callers pass it by keyword.
     """
     del budget
-    return "|".join((
+    parts = [
         task_name, mode, f"seed={seed}", f"gran={granularity}",
         f"max_examples={max_examples}", f"c={typing_noise_c!r}",
         f"guard={guard_on}", f"steer={steer_on}",
         f"full={force_full_budget}",
-    ))
+    ]
+    # Appended only when set, so an ordinary cell keeps the signature - and
+    # therefore the episode id - it had before these three knobs existed. The
+    # same reason src.llm.cache_key appends reasoning_effort conditionally:
+    # adding an always-present field would rename every cell at once.
+    if transcript_window:
+        parts.append(f"tw={transcript_window}")
+    if audit_guarded:
+        parts.append("audit=True")
+    if reasoning_effort:
+        parts.append(f"effort={reasoning_effort}")
+    if typing_random:
+        parts.append("typing=random")
+    # model belongs here for the reason every other knob does, and its absence
+    # was a real hazard: episode_id was model-independent, so the same
+    # task/mode/seed run under two proposers collided in
+    # src.metrics.load_rounds, which collapses on (episode_id, round_index)
+    # last-write-wins - one model's rounds silently overwrote the other's.
+    # scripts/freeze_results.py and scripts/consolidate_evals.py both hard-stop
+    # on a mixed-model log, so it was contained rather than fatal, but the
+    # containment was two files away from the collision.
+    if model:
+        parts.append(f"model={model}")
+    return "|".join(parts)
 
 
 def proposal_nonce(task_name: str, seed: int, round_index: int) -> str:
@@ -118,7 +147,11 @@ def run_episode(
     guard_on: bool = True,
     steer_on: bool = True,
     typing_noise_c: float = 1.0,
+    typing_random: bool = False,
     force_full_budget: bool = False,
+    transcript_window: int = 0,
+    audit_guarded: bool = False,
+    reasoning_effort: str | None = None,
     rng: random.Random | None = None,
 ) -> EpisodeResult:
     """propose -> guard -> oracle -> record, repeated up to `budget` rounds.
@@ -126,6 +159,16 @@ def run_episode(
     Every round is one model call (one unit of the proposal budget); the
     oracle call is the expensive one guard exists to avoid. Writes one
     RoundRecord per round via src.metrics regardless of how the episode ends.
+
+    audit_guarded: run the oracle on guarded rounds too, purely to record what
+    the candidate's failure type *was*. The verdict does not reach memory and
+    does not change the loop - it only fills in coarse_type/fine_type on a row
+    that would otherwise carry none. Without it, guarded rounds are censored
+    from every type-based redundancy count, so an arm that guards often looks
+    less redundant than one that guards never, for procedural reasons rather
+    than real ones. It costs sandbox time and no model calls, and it defeats
+    the very saving E2 measures, so run it as its own cell on a subset - never
+    over the reported grid.
     """
     if mode not in MODES:
         raise ValueError(f"mode must be one of {MODES}, got {mode!r}")
@@ -137,6 +180,8 @@ def run_episode(
         task_name, mode, seed=seed, granularity=granularity, max_examples=max_examples,
         typing_noise_c=typing_noise_c, guard_on=guard_on, steer_on=steer_on,
         budget=budget, force_full_budget=force_full_budget,
+        transcript_window=transcript_window, audit_guarded=audit_guarded,
+        reasoning_effort=reasoning_effort, typing_random=typing_random, model=model,
     )
     # Deterministic, not uuid4: a cell that died halfway and is re-run rewrites
     # its own rounds in data/episodes.jsonl (src.metrics.load_rounds collapses on
@@ -148,7 +193,8 @@ def run_episode(
     # that sweep unreproducible - and scripts/check_consistency.py fail on it.
     if rng is None:
         rng = random.Random("typing-noise|" + cell)
-    memory = build_memory(mode, granularity=granularity, typing_noise_c=typing_noise_c, rng=rng)
+    memory = build_memory(mode, granularity=granularity, typing_noise_c=typing_noise_c,
+                          typing_random=typing_random, rng=rng)
 
     accepted_patch: str | None = None
     first_accept_round: int | None = None
@@ -160,12 +206,27 @@ def run_episode(
             episode_id=episode_id, task=task_name, mode=mode,
             model=model, seed=seed, guard_on=guard_on, steer_on=steer_on,
             max_examples=max_examples, typing_noise_c=typing_noise_c,
+            typing_random=typing_random,
             granularity=granularity, force_full_budget=force_full_budget,
+            transcript_window=transcript_window, audit_guarded=audit_guarded,
+            reasoning_effort=reasoning_effort,
         )
         base.update(overrides)
         return RoundRecord(**base)
 
+    def _cost(meta: dict) -> dict:
+        """The subset of a call's meta that belongs on a RoundRecord."""
+        return {
+            "cache_key": meta.get("cache_key"),
+            "tokens_method": meta.get("tokens_method"),
+            "prompt_tokens": meta.get("prompt_tokens"),
+            "completion_tokens": meta.get("completion_tokens"),
+            "reasoning_tokens": meta.get("reasoning_tokens"),
+            "llm_sec": meta.get("llm_sec"),
+        }
+
     for round_index in range(1, budget + 1):
+        call_meta: dict = {}
         try:
             patch = propose(
                 task_name, program.buggy_source, task.name,
@@ -173,6 +234,9 @@ def run_episode(
                 disable_steering=not steer_on,
                 nonce=proposal_nonce(task_name, seed, round_index),
                 spec_note=task.spec_note,
+                transcript_window=transcript_window,
+                reasoning_effort=reasoning_effort,
+                meta=call_meta,
             )
         except (TruncatedResponse, ContextOverflow) as exc:
             # The harness failed, not the proposal. Log the round - it did spend
@@ -196,30 +260,86 @@ def run_episode(
                 round_index=round_index, patch="", accept=False,
                 counterexample_args=None, reason=f"proposal unusable: {exc}",
                 examples_tried=0, coarse_type=None, fine_type=None,
-                proposal_error=kind,
+                proposal_error=kind, **_cost(call_meta),
             ), **kwargs)
             continue
 
-        guarded, guard_evaluations = False, 0
+        guarded, guard_evaluations, blocked_by = False, 0, None
+        guard_sec = 0.0
         if guard_on:
+            t_guard = time.perf_counter()
             guard_result = memory.guard(patch, program.buggy_source)
+            guard_sec = round(time.perf_counter() - t_guard, 3)
             guarded, guard_evaluations = guard_result.blocked, guard_result.evaluations
+            blocked_by = guard_result.blocked_by
             total_guard_evaluations += guard_evaluations
 
         if guarded:
+            # The type of the counterexample that fired - the arm-neutral label
+            # for "this round repeated something memory already had". Available
+            # in every arm, because Attempt carries theta_both's verdict no
+            # matter which memory stored it.
+            blocked_ft = blocked_by.failure_type(granularity) if blocked_by else None
+            # ... and the label theta gave it, which differs only where memory
+            # mistyped. mistyped_from is empty unless TypedMemory re-filed it.
+            blocked_true = blocked_ft
+            if blocked_by is not None and blocked_by.mistyped_from:
+                true_coarse, true_fine = blocked_by.mistyped_from
+                blocked_true = true_coarse if granularity == "coarse" else true_fine
+            # --audit-guarded: pay the oracle anyway, only to fill in what this
+            # candidate's own type was. Deliberately not stored and deliberately
+            # not allowed to end the episode - an accept here would mean the
+            # guard blocked a correct patch, which src.memory._still_refutes
+            # cannot do, so it is logged as the soundness violation it would be
+            # rather than acted on.
+            audit_coarse = audit_fine = None
+            audit_sec = 0.0
+            audit_examples = 0
+            reason = "guarded: candidate reproduces a stored counterexample"
+            if audit_guarded:
+                t_audit = time.perf_counter()
+                audited = differential_test(
+                    task, patch, program.correct_source,
+                    max_examples=max_examples, seed=seed + round_index,
+                )
+                audit_sec = round(time.perf_counter() - t_audit, 3)
+                audit_examples = audited.examples_tried
+                audit_attempt = Attempt.from_result(
+                    task_name, program.buggy_source, patch, audited)
+                audit_coarse = audit_attempt.coarse_type.key if audit_attempt.coarse_type else None
+                audit_fine = audit_attempt.fine_type.key if audit_attempt.fine_type else None
+                if audited.accept:
+                    # A guard blocking a candidate the oracle accepts is
+                    # impossible by construction - _still_refutes blocks only on
+                    # a counterexample that provably still fails - so this is a
+                    # guard-soundness bug, not a result. It goes in the ROW, not
+                    # only on stdout: a warning in a multi-day shard log is a
+                    # warning nobody reads, and the row is what the analysis
+                    # sees. accept stays False so the episode does not terminate
+                    # on a verdict the loop was never allowed to act on.
+                    reason = ("GUARD SOUNDNESS VIOLATION: guarded a candidate the "
+                              "oracle accepts - see src.memory._still_refutes")
+                    print(f"    {reason} ({task_name} seed={seed} r{round_index})", flush=True)
             append_round(_record(
                 round_index=round_index, patch=patch, accept=False,
                 counterexample_args=None,
-                reason="guarded: candidate reproduces a stored counterexample",
-                examples_tried=0, coarse_type=None, fine_type=None,
+                reason=reason,
+                examples_tried=audit_examples,
+                coarse_type=audit_coarse, fine_type=audit_fine,
                 guarded=True, guard_evaluations=guard_evaluations,
+                blocked_by_type=blocked_ft.key if blocked_ft else None,
+                blocked_by_type_true=blocked_true.key if blocked_true else None,
+                guard_sec=guard_sec, oracle_sec=audit_sec or None,
+                **_cost(call_meta),
             ), **kwargs)
             continue  # oracle call avoided; still consumes one round of budget
 
+        t_oracle = time.perf_counter()
         result = differential_test(
             task, patch, program.correct_source,
             max_examples=max_examples, seed=seed + round_index,
         )
+        oracle_sec = round(time.perf_counter() - t_oracle, 3)
 
         if result.oracle_error is not None:
             # The search failed, not the patch (src.oracle): no counterexample to
@@ -233,6 +353,7 @@ def run_episode(
                 coarse_type=None, fine_type=None,
                 guarded=False, guard_evaluations=guard_evaluations,
                 oracle_error=result.oracle_error,
+                guard_sec=guard_sec, oracle_sec=oracle_sec, **_cost(call_meta),
             ), **kwargs)
             continue
 
@@ -254,6 +375,7 @@ def run_episode(
             fine_type=attempt.fine_type.key if attempt.fine_type else None,
             stored_type=stored_ft.key if stored_ft else None,
             guarded=False, guard_evaluations=guard_evaluations,
+            guard_sec=guard_sec, oracle_sec=oracle_sec, **_cost(call_meta),
         ), **kwargs)
 
         if result.accept:

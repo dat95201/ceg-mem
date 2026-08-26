@@ -190,8 +190,19 @@ case "$STAGE" in
     run python3 scripts/build_strata.py --force
     run python3 scripts/measure_coherence.py
     run python3 scripts/measure_anchoring.py
+    # Post-hoc and free: every one of these reads the round log and the sources
+    # already on disk. No model calls.
+    run python3 scripts/measure_redundancy.py
+    run python3 scripts/measure_patch_quality.py
     run python3 figures/make_figures.py
     run python3 scripts/check_consistency.py
+    # NOT run here: scripts/measure_typing_coherence.py. It re-executes every
+    # logged patch against the full test pool, which is hours of sandbox time
+    # rather than seconds, and it takes caps that have to be chosen rather than
+    # defaulted. Run it deliberately - RUNBOOK.md SS8.
+    echo
+    echo "next, deliberately (not part of this stage - hours of sandbox time):"
+    echo "  python3 scripts/measure_typing_coherence.py --limit-tasks 20   # pilot first"
     ;;
 
   *)

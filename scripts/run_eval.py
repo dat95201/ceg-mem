@@ -14,12 +14,19 @@ different flags:
   E3 (ablation):                 --modes typed --guard off   (steering-only)
                                   --modes typed --steer off  (guard-only)
   E4 (oracle-informativeness sweep):  --max-examples 20|8|3 (100 = E2's cell)
-  E5 (typing-coherence sweep):        --typing-noise-c 0.9|0.75|0.5 (1.0 = E2's cell)
+  E5 (typing-coherence sweep):        --typing-noise-c 0.9|0.75|0.5|0.25|0.0 (1.0 = E2's cell)
+  E6 (transcript baseline):      --modes transcript --check-overfit
+  E8 (redundancy audit):         --modes untyped typed --audit-guarded
 
 E1 *is* the main grid's no-memory arm - run it, then run E2 over the two
 memory modes only. Running no_memory a second time without
 --force-full-budget would buy a whole second arm that scripts/analyze.py
 deliberately refuses to pool with the first (see its _is_main_grid).
+
+Backend and proposer are chosen entirely through the environment plus --model,
+never by editing code: scripts/eval_shard.sh --backend cloud|ollama sets
+LLM_BASE_URL / prices / cap, and --model plus --reasoning-effort pin what the
+metrics row records. Both are in the cell key, so two proposers cannot pool.
 """
 from __future__ import annotations
 
@@ -31,10 +38,11 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from src.adapter import TASKS, load
-from src.llm import MODEL as LLM_MODEL, BudgetExceeded, spent
+from src.llm import (MODEL as LLM_MODEL, REASONING_EFFORT as LLM_REASONING_EFFORT,
+                     BudgetExceeded, _is_reasoning, spent)
 from src.loop import MODES, run_episode
 from src.metrics import DEFAULT_METRICS_LOG, load_rounds
-from src.oracle import is_truly_correct
+from src.oracle import is_truly_correct, regression_report, split_pool
 
 DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 DEFAULT_OVERFIT_LOG = DATA_DIR / "overfit_checks.jsonl"
@@ -91,7 +99,10 @@ def _programs_from_file(path: pathlib.Path) -> tuple[list[str], str]:
 
 def cell_key(task: str, mode: str, seed: int, guard_on: bool, steer_on: bool,
              max_examples: int, typing_noise_c: float, force_full_budget: bool,
-             model: str | None, granularity: str) -> tuple:
+             model: str | None, granularity: str,
+             transcript_window: int = 0, audit_guarded: bool = False,
+             reasoning_effort: str | None = None,
+             typing_random: bool = False) -> tuple:
     """Identity of one experiment cell.
 
     model and granularity belong here for the same reason every other knob
@@ -108,9 +119,14 @@ def cell_key(task: str, mode: str, seed: int, guard_on: bool, steer_on: bool,
     lookup could ever match and every cell re-ran - the same drift the
     paragraph above describes, in the other direction. One constructor, so a
     field added here reaches both sites or neither.
+
+    The last three default to the values an ordinary cell carries, so a row
+    logged before those knobs existed keys the same as a default run today -
+    the resume index still recognises it and the cell is not re-walked.
     """
     return (task, mode, seed, guard_on, steer_on, max_examples, typing_noise_c,
-            force_full_budget, model, granularity)
+            force_full_budget, model, granularity,
+            transcript_window, audit_guarded, reasoning_effort, typing_random)
 
 
 def _cell_key(row: dict) -> tuple:
@@ -120,6 +136,8 @@ def _cell_key(row: dict) -> tuple:
         row["guard_on"], row["steer_on"], row["max_examples"], row["typing_noise_c"],
         row.get("force_full_budget", False),
         row.get("model"), row.get("granularity", "fine"),
+        row.get("transcript_window", 0), row.get("audit_guarded", False),
+        row.get("reasoning_effort"), row.get("typing_random", False),
     )
 
 
@@ -163,13 +181,19 @@ def run_sweep(
     granularity: str,
     max_examples: int,
     typing_noise_c: float,
+    typing_random: bool,
     guard_on: bool,
     steer_on: bool,
     force_full_budget: bool,
     check_overfit: bool,
+    check_regression: bool,
+    regression_cap: int | None,
     episodes_path: pathlib.Path,
     overfit_path: pathlib.Path,
     resume_from: list[pathlib.Path] | None = None,
+    transcript_window: int = 0,
+    audit_guarded: bool = False,
+    reasoning_effort: str | None = None,
 ) -> None:
     done = _completed_cells(episodes_path, budget, force_full_budget, also=resume_from)
     total = len(programs) * len(modes) * len(seeds)
@@ -182,7 +206,9 @@ def run_sweep(
             for seed in seeds:
                 n += 1
                 cell = cell_key(task_name, mode, seed, guard_on, steer_on, max_examples,
-                                typing_noise_c, force_full_budget, model, granularity)
+                                typing_noise_c, force_full_budget, model, granularity,
+                                transcript_window, audit_guarded, reasoning_effort,
+                                typing_random)
                 if cell in done:
                     print(f"[{n:4d}/{total}] {task_name:28s} {mode:10s} seed={seed} - already complete, skipping",
                           flush=True)
@@ -194,8 +220,11 @@ def run_sweep(
                         max_examples=max_examples, seed=seed,
                         metrics_path=episodes_path,
                         guard_on=guard_on, steer_on=steer_on,
-                        typing_noise_c=typing_noise_c,
+                        typing_noise_c=typing_noise_c, typing_random=typing_random,
                         force_full_budget=force_full_budget,
+                        transcript_window=transcript_window,
+                        audit_guarded=audit_guarded,
+                        reasoning_effort=reasoning_effort,
                     )
                 except BudgetExceeded as exc:
                     print(f"\nBUDGET CAP REACHED ({exc}) - stopping the sweep cleanly.")
@@ -215,18 +244,45 @@ def run_sweep(
                     flush=True,
                 )
 
-                if check_overfit and result.accepted_patch is not None:
-                    truly_correct = is_truly_correct(task, program, result.accepted_patch)
+                if (check_overfit or check_regression) and result.accepted_patch is not None:
+                    row = {
+                        "episode_id": result.episode_id, "task": task_name, "mode": mode, "seed": seed,
+                        "first_accept_round": result.first_accept_round,
+                    }
+                    regression = None
+                    if check_regression:
+                        # The F2P/P2P split belongs to the program, so it is paid
+                        # once per program and reused by every mode and seed that
+                        # accepts on it (src.oracle memoises it).
+                        split = split_pool(task, program, cap=regression_cap)
+                        regression = regression_report(
+                            task, program, result.accepted_patch, split=split)
+                        row.update(regression.as_dict())
+                    # An uncapped regression pass runs every scoreable case and
+                    # so already answers is_truly_correct's question - reuse it
+                    # rather than paying for a second full pass. Under a cap it
+                    # answers a weaker one, so the real check still runs.
+                    if regression is not None and regression_cap is None:
+                        truly_correct = regression.truly_correct
+                        basis = "regression pass (uncapped)"
+                    elif check_overfit:
+                        truly_correct = is_truly_correct(task, program, result.accepted_patch)
+                        basis = "is_truly_correct"
+                    else:
+                        truly_correct = regression.truly_correct
+                        basis = f"regression pass (capped at {regression_cap})"
+                    row.update(truly_correct=truly_correct, overfit=not truly_correct,
+                               truly_correct_basis=basis)
                     overfit_path.parent.mkdir(parents=True, exist_ok=True)
                     with overfit_path.open("a") as f:
-                        f.write(json.dumps({
-                            "episode_id": result.episode_id, "task": task_name, "mode": mode, "seed": seed,
-                            "first_accept_round": result.first_accept_round,
-                            "truly_correct": truly_correct, "overfit": not truly_correct,
-                        }) + "\n")
+                        f.write(json.dumps(row) + "\n")
                     if not truly_correct:
-                        print("           overfit flagged: oracle accepted but is_truly_correct() rejected",
+                        print(f"           overfit flagged: oracle accepted but {basis} rejected",
                               flush=True)
+                    if regression is not None and regression.p2p_broken:
+                        print(f"           REGRESSION: broke {regression.p2p_broken}/"
+                              f"{regression.p2p_total} already-passing cases "
+                              f"(e.g. {regression.broken_cases[0]})", flush=True)
 
 
 def main() -> None:
@@ -248,6 +304,52 @@ def main() -> None:
     parser.add_argument("--steer", choices=["on", "off"], default="on", help="ablation (E3)")
     parser.add_argument("--force-full-budget", action="store_true", help="don't stop at first accept (E1)")
     parser.add_argument("--check-overfit", action="store_true", help="run is_truly_correct on every accept (E2)")
+    parser.add_argument("--typing-random", action="store_true",
+                        help="the c axis's NULL, and not the same thing as "
+                             "--typing-noise-c 0.0: file every stored refutation "
+                             "under a location drawn uniformly from those seen so "
+                             "far, its own included. Memory still partitions the "
+                             "evidence and the guard is still O(1), but the "
+                             "partition carries no information about failure type. "
+                             "c=0.0 cannot reach this - store() noises only the "
+                             "location half and the first store of an episode has "
+                             "nowhere else to go - so without this arm 'typing "
+                             "helps because the classes are right' is not separable "
+                             "from 'any partition helps'. In the cell key")
+    parser.add_argument("--check-regression", action="store_true",
+                        help="#22: score every accepted patch on BOTH halves of the "
+                             "shipped pool - the cases the faulty version fails (F2P, "
+                             "what the loop optimises) and the cases it passes (P2P, "
+                             "which nothing in the loop ever looks at). Turns accept "
+                             "from one bit into a verdict: did it repair the fault, and "
+                             "did it break behaviour that already worked. Sandbox time "
+                             "only, no model calls, and NOT part of the cell key - it is "
+                             "a post-episode audit like --check-overfit, so switching it "
+                             "on does not invalidate cells already run")
+    parser.add_argument("--regression-cap", type=int, default=0,
+                        help="cases per program for --check-regression; 0 (default) means "
+                             "the whole pool. A cap is sampled, seeded, and the SAME "
+                             "subset scores the split and the patch. Recorded in every "
+                             "row it produces - a capped audit is a different measurement "
+                             "and the number alone would not say so")
+    parser.add_argument("--transcript-window", type=int, default=0,
+                        help="mode=transcript only: show the proposer only the K most "
+                             "recent refuted attempts (0 = all of them). In the cell key, "
+                             "because a truncated transcript is a different memory")
+    parser.add_argument("--audit-guarded", action="store_true",
+                        help="run the oracle on guarded rounds too, for the record only - "
+                             "it never reaches memory and never ends the episode. Fills in "
+                             "the failure type of a round the guard skipped, which is what "
+                             "makes type-based redundancy comparable between an arm that "
+                             "guards and one that does not. Costs sandbox time, no model "
+                             "calls, and defeats the saving E2 measures - run it as its own "
+                             "cell on a subset, not over the reported grid")
+    parser.add_argument("--reasoning-effort", default=None, choices=["low", "medium", "high"],
+                        help="o-series models only (o4-mini, o3, ...). Part of the protocol: "
+                             "it changes the proposal distribution, so it is in the cache "
+                             "key and the cell key. Leave unset for any chat model - "
+                             "src.llm refuses the combination rather than silently splitting "
+                             "the cells")
     parser.add_argument("--episodes-path", type=pathlib.Path, default=DEFAULT_METRICS_LOG)
     parser.add_argument("--overfit-path", type=pathlib.Path, default=DEFAULT_OVERFIT_LOG)
     parser.add_argument("--resume-from", type=pathlib.Path, nargs="*", default=None,
@@ -283,6 +385,24 @@ def main() -> None:
     if not model:
         raise SystemExit("no model configured - set MODEL in .env or pass --model")
 
+    # Resolved here for exactly the reason `model` is: src.llm would otherwise
+    # fall back to $REASONING_EFFORT inside every call, so a run driven purely
+    # by the environment would send an effort the metrics row does not record
+    # and the cell key does not separate - two protocols in one grid, silently.
+    reasoning_effort = args.reasoning_effort or LLM_REASONING_EFFORT or None
+    if reasoning_effort and not _is_reasoning(model):
+        raise SystemExit(
+            f"--reasoning-effort={reasoning_effort} but {model!r} is not an o-series model.\n"
+            "The effort would enter the cache key and the cell key while changing "
+            "nothing about the call."
+        )
+    if args.transcript_window and "transcript" not in args.modes:
+        raise SystemExit(
+            f"--transcript-window {args.transcript_window} but no transcript arm in "
+            f"--modes {args.modes}.\nThe window is in the cell key, so it would fork "
+            "the cells of arms it does not affect."
+        )
+
     # Free, and run before the first billable call. src.loop handles an
     # unusable oracle correctly per round - it logs the round and leaves memory
     # untouched - but with no test data *every* round is inconclusive, so the
@@ -301,10 +421,15 @@ def main() -> None:
         programs, args.modes, args.seeds,
         budget=args.budget, model=model, granularity=args.granularity,
         max_examples=args.max_examples, typing_noise_c=args.typing_noise_c,
+        typing_random=args.typing_random,
         guard_on=args.guard == "on", steer_on=args.steer == "on",
         force_full_budget=args.force_full_budget, check_overfit=args.check_overfit,
+        check_regression=args.check_regression,
+        regression_cap=(args.regression_cap or None),
         episodes_path=args.episodes_path, overfit_path=args.overfit_path,
         resume_from=args.resume_from,
+        transcript_window=args.transcript_window, audit_guarded=args.audit_guarded,
+        reasoning_effort=reasoning_effort,
     )
     print(f"\ntotal spent so far: ${spent():.4f}")
 

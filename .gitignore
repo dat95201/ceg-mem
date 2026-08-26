@@ -32,3 +32,8 @@ data/*_smoke.jsonl
 
 # Partial Test/ archives for a cloud run - built by hand, tens of GB.
 /test_*.zip
+
+# Shard program lists, rewritten from data/tasks.json on every run and carrying
+# the corpus digest that produced them. Regenerated, not authored.
+data/shards/
+data/eval_shards/*.txt

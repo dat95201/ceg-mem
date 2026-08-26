@@ -20,7 +20,10 @@ Checks four sub-grids, matching the plan's own experiment definitions
   ablation     (E3): all frozen programs x mode=typed x 3 seeds x
                {guard=off (steering-only), steer=off (guard-only)}
   oracle_sweep (E4): a program subset x seeds x max_examples in {100,20,8,3}
-  typing_sweep (E5): the same program subset x seeds x typing_noise_c in {1.0,0.9,0.75,0.5}
+  typing_sweep (E5): the same program subset x seeds x typing_noise_c in
+                     {1.0,0.9,0.75,0.5,0.25,0.0}
+  transcript   (E6): all frozen programs x mode=transcript x 5 seeds - the
+                     ChatRepair baseline, reported beside the three arms
 
 --experiment restricts the check to one sub-grid; default "all" checks the
 union of all four. The oracle/typing sweeps default to the first 30 (sorted) frozen programs -
@@ -37,10 +40,16 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from src.loop import MODES
 from src.metrics import DEFAULT_METRICS_LOG, group_by_episode, load_rounds, summarize_episode
 
 DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+
+# The paper's three arms. Deliberately NOT src.loop.MODES, which also holds
+# `transcript` - the ChatRepair baseline (src/memory.py), a separate sub-grid
+# with its own preset and its own --experiment value, not a fourth cell of the
+# main grid. Importing the wider tuple made every main-grid freeze report the
+# whole transcript arm as missing.
+MODES = ("no_memory", "untyped", "typed")
 
 DEFAULT_SEEDS_MAIN = (1, 2, 3, 4, 5)
 DEFAULT_SEEDS_SWEEP = (1, 2, 3)
@@ -50,7 +59,12 @@ DEFAULT_SEEDS_SWEEP = (1, 2, 3)
 # 300 was never distinguishable from 100 anywhere in the benchmark - it would
 # have expected a whole extra level of cells that duplicate the reference.
 DEFAULT_MAX_EXAMPLES_SWEEP = (100, 20, 8, 3)
-DEFAULT_TYPING_C_SWEEP = (1.0, 0.9, 0.75, 0.5)
+# 0.25 and 0.0 were added for the crossover c*: four points down to 0.5 give a
+# degradation slope but never cross the untyped arm, so c* could only be
+# extrapolated. Note DESIGN.md SS4 - TypedMemory mistypes only the location half
+# and cannot mistype an episode's first store, so c=0.0 is NOT a 100% mistype
+# rate. Report the measured rate (stored_type != fine_type) beside the nominal c.
+DEFAULT_TYPING_C_SWEEP = (1.0, 0.9, 0.75, 0.5, 0.25, 0.0)
 DEFAULT_SWEEP_N_PROGRAMS = 30
 
 
@@ -72,9 +86,16 @@ def _stratum_by_task() -> dict[str, str]:
     return {t["name"]: t["stratum"] for t in data.get("tasks", [])}
 
 
-def expected_cells(programs: list[str], sweep_programs: list[str], experiment: str) -> set[tuple]:
+def expected_cells(programs: list[str], sweep_programs: list[str], experiment: str,
+                   transcript_window: int = 0) -> set[tuple]:
     """(task, mode, seed, guard_on, steer_on, max_examples, typing_noise_c,
-    force_full_budget) tuples."""
+    force_full_budget, audit_guarded, transcript_window, typing_random) tuples.
+
+    The last three are always at their defaults here: every experiment this
+    function knows about is a main-grid or sweep cell, and the sub-grids that
+    set them (E8-audit, a windowed E6, E5-random) are reported beside the grid
+    rather than expected inside it. Carrying the fields anyway is what stops an
+    E8 cell from matching - and so quietly satisfying - an E2 cell that never ran."""
     cells: set[tuple] = set()
 
     if experiment in ("all", "main"):
@@ -87,7 +108,7 @@ def expected_cells(programs: list[str], sweep_programs: list[str], experiment: s
                 # comparable. The memory arms stop at their first accept.
                 full = mode == "no_memory"
                 for seed in DEFAULT_SEEDS_MAIN:
-                    cells.add((task, mode, seed, True, True, 100, 1.0, full))
+                    cells.add((task, mode, seed, True, True, 100, 1.0, full, False, 0, False))
 
     if experiment in ("all", "ablation"):
         # Three seeds, not five: E3 attributes the effect between guard and
@@ -95,36 +116,56 @@ def expected_cells(programs: list[str], sweep_programs: list[str], experiment: s
         # two extra seeds would cost as much as the whole typing sweep.
         for task in programs:
             for seed in DEFAULT_SEEDS_SWEEP:
-                cells.add((task, "typed", seed, False, True, 100, 1.0, False))  # steering-only
-                cells.add((task, "typed", seed, True, False, 100, 1.0, False))  # guard-only
+                cells.add((task, "typed", seed, False, True, 100, 1.0, False, False, 0, False))  # steering-only
+                cells.add((task, "typed", seed, True, False, 100, 1.0, False, False, 0, False))  # guard-only
 
     if experiment in ("all", "oracle_sweep"):
         for task in sweep_programs:
             for seed in DEFAULT_SEEDS_SWEEP:
                 for n in DEFAULT_MAX_EXAMPLES_SWEEP:
-                    cells.add((task, "typed", seed, True, True, n, 1.0, False))
+                    cells.add((task, "typed", seed, True, True, n, 1.0, False, False, 0, False))
 
     if experiment in ("all", "typing_sweep"):
         for task in sweep_programs:
             for seed in DEFAULT_SEEDS_SWEEP:
                 for c in DEFAULT_TYPING_C_SWEEP:
-                    cells.add((task, "typed", seed, True, True, 100, c, False))
+                    cells.add((task, "typed", seed, True, True, 100, c, False, False, 0, False))
+
+    # The ChatRepair baseline (E6). Its own sub-grid, not part of "main": it is a
+    # baseline the paper reports beside the three arms, and folding it into the
+    # main freeze would make a grid that never ran it look incomplete. Full seeds,
+    # because it goes in the main table rather than in an ablation.
+    if experiment in ("all", "transcript"):
+        for task in programs:
+            for seed in DEFAULT_SEEDS_MAIN:
+                cells.add((task, "transcript", seed, True, True, 100, 1.0, False,
+                           False, transcript_window, False))
 
     return cells
 
 
 def _cell_key(summary: dict) -> tuple:
+    # The last three are not decoration. E8-audit and a windowed transcript run
+    # every other knob at its main-grid value, so without them an audit cell
+    # silently SATISFIED a missing main-grid cell and the completeness check
+    # reported a full grid that was not one. expected_cells() only ever builds
+    # tuples with all three at their defaults, so a sub-grid cell can no longer
+    # match anything it expects.
     return (
         summary["task"], summary["mode"], summary["seed"],
         summary["guard_on"], summary["steer_on"], summary["max_examples"], summary["typing_noise_c"],
         summary.get("force_full_budget", False),
+        summary.get("audit_guarded", False),
+        summary.get("transcript_window", 0),
+        summary.get("typing_random", False),
     )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--experiment", default="all",
-                         choices=["all", "main", "ablation", "oracle_sweep", "typing_sweep"])
+                         choices=["all", "main", "ablation", "oracle_sweep", "typing_sweep",
+                                  "transcript"])
     parser.add_argument("--episodes-path", type=pathlib.Path, default=DEFAULT_METRICS_LOG)
     parser.add_argument("--sweep-programs", nargs="+", default=None,
                          help=f"default: first {DEFAULT_SWEEP_N_PROGRAMS} frozen programs, sorted")
@@ -138,6 +179,12 @@ def main() -> None:
                               "names into one, so both mistakes freeze the wrong "
                               "tasks silently")
     parser.add_argument("--out", type=pathlib.Path, default=DATA_DIR / "results_real.json")
+    parser.add_argument("--transcript-window", type=int, default=0,
+                        help="--experiment transcript only: the window E6 actually "
+                             "ran under. It is in the cell key, so freezing a "
+                             "windowed run against the default 0 reports every "
+                             "cell that ran as missing and every cell that did "
+                             "not as expected")
     parser.add_argument("--force", action="store_true", help="overwrite an already-frozen output file")
     parser.add_argument("--allow-partial", action="store_true",
                          help="freeze anyway even if cells are missing (prints a warning, not an error)")
@@ -169,7 +216,8 @@ def main() -> None:
             f"corpus, e.g. {unknown[0]!r} - the sweeps were run over a different list "
             "than the one being frozen"
         )
-    expected = expected_cells(programs, sweep_programs, args.experiment)
+    expected = expected_cells(programs, sweep_programs, args.experiment,
+                              transcript_window=args.transcript_window)
 
     rows = load_rounds(args.episodes_path)
 

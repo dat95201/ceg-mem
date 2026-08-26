@@ -96,6 +96,97 @@ def _check(name: str, frozen_path: pathlib.Path, frozen_value, fresh_value, all_
         print(f"PASS  {name}")
 
 
+# ── the pre-registered primary set ─────────────────────────────────────────
+# Frozen here, in the repo, BEFORE the grid runs, and asserted below. ~30
+# metrics x 5 bands x 3 arm pairs is a garden of forking paths, and the defence
+# against it is not restraint at reading time - it is a list written down when
+# nobody knows the numbers yet. Everything not on this list is exploratory and
+# must be labelled so in the paper.
+#
+# Two of these are here for a reason worth stating. `oracle_calls_to_accept` is
+# the headline COST but Theorem 4.3(a) predicts typed == untyped on it, so it
+# cannot carry the typing claim - it carries the memory claim. The typing claim
+# rests on the two that follow it: guard_evaluations (Proposition 4.5, Theta(m)
+# vs O(1)) and the context-token curve (a typed index is flat in the round index
+# where a transcript grows linearly). Those are where a difference is predicted,
+# so those are what the abstract should quote.
+PRIMARY_METRICS = (
+    "oracle_calls_to_accept",   # Thm 4.3(a): MEMORY's win, not typing's
+    "success_at_b",             # Cor. 4.4, and the co-primary that stays defined at pi=0
+    "guard_evaluations",        # Prop. 4.5: the typing claim
+    "redundant_attempts",       # Thm 4.3(b)
+    "blocked_known_counterexample",   # the arm-neutral redundancy count
+    "tokens_total",             # #13
+    "redundant_token_share",    # #6
+    "wall_sec",                 # #17
+)
+PRIMARY_SECTIONS = ("context_tokens_by_round", "cost_of_pass")
+
+
+def _check_primary_metrics(analysis: dict, all_ok: list[bool]) -> None:
+    """The report must carry exactly the pre-registered primary set."""
+    have = set(analysis.get("metrics", {}))
+    missing = [m for m in PRIMARY_METRICS if m not in have]
+    extra = sorted(have - set(PRIMARY_METRICS))
+    missing_sections = [k for k in PRIMARY_SECTIONS if k not in analysis]
+    if missing or missing_sections:
+        all_ok.append(False)
+        print(f"FAIL  primary_metrics: missing {missing + missing_sections} - "
+              f"data/analysis.json does not carry the pre-registered primary set")
+    else:
+        all_ok.append(True)
+        print(f"PASS  primary_metrics ({len(PRIMARY_METRICS)} + "
+              f"{len(PRIMARY_SECTIONS)} sections)")
+    if extra:
+        print(f"      NOTE {len(extra)} metric(s) beyond the primary set - "
+              f"report these as exploratory: {', '.join(extra)}")
+
+
+def _check_guard_soundness(episodes: list[dict], all_ok: list[bool]) -> None:
+    """success@B must be IDENTICAL for E1, untyped and guard-only.
+
+    This is the study's own falsifier and it is cheap. All three build a
+    byte-identical prompt under the same draw nonce, and a guard only ever
+    blocks a candidate that provably still fails a stored counterexample - which
+    a correct patch cannot do. So per task and seed the three arms must accept on
+    exactly the same round. A gap is a guard-soundness bug in
+    src.memory._still_refutes, NOT a finding, and RUNBOOK.md already says so.
+    Asserting it here is the difference between a check and a sentence.
+    """
+    def by_cell(mode):
+        return {(e["task"], e["seed"]): e for e in episodes
+                if e["mode"] == mode and e["guard_on"] and e["steer_on"]
+                and e["max_examples"] == 100 and e["typing_noise_c"] == 1.0
+                and not e.get("audit_guarded") and not e.get("typing_random")}
+    base = by_cell("no_memory")
+    if not base:
+        print("SKIP  guard_soundness: the no-memory arm has not run")
+        return
+    bad = []
+    for mode in ("untyped",):
+        for k, e in by_cell(mode).items():
+            b = base.get(k)
+            if b is None:
+                continue
+            if e["success_at_b"] != b["success_at_b"]:
+                bad.append((mode, k, b["success_at_b"], e["success_at_b"]))
+    # guard-only is the same prompt with the typed bucket instead of a flat scan
+    for k, e in {(x["task"], x["seed"]): x for x in episodes
+                 if x["mode"] == "typed" and x["guard_on"] and not x["steer_on"]}.items():
+        b = base.get(k)
+        if b is not None and e["success_at_b"] != b["success_at_b"]:
+            bad.append(("guard-only", k, b["success_at_b"], e["success_at_b"]))
+    if bad:
+        all_ok.append(False)
+        print(f"FAIL  guard_soundness: {len(bad)} cell(s) where an unconditioned "
+              f"arm disagrees with E1 about success@B - this is a guard bug, not a result")
+        for mode, (task, seed), want, got in bad[:10]:
+            print(f"        {mode:11s} {task} seed={seed}: E1={want} {mode}={got}")
+    else:
+        all_ok.append(True)
+        print(f"PASS  guard_soundness ({len(base)} E1 cells compared)")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--episodes-path", type=pathlib.Path, default=DEFAULT_METRICS_LOG)
@@ -155,6 +246,12 @@ def main() -> None:
         _check("failure_taxonomy", args.taxonomy_path, frozen_taxonomy, fresh_taxonomy, all_ok)
     else:
         print(f"SKIP  failure_taxonomy: {args.taxonomy_path} does not exist yet")
+
+    _check_guard_soundness(fresh_episodes, all_ok)
+    if args.analysis_path.exists():
+        _check_primary_metrics(json.loads(args.analysis_path.read_text()), all_ok)
+    else:
+        print(f"SKIP  primary_metrics: {args.analysis_path} does not exist yet")
 
     if not all_ok:
         print("\nno frozen data files found yet - nothing to check")

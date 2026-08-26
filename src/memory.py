@@ -1,4 +1,4 @@
-"""A6 - the three memory stores.
+"""A6 - the four memory stores.
 
 Common interface: `store(attempt)`, `guard(candidate_source, buggy_source)`,
 and `.history` (the `list[Attempt]` src.proposer already consumes to build
@@ -8,6 +8,15 @@ happens). This module owns the other half of Section 3.3: **store + guard**
 counterexample; that cost is the subject of Proposition 4.5. Do not optimise
 it away - the whole point of comparing it against `TypedMemory.guard` is that
 one is Theta(m) and the other is O(1) in expectation.
+
+`TranscriptMemory` is the fourth store and it is a *baseline*, not one of the
+paper's three arms. It guards exactly as UntypedMemory does; the only thing it
+changes is that src.proposer shows its history to the model. See that module's
+docstring for why the paper's `untyped` arm must not do that, and DESIGN.md
+for why the transcript condition is nonetheless worth running - it is what
+ChatRepair and every reflective agent actually do, and a reviewer who reads
+`untyped` as a straw man is reading it correctly unless this arm is reported
+next to it.
 """
 from __future__ import annotations
 
@@ -20,7 +29,7 @@ from src.proposer import Attempt
 from src.sandbox import run_program
 from src.typer import WHOLE_PROGRAM, edit_location
 
-MODES = ("no_memory", "untyped", "typed")
+MODES = ("no_memory", "untyped", "typed", "transcript")
 
 
 @dataclasses.dataclass(frozen=True)
@@ -29,6 +38,16 @@ class GuardResult:
 
     blocked: bool
     evaluations: int  # stored counterexamples actually re-run - the Prop. 4.5 cost
+    # The stored attempt whose counterexample fired. Carried out so src.loop can
+    # log its failure type, which is what makes "redundant attempt" ONE
+    # definition across arms instead of two (DESIGN.md SS6's first open item):
+    # the typed guard blocks on a type-indexed bucket and the untyped guard on a
+    # flat replay, but both block *because a known counterexample still
+    # refutes*, and that counterexample has a type in either arm - Attempt
+    # carries coarse_type/fine_type from theta_both regardless of the mode that
+    # stored it. Without this the column counted type repeats for one arm and
+    # guard firings for the other while Theorem 4.3(b) assigned both the same R.
+    blocked_by: "Attempt | None" = None
 
 
 def _still_refutes(attempt: Attempt, candidate_source: str) -> bool:
@@ -102,8 +121,27 @@ class UntypedMemory(Memory):
                 continue
             evaluations += 1
             if _still_refutes(attempt, candidate_source):
-                return GuardResult(blocked=True, evaluations=evaluations)
+                return GuardResult(blocked=True, evaluations=evaluations, blocked_by=attempt)
         return GuardResult(blocked=False, evaluations=evaluations)
+
+
+class TranscriptMemory(UntypedMemory):
+    """Flat transcript: the same guard as UntypedMemory, but src.proposer shows
+    the model every refuted patch and its counterexample.
+
+    This is the ChatRepair / reflective-agent condition, added as its own mode
+    rather than by relabelling `untyped` - see src/proposer.py's docstring for
+    the measured consequence of confusing the two, and DESIGN.md SS4. It is a
+    baseline for the paper, not one of Section 3.3's three memories: the theory
+    has nothing to say about it, because a transcript conditions the proposal
+    distribution without ever defining a class to remove from it.
+
+    It subclasses UntypedMemory rather than reimplementing the scan so that the
+    two arms differ in *exactly one* thing - what reaches the prompt - and any
+    gap between them is attributable to the steering channel alone.
+    """
+
+    mode = "transcript"
 
 
 class TypedMemory(Memory):
@@ -115,6 +153,17 @@ class TypedMemory(Memory):
     `typing_noise_c` models Def. 3.1's typing coherence c: with probability
     1-c, a stored attempt is filed under a *wrong* location bucket instead of
     its true one - used by the c-sweep (E5). c=1.0 (default) is ideal typing.
+
+    `typing_random` is the c axis's missing null, and it is NOT c=0.0. Two
+    things stop the sweep reaching random assignment: `store` only ever noises
+    the *location* half of the type, and the first store of an episode has no
+    other location to move to, so it can never mistype. c=0.0 is therefore a
+    lower bound on the damage, not a null. With `typing_random` a stored
+    attempt is filed under a location drawn uniformly from every location seen
+    so far INCLUDING its own - so memory still partitions the evidence and
+    still guards O(1), but the partition carries no information about failure
+    type. Without this arm, "typing helps because the classes are right" is not
+    separable from "any partition of the evidence helps".
     """
 
     mode = "typed"
@@ -124,11 +173,13 @@ class TypedMemory(Memory):
         *,
         granularity: str = "fine",
         typing_noise_c: float = 1.0,
+        typing_random: bool = False,
         rng: random.Random | None = None,
     ) -> None:
         super().__init__()
         self.granularity = granularity
         self.typing_noise_c = typing_noise_c
+        self.typing_random = typing_random
         self._rng = rng or random.Random()
         self._by_location: dict[str, list[Attempt]] = {}
         self._seen_locations: list[str] = []
@@ -143,7 +194,14 @@ class TypedMemory(Memory):
         if ft is None:
             return super().store(attempt)
         location = ft.location
-        if self.typing_noise_c < 1.0 and self._rng.random() >= self.typing_noise_c:
+        if self.typing_random:
+            # Uniform over every location seen so far, its own included: a
+            # partition with no information, not a guaranteed wrong answer.
+            pool = self._seen_locations or [location]
+            if location not in pool:
+                pool = pool + [location]
+            location = self._rng.choice(pool)
+        elif self.typing_noise_c < 1.0 and self._rng.random() >= self.typing_noise_c:
             # Mistype: file this counterexample under a different location than
             # its true one - the memory "correctly attributes" with prob. c.
             other = [loc for loc in self._seen_locations if loc != location]
@@ -159,7 +217,14 @@ class TypedMemory(Memory):
             # type before it goes into history, not just the guard's bucket key.
             noised_ft = dataclasses.replace(ft, location=location)
             field = "coarse_type" if self.granularity == "coarse" else "fine_type"
-            attempt = dataclasses.replace(attempt, **{field: noised_ft})
+            # mistyped_from keeps theta's own verdict. Carrying it is what lets
+            # a per-type breakdown in the c-sweep be read against the other
+            # arms at all: without it the typed arm reports what memory
+            # believes and every other arm reports the truth, and the two are
+            # silently plotted on one axis.
+            attempt = dataclasses.replace(
+                attempt, mistyped_from=(attempt.coarse_type, attempt.fine_type),
+                **{field: noised_ft})
 
         super().store(attempt)
         self._by_location.setdefault(location, []).append(attempt)
@@ -180,7 +245,7 @@ class TypedMemory(Memory):
         for attempt in bucket:
             evaluations += 1
             if _still_refutes(attempt, candidate_source):
-                return GuardResult(blocked=True, evaluations=evaluations)
+                return GuardResult(blocked=True, evaluations=evaluations, blocked_by=attempt)
         return GuardResult(blocked=False, evaluations=evaluations)
 
 
@@ -189,14 +254,18 @@ def build_memory(
     *,
     granularity: str = "fine",
     typing_noise_c: float = 1.0,
+    typing_random: bool = False,
     rng: random.Random | None = None,
 ) -> Memory:
     if mode == "no_memory":
         return NoMemory()
     if mode == "untyped":
         return UntypedMemory()
+    if mode == "transcript":
+        return TranscriptMemory()
     if mode == "typed":
-        return TypedMemory(granularity=granularity, typing_noise_c=typing_noise_c, rng=rng)
+        return TypedMemory(granularity=granularity, typing_noise_c=typing_noise_c,
+                           typing_random=typing_random, rng=rng)
     raise ValueError(f"mode must be one of {MODES}, got {mode!r}")
 
 

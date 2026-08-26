@@ -60,6 +60,16 @@ The transcript condition remains a legitimate question about real LLM agents -
 just not this paper's untyped baseline. To ask it, add it as its own mode
 rather than by relabelling this one.
 
+That mode now exists: `transcript`. It is the ChatRepair baseline - every
+refuted patch's source plus its counterexample, in full, in the prompt - and it
+carries the same guard `untyped` does, so the two arms differ in exactly one
+thing and any gap between them is the steering channel alone. It is a
+*baseline*, not one of Section 3.3's three memories; report it beside `untyped`
+rather than in place of it. `--transcript-window k` keeps only the k most
+recent attempts; 0 means all of them. The window is part of the experiment cell
+key, because "we truncated at k" is a design decision, not an implementation
+detail - a truncated transcript is a different memory.
+
 Never place the reference implementation (task's correct_source) here - see
 src/adapter.py's module docstring.
 """
@@ -71,12 +81,12 @@ import dataclasses
 import re
 
 from src.adapter import TASKS
-from src.llm import complete
+from src.llm import _is_reasoning, complete
 from src.oracle import OracleResult
 from src.sandbox import Outcome
 from src.typer import FailureType, theta_both
 
-MODES = ("no_memory", "untyped", "typed")
+MODES = ("no_memory", "untyped", "typed", "transcript")
 GRANULARITIES = ("coarse", "fine")
 
 # Cap on any single piece of contest data quoted into a prompt. See _snippet.
@@ -93,6 +103,13 @@ class Attempt:
     result: OracleResult
     coarse_type: FailureType | None
     fine_type: FailureType | None
+    # What theta actually assigned, kept only when a memory has since re-filed
+    # this attempt under a different location (TypedMemory's c-sweep
+    # mistyping). Everything the proposer and the guard see is the BELIEVED
+    # type - that is the content of Def. 3.1 - so the true one has to travel
+    # separately or it is gone, and every per-type breakdown in the c-sweep
+    # then compares what typed believes against what the other arms know.
+    mistyped_from: tuple = ()
 
     @classmethod
     def from_result(cls, task_name: str, buggy_source: str, patch: str, result: OracleResult) -> "Attempt":
@@ -159,10 +176,39 @@ def _refuted(history: list[Attempt]) -> list[Attempt]:
     return [a for a in history if not a.result.accept and a.result.candidate is not None]
 
 
-def _evidence_block(mode: str, history: list[Attempt], granularity: str) -> str:
+def _transcript_block(refuted: list[Attempt], window: int) -> str:
+    """Every refuted attempt in full - source and counterexample.
+
+    The ChatRepair condition. `window` keeps only the most recent k attempts (0
+    = all). Truncating matters: an unbounded transcript grows without limit and
+    is the one arm that can hit the context ceiling, and where it does,
+    src.llm raises ContextOverflow rather than letting the backend crop the
+    prompt - so a run reports the overflow instead of quietly measuring a
+    truncated arm. Setting a window makes that bound explicit and reportable
+    rather than incidental to whichever model is serving.
+    """
+    shown = refuted[-window:] if window > 0 else refuted
+    dropped = len(refuted) - len(shown)
+    lines = ["Previous attempts on this program, and why each was rejected:"]
+    if dropped:
+        lines.append(f"({dropped} earlier attempt(s) omitted.)")
+    for i, a in enumerate(shown, start=dropped + 1):
+        lines.append(
+            f"--- attempt {i} ---\n"
+            f"```python\n{a.patch}```\n"
+            f"Rejected: {_format_counterexample(a)}"
+        )
+    return "\n".join(lines)
+
+
+def _evidence_block(mode: str, history: list[Attempt], granularity: str,
+                    transcript_window: int = 0) -> str:
     refuted = _refuted(history)
     if mode == "no_memory" or not refuted:
         return ""
+
+    if mode == "transcript":
+        return _transcript_block(refuted, transcript_window)
 
     if mode == "untyped":
         # Nothing. Untyped memory guards; it does not reach the proposer at all
@@ -214,6 +260,7 @@ def build_prompt(
     granularity: str = "fine",
     disable_steering: bool = False,
     spec_note: str = "",
+    transcript_window: int = 0,
 ) -> str:
     """program_label: how the fault is named to the model. ConDefects programs
     are whole scripts with no single function under repair, so this is the
@@ -237,7 +284,8 @@ def build_prompt(
     if granularity not in GRANULARITIES:
         raise ValueError(f"granularity must be one of {GRANULARITIES}, got {granularity!r}")
 
-    evidence_block = "" if disable_steering else _evidence_block(mode, history, granularity)
+    evidence_block = "" if disable_steering else _evidence_block(
+        mode, history, granularity, transcript_window)
     exclusion_block = "" if disable_steering else _exclusion_block(mode, history, granularity)
 
     sections = [
@@ -324,10 +372,31 @@ _BUDGET_MARGIN = 1.15
 _MIN_BUDGET = 2048
 _MAX_BUDGET = 16000
 
+# A reasoning model spends hidden tokens *out of this same budget* before it
+# writes a character of the answer, so the chat-model ceiling would cut the
+# program off mid-rewrite - and a program cut off mid-rewrite is a SyntaxError
+# recorded as a harness failure, on exactly the longest corpus tasks. o4-mini
+# allows 100k completion tokens; the headroom below is the ceiling plus enough
+# for a medium-effort reasoning trace, not the model's maximum.
+#
+# Applied ONLY when the model is an o-series id. max_tokens is in src.llm's
+# cache key, so raising it unconditionally would re-key every cached call for
+# the 8 corpus programs whose budget exceeds 2048 - including draws the pi
+# screen has already paid for.
+_MAX_BUDGET_REASONING = 48000
+_REASONING_HEADROOM = 24000
 
-def budget_for_source(source: str) -> int:
-    """Output tokens needed to rewrite `source`, floored at _MIN_BUDGET."""
+
+def budget_for_source(source: str, model: str | None = None) -> int:
+    """Output tokens needed to rewrite `source`, floored at _MIN_BUDGET.
+
+    `model` only ever *raises* the ceiling, and only for a reasoning model - a
+    chat model gets the identical number it got before this parameter existed,
+    which is what keeps the response cache valid across the change.
+    """
     estimate = math.ceil(len(source) / _CHARS_PER_TOKEN * _BUDGET_MARGIN)
+    if model and _is_reasoning(model):
+        return max(_MIN_BUDGET, min(estimate + _REASONING_HEADROOM, _MAX_BUDGET_REASONING))
     return max(_MIN_BUDGET, min(estimate, _MAX_BUDGET))
 
 
@@ -345,6 +414,9 @@ def propose(
     nonce: str = "",
     temperature: float | None = None,
     spec_note: str = "",
+    transcript_window: int = 0,
+    reasoning_effort: str | None = None,
+    meta: dict | None = None,
 ) -> str:
     """Build the mode-appropriate prompt, call the LLM, and extract the patch source.
 
@@ -354,15 +426,20 @@ def propose(
 
     max_tokens defaults to a budget sized for *this* program (see
     budget_for_source). Pass a value only to override that.
+
+    `meta`, when given, comes back filled with what the call cost - see
+    src.llm.complete. src.loop puts those numbers on the RoundRecord, which is
+    the only join between a round and data/calls.jsonl.
     """
     prompt = build_prompt(
         task_name, buggy_source, program_label, mode, history,
         granularity=granularity, disable_steering=disable_steering,
-        spec_note=spec_note,
+        spec_note=spec_note, transcript_window=transcript_window,
     )
     if max_tokens is None:
-        max_tokens = budget_for_source(buggy_source)
-    text = complete(prompt, model=model, max_tokens=max_tokens, nonce=nonce, temperature=temperature)
+        max_tokens = budget_for_source(buggy_source, model=model)
+    text = complete(prompt, model=model, max_tokens=max_tokens, nonce=nonce,
+                    temperature=temperature, reasoning_effort=reasoning_effort, meta=meta)
     return _extract_code(text)
 
 
