@@ -1,0 +1,2141 @@
+{
+  "programs": [
+    "abc257_c/45044587",
+    "abc266_g/44683031",
+    "abc261_b/45997045",
+    "abc270_b/46011140",
+    "agc057_b/31505448",
+    "abc254_c/44995126",
+    "abc270_g/52785891",
+    "abc281_f/45038482",
+    "abc253_g/32999272",
+    "arc145_b/41639432"
+  ],
+  "corpus_source": "data/shards/shard_517_526.txt (10 names)",
+  "calls_per_program": 40,
+  "model": "qwen2.5-coder:7b",
+  "seed": 20260717,
+  "max_examples": 100,
+  "temperature": 1.0,
+  "sandbox_timeout_sec": 30.0,
+  "runtime": {
+    "backend": "ollama",
+    "context_length": 32768,
+    "model_digest": "dae161e27b0e90dd",
+    "num_parallel": 1,
+    "ollama_version": "0.32.15",
+    "parameter_size": "7.6B",
+    "quantization": "Q4_K_M"
+  },
+  "pi_hat_pooled": 0.1725,
+  "total_successes": 69,
+  "total_calls": 400,
+  "total_unparsed": 1,
+  "unparsed_rate": 0.0025,
+  "complete": true,
+  "stopped_early": "",
+  "elapsed_sec": 5726.0,
+  "per_program": {
+    "abc257_c/45044587": {
+      "successes": 28,
+      "calls": 40,
+      "pi_hat": 0.7,
+      "unparsed": 0,
+      "source_sha256": "2ed1ec09a4299444",
+      "spec_sha256": "5808517a5a467855",
+      "detail": [
+        {
+          "call": 1,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 2,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 3,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 4,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 5,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 6,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 7,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case example_02.txt"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 10,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 11,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 12,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 13,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 14,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 15,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 16,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 17,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 18,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 19,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 20,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 21,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 22,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 23,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 24,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 25,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 26,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 27,
+          "accept": false,
+          "reason": "wrong output on test case example_01.txt"
+        },
+        {
+          "call": 28,
+          "accept": false,
+          "reason": "wrong output on test case example_02.txt"
+        },
+        {
+          "call": 29,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 30,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 31,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 32,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 33,
+          "accept": false,
+          "reason": "wrong output on test case example_02.txt"
+        },
+        {
+          "call": 34,
+          "accept": false,
+          "reason": "wrong output on test case example_02.txt"
+        },
+        {
+          "call": 35,
+          "accept": false,
+          "reason": "wrong output on test case example_01.txt"
+        },
+        {
+          "call": 36,
+          "accept": false,
+          "reason": "wrong output on test case example_02.txt"
+        },
+        {
+          "call": 37,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 38,
+          "accept": false,
+          "reason": "wrong output on test case example_02.txt"
+        },
+        {
+          "call": 39,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 40,
+          "accept": false,
+          "reason": "wrong output on test case example_02.txt"
+        }
+      ]
+    },
+    "abc266_g/44683031": {
+      "successes": 0,
+      "calls": 40,
+      "pi_hat": 0.0,
+      "unparsed": 0,
+      "source_sha256": "23487b9635bbb65a",
+      "spec_sha256": "e67dae92b3c6d968",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "raised IndexError on test case 00_sample_02.txt: list index out of range"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_01.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_01.txt"
+        },
+        {
+          "call": 11,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 12,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 13,
+          "accept": false,
+          "reason": "raised IndexError on test case 00_sample_02.txt: list index out of range"
+        },
+        {
+          "call": 14,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_01.txt"
+        },
+        {
+          "call": 15,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 16,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 17,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 18,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 19,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 20,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 21,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 22,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 23,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 24,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 25,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 26,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 27,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 28,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_01.txt"
+        },
+        {
+          "call": 29,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 30,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_02.txt"
+        },
+        {
+          "call": 31,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 32,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_01.txt"
+        },
+        {
+          "call": 33,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 34,
+          "accept": false,
+          "reason": "raised IndexError on test case 00_sample_02.txt: list index out of range"
+        },
+        {
+          "call": 35,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 36,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 37,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 38,
+          "accept": false,
+          "reason": "raised IndexError on test case 00_sample_02.txt: list index out of range"
+        },
+        {
+          "call": 39,
+          "accept": false,
+          "reason": "wrong output on test case 01_small_04.txt"
+        },
+        {
+          "call": 40,
+          "accept": false,
+          "reason": "raised IndexError on test case 00_sample_02.txt: list index out of range"
+        }
+      ]
+    },
+    "abc261_b/45997045": {
+      "successes": 0,
+      "calls": 40,
+      "pi_hat": 0.0,
+      "unparsed": 0,
+      "source_sha256": "cf513b0279ef1460",
+      "spec_sha256": "5418bd07968e32ae",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 11,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        },
+        {
+          "call": 12,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        },
+        {
+          "call": 13,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        },
+        {
+          "call": 14,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 15,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        },
+        {
+          "call": 16,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        },
+        {
+          "call": 17,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        },
+        {
+          "call": 18,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        },
+        {
+          "call": 19,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 20,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 21,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 22,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 23,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        },
+        {
+          "call": 24,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 25,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        },
+        {
+          "call": 26,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 27,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 28,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        },
+        {
+          "call": 29,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 30,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        },
+        {
+          "call": 31,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        },
+        {
+          "call": 32,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 33,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        },
+        {
+          "call": 34,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        },
+        {
+          "call": 35,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 36,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        },
+        {
+          "call": 37,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        },
+        {
+          "call": 38,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 39,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        },
+        {
+          "call": 40,
+          "accept": false,
+          "reason": "wrong output on test case random_10.txt"
+        }
+      ]
+    },
+    "abc270_b/46011140": {
+      "successes": 0,
+      "calls": 40,
+      "pi_hat": 0.0,
+      "unparsed": 1,
+      "source_sha256": "78c37f19ac9f5af5",
+      "spec_sha256": "e5abbee41c5209cc",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case random_07.txt"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "wrong output on test case random_06.txt"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case random_19.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case random_07.txt"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "wrong output on test case random_12.txt"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case random_03.txt"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case random_19.txt"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 11,
+          "accept": false,
+          "reason": "wrong output on test case random_07.txt"
+        },
+        {
+          "call": 12,
+          "accept": false,
+          "reason": "wrong output on test case random_07.txt"
+        },
+        {
+          "call": 13,
+          "accept": false,
+          "reason": "wrong output on test case random_07.txt"
+        },
+        {
+          "call": 14,
+          "accept": false,
+          "reason": "proposal unusable: no ```python code block in a 502-char reply - either the output budget cut it off or the model answered in prose; finish_reason in data/calls.jsonl says which (ends: '  print(-1)\\n    else:\\n        print(abs(X))\\nelse:\\n    print(abs(X) + abs(Z))\\n```')",
+          "unparsed": true
+        },
+        {
+          "call": 15,
+          "accept": false,
+          "reason": "wrong output on test case random_07.txt"
+        },
+        {
+          "call": 16,
+          "accept": false,
+          "reason": "wrong output on test case random_07.txt"
+        },
+        {
+          "call": 17,
+          "accept": false,
+          "reason": "wrong output on test case random_07.txt"
+        },
+        {
+          "call": 18,
+          "accept": false,
+          "reason": "wrong output on test case random_19.txt"
+        },
+        {
+          "call": 19,
+          "accept": false,
+          "reason": "wrong output on test case random_09.txt"
+        },
+        {
+          "call": 20,
+          "accept": false,
+          "reason": "wrong output on test case random_19.txt"
+        },
+        {
+          "call": 21,
+          "accept": false,
+          "reason": "wrong output on test case random_07.txt"
+        },
+        {
+          "call": 22,
+          "accept": false,
+          "reason": "wrong output on test case random_19.txt"
+        },
+        {
+          "call": 23,
+          "accept": false,
+          "reason": "wrong output on test case random_07.txt"
+        },
+        {
+          "call": 24,
+          "accept": false,
+          "reason": "wrong output on test case random_06.txt"
+        },
+        {
+          "call": 25,
+          "accept": false,
+          "reason": "wrong output on test case random_03.txt"
+        },
+        {
+          "call": 26,
+          "accept": false,
+          "reason": "wrong output on test case random_12.txt"
+        },
+        {
+          "call": 27,
+          "accept": false,
+          "reason": "wrong output on test case random_07.txt"
+        },
+        {
+          "call": 28,
+          "accept": false,
+          "reason": "wrong output on test case random_07.txt"
+        },
+        {
+          "call": 29,
+          "accept": false,
+          "reason": "wrong output on test case random_07.txt"
+        },
+        {
+          "call": 30,
+          "accept": false,
+          "reason": "wrong output on test case random_06.txt"
+        },
+        {
+          "call": 31,
+          "accept": false,
+          "reason": "wrong output on test case random_19.txt"
+        },
+        {
+          "call": 32,
+          "accept": false,
+          "reason": "wrong output on test case random_19.txt"
+        },
+        {
+          "call": 33,
+          "accept": false,
+          "reason": "wrong output on test case random_07.txt"
+        },
+        {
+          "call": 34,
+          "accept": false,
+          "reason": "wrong output on test case random_06.txt"
+        },
+        {
+          "call": 35,
+          "accept": false,
+          "reason": "wrong output on test case random_06.txt"
+        },
+        {
+          "call": 36,
+          "accept": false,
+          "reason": "wrong output on test case random_19.txt"
+        },
+        {
+          "call": 37,
+          "accept": false,
+          "reason": "wrong output on test case random_07.txt"
+        },
+        {
+          "call": 38,
+          "accept": false,
+          "reason": "wrong output on test case random_07.txt"
+        },
+        {
+          "call": 39,
+          "accept": false,
+          "reason": "wrong output on test case random_07.txt"
+        },
+        {
+          "call": 40,
+          "accept": false,
+          "reason": "wrong output on test case random_07.txt"
+        }
+      ]
+    },
+    "agc057_b/31505448": {
+      "successes": 0,
+      "calls": 40,
+      "pi_hat": 0.0,
+      "unparsed": 0,
+      "source_sha256": "1b6c459d011f4fbb",
+      "spec_sha256": "a1e50a12671d595f",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 11,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 12,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 13,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 14,
+          "accept": false,
+          "reason": "wrong output on test case 01_sample_01.txt"
+        },
+        {
+          "call": 15,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 16,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 17,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 18,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 19,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 20,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 21,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 22,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 23,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 24,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 25,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 26,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 27,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 28,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 29,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 30,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 31,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 32,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 33,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 34,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 35,
+          "accept": false,
+          "reason": "wrong output on test case 01_sample_01.txt"
+        },
+        {
+          "call": 36,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 37,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 38,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 39,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        },
+        {
+          "call": 40,
+          "accept": false,
+          "reason": "wrong output on test case 06_near_zero_01.txt"
+        }
+      ]
+    },
+    "abc254_c/44995126": {
+      "successes": 24,
+      "calls": 40,
+      "pi_hat": 0.6,
+      "unparsed": 0,
+      "source_sha256": "2910371e5829157c",
+      "spec_sha256": "55a2802b7343efae",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "raised IndexError on test case 00_sample_00.txt: list index out of range"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "raised SystemExit on test case 00_sample_00.txt: SyntaxError: '[' was never closed"
+        },
+        {
+          "call": 3,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 5,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 6,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 7,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 9,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 11,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 12,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 13,
+          "accept": false,
+          "reason": "raised IndexError on test case 00_sample_00.txt: list index out of range"
+        },
+        {
+          "call": 14,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 15,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 16,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_01.txt"
+        },
+        {
+          "call": 17,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 18,
+          "accept": false,
+          "reason": "raised TypeError on test case 00_sample_00.txt: 'int' object is not iterable"
+        },
+        {
+          "call": 19,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_01.txt"
+        },
+        {
+          "call": 20,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 21,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 22,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 23,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 24,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 25,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 26,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 27,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 28,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 29,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 30,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 31,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 32,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 33,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 34,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 35,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 36,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 37,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 38,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 39,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_00.txt"
+        },
+        {
+          "call": 40,
+          "accept": true,
+          "reason": null
+        }
+      ]
+    },
+    "abc270_g/52785891": {
+      "successes": 0,
+      "calls": 40,
+      "pi_hat": 0.0,
+      "unparsed": 0,
+      "source_sha256": "6d6ddd7f8b5bb47d",
+      "spec_sha256": "8aeca2f388e0c8bd",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "raised ValueError on test case random_01.txt: base is not invertible for the given modulus"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "raised TypeError on test case random_01.txt: 'int' object is not subscriptable"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 11,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 12,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 13,
+          "accept": false,
+          "reason": "raised SystemExit on test case random_01.txt: SyntaxError: invalid syntax"
+        },
+        {
+          "call": 14,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 15,
+          "accept": false,
+          "reason": "raised ValueError on test case random_01.txt: pow() 3rd argument cannot be 0"
+        },
+        {
+          "call": 16,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 17,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 18,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 19,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 20,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 21,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 22,
+          "accept": false,
+          "reason": "raised ZeroDivisionError on test case random_01.txt: integer modulo by zero"
+        },
+        {
+          "call": 23,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 24,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 25,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 26,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 27,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 28,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 29,
+          "accept": false,
+          "reason": "raised IndexError on test case random_01.txt: list index out of range"
+        },
+        {
+          "call": 30,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 31,
+          "accept": false,
+          "reason": "raised UnboundLocalError on test case random_01.txt: cannot access local variable 'i' where it is not associated with a value"
+        },
+        {
+          "call": 32,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 33,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 34,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 35,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 36,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 37,
+          "accept": false,
+          "reason": "raised ZeroDivisionError on test case random_01.txt: integer division or modulo by zero"
+        },
+        {
+          "call": 38,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        },
+        {
+          "call": 39,
+          "accept": false,
+          "reason": "raised IndexError on test case random_01.txt: list index out of range"
+        },
+        {
+          "call": 40,
+          "accept": false,
+          "reason": "wrong output on test case random_01.txt"
+        }
+      ]
+    },
+    "abc281_f/45038482": {
+      "successes": 12,
+      "calls": 40,
+      "pi_hat": 0.3,
+      "unparsed": 0,
+      "source_sha256": "e314d2bedf7f05bf",
+      "spec_sha256": "767a7f597de40538",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 2,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 3,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "raised NameError on test case 00_sample_00.txt: name 'I' is not defined"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 7,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 8,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 9,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 11,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 12,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 13,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 14,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 15,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 16,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 17,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 18,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 19,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 20,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 21,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 22,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 23,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 24,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 25,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 26,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 27,
+          "accept": false,
+          "reason": "raised NameError on test case 00_sample_00.txt: name 'I' is not defined"
+        },
+        {
+          "call": 28,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 29,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 30,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 31,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 32,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 33,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 34,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 35,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 36,
+          "accept": false,
+          "reason": "raised NameError on test case 00_sample_00.txt: name 'sys' is not defined. Did you forget to import 'sys'?"
+        },
+        {
+          "call": 37,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 38,
+          "accept": false,
+          "reason": "wrong output on test case 04_con_02.txt"
+        },
+        {
+          "call": 39,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 40,
+          "accept": true,
+          "reason": null
+        }
+      ]
+    },
+    "abc253_g/32999272": {
+      "successes": 5,
+      "calls": 40,
+      "pi_hat": 0.125,
+      "unparsed": 0,
+      "source_sha256": "cd577dcdf6f28c18",
+      "spec_sha256": "01980d4b8fc3e8a3",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "wrong output on test case example_01.txt"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "raised IndexError on test case test_03.txt: list index out of range"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "raised IndexError on test case example_00.txt: list index out of range"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "raised IndexError on test case test_03.txt: pop from empty list"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "raised IndexError on test case example_00.txt: list index out of range"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "raised IndexError on test case example_00.txt: list index out of range"
+        },
+        {
+          "call": 10,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 11,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 12,
+          "accept": false,
+          "reason": "wrong output on test case test_03.txt"
+        },
+        {
+          "call": 13,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 14,
+          "accept": false,
+          "reason": "raised NameError on test case example_00.txt: name 'a' is not defined"
+        },
+        {
+          "call": 15,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 16,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 17,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 18,
+          "accept": false,
+          "reason": "wrong output on test case test_03.txt"
+        },
+        {
+          "call": 19,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 20,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 21,
+          "accept": false,
+          "reason": "raised IndexError on test case example_00.txt: pop from empty list"
+        },
+        {
+          "call": 22,
+          "accept": false,
+          "reason": "raised IndexError on test case example_00.txt: list index out of range"
+        },
+        {
+          "call": 23,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 24,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 25,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 26,
+          "accept": false,
+          "reason": "wrong output on test case test_03.txt"
+        },
+        {
+          "call": 27,
+          "accept": false,
+          "reason": "wrong output on test case test_03.txt"
+        },
+        {
+          "call": 28,
+          "accept": false,
+          "reason": "raised IndexError on test case example_00.txt: list index out of range"
+        },
+        {
+          "call": 29,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 30,
+          "accept": false,
+          "reason": "raised IndexError on test case example_00.txt: list assignment index out of range"
+        },
+        {
+          "call": 31,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 32,
+          "accept": false,
+          "reason": "raised IndexError on test case example_00.txt: list index out of range"
+        },
+        {
+          "call": 33,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 34,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 35,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 36,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        },
+        {
+          "call": 37,
+          "accept": true,
+          "reason": null
+        },
+        {
+          "call": 38,
+          "accept": false,
+          "reason": "wrong output on test case test_03.txt"
+        },
+        {
+          "call": 39,
+          "accept": false,
+          "reason": "wrong output on test case test_03.txt"
+        },
+        {
+          "call": 40,
+          "accept": false,
+          "reason": "wrong output on test case example_00.txt"
+        }
+      ]
+    },
+    "arc145_b/41639432": {
+      "successes": 0,
+      "calls": 40,
+      "pi_hat": 0.0,
+      "unparsed": 0,
+      "source_sha256": "ff76627bebffe411",
+      "spec_sha256": "9d139317eef9892e",
+      "detail": [
+        {
+          "call": 1,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 2,
+          "accept": false,
+          "reason": "raised NameError on test case 00_sample_01.txt: name 'i_map' is not defined"
+        },
+        {
+          "call": 3,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 4,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_02.txt"
+        },
+        {
+          "call": 5,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 6,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 7,
+          "accept": false,
+          "reason": "raised NameError on test case 00_sample_01.txt: name 'i_map' is not defined"
+        },
+        {
+          "call": 8,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 9,
+          "accept": false,
+          "reason": "raised NameError on test case 00_sample_01.txt: name 'i_map' is not defined"
+        },
+        {
+          "call": 10,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 11,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 12,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 13,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 14,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 15,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 16,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_01.txt"
+        },
+        {
+          "call": 17,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 18,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 19,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 20,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 21,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 22,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 23,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_02.txt"
+        },
+        {
+          "call": 24,
+          "accept": false,
+          "reason": "raised ValueError on test case 00_sample_01.txt: invalid literal for int() with base 10: '4 2 1\\n'"
+        },
+        {
+          "call": 25,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 26,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 27,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 28,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 29,
+          "accept": false,
+          "reason": "raised NameError on test case 00_sample_01.txt: name 'i_map' is not defined"
+        },
+        {
+          "call": 30,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 31,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 32,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 33,
+          "accept": false,
+          "reason": "raised NameError on test case 00_sample_01.txt: name 'i_map' is not defined"
+        },
+        {
+          "call": 34,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 35,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 36,
+          "accept": false,
+          "reason": "raised NameError on test case 00_sample_01.txt: name 'i_map' is not defined"
+        },
+        {
+          "call": 37,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 38,
+          "accept": false,
+          "reason": "wrong output on test case 01_random_06.txt"
+        },
+        {
+          "call": 39,
+          "accept": false,
+          "reason": "wrong output on test case 00_sample_02.txt"
+        },
+        {
+          "call": 40,
+          "accept": false,
+          "reason": "raised NameError on test case 00_sample_01.txt: name 'i_map' is not defined"
+        }
+      ]
+    }
+  }
+}
