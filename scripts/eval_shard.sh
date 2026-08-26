@@ -4,7 +4,7 @@
 # index range of the corpus, tear the server back down. Reported data, not a
 # smoke test.
 #
-#   bash scripts/eval_shard.sh --exp trial                    # 3 tasks, 1 seed, B=5
+#   bash scripts/eval_shard.sh --exp trial                    # 3 bands x 1 task, 1 seed, B=5
 #   bash scripts/eval_shard.sh --exp E1 --from 1 --to 30
 #   bash scripts/eval_shard.sh --exp E2                       # whole corpus, one machine
 #   bash scripts/eval_shard.sh --exp E4-k8 --from 1 --to 12
@@ -22,9 +22,10 @@
 #
 # Why the shard order is not data/tasks.json's order
 # --------------------------------------------------
-# data/tasks.json is grouped by stratum - twenty `dead` tasks, then `medium`,
-# then `easy`, then `too_easy`. Cutting index ranges out of that would hand one
-# machine every `dead` task (twenty rounds each, every cell, by construction)
+# data/tasks.json is grouped by stratum - every `dead` task, then every `hard`,
+# then `medium`, `easy`, `too_easy`, in the band order select_corpus.py froze.
+# Cutting index ranges out of that would hand one machine every `dead` task
+# (the full budget in every cell, by construction - nothing there ever accepts)
 # and another every `too_easy` one (usually one round), so the shards would
 # differ ~10x in wall clock and, worse, a run that finished three shards of four
 # would hold a stratum-biased grid rather than a smaller one. So each band is
@@ -66,12 +67,42 @@ MERGED="data/episodes.jsonl"
 EXP=""; FROM=""; TO=""; SEEDS=""; BUDGET=""; DRY_RUN=0
 KEEP_SERVING=0; STOP_MODEL=1; RESUME_MERGED=1
 
+# ── the universes ───────────────────────────────────────────────────────────
+# The one place a list path is written down: usage() reports these sizes and the
+# shard cut below reads its own list from the same table, so a help text that
+# disagrees with what the script actually walks is not expressible. The lists
+# themselves are written from data/tasks.json by the interleave below - keep the
+# keys here in step with the names it writes.
+universe_list() {
+  case "$1" in
+    corpus) echo "data/eval_order.txt" ;;
+    sweep)  echo "data/sweep_programs.txt" ;;
+    trial)  echo "data/trial_programs.txt" ;;
+    *)      echo "" ;;
+  esac
+}
+
+# A size is a property of the corpus that is frozen, not of this script, so it
+# is counted rather than asserted. A list that is absent prints "-" instead of a
+# number it cannot know: the first shard of that universe writes it.
+# `|| true`: grep exits 1 on a zero count, which under `set -e` would kill the
+# script with no message at all.
+universe_size() {
+  local f n
+  f="$(universe_list "$1")"
+  [[ -n "$f" && -f "$f" ]] || { echo "-"; return; }
+  n="$(grep -cve '^#' -e '^$' "$f" || true)"
+  echo "${n:-0}"
+}
+
+# Expanded, not quoted: the universe sizes below are substituted at print
+# time. Nothing else in this text may carry a $, a backtick or a backslash.
 usage() {
-  cat <<'USAGE'
+  cat <<USAGE
 usage: bash scripts/eval_shard.sh --exp NAME [--from N --to M] [options]
 
   --exp NAME        which experiment. One of:
-                      trial           all three arms, 3 tasks, 1 seed, B=5
+                      trial           all three arms, 3 bands x 1 task, 1 seed
                       E1              no-memory arm, --force-full-budget
                       E2              untyped + typed, --check-overfit
                       E3-guard-only   typed with --steer off
@@ -79,8 +110,16 @@ usage: bash scripts/eval_shard.sh --exp NAME [--from N --to M] [options]
                       E4-k20 E4-k8 E4-k3      typed at --max-examples K
                       E5-c90 E5-c75 E5-c50    typed at --typing-noise-c C
   --from N --to M   1-based inclusive range over that experiment's universe
-                    (default: all of it). E1/E2/E3 walk the 85-task corpus,
-                    E4/E5 the 24-task stratified sweep subset.
+                    (default: all of it). E1/E2/E3 walk the whole frozen
+                    corpus, E4/E5 the stratified sweep subset, six per band.
+                    Neither size belongs to this script - a re-freeze with
+                    different quotas, or a band that under-filled, changes
+                    both - so they are read off the lists, never written here:
+                      corpus  data/eval_order.txt       $(universe_size corpus)
+                      sweep   data/sweep_programs.txt   $(universe_size sweep)
+                      trial   data/trial_programs.txt   $(universe_size trial)
+                    A "-" means that list has not been cut yet; the first
+                    shard of that universe writes it from data/tasks.json.
   --seeds "1 2 3"   override the preset's seeds
   --budget B        override the preset's budget (default 20; trial 5)
   --port P          ollama port (default 11435). A server already listening
@@ -178,11 +217,12 @@ digest = hashlib.sha256(
 # every machine cuts the same shard from the same index range - and balanced, so
 # any contiguous range holds every stratum in roughly its corpus proportion.
 #
-# Positional, not a plain round-robin cycle: the bands have very different sizes
-# (30 easy, 15 too_easy), and cycling exhausts the small ones first, leaving the
-# tail all-easy - so the last shard would be the one band the effect is smallest
-# in. Spacing each band evenly over [0,1) instead keeps every prefix AND every
-# suffix proportional.
+# Positional, not a plain round-robin cycle: the quotas are unequal by design
+# and a band can under-fill besides, so cycling exhausts the small bands first
+# and leaves a tail drawn from whichever band is largest - making the last shard
+# the least representative one, and quite possibly the band the effect is
+# smallest in. Spacing each band evenly over [0,1) instead keeps every prefix
+# AND every suffix proportional, whatever the counts turn out to be.
 bands = ("dead", "hard", "medium", "easy", "too_easy")
 by = {b: [t["name"] for t in tasks if t["stratum"] == b] for b in bands}
 
@@ -229,11 +269,9 @@ for name, names in (("eval_order", order), ("sweep_programs", sweep),
     path.write_text(body)
 PY
 
-case "$UNIVERSE" in
-  corpus) LIST_SRC="data/eval_order.txt" ;;
-  sweep)  LIST_SRC="data/sweep_programs.txt" ;;
-  trial)  LIST_SRC="data/trial_programs.txt" ;;
-esac
+LIST_SRC="$(universe_list "$UNIVERSE")"
+[[ -n "$LIST_SRC" ]] || {
+  echo "no list for universe '$UNIVERSE' - add it to universe_list()" >&2; exit 2; }
 
 # `|| true`: grep exits 1 on a zero count, which under `set -e` would kill the
 # script with no message at all.
