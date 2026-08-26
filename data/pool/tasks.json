@@ -5,10 +5,10 @@
   "strata_selection": null,
   "criterion": "a program is selected if it catches >= 0.67 of the scoreable natural mutants caught; the corpus is frozen only if >= 270/360 programs passing",
   "usability_criterion": "test data present; reference passes its own cases; the faulty version is refuted by the shipped pool; neither version times out",
-  "selection": "at most one fault per coding task; the gate is measured on the first 320 stage-1 survivors (320 passed), and the corpus is topped up past that cohort until 360 passing programs are held",
-  "n_selected": 320,
-  "n_cohort": 320,
-  "n_cohort_passing": 320,
+  "selection": "at most one fault per coding task; the gate is measured on the first 315 stage-1 survivors (315 passed), and the corpus is topped up past that cohort until 360 passing programs are held",
+  "n_selected": 315,
+  "n_cohort": 315,
+  "n_cohort_passing": 315,
   "n_examined": 526,
   "seed": 20260717,
   "tasks": [
@@ -58,32 +58,6 @@
       ],
       "caught_submissions": [
         "abc339_b/54311169"
-      ]
-    },
-    {
-      "name": "abc320_f/47539324",
-      "task_id": "abc320_f",
-      "program_id": "47539324",
-      "date": "2023-09-16",
-      "difficulty": 2042,
-      "loc": 68,
-      "fault_lines": [
-        6
-      ],
-      "n_test_cases": 37,
-      "counterexample": "testcase02.txt",
-      "stratum": "hard",
-      "mutants_caught": 3,
-      "mutants_scored": 3,
-      "natural_mutants": [
-        "abc320_f/46034926",
-        "abc320_f/48703794",
-        "abc320_f/51972231"
-      ],
-      "caught_submissions": [
-        "abc320_f/46034926",
-        "abc320_f/48703794",
-        "abc320_f/51972231"
       ]
     },
     {
@@ -752,32 +726,6 @@
       ],
       "caught_submissions": [
         "abc297_e/46054755"
-      ]
-    },
-    {
-      "name": "arc170_c/49600906",
-      "task_id": "arc170_c",
-      "program_id": "49600906",
-      "date": "2024-01-21",
-      "difficulty": 2028,
-      "loc": 49,
-      "fault_lines": [
-        40
-      ],
-      "n_test_cases": 27,
-      "counterexample": "01_test_08.txt",
-      "stratum": "hard",
-      "mutants_caught": 3,
-      "mutants_scored": 3,
-      "natural_mutants": [
-        "arc170_c/50130200",
-        "arc170_c/51377709",
-        "arc170_c/52698796"
-      ],
-      "caught_submissions": [
-        "arc170_c/50130200",
-        "arc170_c/51377709",
-        "arc170_c/52698796"
       ]
     },
     {
@@ -1496,28 +1444,6 @@
         "abc325_f/47165263",
         "abc325_f/47320684",
         "abc325_f/47338119"
-      ]
-    },
-    {
-      "name": "abc335_f/54448133",
-      "task_id": "abc335_f",
-      "program_id": "54448133",
-      "date": "2024-01-06",
-      "difficulty": 1690,
-      "loc": 35,
-      "fault_lines": [
-        15
-      ],
-      "n_test_cases": 63,
-      "counterexample": "test_06.txt",
-      "stratum": "hard",
-      "mutants_caught": 1,
-      "mutants_scored": 1,
-      "natural_mutants": [
-        "abc335_f/53563069"
-      ],
-      "caught_submissions": [
-        "abc335_f/53563069"
       ]
     },
     {
@@ -2590,32 +2516,6 @@
         "abc312_c/45722066",
         "abc312_c/45722260",
         "abc312_c/45783776"
-      ]
-    },
-    {
-      "name": "arc179_b/54728093",
-      "task_id": "arc179_b",
-      "program_id": "54728093",
-      "date": "2024-06-02",
-      "difficulty": 1432,
-      "loc": 23,
-      "fault_lines": [
-        12
-      ],
-      "n_test_cases": 32,
-      "counterexample": "00-sample-002.txt",
-      "stratum": "hard",
-      "mutants_caught": 3,
-      "mutants_scored": 3,
-      "natural_mutants": [
-        "arc179_b/54187921",
-        "arc179_b/54190165",
-        "arc179_b/54198315"
-      ],
-      "caught_submissions": [
-        "arc179_b/54187921",
-        "arc179_b/54190165",
-        "arc179_b/54198315"
       ]
     },
     {
@@ -5319,28 +5219,6 @@
       ]
     },
     {
-      "name": "abc249_e/51504381",
-      "task_id": "abc249_e",
-      "program_id": "51504381",
-      "date": "2022-04-23",
-      "difficulty": 1970,
-      "loc": 32,
-      "fault_lines": [
-        31
-      ],
-      "n_test_cases": 31,
-      "counterexample": "example_03.txt",
-      "stratum": "hard",
-      "mutants_caught": 1,
-      "mutants_scored": 1,
-      "natural_mutants": [
-        "abc249_e/47998431"
-      ],
-      "caught_submissions": [
-        "abc249_e/47998431"
-      ]
-    },
-    {
       "name": "arc151_c/36321896",
       "task_id": "arc151_c",
       "program_id": "36321896",
@@ -6701,6 +6579,32 @@
       ]
     },
     {
+      "name": "abc272_g/52009362",
+      "task_id": "abc272_g",
+      "program_id": "52009362",
+      "date": "2022-10-08",
+      "difficulty": 2187,
+      "loc": 119,
+      "fault_lines": [
+        104
+      ],
+      "n_test_cases": 94,
+      "counterexample": "test_06.txt",
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc272_g/47192828",
+        "abc272_g/48246740",
+        "abc272_g/48872899"
+      ],
+      "caught_submissions": [
+        "abc272_g/47192828",
+        "abc272_g/48246740",
+        "abc272_g/48872899"
+      ]
+    },
+    {
       "name": "arc148_c/38559514",
       "task_id": "arc148_c",
       "program_id": "38559514",
@@ -6842,32 +6746,6 @@
       "caught_submissions": [
         "abc268_e/46000676",
         "abc268_e/46052240"
-      ]
-    },
-    {
-      "name": "arc150_b/40750419",
-      "task_id": "arc150_b",
-      "program_id": "40750419",
-      "date": "2022-10-09",
-      "difficulty": 1466,
-      "loc": 16,
-      "fault_lines": [
-        8
-      ],
-      "n_test_cases": 24,
-      "counterexample": "01-random-005.txt",
-      "stratum": "hard",
-      "mutants_caught": 3,
-      "mutants_scored": 3,
-      "natural_mutants": [
-        "arc150_b/40524794",
-        "arc150_b/40583945",
-        "arc150_b/42077824"
-      ],
-      "caught_submissions": [
-        "arc150_b/40524794",
-        "arc150_b/40583945",
-        "arc150_b/42077824"
       ]
     },
     {

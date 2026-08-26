@@ -4,16 +4,15 @@
   "task_pass_threshold": ">= 0.67 of the scoreable natural mutants caught",
   "corpus_pass_threshold": ">= 270/360 programs passing",
   "test_dir": "external/ConDefects/Test",
-  "jobs": 6,
+  "jobs": 1,
   "n_examined": 526,
-  "n_usable": 447,
-  "n_ineligible": 127,
+  "n_usable": 440,
+  "n_ineligible": 125,
   "strata": {
     "hard": {
       "cohort": [
         "agc065_c/48625236",
         "abc339_b/54672032",
-        "abc320_f/47539324",
         "abc355_b/55109474",
         "abc330_c/54071794",
         "abc336_d/53237033",
@@ -41,7 +40,6 @@
         "abc301_f/51429838",
         "arc155_c/40890958",
         "abc297_e/46197532",
-        "arc170_c/49600906",
         "arc157_d/39202960",
         "abc349_b/54895344",
         "abc357_a/55021619",
@@ -72,7 +70,6 @@
         "abc330_f/48327716",
         "abc352_d/54879664",
         "abc325_f/47205844",
-        "abc335_f/54448133",
         "abc292_b/45575109",
         "abc303_c/45578518",
         "abc331_d/53655797",
@@ -118,7 +115,6 @@
         "abc327_c/55003503",
         "abc320_g/45654657",
         "abc312_c/46161992",
-        "arc179_b/54728093",
         "arc179_a/54889248",
         "abc338_c/54491236",
         "abc346_f/53286789",
@@ -230,7 +226,6 @@
         "arc152_c/44122587",
         "arc148_a/44882552",
         "abc263_b/45056655",
-        "abc249_e/51504381",
         "arc151_c/36321896",
         "abc279_g/37231890",
         "abc264_g/42294250",
@@ -287,13 +282,13 @@
         "arc141_b/38039113",
         "arc138_b/39937104",
         "abc246_d/45039073",
+        "abc272_g/52009362",
         "arc148_c/38559514",
         "abc252_b/45243368",
         "abc277_b/45577199",
         "abc263_g/43726575",
         "abc255_c/45934299",
         "abc268_e/45307852",
-        "arc150_b/40750419",
         "arc147_e/40546012",
         "abc265_d/45966660",
         "abc258_d/45080402",
@@ -332,8 +327,8 @@
         "abc253_g/32999272",
         "arc145_b/41639432"
       ],
-      "n_cohort": 320,
-      "n_passing": 320,
+      "n_cohort": 315,
+      "n_passing": 315,
       "quota": 360
     }
   },
@@ -341,7 +336,6 @@
   "cohort": [
     "agc065_c/48625236",
     "abc339_b/54672032",
-    "abc320_f/47539324",
     "abc355_b/55109474",
     "abc330_c/54071794",
     "abc336_d/53237033",
@@ -369,7 +363,6 @@
     "abc301_f/51429838",
     "arc155_c/40890958",
     "abc297_e/46197532",
-    "arc170_c/49600906",
     "arc157_d/39202960",
     "abc349_b/54895344",
     "abc357_a/55021619",
@@ -400,7 +393,6 @@
     "abc330_f/48327716",
     "abc352_d/54879664",
     "abc325_f/47205844",
-    "abc335_f/54448133",
     "abc292_b/45575109",
     "abc303_c/45578518",
     "abc331_d/53655797",
@@ -446,7 +438,6 @@
     "abc327_c/55003503",
     "abc320_g/45654657",
     "abc312_c/46161992",
-    "arc179_b/54728093",
     "arc179_a/54889248",
     "abc338_c/54491236",
     "abc346_f/53286789",
@@ -558,7 +549,6 @@
     "arc152_c/44122587",
     "arc148_a/44882552",
     "abc263_b/45056655",
-    "abc249_e/51504381",
     "arc151_c/36321896",
     "abc279_g/37231890",
     "abc264_g/42294250",
@@ -615,13 +605,13 @@
     "arc141_b/38039113",
     "arc138_b/39937104",
     "abc246_d/45039073",
+    "abc272_g/52009362",
     "arc148_c/38559514",
     "abc252_b/45243368",
     "abc277_b/45577199",
     "abc263_g/43726575",
     "abc255_c/45934299",
     "abc268_e/45307852",
-    "arc150_b/40750419",
     "arc147_e/40546012",
     "abc265_d/45966660",
     "abc258_d/45080402",
@@ -660,17 +650,17 @@
     "abc253_g/32999272",
     "arc145_b/41639432"
   ],
-  "n_cohort": 320,
-  "n_cohort_passing": 320,
+  "n_cohort": 315,
+  "n_cohort_passing": 315,
   "corpus_gate_ok": false,
-  "n_passing": 320,
+  "n_passing": 315,
   "max_examples": 80,
   "mutant_examples": 80,
   "full_pool_cap": 300,
   "reference_cases": 20,
   "timeout_sec": 30.0,
   "seed": 20260717,
-  "elapsed_sec": 5510.1,
+  "elapsed_sec": 18226.5,
   "faults": {
     "agc065_c/48625236": {
       "task_id": "agc065_c",
@@ -790,59 +780,10 @@
       "fault_lines": [
         6
       ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": null,
-      "usable": true,
-      "examples_tried": 6,
-      "counterexample": "testcase02.txt",
-      "natural_mutants": [
-        "abc320_f/46034926",
-        "abc320_f/48703794",
-        "abc320_f/51972231"
-      ],
-      "eligible": true,
-      "stratum": "hard",
-      "mutants_caught": 3,
-      "mutants_total": 3,
-      "mutants_scored": 3,
-      "mutants_natural": 3,
-      "caught_submissions": [
-        "abc320_f/46034926",
-        "abc320_f/48703794",
-        "abc320_f/51972231"
-      ],
-      "n_missed": 0,
-      "n_equivalent": 0,
-      "n_inconclusive": 0,
-      "passes": true,
-      "mutants": {
-        "abc320_f/46034926": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "abc320_f/46034926",
-          "examples_tried": 1,
-          "counterexample": "sample00.txt",
-          "reason": "wrong output on test case sample00.txt"
-        },
-        "abc320_f/48703794": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "abc320_f/48703794",
-          "examples_tried": 1,
-          "counterexample": "sample00.txt",
-          "reason": "raised ModuleNotFoundError on test case sample00.txt: No module named 'atcoder'"
-        },
-        "abc320_f/51972231": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "abc320_f/51972231",
-          "examples_tried": 6,
-          "counterexample": "testcase02.txt",
-          "reason": "wrong output on test case testcase02.txt"
-        }
-      },
-      "in_cohort": true
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference timed out on testcase11.txt",
+      "usable": false
     },
     "abc355_b/55109474": {
       "task_id": "abc355_b",
@@ -1277,14 +1218,10 @@
       "fault_lines": [
         45
       ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": "no other wrong submission to this coding task, so the oracle cannot be validated on it - re-run the draw with scripts/select_hard_tasks.py --min-siblings 1",
-      "usable": true,
-      "examples_tried": 1,
-      "counterexample": "00_sample_01.txt",
-      "natural_mutants": [],
-      "eligible": false
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference timed out on 01_test_04.txt",
+      "usable": false
     },
     "abc354_g/53647241": {
       "task_id": "abc354_g",
@@ -2394,10 +2331,14 @@
       "fault_lines": [
         34
       ],
-      "fault_exposed": false,
-      "reference_ok": false,
-      "reason": "reference raised ModuleNotFoundError on 000.txt",
-      "usable": false
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": "no other wrong submission to this coding task, so the oracle cannot be validated on it - re-run the draw with scripts/select_hard_tasks.py --min-siblings 1",
+      "usable": true,
+      "examples_tried": 7,
+      "counterexample": "006.txt",
+      "natural_mutants": [],
+      "eligible": false
     },
     "arc173_e/51134374": {
       "task_id": "arc173_e",
@@ -2760,59 +2701,10 @@
       "fault_lines": [
         40
       ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": null,
-      "usable": true,
-      "examples_tried": 10,
-      "counterexample": "01_test_08.txt",
-      "natural_mutants": [
-        "arc170_c/50130200",
-        "arc170_c/51377709",
-        "arc170_c/52698796"
-      ],
-      "eligible": true,
-      "stratum": "hard",
-      "mutants_caught": 3,
-      "mutants_total": 3,
-      "mutants_scored": 3,
-      "mutants_natural": 3,
-      "caught_submissions": [
-        "arc170_c/50130200",
-        "arc170_c/51377709",
-        "arc170_c/52698796"
-      ],
-      "n_missed": 0,
-      "n_equivalent": 0,
-      "n_inconclusive": 0,
-      "passes": true,
-      "mutants": {
-        "arc170_c/50130200": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "arc170_c/50130200",
-          "examples_tried": 1,
-          "counterexample": "00_sample_01.txt",
-          "reason": "wrong output on test case 00_sample_01.txt"
-        },
-        "arc170_c/51377709": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "arc170_c/51377709",
-          "examples_tried": 12,
-          "counterexample": "01_test_10.txt",
-          "reason": "wrong output on test case 01_test_10.txt"
-        },
-        "arc170_c/52698796": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "arc170_c/52698796",
-          "examples_tried": 5,
-          "counterexample": "01_test_03.txt",
-          "reason": "wrong output on test case 01_test_03.txt"
-        }
-      },
-      "in_cohort": true
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference timed out on 01_test_04.txt",
+      "usable": false
     },
     "abc350_c/55151814": {
       "task_id": "abc350_c",
@@ -4839,39 +4731,10 @@
       "fault_lines": [
         15
       ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": null,
-      "usable": true,
-      "examples_tried": 9,
-      "counterexample": "test_06.txt",
-      "natural_mutants": [
-        "abc335_f/53563069"
-      ],
-      "eligible": true,
-      "stratum": "hard",
-      "mutants_caught": 1,
-      "mutants_total": 1,
-      "mutants_scored": 1,
-      "mutants_natural": 1,
-      "caught_submissions": [
-        "abc335_f/53563069"
-      ],
-      "n_missed": 0,
-      "n_equivalent": 0,
-      "n_inconclusive": 0,
-      "passes": true,
-      "mutants": {
-        "abc335_f/53563069": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "abc335_f/53563069",
-          "examples_tried": 9,
-          "counterexample": "test_06.txt",
-          "reason": "wrong output on test case test_06.txt"
-        }
-      },
-      "in_cohort": true
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference timed out on test_02.txt",
+      "usable": false
     },
     "abc292_b/45575109": {
       "task_id": "abc292_b",
@@ -5154,7 +5017,7 @@
       ],
       "fault_exposed": false,
       "reference_ok": false,
-      "reason": "reference disagrees with the shipped output on 01_random_04.txt",
+      "reason": "reference disagrees with the shipped output on 00_sample_02.txt",
       "usable": false
     },
     "arc154_d/43287084": {
@@ -6013,9 +5876,9 @@
           "verdict": "caught",
           "source": "natural",
           "submission": "abc302_g/41876580",
-          "examples_tried": 2,
-          "counterexample": "example_01.txt",
-          "reason": "wrong output on test case example_01.txt"
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "reason": "wrong output on test case example_00.txt"
         }
       },
       "in_cohort": true
@@ -6533,7 +6396,7 @@
       ],
       "fault_exposed": false,
       "reference_ok": false,
-      "reason": "reference timed out on 01_random_04.txt",
+      "reason": "reference timed out on 01_random_02.txt",
       "usable": false
     },
     "abc303_d/45489398": {
@@ -6652,9 +6515,9 @@
           "verdict": "caught",
           "source": "natural",
           "submission": "abc287_d/45345625",
-          "examples_tried": 1,
-          "counterexample": "00_sample_00.txt",
-          "reason": "raised ModuleNotFoundError on test case 00_sample_00.txt: No module named 'more_itertools'"
+          "examples_tried": 35,
+          "counterexample": "04_re_11.txt",
+          "reason": "wrong output on test case 04_re_11.txt"
         }
       },
       "in_cohort": true
@@ -6796,14 +6659,10 @@
       "fault_lines": [
         12
       ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": "no other wrong submission to this coding task, so the oracle cannot be validated on it - re-run the draw with scripts/select_hard_tasks.py --min-siblings 1",
-      "usable": true,
-      "examples_tried": 3,
-      "counterexample": "hack_24.txt",
-      "natural_mutants": [],
-      "eligible": false
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference timed out on hack_01.txt",
+      "usable": false
     },
     "abc327_b/55112773": {
       "task_id": "abc327_b",
@@ -7908,59 +7767,10 @@
       "fault_lines": [
         12
       ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": null,
-      "usable": true,
-      "examples_tried": 2,
-      "counterexample": "00-sample-002.txt",
-      "natural_mutants": [
-        "arc179_b/54187921",
-        "arc179_b/54190165",
-        "arc179_b/54198315"
-      ],
-      "eligible": true,
-      "stratum": "hard",
-      "mutants_caught": 3,
-      "mutants_total": 3,
-      "mutants_scored": 3,
-      "mutants_natural": 3,
-      "caught_submissions": [
-        "arc179_b/54187921",
-        "arc179_b/54190165",
-        "arc179_b/54198315"
-      ],
-      "n_missed": 0,
-      "n_equivalent": 0,
-      "n_inconclusive": 0,
-      "passes": true,
-      "mutants": {
-        "arc179_b/54187921": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "arc179_b/54187921",
-          "examples_tried": 1,
-          "counterexample": "00-sample-001.txt",
-          "reason": "raised ModuleNotFoundError on test case 00-sample-001.txt: No module named 'numba'"
-        },
-        "arc179_b/54190165": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "arc179_b/54190165",
-          "examples_tried": 7,
-          "counterexample": "01-handmade-004.txt",
-          "reason": "wrong output on test case 01-handmade-004.txt"
-        },
-        "arc179_b/54198315": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "arc179_b/54198315",
-          "examples_tried": 7,
-          "counterexample": "01-handmade-004.txt",
-          "reason": "wrong output on test case 01-handmade-004.txt"
-        }
-      },
-      "in_cohort": true
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference timed out on 01-handmade-003.txt",
+      "usable": false
     },
     "abc334_f/50005734": {
       "task_id": "abc334_f",
@@ -9257,7 +9067,7 @@
           "submission": "abc319_b/45811398",
           "examples_tried": 1,
           "counterexample": "000.txt",
-          "reason": "raised ModuleNotFoundError on test case 000.txt: No module named 'sympy'"
+          "reason": "wrong output on test case 000.txt"
         },
         "abc319_b/45813638": {
           "verdict": "caught",
@@ -13603,14 +13413,10 @@
       "fault_lines": [
         5
       ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": "no other wrong submission to this coding task, so the oracle cannot be validated on it - re-run the draw with scripts/select_hard_tasks.py --min-siblings 1",
-      "usable": true,
-      "examples_tried": 12,
-      "counterexample": "02_rnd_00.txt",
-      "natural_mutants": [],
-      "eligible": false
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference timed out on 03_path_00.txt",
+      "usable": false
     },
     "abc352_b/55135076": {
       "task_id": "abc352_b",
@@ -13903,9 +13709,9 @@
           "verdict": "caught",
           "source": "natural",
           "submission": "abc309_c/45788753",
-          "examples_tried": 1,
-          "counterexample": "00_sample_00.txt",
-          "reason": "raised ModuleNotFoundError on test case 00_sample_00.txt: No module named 'distutils'"
+          "examples_tried": 21,
+          "counterexample": "03_minmax_05.txt",
+          "reason": "wrong output on test case 03_minmax_05.txt"
         }
       },
       "in_cohort": true
@@ -14192,7 +13998,7 @@
       ],
       "fault_exposed": false,
       "reference_ok": false,
-      "reason": "reference disagrees with the shipped output on 01_sample_01.txt",
+      "reason": "reference raised ValueError on 01_sample_01.txt",
       "usable": false
     },
     "abc323_a/54513324": {
@@ -14741,7 +14547,7 @@
       ],
       "fault_exposed": false,
       "reference_ok": false,
-      "reason": "reference timed out on 01_random_05.txt",
+      "reason": "reference timed out on 01_random_00.txt",
       "usable": false
     },
     "abc246_a/45745121": {
@@ -15430,39 +15236,10 @@
       "fault_lines": [
         31
       ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": null,
-      "usable": true,
-      "examples_tried": 4,
-      "counterexample": "example_03.txt",
-      "natural_mutants": [
-        "abc249_e/47998431"
-      ],
-      "eligible": true,
-      "stratum": "hard",
-      "mutants_caught": 1,
-      "mutants_total": 1,
-      "mutants_scored": 1,
-      "mutants_natural": 1,
-      "caught_submissions": [
-        "abc249_e/47998431"
-      ],
-      "n_missed": 0,
-      "n_equivalent": 0,
-      "n_inconclusive": 0,
-      "passes": true,
-      "mutants": {
-        "abc249_e/47998431": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "abc249_e/47998431",
-          "examples_tried": 31,
-          "counterexample": "test_26.txt",
-          "reason": "wrong output on test case test_26.txt"
-        }
-      },
-      "in_cohort": true
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference timed out on example_03.txt",
+      "usable": false
     },
     "abc275_f/45458655": {
       "task_id": "abc275_f",
@@ -17200,9 +16977,9 @@
           "verdict": "caught",
           "source": "natural",
           "submission": "arc146_b/43257634",
-          "examples_tried": 48,
-          "counterexample": "test_45.txt",
-          "reason": "wrong output on test case test_45.txt"
+          "examples_tried": 4,
+          "counterexample": "test_01.txt",
+          "reason": "timed out after 30.0s on test case test_01.txt"
         }
       },
       "in_cohort": true
@@ -19104,10 +18881,59 @@
       "fault_lines": [
         104
       ],
-      "fault_exposed": false,
-      "reference_ok": false,
-      "reason": "reference disagrees with the shipped output on example_00.txt",
-      "usable": false
+      "fault_exposed": true,
+      "reference_ok": true,
+      "reason": null,
+      "usable": true,
+      "examples_tried": 22,
+      "counterexample": "test_06.txt",
+      "natural_mutants": [
+        "abc272_g/47192828",
+        "abc272_g/48246740",
+        "abc272_g/48872899"
+      ],
+      "eligible": true,
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_total": 3,
+      "mutants_scored": 3,
+      "mutants_natural": 3,
+      "caught_submissions": [
+        "abc272_g/47192828",
+        "abc272_g/48246740",
+        "abc272_g/48872899"
+      ],
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "passes": true,
+      "mutants": {
+        "abc272_g/47192828": {
+          "verdict": "caught",
+          "source": "natural",
+          "submission": "abc272_g/47192828",
+          "examples_tried": 8,
+          "counterexample": "test_72.txt",
+          "reason": "wrong output on test case test_72.txt"
+        },
+        "abc272_g/48246740": {
+          "verdict": "caught",
+          "source": "natural",
+          "submission": "abc272_g/48246740",
+          "examples_tried": 2,
+          "counterexample": "test_04.txt",
+          "reason": "wrong output on test case test_04.txt"
+        },
+        "abc272_g/48872899": {
+          "verdict": "caught",
+          "source": "natural",
+          "submission": "abc272_g/48872899",
+          "examples_tried": 2,
+          "counterexample": "test_33.txt",
+          "reason": "wrong output on test case test_33.txt"
+        }
+      },
+      "in_cohort": true
     },
     "arc148_c/38559514": {
       "task_id": "arc148_c",
@@ -19605,59 +19431,10 @@
       "fault_lines": [
         8
       ],
-      "fault_exposed": true,
-      "reference_ok": true,
-      "reason": null,
-      "usable": true,
-      "examples_tried": 6,
-      "counterexample": "01-random-005.txt",
-      "natural_mutants": [
-        "arc150_b/40524794",
-        "arc150_b/40583945",
-        "arc150_b/42077824"
-      ],
-      "eligible": true,
-      "stratum": "hard",
-      "mutants_caught": 3,
-      "mutants_total": 3,
-      "mutants_scored": 3,
-      "mutants_natural": 3,
-      "caught_submissions": [
-        "arc150_b/40524794",
-        "arc150_b/40583945",
-        "arc150_b/42077824"
-      ],
-      "n_missed": 0,
-      "n_equivalent": 0,
-      "n_inconclusive": 0,
-      "passes": true,
-      "mutants": {
-        "arc150_b/40524794": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "arc150_b/40524794",
-          "examples_tried": 24,
-          "counterexample": "03-test-003.txt",
-          "reason": "wrong output on test case 03-test-003.txt"
-        },
-        "arc150_b/40583945": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "arc150_b/40583945",
-          "examples_tried": 23,
-          "counterexample": "03-test-002.txt",
-          "reason": "wrong output on test case 03-test-002.txt"
-        },
-        "arc150_b/42077824": {
-          "verdict": "caught",
-          "source": "natural",
-          "submission": "arc150_b/42077824",
-          "examples_tried": 24,
-          "counterexample": "03-test-003.txt",
-          "reason": "wrong output on test case 03-test-003.txt"
-        }
-      },
-      "in_cohort": true
+      "fault_exposed": false,
+      "reference_ok": false,
+      "reason": "reference timed out on 01-random-010.txt",
+      "usable": false
     },
     "arc147_e/40546012": {
       "task_id": "arc147_e",
