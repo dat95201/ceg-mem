@@ -83,7 +83,7 @@ TASKS="data/tasks.json"
 MERGED="data/episodes.jsonl"
 
 EXP=""; FROM=""; TO=""; SEEDS=""; BUDGET=""; DRY_RUN=0
-CHECK_REGRESSION=0; REGRESSION_CAP=
+CHECK_REGRESSION=0; REGRESSION_CAP=; UNIVERSE_OVERRIDE=
 KEEP_SERVING=0; STOP_MODEL=1; RESUME_MERGED=1
 
 # ── the universes ───────────────────────────────────────────────────────────
@@ -97,6 +97,11 @@ universe_list() {
     corpus) echo "data/eval_order.txt" ;;
     sweep)  echo "data/sweep_programs.txt" ;;
     trial)  echo "data/trial_programs.txt" ;;
+    # A subset drawn on purpose - a demo, a rehearsal on ten tasks per band, the
+    # programs one reviewer asked about. Written by whoever drew it, not by the
+    # interleave below, so it is the one universe this script does not generate
+    # and the one whose digest header is checked on READ instead of on write.
+    demo)   echo "data/demo_programs.txt" ;;
     *)      echo "" ;;
   esac
 }
@@ -145,6 +150,15 @@ usage: bash scripts/eval_shard.sh --exp NAME [--from N --to M] [options]
                                       the oracle on guarded rounds so their
                                       failure type is on the record. Subset
                                       only - it defeats the saving E2 measures
+  --universe NAME   run a preset over a different universe than its own default:
+                    corpus | sweep | trial | demo. `demo` reads
+                    data/demo_programs.txt, which YOU write - the other three are
+                    generated from data/tasks.json, this one is a draw. It must
+                    carry the same '# corpus_sha256:' header they do.
+                    The universe is deliberately NOT in the cell key: the same
+                    task/mode/seed is the same cell whichever list named it, so a
+                    demo over 30 tasks and the full grid share their episodes and
+                    their cache rather than paying for both.
   --from N --to M   1-based inclusive range over that experiment's universe
                     (default: all of it). E1/E2/E3/E6 walk the whole frozen
                     corpus, E4/E5/E8 the stratified sweep subset, six per band.
@@ -230,6 +244,7 @@ while [[ $# -gt 0 ]]; do
     --model)   MODEL="$2"; shift 2 ;;
     --reasoning-effort) REASONING_EFFORT="$2"; shift 2 ;;
     --transcript-window) TRANSCRIPT_WINDOW="$2"; shift 2 ;;
+    --universe)          UNIVERSE_OVERRIDE="$2"; shift 2 ;;
     --check-regression)  CHECK_REGRESSION=1; shift ;;
     --regression-cap)    REGRESSION_CAP="$2"; shift 2 ;;
     --port)    PORT="$2"; shift 2 ;;
@@ -338,6 +353,14 @@ case "$EXP" in
 esac
 SEEDS="${SEEDS:-$DEF_SEEDS}"
 BUDGET="${BUDGET:-$DEF_BUDGET}"
+# After the preset, so it overrides the preset's own universe rather than being
+# overwritten by it.
+if [[ -n "$UNIVERSE_OVERRIDE" ]]; then
+  [[ -n "$(universe_list "$UNIVERSE_OVERRIDE")" ]] || {
+    echo "unknown --universe '$UNIVERSE_OVERRIDE' - one of: corpus sweep trial demo" >&2
+    exit 2; }
+  UNIVERSE="$UNIVERSE_OVERRIDE"
+fi
 
 # Appended after the preset so it survives --exp E6-transcript's own EXTRA.
 # Only ever passed for the transcript arm: run_eval rejects it otherwise,
@@ -435,6 +458,28 @@ LIST_SRC="$(universe_list "$UNIVERSE")"
 
 # `|| true`: grep exits 1 on a zero count, which under `set -e` would kill the
 # script with no message at all.
+[[ -f "$LIST_SRC" ]] || {
+  echo "$LIST_SRC does not exist." >&2
+  [[ "$UNIVERSE" == demo ]] && echo "A demo universe is a list you draw yourself - see RUNBOOK.md." >&2
+  exit 2; }
+# The three generated lists are digest-checked when they are WRITTEN, above. A
+# hand-drawn one never passes through that, so it is checked here, on read: a
+# list cut from a different data/tasks.json names different tasks at the same
+# indices, and then every shard boundary means something else. eval_order.txt
+# was just written or validated against the corpus frozen now, so its own header
+# is the authority and the digest is not recomputed here.
+CORPUS_DIGEST="$(sed -n 's/^# corpus_sha256: //p' data/eval_order.txt | head -1)"
+LIST_DIGEST="$(sed -n 's/^# corpus_sha256: //p' "$LIST_SRC" | head -1)"
+if [[ -z "$LIST_DIGEST" ]]; then
+  echo "$LIST_SRC has no '# corpus_sha256: <digest>' header - add the digest of" >&2
+  echo "the data/tasks.json it was drawn from, or its indices trace to nothing." >&2
+  exit 2
+elif [[ -n "$CORPUS_DIGEST" && "$LIST_DIGEST" != "$CORPUS_DIGEST" ]]; then
+  echo "$LIST_SRC was cut from a different data/tasks.json" >&2
+  echo "  (${LIST_DIGEST:0:12}... vs ${CORPUS_DIGEST:0:12}...). Re-draw it." >&2
+  exit 2
+fi
+
 N_UNIVERSE="$(grep -cve '^#' -e '^$' "$LIST_SRC" || true)"
 [[ "$N_UNIVERSE" =~ ^[1-9][0-9]*$ ]] || {
   echo "$LIST_SRC holds no programs - the corpus freeze is empty or the file is corrupt" >&2
