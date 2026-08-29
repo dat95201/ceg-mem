@@ -34,7 +34,21 @@ from src.oracle import differential_test
 from src.llm import ContextOverflow
 from src.proposer import Attempt, TruncatedResponse, propose
 
-MODES = ("no_memory", "untyped", "typed", "transcript")
+MODES = ("no_memory", "untyped", "typed")
+
+# Under free_guarded_rounds a guarded round is free, so a memory that guards
+# everything would draw forever. 10x the attempt budget is the ceiling: the
+# untyped guard's measured block rate is 81.6% (docs/DIAGNOSIS.md SS3), which
+# needs ~5.4 draws per retained attempt, so 10x leaves headroom for a task well
+# into the tail without letting a pathological cell run unbounded.
+FREE_GUARD_DRAW_CAP = 10
+# Deliberately NOT in cell_signature. Raising the cap extends an episode that hit
+# it; it never changes a draw the episode already made, because the draw at round
+# k is a function of (task, seed, k) alone. So a cell re-run at a higher cap
+# rewrites its own rounds and appends the new ones - which is what
+# src.metrics.load_rounds already does - instead of forking into a second episode
+# id whose first N rounds duplicate the first one's. It is on the RECORD (below)
+# so an analysis can still see which episodes were truncated by it.
 
 
 def cell_signature(
@@ -49,11 +63,11 @@ def cell_signature(
     steer_on: bool,
     budget: int,
     force_full_budget: bool,
-    transcript_window: int = 0,
     audit_guarded: bool = False,
     reasoning_effort: str | None = None,
     typing_random: bool = False,
     model: str | None = None,
+    free_guarded_rounds: bool = False,
 ) -> str:
     """Canonical string identity of one experiment cell.
 
@@ -83,14 +97,18 @@ def cell_signature(
     # therefore the episode id - it had before these three knobs existed. The
     # same reason src.llm.cache_key appends reasoning_effort conditionally:
     # adding an always-present field would rename every cell at once.
-    if transcript_window:
-        parts.append(f"tw={transcript_window}")
     if audit_guarded:
         parts.append("audit=True")
     if reasoning_effort:
         parts.append(f"effort={reasoning_effort}")
     if typing_random:
         parts.append("typing=random")
+    # Free guarded rounds redefine what one unit of `budget` buys, so a cell run
+    # under it is a different cell - and pooling the two would put two different
+    # success@B curves on one axis. Appended conditionally like every knob above,
+    # so the 35,755 rounds already in data/episodes.jsonl keep their episode ids.
+    if free_guarded_rounds:
+        parts.append("freeguard=True")
     # model belongs here for the reason every other knob does, and its absence
     # was a real hazard: episode_id was model-independent, so the same
     # task/mode/seed run under two proposers collided in
@@ -149,9 +167,10 @@ def run_episode(
     typing_noise_c: float = 1.0,
     typing_random: bool = False,
     force_full_budget: bool = False,
-    transcript_window: int = 0,
     audit_guarded: bool = False,
     reasoning_effort: str | None = None,
+    free_guarded_rounds: bool = False,
+    free_guard_draw_cap: int = FREE_GUARD_DRAW_CAP,
     rng: random.Random | None = None,
 ) -> EpisodeResult:
     """propose -> guard -> oracle -> record, repeated up to `budget` rounds.
@@ -169,6 +188,26 @@ def run_episode(
     than real ones. It costs sandbox time and no model calls, and it defeats
     the very saving E2 measures, so run it as its own cell on a subset - never
     over the reported grid.
+
+    free_guarded_rounds: charge a guarded round one model call but no unit of
+    the attempt budget, so the loop keeps drawing until it has spent `budget`
+    *attempts*. Off by default and part of the cell key, because it changes what
+    a success@B curve is a curve of.
+
+    With it off - the accounting every result in data/ was measured under - the
+    guard cannot change an outcome. It blocks only candidates a stored
+    counterexample already refutes, i.e. ones that were going to fail anyway, so
+    under common random numbers the round of the first ACCEPTED patch is
+    invariant to the guard and `untyped` reproduces `no_memory` exactly at every
+    budget (docs/DIAGNOSIS.md SS1). Corollary 4.4 is untestable in that regime.
+    Turning it on is what converts a blocked proposal into a retained attempt.
+
+    Draws are capped at free_guard_draw_cap x budget: a memory that guards every
+    candidate would otherwise spin until the task ran out of proposals. An
+    episode that hits the cap ends with the budget unspent, which is a real
+    outcome (the guard starved the search) and is visible as attempt_index never
+    reaching `budget` on any of its rounds - not an error, and not silently
+    padded to look like an exhausted budget.
     """
     if mode not in MODES:
         raise ValueError(f"mode must be one of {MODES}, got {mode!r}")
@@ -180,8 +219,9 @@ def run_episode(
         task_name, mode, seed=seed, granularity=granularity, max_examples=max_examples,
         typing_noise_c=typing_noise_c, guard_on=guard_on, steer_on=steer_on,
         budget=budget, force_full_budget=force_full_budget,
-        transcript_window=transcript_window, audit_guarded=audit_guarded,
+        audit_guarded=audit_guarded,
         reasoning_effort=reasoning_effort, typing_random=typing_random, model=model,
+        free_guarded_rounds=free_guarded_rounds,
     )
     # Deterministic, not uuid4: a cell that died halfway and is re-run rewrites
     # its own rounds in data/episodes.jsonl (src.metrics.load_rounds collapses on
@@ -208,8 +248,13 @@ def run_episode(
             max_examples=max_examples, typing_noise_c=typing_noise_c,
             typing_random=typing_random,
             granularity=granularity, force_full_budget=force_full_budget,
-            transcript_window=transcript_window, audit_guarded=audit_guarded,
+            audit_guarded=audit_guarded,
             reasoning_effort=reasoning_effort,
+            free_guarded_rounds=free_guarded_rounds,
+            # Read out of the mutable cell rather than threaded through five
+            # call sites: it is a property of the round, decided once the guard
+            # has spoken, and every append_round below is inside that round.
+            attempt_index=budget_state["attempt_index"],
         )
         base.update(overrides)
         return RoundRecord(**base)
@@ -225,7 +270,23 @@ def run_episode(
             "llm_sec": meta.get("llm_sec"),
         }
 
-    for round_index in range(1, budget + 1):
+    # round_index counts DRAWS; attempts counts units of `budget` spent. The two
+    # are the same number until free_guarded_rounds pulls them apart, and every
+    # downstream join is on round_index, so it stays the record's key.
+    budget_state = {"attempt_index": None}
+    attempts = 0
+    round_index = 0
+    max_draws = budget * free_guard_draw_cap if free_guarded_rounds else budget
+
+    def _charge() -> None:
+        """Spend one unit of the attempt budget on the current round."""
+        nonlocal attempts
+        attempts += 1
+        budget_state["attempt_index"] = attempts
+
+    while attempts < budget and round_index < max_draws:
+        round_index += 1
+        budget_state["attempt_index"] = None
         call_meta: dict = {}
         try:
             patch = propose(
@@ -234,7 +295,6 @@ def run_episode(
                 disable_steering=not steer_on,
                 nonce=proposal_nonce(task_name, seed, round_index),
                 spec_note=task.spec_note,
-                transcript_window=transcript_window,
                 reasoning_effort=reasoning_effort,
                 meta=call_meta,
             )
@@ -256,11 +316,15 @@ def run_episode(
             # crash. RUNBOOK.md.
             kind = ("context_overflow" if isinstance(exc, ContextOverflow)
                     else "truncated_response")
+            # Charged even under free_guarded_rounds: nothing was guarded here,
+            # the round simply failed, and leaving it free would let a task whose
+            # proposer keeps truncating draw FREE_GUARD_DRAW_CAP x budget times.
+            _charge()
             append_round(_record(
                 round_index=round_index, patch="", accept=False,
                 counterexample_args=None, reason=f"proposal unusable: {exc}",
                 examples_tried=0, coarse_type=None, fine_type=None,
-                proposal_error=kind, **_cost(call_meta),
+                proposal_error=kind, sandbox_runs=0, **_cost(call_meta),
             ), **kwargs)
             continue
 
@@ -273,6 +337,10 @@ def run_episode(
             guarded, guard_evaluations = guard_result.blocked, guard_result.evaluations
             blocked_by = guard_result.blocked_by
             total_guard_evaluations += guard_evaluations
+
+        # The one place the two accountings differ.
+        if not (guarded and free_guarded_rounds):
+            _charge()
 
         if guarded:
             # The type of the counterexample that fired - the arm-neutral label
@@ -330,6 +398,11 @@ def run_episode(
                 blocked_by_type=blocked_ft.key if blocked_ft else None,
                 blocked_by_type_true=blocked_true.key if blocked_true else None,
                 guard_sec=guard_sec, oracle_sec=audit_sec or None,
+                # Guard evaluations only. --audit-guarded's oracle runs are
+                # deliberately excluded: the loop never used that verdict, so
+                # billing the arm for it would make the audit cell's cost
+                # incomparable with the grid cell it is supposed to explain.
+                sandbox_runs=guard_evaluations,
                 **_cost(call_meta),
             ), **kwargs)
             continue  # oracle call avoided; still consumes one round of budget
@@ -353,7 +426,9 @@ def run_episode(
                 coarse_type=None, fine_type=None,
                 guarded=False, guard_evaluations=guard_evaluations,
                 oracle_error=result.oracle_error,
-                guard_sec=guard_sec, oracle_sec=oracle_sec, **_cost(call_meta),
+                guard_sec=guard_sec, oracle_sec=oracle_sec,
+                sandbox_runs=guard_evaluations + result.examples_tried,
+                **_cost(call_meta),
             ), **kwargs)
             continue
 
@@ -375,7 +450,11 @@ def run_episode(
             fine_type=attempt.fine_type.key if attempt.fine_type else None,
             stored_type=stored_ft.key if stored_ft else None,
             guarded=False, guard_evaluations=guard_evaluations,
-            guard_sec=guard_sec, oracle_sec=oracle_sec, **_cost(call_meta),
+            guard_sec=guard_sec, oracle_sec=oracle_sec,
+            # The guard ran and lost, so its evaluations are real work this
+            # round spent and belong in the round's cost alongside the oracle's.
+            sandbox_runs=guard_evaluations + result.examples_tried,
+            **_cost(call_meta),
         ), **kwargs)
 
         if result.accept:
@@ -389,8 +468,12 @@ def run_episode(
                     guard_evaluations=total_guard_evaluations, first_accept_round=first_accept_round,
                 )
 
+    # round_index, not budget: under free_guarded_rounds an exhausted episode has
+    # drawn more rounds than it spent attempts, and an episode stopped by
+    # FREE_GUARD_DRAW_CAP has spent fewer attempts than `budget`. Reporting
+    # `budget` here claimed both were a full-budget run of exactly B rounds.
     return EpisodeResult(
-        episode_id, task_name, mode, accepted_patch, budget, memory.history,
+        episode_id, task_name, mode, accepted_patch, round_index, memory.history,
         guard_evaluations=total_guard_evaluations, first_accept_round=first_accept_round,
     )
 

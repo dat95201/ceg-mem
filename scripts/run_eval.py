@@ -15,7 +15,6 @@ different flags:
                                   --modes typed --steer off  (guard-only)
   E4 (oracle-informativeness sweep):  --max-examples 20|8|3 (100 = E2's cell)
   E5 (typing-coherence sweep):        --typing-noise-c 0.9|0.75|0.5|0.25|0.0 (1.0 = E2's cell)
-  E6 (transcript baseline):      --modes transcript --check-overfit
   E8 (redundancy audit):         --modes untyped typed --audit-guarded
 
 E1 *is* the main grid's no-memory arm - run it, then run E2 over the two
@@ -100,9 +99,10 @@ def _programs_from_file(path: pathlib.Path) -> tuple[list[str], str]:
 def cell_key(task: str, mode: str, seed: int, guard_on: bool, steer_on: bool,
              max_examples: int, typing_noise_c: float, force_full_budget: bool,
              model: str | None, granularity: str,
-             transcript_window: int = 0, audit_guarded: bool = False,
+             audit_guarded: bool = False,
              reasoning_effort: str | None = None,
-             typing_random: bool = False) -> tuple:
+             typing_random: bool = False,
+             free_guarded_rounds: bool = False) -> tuple:
     """Identity of one experiment cell.
 
     model and granularity belong here for the same reason every other knob
@@ -126,7 +126,8 @@ def cell_key(task: str, mode: str, seed: int, guard_on: bool, steer_on: bool,
     """
     return (task, mode, seed, guard_on, steer_on, max_examples, typing_noise_c,
             force_full_budget, model, granularity,
-            transcript_window, audit_guarded, reasoning_effort, typing_random)
+            audit_guarded, reasoning_effort, typing_random,
+            free_guarded_rounds)
 
 
 def _cell_key(row: dict) -> tuple:
@@ -136,8 +137,9 @@ def _cell_key(row: dict) -> tuple:
         row["guard_on"], row["steer_on"], row["max_examples"], row["typing_noise_c"],
         row.get("force_full_budget", False),
         row.get("model"), row.get("granularity", "fine"),
-        row.get("transcript_window", 0), row.get("audit_guarded", False),
+        row.get("audit_guarded", False),
         row.get("reasoning_effort"), row.get("typing_random", False),
+        row.get("free_guarded_rounds", False),
     )
 
 
@@ -191,9 +193,10 @@ def run_sweep(
     episodes_path: pathlib.Path,
     overfit_path: pathlib.Path,
     resume_from: list[pathlib.Path] | None = None,
-    transcript_window: int = 0,
     audit_guarded: bool = False,
     reasoning_effort: str | None = None,
+    free_guarded_rounds: bool = False,
+    free_guard_draw_cap: int = 10,
 ) -> None:
     done = _completed_cells(episodes_path, budget, force_full_budget, also=resume_from)
     total = len(programs) * len(modes) * len(seeds)
@@ -207,8 +210,8 @@ def run_sweep(
                 n += 1
                 cell = cell_key(task_name, mode, seed, guard_on, steer_on, max_examples,
                                 typing_noise_c, force_full_budget, model, granularity,
-                                transcript_window, audit_guarded, reasoning_effort,
-                                typing_random)
+                                audit_guarded, reasoning_effort,
+                                typing_random, free_guarded_rounds)
                 if cell in done:
                     print(f"[{n:4d}/{total}] {task_name:28s} {mode:10s} seed={seed} - already complete, skipping",
                           flush=True)
@@ -222,9 +225,10 @@ def run_sweep(
                         guard_on=guard_on, steer_on=steer_on,
                         typing_noise_c=typing_noise_c, typing_random=typing_random,
                         force_full_budget=force_full_budget,
-                        transcript_window=transcript_window,
                         audit_guarded=audit_guarded,
                         reasoning_effort=reasoning_effort,
+                        free_guarded_rounds=free_guarded_rounds,
+                        free_guard_draw_cap=free_guard_draw_cap,
                     )
                 except BudgetExceeded as exc:
                     print(f"\nBUDGET CAP REACHED ({exc}) - stopping the sweep cleanly.")
@@ -332,10 +336,15 @@ def main() -> None:
                              "subset scores the split and the patch. Recorded in every "
                              "row it produces - a capped audit is a different measurement "
                              "and the number alone would not say so")
-    parser.add_argument("--transcript-window", type=int, default=0,
-                        help="mode=transcript only: show the proposer only the K most "
-                             "recent refuted attempts (0 = all of them). In the cell key, "
-                             "because a truncated transcript is a different memory")
+    parser.add_argument("--free-guard-draw-cap", type=int, default=10,
+                        help="with --free-guarded-rounds, stop an episode after this "
+                             "many x --budget DRAWS even if it has not spent its "
+                             "attempts. Not in the cell key: raising it extends an "
+                             "episode that hit it and never changes a draw already "
+                             "made, so a re-run at a higher cap tops the same episode "
+                             "up instead of forking a second one. 3 is enough for a "
+                             "guard blocking ~55%% of candidates to reach a budget of "
+                             "20; the default 10 covers ~90%%")
     parser.add_argument("--audit-guarded", action="store_true",
                         help="run the oracle on guarded rounds too, for the record only - "
                              "it never reaches memory and never ends the episode. Fills in "
@@ -396,12 +405,6 @@ def main() -> None:
             "The effort would enter the cache key and the cell key while changing "
             "nothing about the call."
         )
-    if args.transcript_window and "transcript" not in args.modes:
-        raise SystemExit(
-            f"--transcript-window {args.transcript_window} but no transcript arm in "
-            f"--modes {args.modes}.\nThe window is in the cell key, so it would fork "
-            "the cells of arms it does not affect."
-        )
 
     # Free, and run before the first billable call. src.loop handles an
     # unusable oracle correctly per round - it logs the round and leaves memory
@@ -428,8 +431,10 @@ def main() -> None:
         regression_cap=(args.regression_cap or None),
         episodes_path=args.episodes_path, overfit_path=args.overfit_path,
         resume_from=args.resume_from,
-        transcript_window=args.transcript_window, audit_guarded=args.audit_guarded,
+        audit_guarded=args.audit_guarded,
         reasoning_effort=reasoning_effort,
+        free_guarded_rounds=args.free_guarded_rounds,
+        free_guard_draw_cap=args.free_guard_draw_cap,
     )
     print(f"\ntotal spent so far: ${spent():.4f}")
 

@@ -83,7 +83,7 @@ TASKS="data/tasks.json"
 MERGED="data/episodes.jsonl"
 
 EXP=""; FROM=""; TO=""; SEEDS=""; BUDGET=""; DRY_RUN=0
-CHECK_REGRESSION=0; REGRESSION_CAP=; UNIVERSE_OVERRIDE=
+CHECK_REGRESSION=0; REGRESSION_CAP=; UNIVERSE_OVERRIDE=; FREE_GUARDED=0; FREE_GUARD_CAP=
 KEEP_SERVING=0; STOP_MODEL=1; RESUME_MERGED=1
 
 # ── the universes ───────────────────────────────────────────────────────────
@@ -101,6 +101,11 @@ universe_list() {
     # programs one reviewer asked about. Written by whoever drew it, not by the
     # interleave below, so it is the one universe this script does not generate
     # and the one whose digest header is checked on READ instead of on write.
+    # sweep minus the dead band: the tasks where pi_hat > 0, i.e. the only ones
+    # where handing the search more attempts can convert into a repair. E9's
+    # universe. Derived, not drawn - scripts/build_live_universe.py writes it
+    # (with the corpus digest header the read-time check below requires).
+    live)   echo "data/live_programs.txt" ;;
     demo)   echo "data/demo_programs.txt" ;;
     *)      echo "" ;;
   esac
@@ -143,15 +148,27 @@ usage: bash scripts/eval_shard.sh --exp NAME [--from N --to M] [options]
                       E5-random       the c axis's NULL: classes assigned at
                                       random. c=0.00 is not this - see the
                                       preset's comment for why
-                      E6-transcript   ChatRepair baseline: the whole refuted
-                                      transcript in the prompt, same guard as
-                                      untyped. Its own mode, not a relabelling
                       E8-audit        untyped+typed with --audit-guarded: pays
                                       the oracle on guarded rounds so their
                                       failure type is on the record. Subset
                                       only - it defeats the saving E2 measures
+                      E8-corpus       E8-audit over all 106 tasks instead of
+                                      the 30-task sweep. No model calls. Until
+                                      it runs, the steered typed arm's type-keyed
+                                      metrics are valid only on those 30
+                      E9-freeguard    E2's three arms under the other budget
+                                      accounting: a guarded round is free, so
+                                      the attempts the guard saves are handed
+                                      back to the search. Cor. 4.4 is only
+                                      testable here - charged to the budget the
+                                      guard cannot change an outcome at all
+  --free-guard-draw-cap N  with the flag above, stop after N x --budget draws.
+                    NOT in the cell key - a re-run at a higher N tops the same
+                    episode up rather than forking a second one.
   --universe NAME   run a preset over a different universe than its own default:
-                    corpus | sweep | trial | demo. `demo` reads
+                    corpus | sweep | live | trial | demo.  `live` is the sweep
+                    minus the dead band - the tasks where extra attempts can
+                    actually convert; scripts/build_live_universe.py writes it. `demo` reads
                     data/demo_programs.txt, which YOU write - the other three are
                     generated from data/tasks.json, this one is a draw. It must
                     carry the same '# corpus_sha256:' header they do.
@@ -160,8 +177,9 @@ usage: bash scripts/eval_shard.sh --exp NAME [--from N --to M] [options]
                     demo over 30 tasks and the full grid share their episodes and
                     their cache rather than paying for both.
   --from N --to M   1-based inclusive range over that experiment's universe
-                    (default: all of it). E1/E2/E3/E6 walk the whole frozen
-                    corpus, E4/E5/E8 the stratified sweep subset, six per band.
+                    (default: all of it). E1/E2/E3/E8-corpus walk the whole
+                    frozen corpus, E4/E8-audit the stratified sweep subset and
+                    E9 the live subset of it.
                     Neither size belongs to this script - a re-freeze with
                     different quotas, or a band that under-filled, changes
                     both - so they are read off the lists, never written here:
@@ -177,7 +195,14 @@ usage: bash scripts/eval_shard.sh --exp NAME [--from N --to M] [options]
                     under, unless you are deliberately running a second-proposer
                     arm - `model` is in the cell key, so the two never pool.
   --reasoning-effort E   low|medium|high, o-series only (o4-mini, o3, ...)
-  --transcript-window K  E6 only: show the K most recent attempts, 0 = all
+  --free-guarded-rounds  a guarded round costs a model call but NO unit of the
+                    attempt budget, so the loop draws until it has spent --budget
+                    real attempts (capped at 10x --budget draws). IS in the cell
+                    key: success@B under this flag is a curve of a different B,
+                    and pooling the two puts two experiments on one axis. Without
+                    it the guard is outcome-neutral - it only blocks candidates
+                    already known to fail - so untyped reproduces no_memory
+                    exactly at every budget. See docs/DIAGNOSIS.md.
   --check-regression     #22: score every accepted patch on both halves of the
                     shipped pool - the cases the faulty version fails, and the
                     ones it passes that nothing in the loop ever checks. Sandbox
@@ -243,8 +268,9 @@ while [[ $# -gt 0 ]]; do
     --backend) BACKEND="$2"; shift 2 ;;
     --model)   MODEL="$2"; shift 2 ;;
     --reasoning-effort) REASONING_EFFORT="$2"; shift 2 ;;
-    --transcript-window) TRANSCRIPT_WINDOW="$2"; shift 2 ;;
     --universe)          UNIVERSE_OVERRIDE="$2"; shift 2 ;;
+    --free-guarded-rounds) FREE_GUARDED=1; shift ;;
+    --free-guard-draw-cap) FREE_GUARD_CAP="$2"; shift 2 ;;
     --check-regression)  CHECK_REGRESSION=1; shift ;;
     --regression-cap)    REGRESSION_CAP="$2"; shift 2 ;;
     --port)    PORT="$2"; shift 2 ;;
@@ -278,12 +304,12 @@ if [[ "$BACKEND" == "cloud" ]]; then
   # The window check is an ollama-specific defence (it truncates rather than
   # refusing); a hosted endpoint returns a context_length_exceeded error
   # instead. But LLM_CONTEXT_TOKENS still has to be right, because src.llm uses
-  # it to refuse an over-long prompt *before* sending it - which is how the
-  # transcript arm reports an overflow rather than paying for a rejected call.
+  # it to refuse an over-long prompt *before* sending it, so a run reports the
+  # overflow rather than paying for a call the backend will reject.
   [[ "$CONTEXT_LENGTH" != "32768" ]] || {
     echo "--backend cloud with CONTEXT_LENGTH=32768 (the local default)." >&2
     echo "Set it to the hosted model's real window - 128000 for gpt-4o-mini," >&2
-    echo "200000 for o4-mini - or the transcript arm will refuse prompts that fit." >&2
+    echo "200000 for o4-mini - or src.llm will refuse prompts that fit." >&2
     exit 2; }
 fi
 if [[ -n "$REASONING_EFFORT" && "$BACKEND" != "cloud" ]]; then
@@ -337,11 +363,6 @@ case "$EXP" in
   E5-random)
     MODES="typed"; EXTRA="--typing-random"; UNIVERSE="sweep" ;;
   # The ChatRepair baseline. Full seeds, whole corpus - it is reported beside
-  # untyped in the main table, not as an ablation. This is the ONE arm that
-  # cannot share E1's cached draws: its prompt carries the transcript, so every
-  # round past the first is a new cache key and a real model call.
-  E6-transcript)
-    MODES="transcript"; EXTRA="--check-overfit"; DEF_SEEDS="1 2 3 4 5" ;;
   # Redundancy audit: pay the oracle on guarded rounds too, so a guarded round
   # carries the failure type it would have had. Without it every type-based
   # redundancy count is censored in exactly the arms that guard, and an arm
@@ -349,6 +370,29 @@ case "$EXP" in
   # only - it spends the oracle time E2 exists to show can be saved.
   E8-audit)
     MODES="untyped typed"; EXTRA="--audit-guarded"; UNIVERSE="sweep" ;;
+  # E9: the same three arms as E2 under the OTHER budget accounting, where a
+  # guarded round is free. E2 measures what memory saves per attempt; E9 measures
+  # what it buys when the attempts it saves are handed back to the search. The
+  # two are separate cells by construction (--free-guarded-rounds is in the cell
+  # key), so this never overwrites or pools with E2.
+  # E8 over the whole corpus, not the 30-task sweep. Same flag, different
+  # universe, and the reason is a measurement one rather than a cost one: the
+  # CRN join recovers a guarded round's failure type for free in every arm whose
+  # prompt is unconditioned, but the STEERED typed arm diverges from the
+  # no-memory draw sequence and only 13.6% of its guarded rounds pair outside
+  # E8's own 30 tasks. Until this runs, every type-keyed metric for that arm -
+  # FSRR, type entropy, the revisit curve - is valid only on those 30.
+  # Replays E2's cached draws: no model calls, ~2.3 h across 6 shards.
+  E8-corpus)
+    MODES="untyped typed"; EXTRA="--audit-guarded"; UNIVERSE="corpus"
+    DEF_SEEDS="1 2 3" ;;
+  E9-freeguard)
+    MODES="no_memory untyped typed"
+    # cap 3, not the default 10: on this universe the untyped guard blocks ~54%
+    # of candidates, so 3x20 = 60 draws already reaches a 20-attempt budget, and
+    # 10x would spend 46 GPU-hours proving that dead tasks stay dead.
+    EXTRA="--free-guarded-rounds --free-guard-draw-cap 3 --check-overfit"
+    UNIVERSE="live"; DEF_SEEDS="1 2 3" ;;
   *) echo "unknown --exp: $EXP" >&2; usage >&2; exit 2 ;;
 esac
 SEEDS="${SEEDS:-$DEF_SEEDS}"
@@ -362,12 +406,6 @@ if [[ -n "$UNIVERSE_OVERRIDE" ]]; then
   UNIVERSE="$UNIVERSE_OVERRIDE"
 fi
 
-# Appended after the preset so it survives --exp E6-transcript's own EXTRA.
-# Only ever passed for the transcript arm: run_eval rejects it otherwise,
-# because the window is in the cell key and would fork arms it does not touch.
-if [[ -n "${TRANSCRIPT_WINDOW:-}" && "$MODES" == *transcript* ]]; then
-  EXTRA="$EXTRA --transcript-window $TRANSCRIPT_WINDOW"
-fi
 if [[ -n "$REASONING_EFFORT" ]]; then
   EXTRA="$EXTRA --reasoning-effort $REASONING_EFFORT"
 fi
@@ -375,6 +413,10 @@ fi
 # which arm is running and it is not in the cell key, so it composes with any
 # --exp instead of needing one of its own. The cap rides along whenever it is
 # set, so the shard's own log says which measurement this was.
+if (( FREE_GUARDED )); then
+  EXTRA="$EXTRA --free-guarded-rounds"
+  [[ -n "$FREE_GUARD_CAP" ]] && EXTRA="$EXTRA --free-guard-draw-cap $FREE_GUARD_CAP"
+fi
 if (( CHECK_REGRESSION )); then
   EXTRA="$EXTRA --check-regression"
   [[ -n "${REGRESSION_CAP:-}" ]] && EXTRA="$EXTRA --regression-cap $REGRESSION_CAP"
