@@ -157,7 +157,7 @@ def spent() -> float:
 # carrying the loop's own episode nonce will be REPLAYED by the grid. Left
 # alone they hole #13/#16/#6, and they hole them differentially: the
 # unconditioned arms share E1's draws and are the cached ones, while the
-# transcript arm's prompts are all new and complete. A comparison of token cost
+# the steered typed arm's prompts are all new and complete. A comparison of token cost
 # between a holed arm and a complete one is not a comparison.
 #
 # The blob does not store the prompt - the cache key is its hash - so this

@@ -29,7 +29,14 @@ from src.proposer import Attempt
 from src.sandbox import run_program
 from src.typer import WHOLE_PROGRAM, edit_location
 
-MODES = ("no_memory", "untyped", "typed", "transcript")
+# `transcript` (the ChatRepair/E6 arm) was REMOVED on 2026-08-29. It tested no
+# surviving claim - Thm 4.2(i), 4.3(a), 4.3(b) and Prop 4.5 all live inside the
+# no_memory/untyped/typed triangle - and the one claim it was built for, that a
+# typed index is flat in the round index where a transcript grows linearly, is
+# already falsified by the typed arm alone: typed grows 80.7 tokens/round against
+# untyped's 3.5. Five orphan rounds from one pilot episode remain in
+# data/episodes.jsonl and are dropped at load. See docs/DIAGNOSIS.md.
+MODES = ("no_memory", "untyped", "typed")
 
 
 @dataclasses.dataclass(frozen=True)
@@ -123,25 +130,6 @@ class UntypedMemory(Memory):
             if _still_refutes(attempt, candidate_source):
                 return GuardResult(blocked=True, evaluations=evaluations, blocked_by=attempt)
         return GuardResult(blocked=False, evaluations=evaluations)
-
-
-class TranscriptMemory(UntypedMemory):
-    """Flat transcript: the same guard as UntypedMemory, but src.proposer shows
-    the model every refuted patch and its counterexample.
-
-    This is the ChatRepair / reflective-agent condition, added as its own mode
-    rather than by relabelling `untyped` - see src/proposer.py's docstring for
-    the measured consequence of confusing the two, and DESIGN.md SS4. It is a
-    baseline for the paper, not one of Section 3.3's three memories: the theory
-    has nothing to say about it, because a transcript conditions the proposal
-    distribution without ever defining a class to remove from it.
-
-    It subclasses UntypedMemory rather than reimplementing the scan so that the
-    two arms differ in *exactly one* thing - what reaches the prompt - and any
-    gap between them is attributable to the steering channel alone.
-    """
-
-    mode = "transcript"
 
 
 class TypedMemory(Memory):
@@ -261,8 +249,6 @@ def build_memory(
         return NoMemory()
     if mode == "untyped":
         return UntypedMemory()
-    if mode == "transcript":
-        return TranscriptMemory()
     if mode == "typed":
         return TypedMemory(granularity=granularity, typing_noise_c=typing_noise_c,
                            typing_random=typing_random, rng=rng)

@@ -49,18 +49,16 @@ def arm_of(summary: dict) -> tuple:
         summary["max_examples"], summary["typing_noise_c"],
         summary.get("granularity", "fine"),
         summary.get("force_full_budget", False),
-        # The three knobs added with the baseline and the audit. Each makes an
-        # episode a different experiment, so without them a transcript arm at
-        # window 5 and one at window 0, or an audited cell and an unaudited one,
-        # would average together in this table under one label.
-        summary.get("transcript_window", 0),
+        # Each of these makes an episode a different experiment, so without them
+        # an audited cell and an unaudited one would average together in this
+        # table under one label.
         summary.get("audit_guarded", False),
         summary.get("reasoning_effort"),
     )
 
 
 def arm_label(arm: tuple) -> str:
-    mode, guard, steer, k, c, gran, full, tw, audit, effort = arm
+    mode, guard, steer, k, c, gran, full, audit, effort = arm
     bits = [mode]
     if not guard:
         bits.append("steer-only")      # guard off, steering on (E3)
@@ -74,8 +72,6 @@ def arm_label(arm: tuple) -> str:
         bits.append(gran)
     if full:
         bits.append("full-budget")     # E1
-    if tw:
-        bits.append(f"w={tw}")         # E6 transcript window
     if audit:
         bits.append("audit")           # E8 --audit-guarded
     if effort:
@@ -106,8 +102,7 @@ def aggregate(summaries: list[dict]) -> list[dict]:
             "mode": arm[0], "guard_on": arm[1], "steer_on": arm[2],
             "max_examples": arm[3], "typing_noise_c": arm[4],
             "granularity": arm[5], "force_full_budget": arm[6],
-            "transcript_window": arm[7], "audit_guarded": arm[8],
-            "reasoning_effort": arm[9],
+            "audit_guarded": arm[7], "reasoning_effort": arm[8],
             "n_episodes": len(group),
             "n_tasks": len({s["task"] for s in group}),
             "n_seeds": len({s["seed"] for s in group}),

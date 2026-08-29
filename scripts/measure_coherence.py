@@ -1,5 +1,5 @@
 """C1 + waste rate: does theta(p) carve out a real behavioral class, and how
-much of a transcript agent's budget is burned re-proposing one it already hit?
+much of a repair agent's budget is burned re-proposing one it already hit?
 
 Two measurements, both computed only from the no_memory corpus in
 data/episodes.jsonl (E1) - no extra API calls:

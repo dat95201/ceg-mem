@@ -13,7 +13,7 @@ template; they only change two sections of it:
                the "type-matched evidence" a typed guard would retrieve
 
   exclusion_block  - an explicit instruction to avoid certain failure classes
-    no_memory / untyped: empty - a flat transcript has no notion of a class
+    no_memory / untyped: empty - a flat log has no notion of a class
                to exclude, which is exactly the point Section 3.3 makes
                (untyped memory can guard but cannot steer)
     typed:     one line per eliminated failure type, telling the proposer
@@ -57,18 +57,26 @@ gap is a guard-soundness bug (src.memory._still_refutes blocks on timeout too),
 not a result.
 
 The transcript condition remains a legitimate question about real LLM agents -
-just not this paper's untyped baseline. To ask it, add it as its own mode
-rather than by relabelling this one.
+just not this paper's untyped baseline. To ask it, add it as its own mode rather
+than by relabelling this one.
 
-That mode now exists: `transcript`. It is the ChatRepair baseline - every
-refuted patch's source plus its counterexample, in full, in the prompt - and it
-carries the same guard `untyped` does, so the two arms differ in exactly one
-thing and any gap between them is the steering channel alone. It is a
-*baseline*, not one of Section 3.3's three memories; report it beside `untyped`
-rather than in place of it. `--transcript-window k` keeps only the k most
-recent attempts; 0 means all of them. The window is part of the experiment cell
-key, because "we truncated at k" is a design decision, not an implementation
-detail - a truncated transcript is a different memory.
+It briefly existed as `transcript` and was REMOVED on 2026-08-29, unrun. Two
+reasons, both from the data rather than from cost. It tested no surviving claim:
+Thm 4.2(i), Thm 4.3(a), Thm 4.3(b) and Prop 4.5 are all internal to the
+no_memory/untyped/typed triangle. And the one claim it was built to support -
+that a typed index is flat in the round index where a transcript grows linearly
+- is already falsified without it, by the typed arm's own numbers: measured
+prompt growth is 0.1 tokens/round for no_memory, 3.5 for untyped and 80.7 for
+typed. The typed arm is the steepest of the three, not the flat one, so no
+transcript measurement can rescue that sentence; it could only establish by how
+much a transcript is worse.
+
+If it is ever needed again, the cheap version answers most of it with no model
+calls at all: build_prompt() below is separable from propose(), so a transcript
+prompt can be reconstructed from the Attempts already logged in
+data/episodes.jsonl and tokenised, which gives the context-growth comparison for
+free. Only "does transcript steering beat typed steering on success" needs a
+real run.
 
 Never place the reference implementation (task's correct_source) here - see
 src/adapter.py's module docstring.
@@ -86,7 +94,7 @@ from src.oracle import OracleResult
 from src.sandbox import Outcome
 from src.typer import FailureType, theta_both
 
-MODES = ("no_memory", "untyped", "typed", "transcript")
+MODES = ("no_memory", "untyped", "typed")
 GRANULARITIES = ("coarse", "fine")
 
 # Cap on any single piece of contest data quoted into a prompt. See _snippet.
@@ -124,7 +132,7 @@ def _snippet(text: str | None, limit: int = _MAX_SNIPPET_CHARS) -> str:
     """One-line, length-capped view of a test input or a program's output.
 
     Contest data is not prompt-sized: a single AtCoder input can be hundreds of
-    kilobytes, and an untyped transcript concatenates one per past attempt. Left
+    kilobytes, and a flat log concatenates one per past attempt. Left
     whole they would blow the context window - and would do it *only* in the
     untyped arm, turning a memory comparison into a truncation artefact. Every
     counterexample shown to a model goes through here, in all three conditions.
@@ -176,45 +184,16 @@ def _refuted(history: list[Attempt]) -> list[Attempt]:
     return [a for a in history if not a.result.accept and a.result.candidate is not None]
 
 
-def _transcript_block(refuted: list[Attempt], window: int) -> str:
-    """Every refuted attempt in full - source and counterexample.
-
-    The ChatRepair condition. `window` keeps only the most recent k attempts (0
-    = all). Truncating matters: an unbounded transcript grows without limit and
-    is the one arm that can hit the context ceiling, and where it does,
-    src.llm raises ContextOverflow rather than letting the backend crop the
-    prompt - so a run reports the overflow instead of quietly measuring a
-    truncated arm. Setting a window makes that bound explicit and reportable
-    rather than incidental to whichever model is serving.
-    """
-    shown = refuted[-window:] if window > 0 else refuted
-    dropped = len(refuted) - len(shown)
-    lines = ["Previous attempts on this program, and why each was rejected:"]
-    if dropped:
-        lines.append(f"({dropped} earlier attempt(s) omitted.)")
-    for i, a in enumerate(shown, start=dropped + 1):
-        lines.append(
-            f"--- attempt {i} ---\n"
-            f"```python\n{a.patch}```\n"
-            f"Rejected: {_format_counterexample(a)}"
-        )
-    return "\n".join(lines)
-
-
-def _evidence_block(mode: str, history: list[Attempt], granularity: str,
-                    transcript_window: int = 0) -> str:
+def _evidence_block(mode: str, history: list[Attempt], granularity: str) -> str:
     refuted = _refuted(history)
     if mode == "no_memory" or not refuted:
         return ""
-
-    if mode == "transcript":
-        return _transcript_block(refuted, transcript_window)
 
     if mode == "untyped":
         # Nothing. Untyped memory guards; it does not reach the proposer at all
         # (Section 3.3, Section 5's baseline definition, and Algorithm 1's
         # p_t ~ G(.|E) with E empty). See this module's docstring for why
-        # putting the transcript here made a different arm than the theory's.
+        # putting the full history here made a different arm than the theory's.
         return ""
 
     if mode == "typed":
@@ -260,7 +239,6 @@ def build_prompt(
     granularity: str = "fine",
     disable_steering: bool = False,
     spec_note: str = "",
-    transcript_window: int = 0,
 ) -> str:
     """program_label: how the fault is named to the model. ConDefects programs
     are whole scripts with no single function under repair, so this is the
@@ -285,7 +263,7 @@ def build_prompt(
         raise ValueError(f"granularity must be one of {GRANULARITIES}, got {granularity!r}")
 
     evidence_block = "" if disable_steering else _evidence_block(
-        mode, history, granularity, transcript_window)
+        mode, history, granularity)
     exclusion_block = "" if disable_steering else _exclusion_block(mode, history, granularity)
 
     sections = [
@@ -414,7 +392,6 @@ def propose(
     nonce: str = "",
     temperature: float | None = None,
     spec_note: str = "",
-    transcript_window: int = 0,
     reasoning_effort: str | None = None,
     meta: dict | None = None,
 ) -> str:
@@ -434,7 +411,7 @@ def propose(
     prompt = build_prompt(
         task_name, buggy_source, program_label, mode, history,
         granularity=granularity, disable_steering=disable_steering,
-        spec_note=spec_note, transcript_window=transcript_window,
+        spec_note=spec_note,
     )
     if max_tokens is None:
         max_tokens = budget_for_source(buggy_source, model=model)
