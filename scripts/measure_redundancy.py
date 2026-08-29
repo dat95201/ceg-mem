@@ -71,10 +71,15 @@ import numpy as np
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from src.metrics import DEFAULT_METRICS_LOG, group_by_episode, load_rounds  # noqa: E402
+from src.metrics import (DEFAULT_METRICS_LOG, build_crn_type_index,  # noqa: E402
+                         group_by_episode, load_rounds)
 
 DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
-MODES = ("no_memory", "untyped", "typed", "transcript")
+# The ChatRepair `transcript` arm (E6) was removed unrun on 2026-08-29: it
+# tested no surviving claim, and the "typed index is flat, transcript grows
+# linearly" claim it existed for is already falsified by the typed arm alone
+# (80.7 tokens/round against untyped's 3.5). docs/DIAGNOSIS.md.
+MODES = ("no_memory", "untyped", "typed")
 
 
 class _StripDocstrings(ast.NodeTransformer):
@@ -128,9 +133,25 @@ def _effective_rounds(rows: list[dict]) -> list[dict]:
     return [r for r in rows if r["round_index"] <= cut]
 
 
-def episode_redundancy(rows: list[dict]) -> dict:
-    """Per-episode redundancy and diversity, from the round log alone."""
+def episode_redundancy(rows: list[dict], crn_types: dict[tuple, str] | None = None) -> dict:
+    """Per-episode redundancy and diversity, from the round log alone.
+
+    crn_types recovers the failure type of a guarded round from the paired
+    no-memory draw (src.metrics.build_crn_type_index). Without it every metric
+    keyed on `fine_type` below - FSRR, the revisit distances, the type entropy -
+    is censored in exactly the arms that guard, and by the amount they guard:
+    51% of the flat arm's rounds and 30% of the typed arm's carry no type of
+    their own. The arm that guards most is then measured least, which inverts
+    the comparison these metrics exist to make.
+    """
     rows = _effective_rounds(rows)
+    if crn_types:
+        # Copy, never mutate the caller's rows: the same episode is also read by
+        # the arm-level pass below and by scripts/analyze.py's frozen summary.
+        rows = [dict(r, fine_type=(r.get("fine_type") or crn_types.get(
+                    (r["task"], r.get("seed", 0), r["round_index"], r.get("patch") or ""))))
+                if r.get("guarded", False) and not r.get("fine_type") else r
+                for r in rows]
     n = len(rows)
 
     seen_patches: set[str] = set()
@@ -188,8 +209,19 @@ def episode_redundancy(rows: list[dict]) -> dict:
     # len(typed_rows) is not it - an inconclusive round or an accept has a
     # verdict and no type, so using the typed rows inflated the rate, and the
     # inflation factor differs per arm with its accept and error rates.
-    n_verdicts = sum(1 for r in rows
-                     if not r.get("guarded", False) and not r.get("oracle_error")
+    #
+    # UPDATED for the CRN recovery above. `revisits` is counted over typed_rows,
+    # which now includes guarded rounds whose signature was recovered from the
+    # paired no-memory draw. A denominator that still excluded guarded rounds put
+    # the numerator and denominator on different populations and drove the flat
+    # arm to FSRR = 3.23 - a rate above 1.0, which is how the mismatch announced
+    # itself. The right denominator is every round that produced a failure
+    # signature: exactly the population `revisits` is counted over, so the rate
+    # is bounded by 1 again. Accepts and inconclusive rounds carry no signature
+    # and are excluded by having no type, which is what the older comment here
+    # was reaching for before recovery made guarded rounds typable.
+    n_verdicts = sum(1 for r in typed_rows
+                     if not r["accept"] and not r.get("oracle_error")
                      and not r.get("proposal_error"))
     counts = collections.Counter(r["fine_type"] for r in typed_rows)
     total = sum(counts.values())
@@ -219,6 +251,16 @@ def episode_redundancy(rows: list[dict]) -> dict:
         # Numerator and denominator now agree about guarded rounds, so this is
         # bounded by 1.0 by construction rather than by hope.
         "ncdr": (n_oracle_distinct / n_oracle) if n_oracle else None,
+        # Thm 4.2(i)'s actual claim, with a denominator that can reach it.
+        # `n_oracle` above counts EVERY unguarded round, including the accept
+        # that ends the episode and every inconclusive or truncated one - none
+        # of which carries a type, so none can ever enter the numerator. That
+        # ceiling is what held the typed arm at 0.618 against a predicted 1.0;
+        # over the rounds that actually reached a refutation it is 0.966, and
+        # the flat arm 0.964. Both reported: the old one is the share of oracle
+        # CALLS that bought a new class, this is the share of REFUTATIONS that
+        # were novel, and only the second is what the theorem is about.
+        "ncdr_refutations": (n_oracle_distinct / len(oracle_typed)) if oracle_typed else None,
         # #5 Elimination Yield: the same numerator against the proposal budget.
         # None, not 0.0, when no round could carry a type at all - an episode the
         # guard blocked end to end discovered nothing because nothing was
@@ -422,13 +464,17 @@ def main() -> None:
                 # uncensored inside one number.
                 and not r.get("audit_guarded", False)
                 and not r.get("typing_random", False)
-                and r.get("transcript_window", 0) == 0)
+                and not r.get("free_guarded_rounds", False))
 
     main_grid = {eid: rs for eid, rs in by_episode.items() if is_main(rs)}
     print(f"{len(rows)} rounds | {len(by_episode)} episodes "
           f"| {len(main_grid)} in the main grid", flush=True)
 
-    per_episode = [episode_redundancy(rs) for rs in main_grid.values()]
+    # Built over every row, not just the main grid: the join source is the
+    # no-memory arm and the E8 audit, and an episode being outside the main grid
+    # does not stop it from being the twin that types a guarded round.
+    crn_types = build_crn_type_index(rows)
+    per_episode = [episode_redundancy(rs, crn_types) for rs in main_grid.values()]
 
     arms: dict = {}
     for mode in MODES:
@@ -446,6 +492,7 @@ def main() -> None:
             "unparseable_patches_total": sum(e["unparseable_patches"] for e in eps),
             "fsrr": _mean([e["fsrr"] for e in eps]),
             "ncdr": _mean([e["ncdr"] for e in eps]),
+            "ncdr_refutations": _mean([e["ncdr_refutations"] for e in eps]),
             "elimination_yield": _mean([e["elimination_yield"] for e in eps]),
             "epr": _mean([e["epr"] for e in eps]),
             "type_entropy_bits": _mean([e["type_entropy_bits"] for e in eps]),

@@ -108,9 +108,18 @@ def _check(name: str, frozen_path: pathlib.Path, frozen_value, fresh_value, all_
 # cannot carry the typing claim - it carries the memory claim. The typing claim
 # rests on the two that follow it: guard_evaluations (Proposition 4.5, Theta(m)
 # vs O(1)) and the context-token curve (a typed index is flat in the round index
-# where a transcript grows linearly). Those are where a difference is predicted,
+# where a flat log grows linearly). Those are where a difference is predicted,
 # so those are what the abstract should quote.
 PRIMARY_METRICS = (
+    # The cost unit that charges every arm for the same work. Listed first
+    # because oracle_calls_to_accept below is a SUBSET of it - the guard's own
+    # sandbox executions are free in that number and in no other - and reporting
+    # the subset as the cost is what turned a 1.19x saving into a claimed 2.50x
+    # and a held Thm 4.3(a) into a rejected one (docs/DIAGNOSIS.md SS2-3).
+    "sandbox_runs_to_accept",   # PRIMARY cost: program executions to repair
+    "sandbox_runs",             # ... and over the whole episode
+    "redundancy_paid",          # Thm 4.3(b), arm-neutral: repeats that reached the oracle
+    "redundancy_present",       # ... and the CRN invariant that validates it
     "oracle_calls_to_accept",   # Thm 4.3(a): MEMORY's win, not typing's
     "success_at_b",             # Cor. 4.4, and the co-primary that stays defined at pi=0
     "guard_evaluations",        # Prop. 4.5: the typing claim
@@ -157,7 +166,8 @@ def _check_guard_soundness(episodes: list[dict], all_ok: list[bool]) -> None:
         return {(e["task"], e["seed"]): e for e in episodes
                 if e["mode"] == mode and e["guard_on"] and e["steer_on"]
                 and e["max_examples"] == 100 and e["typing_noise_c"] == 1.0
-                and not e.get("audit_guarded") and not e.get("typing_random")}
+                and not e.get("audit_guarded") and not e.get("typing_random")
+                and not e.get("free_guarded_rounds")}
     base = by_cell("no_memory")
     if not base:
         print("SKIP  guard_soundness: the no-memory arm has not run")

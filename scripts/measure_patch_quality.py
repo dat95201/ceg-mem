@@ -57,7 +57,11 @@ from src.typer import _changed_hunks  # noqa: E402
 
 DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 DEFAULT_OVERFIT_LOG = DATA_DIR / "overfit_checks.jsonl"
-MODES = ("no_memory", "untyped", "typed", "transcript")
+# The ChatRepair `transcript` arm (E6) was removed unrun on 2026-08-29: it
+# tested no surviving claim, and the "typed index is flat, transcript grows
+# linearly" claim it existed for is already falsified by the typed arm alone
+# (80.7 tokens/round against untyped's 3.5). docs/DIAGNOSIS.md.
+MODES = ("no_memory", "untyped", "typed")
 
 
 def edit_size(buggy_source: str, candidate_source: str) -> tuple[int, int]:
@@ -116,7 +120,7 @@ def _is_main_grid(r: dict) -> bool:
             and r.get("force_full_budget", False) == (r["mode"] == "no_memory")
             and not r.get("audit_guarded", False)
             and not r.get("typing_random", False)
-            and r.get("transcript_window", 0) == 0)
+            and not r.get("free_guarded_rounds", False))
 
 
 def measure(rows: list[dict], overfit: dict[str, dict],

@@ -26,12 +26,11 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 from scripts.select_corpus import BANDS, PRIMARY_BANDS  # noqa: E402
 
 DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
-# `transcript` is the ChatRepair baseline (src/memory.py), reported beside the
-# paper's three arms rather than in place of one. An episode log that holds no
-# transcript arm simply produces empty cells for it - _per_task_means skips a
-# mode with no episodes and bootstrap_ci returns n=0 - so this list is safe to
-# widen before E6 has ever been run.
-MODES = ("no_memory", "untyped", "typed", "transcript")
+# The ChatRepair `transcript` arm (E6) was removed unrun on 2026-08-29: it
+# tested no surviving claim, and the "typed index is flat, transcript grows
+# linearly" claim it existed for is already falsified by the typed arm alone
+# (80.7 tokens/round against untyped's 3.5). docs/DIAGNOSIS.md.
+MODES = ("no_memory", "untyped", "typed")
 def _strata_in_use() -> tuple[tuple[str, ...], tuple[str, ...]]:
     """(all strata, strata the BH family corrects across), read off the freeze.
 
@@ -182,15 +181,25 @@ def _is_main_grid(ep: dict) -> bool:
         ep["guard_on"] and ep["steer_on"]
         and ep["max_examples"] == 100 and ep["typing_noise_c"] == 1.0
         and ep.get("force_full_budget", False) == (ep["mode"] == "no_memory")
-        # E8-audit and the windowed transcript run every knob above at its
+        # E8-audit and E5-random run every knob above at its
         # main-grid value, so without these three they pooled straight into the
         # typed/untyped task means - and E8's whole point is that its guarded
         # rounds carry a type the main grid's do not, so one task mean ended up
         # averaging censored episodes with uncensored ones.
         and not ep.get("audit_guarded", False)
         and not ep.get("typing_random", False)
-        and ep.get("transcript_window", 0) == 0
+        # free_guarded_rounds redefines what one unit of budget buys, so a cell
+        # run under it is a different experiment with a different success@B
+        # curve. Same class of leak as typing_random: a key that is never
+        # written reads False, and the arm pools into the charged grid.
+        and not ep.get("free_guarded_rounds", False)
     )
+
+
+# Cost-to-repair metrics: an unrepaired episode has no cost-to-repair, so it is
+# excluded rather than counted as zero or as its truncated total. Every other
+# metric averages over all episodes, accepted or not.
+_ACCEPTED_ONLY = frozenset({"oracle_calls_to_accept", "sandbox_runs_to_accept"})
 
 
 def _per_task_means(episodes: list[dict], mode: str, stratum: str | None, metric: str) -> dict[str, float]:
@@ -211,7 +220,7 @@ def _per_task_means(episodes: list[dict], mode: str, stratum: str | None, metric
             continue
         if stratum is not None and ep.get("stratum") != stratum:
             continue
-        if metric == "oracle_calls_to_accept" and not ep["accepted"]:
+        if metric in _ACCEPTED_ONLY and not ep["accepted"]:
             continue
         # .get, not [...]: a results file frozen before the token/redundancy
         # fields existed simply has no key, and that should read as "not
@@ -371,10 +380,13 @@ def cost_of_pass(episodes: list[dict], *, price_in: float | None = None,
 def context_tokens_by_round(episodes: list[dict]) -> dict:
     """#16: mean prompt tokens at round 1, 2, 3, ... per arm.
 
-    A transcript arm's prompt grows by one attempt per round, a typed index's
-    does not, and that difference is the mechanism this paper is about. Reported
-    with the per-round n, because the tail of the curve is thin: only episodes
-    that ran that long contribute, and those are the hard tasks.
+    This was built to show a typed index staying flat where a full log grows.
+    Measured, it shows the opposite: 0.1 tokens/round for no_memory, 3.5 for
+    untyped and 80.7 for typed, which is a 4x prompt over 20 rounds. The typed
+    arm is the steepest of the three, and that is the finding - it is what the
+    1.75x token cost in the totals is made of. Reported with the per-round n,
+    because the tail of the curve is thin: only episodes that ran that long
+    contribute, and those are the hard tasks.
 
     `slope_per_round` is an OLS fit over the rounds that have data - the single
     number the claim reduces to. Flat is the prediction for typed.
@@ -459,10 +471,31 @@ def main() -> None:
         #                           whichever arm guards more.
         #   tokens_in/out/total     what a practitioner actually pays. Input
         #                           dominates agentic cost, and it is where a
-        #                           typed index should beat a transcript.
+        #                           typed index was expected to win and does not.
         #   wall_sec                model + oracle + guard seconds.
         "metrics": {
+            # PRIMARY. Program executions to repair - the only unit that charges
+            # both arms for the same work. src.memory._still_refutes runs the
+            # candidate in the sandbox exactly as the oracle does, so counting
+            # oracle calls while ignoring guard evaluations bills one arm for
+            # work the other also performs; that single choice is the difference
+            # between untyped's headline 2.50x saving and the 1.19x it actually
+            # buys, and between "Thm 4.3(a) rejected at 1.48x" and "Thm 4.3(a)
+            # holds at 1.00x". See docs/DIAGNOSIS.md SS2-3.
+            "sandbox_runs_to_accept": compare_conditions(episodes, "sandbox_runs_to_accept"),
+            "sandbox_runs": compare_conditions(episodes, "sandbox_runs"),
+            # SECONDARY, and mislabelled if reported without the line above:
+            # this is oracle calls only, i.e. the guard's own executions are
+            # free in this number and in no other.
             "oracle_calls_to_accept": compare_conditions(episodes, "oracle_calls_to_accept"),
+            # Thm 4.3(b). `redundancy_paid` is the outcome variable - redundant
+            # attempts that reached the oracle. The old `redundant_attempts` is
+            # kept below under its own name so nothing that reads it changes
+            # meaning, but it sums a repeat the guard caught with one it missed
+            # and is censored in whichever arm guards more; do not report it.
+            "redundancy_paid": compare_conditions(episodes, "redundancy_paid"),
+            "redundancy_caught": compare_conditions(episodes, "redundancy_caught"),
+            "redundancy_present": compare_conditions(episodes, "redundancy_present"),
             "redundant_attempts": compare_conditions(episodes, "redundant_attempts"),
             "success_at_b": compare_conditions(episodes, "success_at_b"),
             "guard_evaluations": compare_conditions(episodes, "guard_evaluations"),
@@ -476,10 +509,9 @@ def main() -> None:
             "wall_sec": compare_conditions(episodes, "wall_sec"),
         },
         # #16, reported as a curve rather than through compare_conditions: the
-        # claim is about the SHAPE - a typed index is flat in the round index
-        # where a transcript grows linearly - and two arms can have close totals
-        # with nothing alike about their curves. This is the measurement the
-        # typed-vs-transcript comparison rests on, so it is its own section.
+        # claim is about the SHAPE, and two arms can have close totals with
+        # nothing alike about their curves. It stays its own section now that it
+        # has falsified the thing it was built to confirm - see the function.
         "context_tokens_by_round": context_tokens_by_round(episodes),
         "cost_of_pass": cost_of_pass(episodes, price_in=args.price_in, price_out=args.price_out),
     }

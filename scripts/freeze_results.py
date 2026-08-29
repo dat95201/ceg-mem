@@ -22,8 +22,6 @@ Checks four sub-grids, matching the plan's own experiment definitions
   oracle_sweep (E4): a program subset x seeds x max_examples in {100,20,8,3}
   typing_sweep (E5): the same program subset x seeds x typing_noise_c in
                      {1.0,0.9,0.75,0.5,0.25,0.0}
-  transcript   (E6): all frozen programs x mode=transcript x 5 seeds - the
-                     ChatRepair baseline, reported beside the three arms
 
 --experiment restricts the check to one sub-grid; default "all" checks the
 union of all four. The oracle/typing sweeps default to the first 30 (sorted) frozen programs -
@@ -40,16 +38,23 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from src.metrics import DEFAULT_METRICS_LOG, group_by_episode, load_rounds, summarize_episode
+from src.metrics import (DEFAULT_METRICS_LOG, build_crn_type_index, group_by_episode,
+                         load_rounds, summarize_episode)
 
 DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 
-# The paper's three arms. Deliberately NOT src.loop.MODES, which also holds
-# `transcript` - the ChatRepair baseline (src/memory.py), a separate sub-grid
-# with its own preset and its own --experiment value, not a fourth cell of the
-# main grid. Importing the wider tuple made every main-grid freeze report the
-# whole transcript arm as missing.
+# The paper's three arms. Now identical to src.loop.MODES: the `transcript`
+# baseline that used to make the two differ was removed unrun on 2026-08-29 -
+# it tested no surviving claim, and the "typed index is flat where a transcript
+# grows linearly" claim it existed for is falsified by the typed arm's own
+# numbers (80.7 tokens/round against untyped's 3.5). docs/DIAGNOSIS.md.
+#
+# Five orphan rounds from one pilot transcript episode remain in
+# data/episodes.jsonl. They are dropped below rather than deleted from the log:
+# rewriting the primary artifact to erase a run that happened is not something
+# this script should do quietly.
 MODES = ("no_memory", "untyped", "typed")
+RETIRED_MODES = ("transcript",)
 
 DEFAULT_SEEDS_MAIN = (1, 2, 3, 4, 5)
 DEFAULT_SEEDS_SWEEP = (1, 2, 3)
@@ -86,10 +91,9 @@ def _stratum_by_task() -> dict[str, str]:
     return {t["name"]: t["stratum"] for t in data.get("tasks", [])}
 
 
-def expected_cells(programs: list[str], sweep_programs: list[str], experiment: str,
-                   transcript_window: int = 0) -> set[tuple]:
+def expected_cells(programs: list[str], sweep_programs: list[str], experiment: str) -> set[tuple]:
     """(task, mode, seed, guard_on, steer_on, max_examples, typing_noise_c,
-    force_full_budget, audit_guarded, transcript_window, typing_random) tuples.
+    force_full_budget, audit_guarded, typing_random) tuples.
 
     The last three are always at their defaults here: every experiment this
     function knows about is a main-grid or sweep cell, and the sub-grids that
@@ -131,21 +135,11 @@ def expected_cells(programs: list[str], sweep_programs: list[str], experiment: s
                 for c in DEFAULT_TYPING_C_SWEEP:
                     cells.add((task, "typed", seed, True, True, 100, c, False, False, 0, False))
 
-    # The ChatRepair baseline (E6). Its own sub-grid, not part of "main": it is a
-    # baseline the paper reports beside the three arms, and folding it into the
-    # main freeze would make a grid that never ran it look incomplete. Full seeds,
-    # because it goes in the main table rather than in an ablation.
-    if experiment in ("all", "transcript"):
-        for task in programs:
-            for seed in DEFAULT_SEEDS_MAIN:
-                cells.add((task, "transcript", seed, True, True, 100, 1.0, False,
-                           False, transcript_window, False))
-
     return cells
 
 
 def _cell_key(summary: dict) -> tuple:
-    # The last three are not decoration. E8-audit and a windowed transcript run
+    # The last two are not decoration. E8-audit and E5-random run
     # every other knob at its main-grid value, so without them an audit cell
     # silently SATISFIED a missing main-grid cell and the completeness check
     # reported a full grid that was not one. expected_cells() only ever builds
@@ -156,16 +150,16 @@ def _cell_key(summary: dict) -> tuple:
         summary["guard_on"], summary["steer_on"], summary["max_examples"], summary["typing_noise_c"],
         summary.get("force_full_budget", False),
         summary.get("audit_guarded", False),
-        summary.get("transcript_window", 0),
         summary.get("typing_random", False),
+        summary.get("free_guarded_rounds", False),
     )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--experiment", default="all",
-                         choices=["all", "main", "ablation", "oracle_sweep", "typing_sweep",
-                                  "transcript"])
+                         choices=["all", "main", "ablation", "oracle_sweep",
+                                  "typing_sweep"])
     parser.add_argument("--episodes-path", type=pathlib.Path, default=DEFAULT_METRICS_LOG)
     parser.add_argument("--sweep-programs", nargs="+", default=None,
                          help=f"default: first {DEFAULT_SWEEP_N_PROGRAMS} frozen programs, sorted")
@@ -179,12 +173,6 @@ def main() -> None:
                               "names into one, so both mistakes freeze the wrong "
                               "tasks silently")
     parser.add_argument("--out", type=pathlib.Path, default=DATA_DIR / "results_real.json")
-    parser.add_argument("--transcript-window", type=int, default=0,
-                        help="--experiment transcript only: the window E6 actually "
-                             "ran under. It is in the cell key, so freezing a "
-                             "windowed run against the default 0 reports every "
-                             "cell that ran as missing and every cell that did "
-                             "not as expected")
     parser.add_argument("--force", action="store_true", help="overwrite an already-frozen output file")
     parser.add_argument("--allow-partial", action="store_true",
                          help="freeze anyway even if cells are missing (prints a warning, not an error)")
@@ -216,8 +204,7 @@ def main() -> None:
             f"corpus, e.g. {unknown[0]!r} - the sweeps were run over a different list "
             "than the one being frozen"
         )
-    expected = expected_cells(programs, sweep_programs, args.experiment,
-                              transcript_window=args.transcript_window)
+    expected = expected_cells(programs, sweep_programs, args.experiment)
 
     rows = load_rounds(args.episodes_path)
 
@@ -238,8 +225,28 @@ def main() -> None:
             "time; a hand-run scripts/run_eval.py is the usual way past it."
         )
 
+    retired = [r for r in rows if r.get("mode") in RETIRED_MODES]
+    if retired:
+        print(f"dropping {len(retired)} round(s) from retired mode(s) "
+              f"{', '.join(sorted({r['mode'] for r in retired}))} - left in "
+              f"{args.episodes_path} but not frozen.")
+        rows = [r for r in rows if r.get("mode") not in RETIRED_MODES]
+
     episodes = group_by_episode(rows)
-    summaries = [summarize_episode(ep_rows) for ep_rows in episodes.values()]
+    # Built once over EVERY row, not per episode: it is a join from a guarded
+    # round in one arm to the no-memory draw that already paid the oracle for
+    # the same patch, so it has to see the whole log. Without it the type-based
+    # redundancy counts are censored in exactly the arms that guard, and the arm
+    # that guards most is measured least (src.metrics.build_crn_type_index).
+    crn_types = build_crn_type_index(rows)
+    summaries = [summarize_episode(ep_rows, crn_types) for ep_rows in episodes.values()]
+    unknown = sum(s.get("redundancy_unknown", 0) for s in summaries)
+    if unknown:
+        steered = sum(s.get("redundancy_unknown", 0) for s in summaries
+                      if s["mode"] == "typed" and s.get("steer_on", True))
+        print(f"note: {unknown} rounds carry no recoverable failure type "
+              f"({steered} of them in the steered typed arm, whose draws diverge "
+              f"from the no-memory sequence - those need --audit-guarded).")
     have = {_cell_key(s) for s in summaries}
 
     missing = sorted(expected - have)
