@@ -116,8 +116,33 @@ universe_size_screen() {
   python3 -c "import json,sys;print(len(json.load(open('data/candidates.json'))['candidates']))"
 }
 
+# A dry-run proves the ARGUMENTS are good. It exits before eval_shard.sh ever
+# touches the model server, so it cannot prove the run will start - which is how
+# six shards came to fork and all exit 2 within a second of each other, with
+# nothing on the status board but "exit 2" six times. Check the thing the shards
+# will need, once, here, where one error message is cheaper than six log files.
+preflight_backend() {
+  local backend="ollama" port="11434" a
+  while (( $# )); do
+    case "$1" in
+      --backend) backend="$2"; shift 2 ;;
+      --port)    port="$2";    shift 2 ;;
+      *) shift ;;
+    esac
+  done
+  [[ "$backend" == "ollama" ]] || return 0     # cloud: src.llm validates its own key
+  command -v ollama >/dev/null || die "ollama is not on PATH. On Colab the runtime was
+probably recycled - re-run the ollama cell (section 9) before fanning out."
+  curl -sf "http://127.0.0.1:${port}/api/tags" >/dev/null 2>&1 || die "nothing is serving on 127.0.0.1:${port}.
+A shard would start its own server, but six shards racing to start one is not a
+plan - and if the start fails they all exit 2 at once, which is what a bare
+'exit 2' on every row of the status board means. Re-run the serve cell, then:
+  curl -s http://127.0.0.1:${port}/api/tags | head -c 200"
+}
+
 universe_size_eval() {          # $1 = exp; rest forwarded so --backend etc. apply
   local exp="$1"; shift
+  preflight_backend "$@"
   local out n
   out="$(bash scripts/eval_shard.sh --exp "$exp" --dry-run "$@" 2>&1)" || {
     echo "$out" >&2; die "eval_shard.sh --dry-run refused --exp $exp; fix that before fanning it out"; }
@@ -332,7 +357,20 @@ cmd_status() {
       && echo "    python3 scripts/consolidate_screens.py" \
       || echo "    python3 scripts/consolidate_evals.py --dry-run"
   fi
-  (( n_fail == 0 )) || echo "  a failed shard resumes on an identical re-run - read its log first: bash scripts/fleet.sh tail <n>"
+  if (( n_fail > 0 )); then
+    echo "  a failed shard resumes on an identical re-run - read its log first: bash scripts/fleet.sh tail <n>"
+    # Every shard failing is one fault, not N. Print it here rather than making
+    # the reader open six identical logs to find one line.
+    if (( n_alive == 0 && n_done == 0 )); then
+      local first
+      first="$(ls "$RUN_DIR"/*.log 2>/dev/null | head -1)"
+      if [[ -n "$first" ]]; then
+        echo
+        echo "  EVERY shard failed, so this is one fault. Tail of $(basename "$first"):"
+        sed -e 's/^/    | /' <(tail -n 15 "$first")
+      fi
+    fi
+  fi
 }
 
 cmd_tail() {

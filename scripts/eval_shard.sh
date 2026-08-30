@@ -401,7 +401,7 @@ BUDGET="${BUDGET:-$DEF_BUDGET}"
 # overwritten by it.
 if [[ -n "$UNIVERSE_OVERRIDE" ]]; then
   [[ -n "$(universe_list "$UNIVERSE_OVERRIDE")" ]] || {
-    echo "unknown --universe '$UNIVERSE_OVERRIDE' - one of: corpus sweep trial demo" >&2
+    echo "unknown --universe '$UNIVERSE_OVERRIDE' - one of: corpus sweep live trial demo" >&2
     exit 2; }
   UNIVERSE="$UNIVERSE_OVERRIDE"
 fi
