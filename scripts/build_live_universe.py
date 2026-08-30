@@ -22,6 +22,7 @@ import argparse
 import collections
 import hashlib
 import json
+import os
 import pathlib
 import sys
 
@@ -78,7 +79,15 @@ def main() -> None:
             for b in ("dead", "hard", "medium", "easy", "too_easy") if counts.get(b)),
         f"# corpus_sha256: {digest}",
     ]
-    args.out.write_text("\n".join(header + kept) + "\n")
+    # Atomic, because scripts/eval_shard.sh now builds this on demand and a
+    # hand-launched fan-out could have several shards reach that branch at once.
+    # fleet.sh itself preflights with a single dry-run before forking, so it can
+    # only be hit outside the fleet - but a half-written universe file would cut
+    # every shard boundary somewhere else, which is not a failure worth leaving
+    # available for three lines.
+    tmp = args.out.with_suffix(args.out.suffix + f".tmp.{os.getpid()}")
+    tmp.write_text("\n".join(header + kept) + "\n")
+    os.replace(tmp, args.out)
     print(f"wrote {args.out} - {len(kept)} of {len(source)} tasks "
           f"(dropped {len(source) - len(kept)}: {', '.join(args.exclude)})")
     for b in ("hard", "medium", "easy", "too_easy"):

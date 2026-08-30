@@ -498,6 +498,32 @@ LIST_SRC="$(universe_list "$UNIVERSE")"
 [[ -n "$LIST_SRC" ]] || {
   echo "no list for universe '$UNIVERSE' - add it to universe_list()" >&2; exit 2; }
 
+# `live` is DERIVED, not drawn: it is the sweep minus the dead band, a pure
+# function of data/tasks.json and data/sweep_programs.txt. So it is generated
+# here on demand, exactly as the three lists above are generated rather than
+# required - making the caller run a separate cell first was a mistake, and it
+# surfaced as `--dry-run --exp E9-freeguard` refusing on a fresh checkout where
+# nothing had written the file yet.
+#
+# Rebuilt when absent OR when its digest has gone stale against the corpus, so a
+# re-freeze cannot leave a shard cutting indices out of an older task list.
+if [[ "$UNIVERSE" == live ]]; then
+  need_live=0
+  if [[ ! -f "$LIST_SRC" ]]; then
+    need_live=1
+  elif [[ -f data/eval_order.txt ]]; then
+    want_d="$(sed -n 's/^# corpus_sha256: //p' data/eval_order.txt | head -1)"
+    have_d="$(sed -n 's/^# corpus_sha256: //p' "$LIST_SRC" | head -1)"
+    [[ -n "$want_d" && "$have_d" != "$want_d" ]] && need_live=1
+  fi
+  if (( need_live )); then
+    echo "building $LIST_SRC (derived: the sweep minus the dead band)" >&2
+    python3 scripts/build_live_universe.py >&2 || {
+      echo "could not build $LIST_SRC - freeze the corpus first (data/tasks.json)." >&2
+      exit 2; }
+  fi
+fi
+
 # `|| true`: grep exits 1 on a zero count, which under `set -e` would kill the
 # script with no message at all.
 [[ -f "$LIST_SRC" ]] || {
