@@ -121,28 +121,38 @@ universe_size_screen() {
 # six shards came to fork and all exit 2 within a second of each other, with
 # nothing on the status board but "exit 2" six times. Check the thing the shards
 # will need, once, here, where one error message is cheaper than six log files.
+# $1 = port, $2 = backend. Both passed explicitly, and that is the whole point:
+# the first version of this parsed --port out of the FORWARDED args, but fleet
+# consumes --port itself into $PORT and only forwards what comes after a bare
+# `--`. So it always probed the 11434 default and reported "nothing is serving
+# on 127.0.0.1:11434" at a user whose server was up on 11435.
 preflight_backend() {
-  local backend="ollama" port="11434" a
-  while (( $# )); do
-    case "$1" in
-      --backend) backend="$2"; shift 2 ;;
-      --port)    port="$2";    shift 2 ;;
-      *) shift ;;
-    esac
-  done
+  local port="$1" backend="$2"
   [[ "$backend" == "ollama" ]] || return 0     # cloud: src.llm validates its own key
-  command -v ollama >/dev/null || die "ollama is not on PATH. On Colab the runtime was
-probably recycled - re-run the ollama cell (section 9) before fanning out."
-  curl -sf "http://127.0.0.1:${port}/api/tags" >/dev/null 2>&1 || die "nothing is serving on 127.0.0.1:${port}.
-A shard would start its own server, but six shards racing to start one is not a
-plan - and if the start fails they all exit 2 at once, which is what a bare
-'exit 2' on every row of the status board means. Re-run the serve cell, then:
+
+  # Reachable is the only thing that matters. A shard talks HTTP to this port;
+  # whether the `ollama` binary is on PATH is irrelevant once something is
+  # answering, and checking PATH first turned a healthy server into a refusal.
+  if curl -sf "http://127.0.0.1:${port}/api/tags" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  # Not reachable. A shard would try to start its own server - six of them
+  # racing to do that is not a plan, and if the start fails they all exit at
+  # once, which is a status board of bare exit codes and no reason.
+  command -v ollama >/dev/null || die "nothing is serving on 127.0.0.1:${port}, and ollama is not on PATH.
+On Colab the runtime was probably recycled - re-run the ollama install and serve
+cells (section 9) before fanning out."
+  die "ollama is on PATH but nothing is answering on 127.0.0.1:${port}.
+Re-run the serve cell, or point --port at the one that is up. To check:
   curl -s http://127.0.0.1:${port}/api/tags | head -c 200"
 }
 
 universe_size_eval() {          # $1 = exp; rest forwarded so --backend etc. apply
   local exp="$1"; shift
-  preflight_backend "$@"
+  # $PORT is fleet's own global (set from --port); $backend is the caller's
+  # local, computed from the forwarded args, visible here by dynamic scope.
+  preflight_backend "${PORT:-11435}" "${backend:-ollama}"
   local out n
   out="$(bash scripts/eval_shard.sh --exp "$exp" --dry-run "$@" 2>&1)" || {
     echo "$out" >&2; die "eval_shard.sh --dry-run refused --exp $exp; fix that before fanning it out"; }
