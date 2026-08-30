@@ -336,6 +336,17 @@ def main() -> None:
                              "subset scores the split and the patch. Recorded in every "
                              "row it produces - a capped audit is a different measurement "
                              "and the number alone would not say so")
+    parser.add_argument("--free-guarded-rounds", action="store_true",
+                        help="charge a guarded round one model call but NO unit of the "
+                             "attempt budget, so the loop keeps drawing until it has spent "
+                             "--budget attempts (capped at --free-guard-draw-cap x --budget "
+                             "draws). This is what makes the guard able to change an outcome "
+                             "at all: charged to the budget it only ever blocks candidates "
+                             "that were going to fail anyway, so untyped reproduces no_memory "
+                             "exactly at every budget and Corollary 4.4 is untestable "
+                             "(docs/DIAGNOSIS.md). In the cell key - a success@B curve "
+                             "measured under this flag is a curve of a different B and must "
+                             "never be pooled with one measured without it")
     parser.add_argument("--free-guard-draw-cap", type=int, default=10,
                         help="with --free-guarded-rounds, stop an episode after this "
                              "many x --budget DRAWS even if it has not spent its "
