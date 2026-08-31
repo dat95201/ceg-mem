@@ -37,6 +37,7 @@ import json
 import pathlib
 import random
 import sys
+import time
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
@@ -106,7 +107,74 @@ def _bootstrap_ci(pooled_by_task: list[tuple[int, int]], n_resamples: int, rng: 
     return (lo, hi)
 
 
-def cross_refutation_rate(rows: list[dict], granularity: str, *, max_pairs_per_type: int, rng: random.Random):
+def _hms(seconds: float) -> str:
+    seconds = int(max(0, seconds))
+    return f"{seconds // 3600:d}:{seconds % 3600 // 60:02d}:{seconds % 60:02d}"
+
+
+class _Progress:
+    """Line-per-interval progress for a job whose size is known up front.
+
+    This measurement re-executes one logged patch against one shipped test case
+    per trial, so it is hours of sandbox time on a corpus of this size and it
+    prints nothing at all until it finishes. That is indistinguishable from a
+    hang on Colab, where stdout is buffered and the cell just sits there. Every
+    print here is flushed for that reason.
+    """
+
+    def __init__(self, label: str, total: int, every: float):
+        self.label, self.total, self.every = label, total, every
+        self.done = 0
+        self.runs = 0
+        self.start = time.time()
+        self.last = 0.0
+
+    def tick(self, *, pairs: int = 0, runs: int = 0, force: bool = False) -> None:
+        self.done += pairs
+        self.runs += runs
+        if self.every <= 0:
+            return
+        now = time.time()
+        if not force and now - self.last < self.every:
+            return
+        self.last = now
+        elapsed = now - self.start
+        frac = self.done / self.total if self.total else 1.0
+        # No pair has finished yet on the first line, so there is no rate to
+        # extrapolate from. Print it anyway - on Colab it is the only evidence
+        # the cell is running at all - but do not invent an ETA for it.
+        eta = _hms(elapsed / frac - elapsed) if frac > 0 else "  ?  "
+        print(f"  [{self.label}] {self.done:6d}/{self.total} pairs {frac * 100:5.1f}%  "
+              f"runs {self.runs:6d}  elapsed {_hms(elapsed)}  eta {eta}",
+              flush=True)
+
+    def finish(self) -> None:
+        if self.every > 0:
+            self.tick(force=True)
+        print(f"  [{self.label}] done in {_hms(time.time() - self.start)} "
+              f"({self.runs} sandbox runs)", flush=True)
+
+
+def plan(rows: list[dict], granularity: str, *, max_pairs_per_type: int) -> tuple[int, int]:
+    """(buckets with >=2 members, pairs after the cap) - the size of the job
+    below, computed without running anything so the caller can print it first
+    and decide whether to lower --max-pairs-per-type before committing hours."""
+    by_bucket: dict[tuple[str, str], int] = collections.Counter()
+    for row in rows:
+        tkey = _type_key(row, granularity)
+        if tkey is not None:
+            by_bucket[(row["task"], tkey)] += 1
+    buckets = pairs = 0
+    for n in by_bucket.values():
+        if n < 2:
+            continue
+        buckets += 1
+        pairs += min(n * (n - 1) // 2, max_pairs_per_type)
+    return buckets, pairs
+
+
+def cross_refutation_rate(rows: list[dict], granularity: str, *, max_pairs_per_type: int,
+                          rng: random.Random, progress: "_Progress | None" = None):
     """For each (task, type) bucket with >=2 refuted attempts, sample pairs and
     check both cross-refutation directions. Returns (pooled_rate, ci, per_task)."""
     by_bucket: dict[tuple[str, str], list[dict]] = collections.defaultdict(list)
@@ -140,7 +208,13 @@ def cross_refutation_rate(rows: list[dict], granularity: str, *, max_pairs_per_t
                     continue  # no expected output for this case - not a valid comparison point
                 held = _still_diverges(task_name, dst["patch"], args, ref_value)
                 per_task_trials[task_name].append(held)
+                if progress is not None:
+                    progress.tick(runs=1)
+            if progress is not None:
+                progress.tick(pairs=1)
 
+    if progress is not None:
+        progress.finish()
     per_task = {
         t: {"successes": sum(v), "trials": len(v), "rate": sum(v) / len(v) if v else None}
         for t, v in per_task_trials.items()
@@ -185,8 +259,19 @@ def waste_rate(rows: list[dict], granularity: str) -> tuple[float | None, dict]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--episodes-path", type=pathlib.Path, default=DEFAULT_METRICS_LOG)
-    parser.add_argument("--max-pairs-per-type", type=int, default=DEFAULT_MAX_PAIRS_PER_TYPE)
+    parser.add_argument("--max-pairs-per-type", type=int, default=DEFAULT_MAX_PAIRS_PER_TYPE,
+                        help="cap on pairs sampled per (task, type) bucket. Cost is close to "
+                             "linear in this; the reported CI is not, because _bootstrap_ci "
+                             "resamples at the TASK level, so its width is set by the number "
+                             "of tasks and barely moves with the cap. Lower it freely.")
     parser.add_argument("--seed", type=int, default=20260717)
+    parser.add_argument("--progress-every", type=float, default=15.0, metavar="SEC",
+                        help="seconds between progress lines; 0 turns them off")
+    parser.add_argument("--sec-per-run", type=float, default=0.97, metavar="SEC",
+                        help="only used to estimate the runtime printed before the job starts. "
+                             "0.97 is oracle_sec/sandbox_runs over the frozen no_memory arm.")
+    parser.add_argument("--plan-only", action="store_true",
+                        help="print the size of the job and the free waste rates, then stop")
     args = parser.parse_args()
 
     all_rows = [r for r in load_rounds(args.episodes_path) if r["mode"] == "no_memory"]
@@ -200,22 +285,53 @@ def main() -> None:
     rng = random.Random(args.seed)
     report: dict = {"episodes_path": str(args.episodes_path), "seed": args.seed, "granularities": {}}
 
+    # The waste rate is pure bookkeeping over the log - no sandbox, no seconds.
+    # Compute and print it FIRST: it is half the deliverable, and burying it
+    # behind hours of cross-refutation meant a run that died at hour five
+    # produced nothing at all.
+    waste: dict = {}
+    print(f"{len(refuted)} refuted no_memory rounds in {args.episodes_path}", flush=True)
     for granularity in GRANULARITIES:
+        pooled_waste, per_task_waste = waste_rate(refuted, granularity)
+        waste[granularity] = (pooled_waste, per_task_waste)
+        print(f"[{granularity}] waste rate (redundant re-proposal) = {pooled_waste}", flush=True)
+
+    # Then say how big the expensive half is, before spending any of it.
+    print(flush=True)
+    total_pairs = 0
+    for granularity in GRANULARITIES:
+        buckets, pairs = plan(refuted, granularity, max_pairs_per_type=args.max_pairs_per_type)
+        total_pairs += pairs
+        print(f"[plan] {granularity:6s} {buckets:5d} buckets with >=2 attempts, "
+              f"{pairs:6d} pairs after the cap, up to {pairs * 2:6d} sandbox runs", flush=True)
+    est = total_pairs * 2 * args.sec_per_run
+    print(f"[plan] total up to {total_pairs * 2} sandbox runs, about {_hms(est)} at "
+          f"{args.sec_per_run:.2f} s/run. Lower --max-pairs-per-type "
+          f"(now {args.max_pairs_per_type}) to cut it.", flush=True)
+    print(flush=True)
+    if args.plan_only:
+        return
+
+    for granularity in GRANULARITIES:
+        _, pairs = plan(refuted, granularity, max_pairs_per_type=args.max_pairs_per_type)
+        progress = _Progress(granularity, pairs, args.progress_every)
         pooled_xr, ci_xr, per_task_xr = cross_refutation_rate(
             refuted, granularity, max_pairs_per_type=args.max_pairs_per_type, rng=rng,
+            progress=progress,
         )
-        pooled_waste, per_task_waste = waste_rate(refuted, granularity)
+        pooled_waste, per_task_waste = waste[granularity]
         report["granularities"][granularity] = {
             "cross_refutation_rate": {"pooled": pooled_xr, "ci95": list(ci_xr), "per_task": per_task_xr},
             "waste_rate": {"pooled": pooled_waste, "per_task": per_task_waste},
         }
-        print(f"[{granularity}] cross-refutation rate = {pooled_xr} (95% CI {ci_xr})")
-        print(f"[{granularity}] waste rate (redundant re-proposal) = {pooled_waste}")
+        print(f"[{granularity}] cross-refutation rate = {pooled_xr} (95% CI {ci_xr})", flush=True)
+        # Checkpoint after each granularity: coarse is the cheaper half, and a
+        # run that dies during fine should not throw it away too.
+        DATA_DIR.mkdir(exist_ok=True)
+        (DATA_DIR / "coherence_report.json").write_text(json.dumps(report, indent=2) + "\n")
 
-    DATA_DIR.mkdir(exist_ok=True)
     out_path = DATA_DIR / "coherence_report.json"
-    out_path.write_text(json.dumps(report, indent=2) + "\n")
-    print(f"wrote {out_path}")
+    print(f"wrote {out_path}", flush=True)
 
 
 if __name__ == "__main__":

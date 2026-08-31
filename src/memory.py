@@ -57,6 +57,26 @@ class GuardResult:
     blocked_by: "Attempt | None" = None
 
 
+def _case_key(attempt: Attempt) -> tuple[str, str] | None:
+    """(task, counterexample case name) - the identity of what a guard check
+    actually *runs*.
+
+    Two stored attempts sharing this key return the same verdict against any
+    candidate: `_still_refutes` re-runs the same shipped case against the same
+    reference value, and that is deterministic. Deduplicating on it is what
+    keeps the fallback scan below O(distinct counterexamples) instead of O(m).
+
+    None when the attempt carries no runnable counterexample. Those are never
+    deduplicated against each other - "cannot be checked" is not the same fact
+    as "already checked", and collapsing them would silently drop a check.
+    """
+    ft = attempt.fine_type or attempt.coarse_type
+    ref = attempt.result.reference
+    if ft is None or ref is None or not ref.ok or not attempt.result.args:
+        return None
+    return (ft.task, attempt.result.args[0])
+
+
 def _still_refutes(attempt: Attempt, candidate_source: str) -> bool:
     """Re-run attempt's stored counterexample against a *new* candidate.
 
@@ -162,12 +182,17 @@ class TypedMemory(Memory):
         granularity: str = "fine",
         typing_noise_c: float = 1.0,
         typing_random: bool = False,
+        guard_fallback: bool = True,
         rng: random.Random | None = None,
     ) -> None:
         super().__init__()
         self.granularity = granularity
         self.typing_noise_c = typing_noise_c
         self.typing_random = typing_random
+        # False reproduces the pre-2026-08-31 guard exactly: bucket only, no
+        # fallback. Kept reachable so the partition and the index can be run as
+        # a paired ablation rather than argued about - see `guard` below.
+        self.guard_fallback = guard_fallback
         self._rng = rng or random.Random()
         self._by_location: dict[str, list[Attempt]] = {}
         self._seen_locations: list[str] = []
@@ -223,6 +248,34 @@ class TypedMemory(Memory):
         return set(self._by_location)
 
     def guard(self, candidate_source: str, buggy_source: str) -> GuardResult:
+        """Type-indexed bucket first, then the rest of memory.
+
+        The index says where to look FIRST. It must not say where to STOP.
+
+        Until 2026-08-31 this method searched the bucket and nothing else, which
+        made it a *partition* rather than an index - and a partition is only
+        sound as a stopping rule if theta's key is what decides refutation. It is
+        not. The key is where the candidate EDITS (`edit_location`, a pure diff
+        against the buggy source); what decides refutation is which INPUT the
+        candidate gets wrong. Those are close to independent, and the frozen log
+        prices the mistake exactly (docs/TYPED-VS-UNTYPED.md SS1): of 7,349 typed
+        rounds that reached the oracle and were refuted, **5,060 - 68.9% - came
+        back with a counterexample already sitting in memory**, every one of them
+        a round the untyped flat scan would certainly have blocked. Same figure
+        for untyped: 1 round in 1,004.
+
+        Widening the search cannot cost soundness. `_still_refutes` genuinely
+        re-runs the stored case, so a block is always a verified refutation and
+        never a type-match guess; more searching can only find more TRUE
+        refutations. That is why this does not wait on the cross-refutation rate
+        `scripts/measure_coherence.py` has yet to produce.
+
+        Proposition 4.5 survives in a form that is actually testable: the index
+        reduces expected evaluations *at equal recall*. Phase 1 alone answers the
+        rounds where theta guesses right (25.4% of them on the current log); the
+        rest pay for a deduplicated scan they were paying an entire oracle call
+        for before.
+        """
         # Mirror src.typer.theta's own branching exactly: coarse locations are
         # always the constant WHOLE_PROGRAM, never a line range, so the bucket
         # guess must match that or a coarse-granularity guard would look up
@@ -230,10 +283,38 @@ class TypedMemory(Memory):
         guess = WHOLE_PROGRAM if self.granularity == "coarse" else edit_location(buggy_source, candidate_source)
         bucket = self._by_location.get(guess, [])
         evaluations = 0
+        seen_cases: set[tuple[str, str]] = set()
+
+        # Phase 1 - the type-indexed bucket. Proposition 4.5's O(1) expected hit.
         for attempt in bucket:
+            key = _case_key(attempt)
+            if key is not None:
+                if key in seen_cases:
+                    continue
+                seen_cases.add(key)
             evaluations += 1
             if _still_refutes(attempt, candidate_source):
                 return GuardResult(blocked=True, evaluations=evaluations, blocked_by=attempt)
+
+        if not self.guard_fallback:
+            return GuardResult(blocked=False, evaluations=evaluations)
+
+        # Phase 2 - everything else, one run per distinct counterexample. Skipped
+        # by identity for what phase 1 already tried, so an attempt is never run
+        # twice in one guard call and the Prop. 4.5 count stays honest.
+        in_bucket = {id(a) for a in bucket}
+        for attempt in self.history:
+            if attempt.result.accept or id(attempt) in in_bucket:
+                continue
+            key = _case_key(attempt)
+            if key is not None:
+                if key in seen_cases:
+                    continue
+                seen_cases.add(key)
+            evaluations += 1
+            if _still_refutes(attempt, candidate_source):
+                return GuardResult(blocked=True, evaluations=evaluations, blocked_by=attempt)
+
         return GuardResult(blocked=False, evaluations=evaluations)
 
 
@@ -243,6 +324,7 @@ def build_memory(
     granularity: str = "fine",
     typing_noise_c: float = 1.0,
     typing_random: bool = False,
+    guard_fallback: bool = True,
     rng: random.Random | None = None,
 ) -> Memory:
     if mode == "no_memory":
@@ -251,7 +333,8 @@ def build_memory(
         return UntypedMemory()
     if mode == "typed":
         return TypedMemory(granularity=granularity, typing_noise_c=typing_noise_c,
-                           typing_random=typing_random, rng=rng)
+                           typing_random=typing_random, guard_fallback=guard_fallback,
+                           rng=rng)
     raise ValueError(f"mode must be one of {MODES}, got {mode!r}")
 
 
