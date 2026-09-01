@@ -61,6 +61,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
+. scripts/run_dir_paths.sh
 
 # -- PROTOCOL - what the gate measures. Identical on every machine, or the pools
 #    are not the same artifact.
@@ -69,19 +70,25 @@ MIN_SIBLINGS="${MIN_SIBLINGS:-1}"
 MAX_EXAMPLES="${MAX_EXAMPLES:-80}"
 MUTANTS_PER_TASK="${MUTANTS_PER_TASK:-3}"
 REFERENCE_CASES="${REFERENCE_CASES:-20}"
+# The slow-task filter. Empty means "whatever validate_oracle.py declares"
+# (DEFAULT_REFERENCE_TIMEOUT, currently 10s) - the threshold lives in one
+# place, and this script does not get to disagree with it silently.
+REFERENCE_TIMEOUT="${REFERENCE_TIMEOUT:-}"
 SEED="${SEED:-20260717}"
 TIMEOUT="${TIMEOUT:-30.0}"
 RECURSION_LIMIT="${SANDBOX_RECURSION_LIMIT:-10000}"
 # -- knobs that are free to differ per machine ------------------------------
 JOBS="${JOBS:-6}"
-POOL="data/candidates.json"
-DATA_DIR="data/pool"
+POOL="$RUN_DATA/candidates.json"
+DATA_DIR="$RUN_DATA/pool"
 TEST_DIR="external/ConDefects/Test"
 
 DRY_RUN=0; FORCE=0; ALLOW_BUSY=0
 
 usage() {
-  cat <<'USAGE'
+  # @DATA@ rather than $RUN_DATA: the heredoc is quoted, so that the usage
+  # text can contain $ and backticks safely. Same trick as eval_shard.sh.
+  sed -e "s|@DATA@|$RUN_DATA|g" <<'USAGE'
 usage: bash scripts/oracle_gate.sh [options]
 
   --jobs N          parallel workers (default 6, ~2 h). Use 1 for a publication
@@ -90,20 +97,27 @@ usage: bash scripts/oracle_gate.sh [options]
                     when it would have passed serially.
   --corpus-size N   cohort size for the gate AND passing faults to freeze
                     (default 360). See RUNBOOK.md section 2 for why not 115.
-  --data-dir PATH   where tasks.json is written (default data/pool). Point a
+  --data-dir PATH   where tasks.json is written (default @DATA@/pool). Point a
                     rehearsal somewhere else so it cannot overwrite a freeze.
-  --pool PATH       candidate list (default data/candidates.json)
+  --pool PATH       candidate list (default @DATA@/candidates.json)
   --timeout SEC     sandbox wall clock per run (default 30.0, matching the screen)
+  --reference-timeout SEC
+                    the SLOW-TASK FILTER: seconds the reference gets per case
+                    (default 10). A coding task whose correct solution cannot
+                    answer one of its own inputs in this long is dropped before
+                    stage 2. Measured on all 526 candidates it costs 3 of the
+                    106-task corpus and removes 34 candidates
   --jobs/--timeout aside, every value below is in what the gate MEANS:
-                    --max-examples, --mutants-per-task, --reference-cases, --seed
+                    --max-examples, --mutants-per-task, --reference-cases,
+                    --reference-timeout, --seed
   --allow-busy      start even though a screen shard is running (do not)
   --force           overwrite a pool that is already frozen
   --dry-run         print the plan and the headroom check, start nothing
   -h, --help        this
 
 Then:
-  python3 scripts/select_corpus.py --pool data/pool/tasks.json \
-          --screen data/screen_merged.json --min-calls 38
+  python3 scripts/select_corpus.py --pool @DATA@/pool/tasks.json \
+          --screen @DATA@/screen_merged.json --min-calls 38
 USAGE
 }
 
@@ -117,6 +131,7 @@ while [[ $# -gt 0 ]]; do
     --max-examples)     MAX_EXAMPLES="$2"; shift 2 ;;
     --mutants-per-task) MUTANTS_PER_TASK="$2"; shift 2 ;;
     --reference-cases)  REFERENCE_CASES="$2"; shift 2 ;;
+    --reference-timeout) REFERENCE_TIMEOUT="$2"; shift 2 ;;
     --min-siblings)     MIN_SIBLINGS="$2"; shift 2 ;;
     --seed)             SEED="$2"; shift 2 ;;
     --allow-busy)       ALLOW_BUSY=1; shift ;;
@@ -127,9 +142,9 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-LOG="logs/oracle_gate.log"
+LOG="$RUN_LOGS/oracle_gate.log"
 OUT="$DATA_DIR/tasks.json"
-mkdir -p "$DATA_DIR" logs
+mkdir -p "$DATA_DIR" "$RUN_LOGS"
 
 # -- refusals, all of them cheap and all of them before the hours ------------
 [[ -f "$POOL" ]] || { echo "$POOL missing - run scripts/select_candidates.py first" >&2; exit 2; }
@@ -194,6 +209,7 @@ gate         >= 2/3 of a fault's scoreable natural mutants caught
              pool freezes at >= $(python3 -c "import math;print(math.ceil(30/40*$CORPUS_SIZE))")/$CORPUS_SIZE of the cohort passing
 protocol     corpus_size=$CORPUS_SIZE  min_siblings=$MIN_SIBLINGS  max_examples=$MAX_EXAMPLES
              mutants_per_task=$MUTANTS_PER_TASK  reference_cases=$REFERENCE_CASES  seed=$SEED
+             reference_timeout=${REFERENCE_TIMEOUT:-<validate_oracle.py default>}  (the slow-task filter)
              timeout=${TIMEOUT}s  recursion_limit=$RECURSION_LIMIT
 candidates   ${#NAMES[@]} from $POOL, in its own seeded order
 jobs         $JOBS $( (( JOBS == 1 )) && echo "(serial - the publication setting)" || echo "(~2 h; use --jobs 1 to freeze for publication)" )
@@ -225,22 +241,24 @@ python3 scripts/validate_oracle.py \
     --reference-cases "$REFERENCE_CASES" \
     --seed "$SEED" \
     --timeout "$TIMEOUT" \
+    ${REFERENCE_TIMEOUT:+--reference-timeout "$REFERENCE_TIMEOUT"} \
     --jobs "$JOBS" \
     --data-dir "$DATA_DIR" 2>&1 | tee -a "$LOG"
 
 # -- what the next step will check ------------------------------------------
-python3 - "$OUT" "$DATA_DIR/oracle_validation.json" <<'PY'
+python3 - "$OUT" "$DATA_DIR/oracle_validation.json" "$RUN_DATA" <<'PY'
 import json, pathlib, sys
 pool = json.loads(pathlib.Path(sys.argv[1]).read_text())
 rep = json.loads(pathlib.Path(sys.argv[2]).read_text())
+DATA = sys.argv[3]
 frozen = pool.get("frozen")
 print()
 print(f"frozen       {frozen}   tasks held: {len(pool.get('tasks', []))}")
 print(f"cohort       {rep.get('n_cohort_passing')}/{rep.get('n_cohort')} passing "
       f"(needs {rep.get('corpus_pass_threshold')})")
 if frozen:
-    print("\nnext:\n  python3 scripts/select_corpus.py --pool data/pool/tasks.json \\\n"
-          "          --screen data/screen_merged.json --min-calls 38")
+    print(f"\nnext:\n  python3 scripts/select_corpus.py --pool {DATA}/pool/tasks.json \\\n"
+          f"          --screen {DATA}/screen_merged.json --min-calls 38")
 else:
     print("\nselect_corpus.py will refuse this pool. Read corpus_gate_ok, n_cohort and\n"
           "n_cohort_passing above: a short cohort means the candidate list ran out\n"

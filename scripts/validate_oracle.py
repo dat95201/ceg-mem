@@ -133,10 +133,58 @@ from src.adapter import (CONDEFECTS_ROOT, TEST_DIR, SUPPORTED_PROGRAMS, TASKS, l
 from src.oracle import differential_test, outputs_equal
 from src.sandbox import DEFAULT_TIMEOUT, run_program
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+from src.paths import DATA_DIR, announce  # noqa: E402
 
 DEFAULT_CORPUS_SIZE = 120
 DEFAULT_REFERENCE_CASES = 20   # cases the reference must pass to count as one
+
+# ── the slow-task filter ────────────────────────────────────────────────────
+#
+# Criterion 2 already says the reference must answer its own tests. This puts a
+# clock on "answer": a coding task whose CORRECT solution cannot finish one of
+# its own shipped inputs inside this many seconds is dropped before stage 2.
+#
+# Why this shape rather than a percentile or a hand-picked list.
+#
+#   Mechanical. It is one number compared against one measurement, and the
+#   measurement is the same run criterion 2 was already making. No task is named
+#   anywhere.
+#
+#   Pre-declared. It is here, in the source, with the measured seconds recorded
+#   on every record so the verdict can be re-derived at any other threshold from
+#   the frozen artifact - without re-running anything and without moving the
+#   number after seeing what it costs.
+#
+#   Outcome-independent. Reference solution plus the problem's own shipped
+#   inputs. No arm, no model, no patch, no episode, nothing measured after any
+#   treatment. This is a property of the coding task, fixed before the first
+#   proposal is drawn, which is what keeps it out of SS VI-A-c's way.
+#
+# Why 10s specifically. Measured over all 526 Stage-0 candidates (20 cases each,
+# the same cases criterion 2 uses), the cost of the threshold is:
+#
+#     T = 30s (today's sandbox timeout)    0 of the 106-task corpus dropped
+#     T = 10s                              3 of 106,  11 of the 315-task pool,
+#                                          34 of 526 candidates
+#     T =  5s                              7 of 106
+#
+# There is no cliff in the distribution to discover - reference cost is a smooth
+# heavy tail, so any threshold is a budget decision and this one is chosen, not
+# found. 10s is where the curve is still flat in corpus cost (2.8%) while
+# already removing 6.5% of the candidates, and every one it removes is a task
+# where a single sandbox run costs more than a whole fast episode.
+#
+# What it saves. Every round of every arm runs the candidate through
+# differential_test, which executes sampled cases until one refutes. A task
+# holding a >10s case pays that whenever the sample reaches it - across 3 arms
+# x 5 seeds x up to 20 rounds. Dropping it at the gate also skips stage 2's
+# mutant judging for it, which is several more full-pool passes.
+#
+# Caveat, stated because it is real: wall clock depends on the machine and on
+# how many gate workers are running. The verdict is therefore taken under the
+# same --jobs contention the rest of the gate runs under, and the raw seconds
+# are recorded so a corpus frozen on one machine can be audited on another.
+DEFAULT_REFERENCE_TIMEOUT = 10.0
 # Natural mutants judged per coding task, and the share of the scoreable ones
 # the oracle must refute. The proposal's criterion was "2 of 3"; held as the
 # fraction so it means the same thing for a task that supplies one sibling as
@@ -292,21 +340,46 @@ def stratify_by_difficulty(names: list[str]) -> tuple[dict[str, str], dict]:
 
 # ── stage 1: is the fault usable? ─────────────────────────────────────────
 
-def _check_reference(program, task, *, n_cases: int, timeout: float) -> tuple[bool, str]:
-    """Criterion 2 + half of 4: does correctVersion.py answer its own tests?"""
+def _check_reference(program, task, *, n_cases: int, timeout: float) -> tuple[bool, str, dict]:
+    """Criterion 2 + half of 4: does correctVersion.py answer its own tests?
+
+    `timeout` is the slow-task filter's clock as well as criterion 2's patience
+    - see DEFAULT_REFERENCE_TIMEOUT. The third return value carries what the
+    run cost, so a corpus can be re-filtered at another threshold from the
+    frozen artifact instead of by re-running this.
+    """
     cases = task.test_cases[:n_cases]
     checked = 0
+    secs: list[float] = []
     for case in cases:
         if case.expected_output is None:
             continue
         outcome = run_program(program.correct_source, case.input_text, timeout=timeout)
+        secs.append(round(outcome.duration, 3))
+        stats = {"reference_sec_total": round(sum(secs), 3),
+                 "reference_sec_max": max(secs),
+                 "reference_cases_run": len(secs),
+                 "reference_timeout": timeout,
+                 "slow": False}
         if outcome.timed_out:
-            return False, f"reference timed out on {case.name}"
+            # The filter fires here, on the FIRST overrun, so a slow task costs
+            # one timeout to identify rather than twenty - and never reaches
+            # stage 2's mutant judging, which is the expensive half.
+            stats["slow"] = True
+            return False, (f"reference needs >{timeout:g}s on {case.name} "
+                           f"({len(secs)} of {len(cases)} cases in). Every sandbox run in "
+                           f"every round of every arm would pay it - see "
+                           f"DEFAULT_REFERENCE_TIMEOUT"), stats
         if not outcome.ok:
-            return False, f"reference raised {outcome.error_type} on {case.name}"
+            return False, f"reference raised {outcome.error_type} on {case.name}", stats
         if not outputs_equal(outcome.value, case.expected_output):
-            return False, f"reference disagrees with the shipped output on {case.name}"
+            return False, f"reference disagrees with the shipped output on {case.name}", stats
         checked += 1
+    stats = {"reference_sec_total": round(sum(secs), 3),
+             "reference_sec_max": max(secs) if secs else 0.0,
+             "reference_cases_run": len(secs),
+             "reference_timeout": timeout,
+             "slow": False}
     if checked == 0:
         # Every case was skipped for want of an out/ file, so the loop above
         # proved nothing and returning True would assert criterion 2 without a
@@ -315,12 +388,13 @@ def _check_reference(program, task, *, n_cases: int, timeout: float) -> tuple[bo
         # (src/oracle.py::_expected_outcome), but then the reference is the
         # only authority in the loop and nothing ever cross-checks it against
         # what AtCoder actually accepted. Not a corpus we want.
-        return False, "no case in the pool ships an expected output - criterion 2 is unverifiable"
-    return True, ""
+        return False, ("no case in the pool ships an expected output - "
+                       "criterion 2 is unverifiable"), stats
+    return True, "", stats
 
 
 def check_usable(name: str, *, max_examples: int, reference_cases: int, seed: int,
-                 timeout: float) -> dict:
+                 timeout: float, reference_timeout: float = DEFAULT_REFERENCE_TIMEOUT) -> dict:
     task = TASKS[name]
     dates, difficulties = task_dates(), task_difficulties()
     record = {
@@ -333,6 +407,12 @@ def check_usable(name: str, *, max_examples: int, reference_cases: int, seed: in
         "fault_lines": None,
         "fault_exposed": False,
         "reference_ok": False,
+        # Recorded on every record, passing or failing, so the slow-task filter
+        # can be re-evaluated at another threshold from the frozen artifact.
+        "reference_sec_total": None,
+        "reference_sec_max": None,
+        "reference_cases_run": None,
+        "slow": False,
         "reason": None,
         "usable": False,
     }
@@ -345,7 +425,13 @@ def check_usable(name: str, *, max_examples: int, reference_cases: int, seed: in
     record["loc"] = len(program.buggy_source.splitlines())
     record["fault_lines"] = list(program.fault_lines)
 
-    reference_ok, why = _check_reference(program, task, n_cases=reference_cases, timeout=timeout)
+    # NOTE the timeout here is reference_timeout, not the differential test's
+    # `timeout`. Criterion 2's patience and the slow-task filter's clock are the
+    # same number by construction: "the reference answers its own tests, within
+    # T" is one condition, not two.
+    reference_ok, why, ref_stats = _check_reference(
+        program, task, n_cases=reference_cases, timeout=reference_timeout)
+    record.update(ref_stats)
     record["reference_ok"] = reference_ok
     if not reference_ok:
         record["reason"] = why
@@ -460,6 +546,7 @@ def check_mutants(name: str, *, max_examples: int, seed: int, timeout: float,
 
 def run(names: list[str], *, corpus_size: int, max_examples: int, mutant_examples: int,
         reference_cases: int, seed: int, timeout: float, full_pool_cap: int,
+        reference_timeout: float = DEFAULT_REFERENCE_TIMEOUT,
         top_up: bool, jobs: int, mutants_per_task: int = MUTANTS_PER_TASK,
         band_of: dict[str, str] | None = None, bands: tuple[str, ...] = STRATA,
         per_stratum: int = 0, unstratified_label: str = "all") -> dict:
@@ -520,7 +607,8 @@ def run(names: list[str], *, corpus_size: int, max_examples: int, mutant_example
         records = _in_parallel(
             lambda n: check_usable(n, max_examples=max_examples,
                                    reference_cases=reference_cases,
-                                   seed=seed, timeout=timeout),
+                                   seed=seed, timeout=timeout,
+                                   reference_timeout=reference_timeout),
             batch,
         )
 
@@ -532,7 +620,8 @@ def run(names: list[str], *, corpus_size: int, max_examples: int, mutant_example
             tag = f"[{examined:4d}/{len(names)}] {name:30s}"
 
             if not record["usable"]:
-                print(f"{tag} SKIP  {record['reason']}", flush=True)
+                kind = "SLOW" if record.get("slow") else "SKIP"
+                print(f"{tag} {kind}  {record['reason']}", flush=True)
                 continue
             # At most one fault per coding task: several submissions can fail
             # the same AtCoder problem, and treating them as separate tasks
@@ -643,6 +732,13 @@ def run(names: list[str], *, corpus_size: int, max_examples: int, mutant_example
         "full_pool_cap": full_pool_cap,
         "reference_cases": reference_cases,
         "timeout_sec": timeout,
+        # The slow-task filter, and what it cost. n_slow is a headline number:
+        # it is how many candidates were dropped for cost rather than for any
+        # property of the fault, and a reader comparing two corpora needs to
+        # know whether the threshold moved between them.
+        "reference_timeout_sec": reference_timeout,
+        "n_slow": sum(bool(r.get("slow")) for r in faults.values()),
+        "slow_tasks": sorted(n for n, r in faults.items() if r.get("slow")),
         "seed": seed,
         "elapsed_sec": round(time.monotonic() - t0, 1),
         "faults": faults,
@@ -810,6 +906,7 @@ def _candidates(args) -> tuple[list[str], dict[str, str], dict]:
 
 
 def main() -> None:
+    announce('validate_oracle')
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--programs", nargs="+", default=None, help="validate exactly these faults")
     parser.add_argument("--corpus-size", type=int, default=DEFAULT_CORPUS_SIZE,
@@ -825,6 +922,13 @@ def main() -> None:
                              "eleven wrong submissions does not outweigh one with two")
     parser.add_argument("--reference-cases", type=int, default=DEFAULT_REFERENCE_CASES,
                         help="cases the reference must answer correctly")
+    parser.add_argument("--reference-timeout", type=float, default=DEFAULT_REFERENCE_TIMEOUT,
+                        help=f"seconds the reference gets per case (default "
+                             f"{DEFAULT_REFERENCE_TIMEOUT:g}). This IS the slow-task filter: a "
+                             f"coding task whose correct solution cannot answer one of its own "
+                             f"shipped inputs in this long is dropped before stage 2. Distinct "
+                             f"from --timeout, which is the differential test's sandbox clock. "
+                             f"Raise it to keep more tasks and pay for them")
     parser.add_argument("--no-top-up", action="store_true",
                         help="freeze only the passing members of the cohort, do not look further")
     parser.add_argument("--select", choices=("hard", "terciles", "none"), default="hard",
@@ -914,6 +1018,7 @@ def main() -> None:
         mutant_examples=args.mutant_examples or args.max_examples,
         mutants_per_task=args.mutants_per_task,
         reference_cases=args.reference_cases,
+        reference_timeout=args.reference_timeout,
         seed=args.seed,
         timeout=args.timeout,
         full_pool_cap=args.full_pool_cap,
