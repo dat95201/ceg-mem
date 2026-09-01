@@ -113,8 +113,14 @@ USAGE
 # about how big a universe is would cut ranges past the end of it, and the one
 # that owns the answer is the one that walks it.
 universe_size_screen() {
-  [[ -f "$RUN_DATA/candidates.json" ]] || die "$RUN_DATA/candidates.json missing - run: bash scripts/pipeline.sh candidates"
-  python3 -c "import json,sys;print(len(json.load(open(sys.argv[1]))['candidates']))" "$RUN_DATA/candidates.json"
+  # Same default as screen_shard.sh: the gated pool once the gate has run.
+  local list="$RUN_DATA/pool/tasks.json"
+  [[ -f "$list" ]] || list="$RUN_DATA/candidates.json"
+  [[ -f "$list" ]] || die "$RUN_DATA/candidates.json missing - run: bash scripts/pipeline.sh candidates"
+  python3 -c "
+import json, sys
+b = json.load(open(sys.argv[1]))
+print(len(b.get('candidates') or b.get('tasks') or []))" "$list"
 }
 
 # A dry-run proves the ARGUMENTS are good. It exits before eval_shard.sh ever

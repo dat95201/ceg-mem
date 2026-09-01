@@ -140,7 +140,9 @@ case "$STAGE" in
       shift
       run python3 scripts/consolidate_screens.py "$@"
     elif [[ $# -eq 0 ]]; then
-      echo "the screen is sharded: give it an index range over $RUN_DATA/candidates.json." >&2
+      screen_list="$RUN_DATA/pool/tasks.json"
+      [[ -f "$screen_list" ]] || screen_list="$RUN_DATA/candidates.json"
+      echo "the screen is sharded: give it an index range over $screen_list." >&2
       echo "  bash scripts/pipeline.sh screen --from 1 --to 132" >&2
       echo "  bash scripts/pipeline.sh screen --merge        # once every shard is in" >&2
       echo "RUNBOOK.md is the runbook." >&2

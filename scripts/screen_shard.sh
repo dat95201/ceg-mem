@@ -80,7 +80,15 @@ LLM_BASE_URL_CLOUD="${LLM_BASE_URL:-}"       # empty = api.openai.com
 # ── knobs that are free to differ per machine ───────────────────────────────
 CALLS="${CALLS:-10}"                         # draws per task; deepen later
 PORT="${PORT:-11435}"                        # own port, not the desktop app's
-POOL="$RUN_DATA/candidates.json"
+# The gate has already thrown out everything that cannot be a corpus task, and
+# pi_hat for a rejected candidate is read by nothing - not select_corpus.py,
+# which only looks up pool members, and not screening.json, which is built
+# inside that same loop. So the default is the gated pool when it exists, and
+# the full candidate list only when the gate has not run yet.
+if [[ -z "${POOL:-}" ]]; then
+  if [[ -f "$RUN_DATA/pool/tasks.json" ]]; then POOL="$RUN_DATA/pool/tasks.json"
+  else POOL="$RUN_DATA/candidates.json"; fi
+fi
 
 FROM=""; TO=""; OUT=""; DRY_RUN=0; KEEP_SERVING=0; STOP_MODEL=1
 
@@ -94,6 +102,11 @@ usage: bash scripts/screen_shard.sh --from N --to M [options]
   --to M            last candidate index, 1-based inclusive
   --calls K         draws per task (default 10). Raising it later re-uses every
                     draw already bought - see "Incremental" in this file.
+  --pool PATH       the list to screen. Default: @DATA@/pool/tasks.json once the
+                    gate has run, @DATA@/candidates.json before that. Screening
+                    the full candidate list measures pi_hat for tasks the gate
+                    already rejected, which nothing reads - it was 40% of the
+                    last screen's calls
   --out PATH        override the report path
   --backend B       ollama (default) or cloud
   --model ID        proposer id. A different id is a DIFFERENT SCREEN - pi is a
@@ -140,6 +153,7 @@ USAGE
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --from)    FROM="$2"; shift 2 ;;
+    --pool)    POOL="$2"; shift 2 ;;
     --to)      TO="$2"; shift 2 ;;
     --calls)   CALLS="$2"; shift 2 ;;
     --out)     OUT="$2"; shift 2 ;;
@@ -191,7 +205,12 @@ fi
 FROM=$((10#$FROM)); TO=$((10#$TO))
 [[ -f "$POOL" ]] || { echo "$POOL missing - run scripts/select_candidates.py first" >&2; exit 2; }
 
-N_POOL="$(python3 -c "import json;print(len(json.load(open('$POOL'))['candidates']))")"
+# Either shape: candidates.json carries {"candidates": [...]}, the gate's
+# pool/tasks.json carries {"tasks": [...]}. Both list objects with a "name".
+N_POOL="$(python3 -c "
+import json, sys
+b = json.load(open(sys.argv[1]))
+print(len(b.get('candidates') or b.get('tasks') or []))" "$POOL")"
 (( FROM >= 1 && TO >= FROM && TO <= N_POOL )) || {
   echo "range $FROM-$TO is outside 1-$N_POOL" >&2; exit 2; }
 
@@ -223,9 +242,17 @@ run_banner "screen ${TAG}"
 python3 - "$POOL" "$FROM" "$TO" "$SHARD" <<'PY'
 import hashlib, json, pathlib, sys
 pool, lo, hi, out = sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), sys.argv[4]
-names = [c["name"] for c in json.loads(pathlib.Path(pool).read_text())["candidates"]]
+blob = json.loads(pathlib.Path(pool).read_text())
+# candidates.json -> "candidates", the gate's pool/tasks.json -> "tasks".
+names = [c["name"] for c in (blob.get("candidates") or blob.get("tasks") or [])]
+if not names:
+    sys.exit(f"{pool} lists neither 'candidates' nor 'tasks'")
 digest = hashlib.sha256("\n".join(names).encode()).hexdigest()
 chunk = names[lo - 1:hi]
+# The field is still called candidate_order_sha256 because that is what
+# consolidate_screens.py reads and what every existing shard header says. It has
+# always meant "a digest of the list this shard was cut from"; the list can now
+# be the gated pool, which is why `pool:` on the line above matters.
 pathlib.Path(out).write_text(
     f"# shard {lo}-{hi} of {len(names)} (1-based, inclusive)\n"
     f"# pool: {pool}\n"
@@ -239,6 +266,7 @@ N_TASKS=$(( TO - FROM + 1 ))
 cat <<EOF
 
 shard        $FROM-$TO of $N_POOL  ($N_TASKS tasks)
+pool         $POOL
 protocol     model=$MODEL  temperature=$TEMPERATURE  seed=$SEED
              context=$CONTEXT_LENGTH  max_examples=$MAX_EXAMPLES  sandbox_timeout=$SANDBOX_TIMEOUT_SEC
 draws        $CALLS per task  ($(( N_TASKS * CALLS )) total, cached ones replay free)

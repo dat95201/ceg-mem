@@ -196,7 +196,11 @@ def check_coverage(shards: list[dict], pool: pathlib.Path) -> None:
         print(f"\n{pool} missing - skipping the coverage audit")
         return
     blob = json.loads(pool.read_text())
-    names = [c["name"] for c in blob["candidates"]]
+    # candidates.json -> "candidates", the gate's pool/tasks.json -> "tasks".
+    names = [c["name"] for c in (blob.get("candidates") or blob.get("tasks") or [])]
+    if not names:
+        print(f"\n{pool} lists neither 'candidates' nor 'tasks' - skipping the audit")
+        return
     rank = {n: i + 1 for i, n in enumerate(names)}
     digest = hashlib.sha256("\n".join(names).encode()).hexdigest()
 
@@ -224,8 +228,10 @@ def check_coverage(shards: list[dict], pool: pathlib.Path) -> None:
         print("  GAPS     " + ", ".join(f"{a}-{b}" if a != b else str(a) for a, b in runs(gaps)))
     if foreign:
         print(f"  {len(foreign)} screened program(s) are not in this pool at all, "
-              f"e.g. {foreign[0]} - a shard was cut from a different "
-              f"candidates.json")
+              f"e.g. {foreign[0]} - a shard was cut from a different list. That is "
+              f"expected when an older screen covered the full candidate list and "
+              f"this audit is against the gated pool; it is a real problem when the "
+              f"two are the same kind of list.")
 
     # A shard whose report holds fewer tasks than its own shard list walked was
     # interrupted. `complete: true` does not catch this: it only tracks the
@@ -322,7 +328,14 @@ def main() -> None:
     parser.add_argument("--screens", nargs="+", default=None,
                         help="shard reports (default: data/screen*.json, "
                              "excluding this script's own output)")
-    parser.add_argument("--pool", type=pathlib.Path, default=DATA_DIR / "candidates.json")
+    # Same default as screen_shard.sh, for the same reason: audit against the
+    # list that was actually screened.
+    parser.add_argument("--pool", type=pathlib.Path,
+                        default=(DATA_DIR / "pool" / "tasks.json"
+                                 if (DATA_DIR / "pool" / "tasks.json").exists()
+                                 else DATA_DIR / "candidates.json"),
+                        help="the list the shards were cut from; coverage is audited "
+                             "against it (default: the gated pool once it exists)")
     parser.add_argument("--out", type=pathlib.Path, default=DATA_DIR / "screen_merged.json")
     parser.add_argument("--ledgers", nargs="*", default=None,
                         help="call ledgers to concatenate (default: "
