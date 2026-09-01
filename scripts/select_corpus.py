@@ -167,8 +167,13 @@ def main() -> None:
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--pool", type=pathlib.Path, default=DATA_DIR / "pool" / "tasks.json",
                         help="candidate-pool freeze from validate_oracle.py --data-dir data/pool")
-    parser.add_argument("--screen", type=pathlib.Path, nargs="+", required=True,
-                        help="one or more measure_pi.py reports; deepest screen per task wins")
+    parser.add_argument("--screen", type=pathlib.Path, nargs="+", default=None,
+                        help="one or more measure_pi.py reports; deepest screen per task "
+                             "wins. OPTIONAL: without it the corpus is inherited from "
+                             "--pin (the previous corpus, minus whatever the gate and the "
+                             "slow-task filter removed), keeping each task's frozen "
+                             "screen_pi_hat and stratum. That is the official path - see "
+                             "the `inherited` note below")
     parser.add_argument("--quota", action="append", default=[], metavar="BAND=N",
                         help=f"override a band quota (default: {DEFAULT_QUOTAS})")
     parser.add_argument("--min-calls", type=int, default=20,
@@ -213,7 +218,8 @@ def main() -> None:
     if not pool_blob.get("frozen"):
         raise SystemExit(f"{args.pool} is not frozen - re-run scripts/validate_oracle.py")
     pool = pool_blob["tasks"]
-    screens = merge_screens(list(args.screen))
+    inherited = args.screen is None
+    screens = {} if inherited else merge_screens(list(args.screen))
 
     models = {s["model"] for s in screens.values() if s.get("model")}
     if len(models) > 1:
@@ -270,8 +276,66 @@ def main() -> None:
     if pinned_set:
         print(f"pin: {len(pinned_set)} tasks from {', '.join(str(p) for p in pin_paths)}")
 
+    # ── no screen: the corpus IS the previous one, minus what the gate took ──
+    #
+    # Every field the screen would supply is already frozen on the pinned tasks
+    # - screen_pi_hat, screen_successes, screen_calls and the stratum derived
+    # from them - so re-measuring pi_hat would buy nothing the corpus does not
+    # already carry. What the gate DOES change is fresher: whether the fault is
+    # still usable, how its natural mutants scored, and (new on this branch)
+    # what its reference costs. So each task is the gate's current record with
+    # the pin's four screen fields laid over it.
+    #
+    # No quotas here, and that is the point rather than an omission: quotas
+    # backfill an under-full band from the pool, and a backfilled task has no
+    # paid episodes. The requirement this path exists to meet is that the corpus
+    # be a SUBSET of the previous one, so nothing is ever added.
+    inherit_fields = ("stratum", "screen_pi_hat", "screen_successes", "screen_calls")
+    if inherited:
+        if not pinned:
+            raise SystemExit(
+                "--screen was not given, so the corpus has to be inherited from a "
+                "previous one - but no pin was found.\n"
+                f"Expected {DEFAULT_PIN}. Pass --pin PATH, or pass --screen to select "
+                "from a screen the way a first-ever corpus has to be built.")
+        pool_by_name = {e["name"]: e for e in pool}
+        pin_rows = {}
+        for p in pin_paths:
+            blob = json.loads(p.read_text()) if p.read_text().lstrip().startswith("{") else {}
+            for row in blob.get("tasks", []):
+                pin_rows.setdefault(row["name"], row)
+        missing_fields = [n for n in pinned
+                          if n in pool_by_name
+                          and not all(f in pin_rows.get(n, {}) for f in inherit_fields)]
+        if missing_fields:
+            raise SystemExit(
+                f"{len(missing_fields)} pinned task(s) carry no frozen stratum/screen_pi_hat, "
+                f"e.g. {missing_fields[0]} - the pin is not a corpus this can be inherited "
+                f"from. Pass --screen and select from a measured screen instead.")
+
+        selected, audit = [], []
+        for name in pinned:                       # the pin's own order is kept
+            entry = pool_by_name.get(name)
+            if entry is None:
+                audit.append({"name": name, "disposition": "not_in_pool", "pinned": True})
+                continue
+            row = pin_rows[name]
+            merged = {**entry, **{f: row[f] for f in inherit_fields}, "pinned": True}
+            selected.append(merged)
+            audit.append({"name": name, "band": row["stratum"], "pi_hat": row["screen_pi_hat"],
+                          "calls": row["screen_calls"], "successes": row["screen_successes"],
+                          "disposition": "selected", "selected_in": "inherited", "pinned": True})
+        # Report order stays band-major, matching what the screen path produces,
+        # so eval_shard.sh's interleave sees the same shape either way.
+        order = {b: i for i, (b, _, _) in enumerate(BANDS)}
+        selected.sort(key=lambda t: order[t["stratum"]])
+        counts = {b: sum(1 for t in selected if t["stratum"] == b) for b in quotas}
+        short = {}
+        audit_by_name = {a["name"]: a for a in audit}
+        taken = {b: [t for t in selected if t["stratum"] == b] for b in quotas}
+
     # ── the walk: pinned first, then pool order ─────────────────────────────
-    taken: dict[str, list[dict]] = {b: [] for b in quotas}
+    taken_screen: dict[str, list[dict]] = {b: [] for b in quotas}
     audit_by_name: dict[str, dict] = {}
     audit = []
 
@@ -289,8 +353,8 @@ def main() -> None:
         row = {"name": name, "pi_hat": screen["pi_hat"], "calls": screen["calls"],
                "successes": screen["successes"], "band": band,
                "pinned": name in pinned_set}
-        if len(taken[band]) < quotas[band]:
-            taken[band].append({**entry, "stratum": band,
+        if len(taken_screen[band]) < quotas[band]:
+            taken_screen[band].append({**entry, "stratum": band,
                                 "screen_pi_hat": screen["pi_hat"],
                                 "screen_successes": screen["successes"],
                                 "screen_calls": screen["calls"],
@@ -300,17 +364,19 @@ def main() -> None:
         else:
             audit_by_name[name] = {**row, "disposition": "band_full"}
 
-    for entry in pool:                                   # pass 1: the paid corpus
-        if entry["name"] in pinned_set:
-            consider(entry, is_pin_pass=True)
-    for entry in pool:                                   # pass 2: everyone else
-        if entry["name"] not in pinned_set:
-            consider(entry, is_pin_pass=False)
-    audit = [audit_by_name[e["name"]] for e in pool if e["name"] in audit_by_name]
+    if not inherited:
+        taken = taken_screen
+        for entry in pool:                               # pass 1: the paid corpus
+            if entry["name"] in pinned_set:
+                consider(entry, is_pin_pass=True)
+        for entry in pool:                               # pass 2: everyone else
+            if entry["name"] not in pinned_set:
+                consider(entry, is_pin_pass=False)
+        audit = [audit_by_name[e["name"]] for e in pool if e["name"] in audit_by_name]
 
-    selected = [t for band, _, _ in BANDS for t in taken[band]]
-    counts = {b: len(v) for b, v in taken.items()}
-    short = {b: quotas[b] - counts[b] for b in quotas if counts[b] < quotas[b]}
+        selected = [t for band, _, _ in BANDS for t in taken[band]]
+        counts = {b: len(v) for b, v in taken.items()}
+        short = {b: quotas[b] - counts[b] for b in quotas if counts[b] < quotas[b]}
 
     # ── did every pinned task survive? ──────────────────────────────────────
     #
@@ -413,11 +479,22 @@ def main() -> None:
         "test_dir": pool_blob.get("test_dir"),
         "model": sorted(models)[0] if models else None,
         "selection": {
-            "stage": "measured pi_hat (paper SS VI-A-b course 2, conditions of SS VI-A-c)",
+            "mode": "inherited" if inherited else "screen",
+            "stage": (
+                # Not re-running a measurement is not the same as never having made
+                # one. This corpus WAS selected on a measured pi_hat, in 2026-08;
+                # what changed is that the screen no longer re-runs, because every
+                # field it produced is frozen on the tasks being inherited.
+                "inherited from a previously screened corpus, minus what the gate "
+                "and the slow-task filter removed. screen_pi_hat and stratum are the "
+                "frozen 2026-08 values; the REPORTED banding comes from E1 via "
+                "scripts/build_strata.py (paper SS VI-A-c's second sample)"
+                if inherited else
+                "measured pi_hat (paper SS VI-A-b course 2, conditions of SS VI-A-c)"),
             "pool": str(args.pool),
             "pool_size": len(pool),
             "screened": len(screens),
-            "screens": [str(p) for p in args.screen],
+            "screens": [str(p) for p in (args.screen or [])],
             "min_calls": args.min_calls,
             "bands": {n: [lo, hi] for n, lo, hi in BANDS},
             "quotas": quotas,
@@ -465,14 +542,33 @@ def main() -> None:
     args.audit_out.write_text(json.dumps(audit_blob, indent=2) + "\n")
 
     placed = [a for a in audit if "band" in a]
-    print(f"pool {len(pool)} · screened {len(screens)} · placed {len(placed)}")
-    for name, lo, hi in BANDS:
-        n_in_band = sum(1 for a in placed if a["band"] == name)
-        star = "  *primary" if name in PRIMARY_BANDS else "   control"
-        print(f"  {name:9s} [{lo:.2f},{hi:.2f})  screened {n_in_band:4d}  "
-              f"taken {counts[name]:3d}/{quotas[name]:<3d}{star}")
+    if inherited:
+        # No quota was applied and nothing was screened in this run, so printing
+        # "screened 0 · taken 19/20" would name two numbers that mean nothing
+        # here. What the reader wants is what each band kept and what it lost.
+        print(f"pool {len(pool)} · inherited from {len(pinned_set)} pinned tasks "
+              f"· kept {len(selected)}")
+        before = {b: sum(1 for n in pinned if pin_rows.get(n, {}).get("stratum") == b)
+                  for b in quotas}
+        for name, lo, hi in BANDS:
+            star = "  *primary" if name in PRIMARY_BANDS else "   control"
+            gone = before[name] - counts[name]
+            note = f"  (-{gone} to the gate)" if gone else ""
+            print(f"  {name:9s} [{lo:.2f},{hi:.2f})  kept {counts[name]:3d}/"
+                  f"{before[name]:<3d}{star}{note}")
+    else:
+        print(f"pool {len(pool)} · screened {len(screens)} · placed {len(placed)}")
+        for name, lo, hi in BANDS:
+            n_in_band = sum(1 for a in placed if a["band"] == name)
+            star = "  *primary" if name in PRIMARY_BANDS else "   control"
+            print(f"  {name:9s} [{lo:.2f},{hi:.2f})  screened {n_in_band:4d}  "
+                  f"taken {counts[name]:3d}/{quotas[name]:<3d}{star}")
     n_primary = sum(counts[b] for b in PRIMARY_BANDS)
     print(f"\ncorpus {len(selected)} tasks · primary comparison rests on {n_primary}")
+    if inherited:
+        print("  the bands above are the frozen 2026-08 screen_pi_hat, and they are used\n"
+              "  only to interleave shards evenly. The banding results are REPORTED on\n"
+              "  comes from E1, via scripts/build_strata.py -> data/strata.json.")
     if short:
         print(f"SHORT: {short} - screen more candidates and re-run; the walk is "
               f"deterministic, so already-selected tasks keep their places")

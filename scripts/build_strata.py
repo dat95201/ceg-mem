@@ -103,16 +103,34 @@ def stratify_by_proxy(corpus: list[dict], reported_pi: dict[str, float]) -> tupl
     return out, cuts
 
 
-def stratify(corpus: list[dict], reported_pi: dict[str, float]) -> list[dict]:
-    """One row per task: the stratum it was selected into, and where the
-    independent measurement would have put it."""
+def stratify(corpus: list[dict], reported_pi: dict[str, float],
+             *, band_from: str = "screen") -> list[dict]:
+    """One row per task: the stratum it is analysed in, and the other pi_hat.
+
+    band_from="screen"  the frozen selection-time pi_hat fixes the stratum, and
+                        E1's is recorded beside it for the drift audit. Two
+                        independent samples, SS VI-A-c satisfied.
+    band_from="e1"      the run's own measured pi_hat fixes the stratum. Read the
+                        module docstring first: it says exactly which
+                        comparisons that keeps honest and which it does not.
+    """
     out = []
     for entry in corpus:
         name = entry["name"]
         selected_pi = entry["screen_pi_hat"]
+        screen_band = entry.get("stratum") or band_of(selected_pi)
+        if band_from == "e1" and name in reported_pi:
+            stratum = band_of(reported_pi[name])
+        else:
+            # A task E1 never reached keeps the screen band rather than being
+            # dropped: an unbanded task would silently leave the analysis.
+            stratum = screen_band
         row = {
             "name": name,
-            "stratum": entry.get("stratum") or band_of(selected_pi),
+            "stratum": stratum,
+            "band_from": ("e1" if (band_from == "e1" and name in reported_pi)
+                          else "screen"),
+            "screen_band": screen_band,
             "screen_pi_hat": selected_pi,
             "screen_calls": entry.get("screen_calls"),
         }
@@ -173,6 +191,19 @@ def main() -> None:
                              "measure_pi.py pilot)")
     parser.add_argument("--pi-pilot-path", type=pathlib.Path, default=None,
                         help="deprecated alias for --pi-source")
+    parser.add_argument("--band-from", choices=("screen", "e1"), default="e1",
+                        help="what fixes the stratum. `e1` (default): the run's own "
+                             "measured pi_hat, which is what the pipeline reports on now "
+                             "that the screen is off the chain. `screen`: the frozen "
+                             "selection-time pi_hat, the two-independent-samples design. "
+                             "The module docstring says which comparisons each keeps "
+                             "honest - `e1` leaves untyped-vs-typed clean and inflates "
+                             "anything measured against no_memory per band")
+    parser.add_argument("--band-hold-out-seeds", default="", metavar="A,B",
+                        help="with --band-from e1, name the E1 seeds the banding is "
+                             "allowed to use so the rest stay an independent sample for "
+                             "reporting. Recorded, not enforced here - fit_theory.py has "
+                             "to be run over the same subset for it to mean anything")
     parser.add_argument("--force", action="store_true", help="overwrite an already-frozen data/strata.json")
     args = parser.parse_args()
 
@@ -198,9 +229,17 @@ def main() -> None:
     # pre-treatment pi measurement at all, and its only pre-treatment ordering
     # is the contest rating.
     by_pi = all("screen_pi_hat" in e for e in corpus)
+    band_from = args.band_from
+    if band_from == "e1" and not reported_pi:
+        # Nothing to band on yet. Fall back rather than fail: this script runs
+        # inside `pipeline.sh analyse`, and a corpus frozen but not yet evaluated
+        # should still get a strata.json.
+        print("no measured pi_hat on disk yet - banding on the frozen screen_pi_hat. "
+              "Re-run after E1 and fit_theory to band on the run's own measurement.")
+        band_from = "screen"
     cuts = None
     if by_pi:
-        tasks = stratify(corpus, reported_pi)
+        tasks = stratify(corpus, reported_pi, band_from=band_from)
         labels = [name for name, _, _ in BANDS]
         primary = list(PRIMARY_BANDS)
     else:
@@ -209,6 +248,26 @@ def main() -> None:
         primary = list(PROXY_LABELS)   # all three carry the same prediction
 
     counts = {name: sum(1 for t in tasks if t["stratum"] == name) for name in labels}
+    band_source = {
+        "band_from": band_from,
+        "pi_source": str(pi_path) if pi_path else None,
+        "hold_out_seeds": [s for s in args.band_hold_out_seeds.split(",") if s.strip()],
+        "n_banded_from_e1": sum(1 for t in tasks if t.get("band_from") == "e1"),
+        "n_banded_from_screen": sum(1 for t in tasks if t.get("band_from") == "screen"),
+        "caveat": (
+            # Written into the artifact rather than left in a commit message,
+            # because this is the sentence a reader of a per-band table needs.
+            "stratum comes from E1's own pi_hat. Common Random Numbers make round 1 "
+            "of every arm the same draw, so a band defined by no_memory selects the "
+            "same luck the memory arms saw: untyped-vs-typed within a band is "
+            "unaffected (the band is symmetric between them), but any per-band "
+            "comparison AGAINST no_memory is inflated by regression to the mean, and "
+            "E1's own per-band pi_hat is tautological. Use --band-from screen, or "
+            "--band-hold-out-seeds, if those matter."
+            if band_from == "e1" else
+            "stratum comes from the pre-treatment screen; E1's pi_hat is an "
+            "independent sample, so nothing reported is conditioned on itself."),
+    }
     n_primary = sum(counts[b] for b in primary)
 
     moved = [t for t in tasks if t.get("moved")]
@@ -260,8 +319,21 @@ def main() -> None:
         print("        proxy only. Any claim about pi must use E1's measured pi_hat.")
     print(f"primary comparison rests on {n_primary} tasks")
     if reported_pi:
-        print(f"drift vs the independent E1 measurement: {len(moved)}/{len(tasks)} "
-              f"tasks change band (regression to the mean, SS VI-A-c)")
+        if band_from == "e1":
+            # `moved` compares stratum against the reported band, and in this mode
+            # they ARE the reported band - it would print 0 and mean nothing. The
+            # number worth printing is how far E1 moved the corpus off the screen.
+            shifted = sum(1 for x in tasks if x.get("screen_band") != x["stratum"])
+            print(f"banded on E1's own pi_hat: {shifted}/{len(tasks)} tasks sit in a "
+                  f"different band than the 2026-08 screen put them in")
+            print(f"  screen bands: "
+                  + ", ".join(f"{b} {sum(1 for x in tasks if x.get('screen_band') == b)}"
+                              for b in labels))
+            print("  per-band comparisons AGAINST no_memory are inflated in this mode "
+                  "- see strata.json band_source.caveat")
+        else:
+            print(f"drift vs the independent E1 measurement: {len(moved)}/{len(tasks)} "
+                  f"tasks change band (regression to the mean, SS VI-A-c)")
     else:
         print("no reported pi_hat yet - re-run after E1 + fit_theory for the drift audit")
     print(f"wrote {out_path} (frozen)")

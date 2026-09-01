@@ -55,8 +55,7 @@ STAGES=(
   "benchmark|external/ConDefects/Test||the ConDefects checkout and its test data"
   "candidates|$RUN_DATA/candidates.json|benchmark|Stage 0: the screening candidate pool"
   "gate|$RUN_DATA/pool/tasks.json|candidates|E0: the oracle gate, earns Assumption 1"
-  "screen|$RUN_DATA/screen_merged.json|gate|E0b: measure pi_hat  (sharded, local model)"
-  "corpus|$RUN_DATA/tasks.json|screen|freeze the corpus on the pi bands"
+  "corpus|$RUN_DATA/tasks.json|gate|freeze the corpus (inherited from the previous one)"
   "pool-strength|$RUN_DATA/pool_strength.json|corpus|the oracle's blind spot"
   "eval|$RUN_DATA/episodes.jsonl|corpus|E1-E5: the grid  (sharded, local model)"
   "analyse|$RUN_DATA/analysis.json|eval|freeze, analyse, fit, figures, consistency"
@@ -107,7 +106,7 @@ if [[ "$STAGE" == "status" ]]; then
   # nothing about coverage - that is the merge audit's job, not a file test.
   if have $RUN_DATA/screen_merged.json || have $RUN_DATA/episodes.jsonl; then
     echo "coverage of the sharded stages is audited, not inferred:"
-    have $RUN_DATA/screen_merged.json && echo "  python3 scripts/consolidate_screens.py"
+    have $RUN_DATA/screen_merged.json && echo "  python3 scripts/consolidate_screens.py   # only if you ran the optional screen"
     have $RUN_DATA/episodes.jsonl     && echo "  python3 scripts/consolidate_evals.py --dry-run"
   fi
   echo
@@ -134,8 +133,12 @@ case "$STAGE" in
     run bash scripts/oracle_gate.sh "$@"
     ;;
 
+  # Off the chain since 2026-09-01: the reported banding comes from E1 (see
+  # scripts/build_strata.py --pi-source), and the selection-time banding is
+  # frozen on the corpus being inherited. Still here, and still correct, because
+  # a corpus built from scratch on a benchmark with no previous freeze has to
+  # measure pi_hat somehow. `require` is gone with the stage-table row.
   screen)
-    require screen
     if [[ "${1:-}" == "--merge" ]]; then
       shift
       run python3 scripts/consolidate_screens.py "$@"
@@ -154,17 +157,16 @@ case "$STAGE" in
 
   corpus)
     require corpus
-    # --min-calls is read off the merged report, never retyped. pi_hat lives on
-    # a grid of 1/K: ask for a depth the screen never reached and select_corpus
-    # drops every task below it; ask for less and a band whose edges enclose no
-    # multiple of 1/K comes out empty with nothing to say so.
-    K="$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['min_calls_per_program'])" "$RUN_DATA/screen_merged.json")"
-    echo "screen depth reached: K = $K  ($RUN_DATA/screen_merged.json)"
-    run python3 scripts/select_corpus.py \
-        --pool $RUN_DATA/pool/tasks.json \
-        --screen $RUN_DATA/screen_merged.json \
-        --min-calls "$K" "$@"
-    run python3 scripts/build_strata.py
+    # No --screen. The corpus is the previous one minus whatever the gate and
+    # the slow-task filter removed, and every field a screen would supply -
+    # screen_pi_hat, screen_successes, screen_calls, stratum - is already frozen
+    # on the tasks being inherited. Pass --screen explicitly to select from a
+    # measured screen instead, which is what a first-ever corpus needs.
+    run python3 scripts/select_corpus.py --pool $RUN_DATA/pool/tasks.json "$@"
+    # NOT build_strata.py here. The banding results are reported on comes from
+    # E1, so it cannot be built until E1 has run - it is in the `analyse` stage,
+    # after the grid. The stratum frozen into tasks.json above is the
+    # selection-time one, and it only decides how shards interleave.
     ;;
 
   pool-strength)
