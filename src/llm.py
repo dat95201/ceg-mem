@@ -37,10 +37,32 @@ silently.
 import os, json, time, math, hashlib, pathlib
 from dotenv import load_dotenv
 
+from src.paths import DATA_DIR, RUN_SLUG
+
 load_dotenv()
 
 CACHE = pathlib.Path(os.environ.get("CACHE_DIR", "cache")); CACHE.mkdir(parents=True, exist_ok=True)
-LOG = pathlib.Path(os.environ.get("CALLS_LOG", "data/calls.jsonl")); LOG.parent.mkdir(parents=True, exist_ok=True)
+# CACHE is deliberately NOT under RUN_DIR: the response cache is what makes a
+# re-run free, and scoping it per run would cold-start every sweep.
+#
+# The call ledger IS output of a run, so it follows RUN_DIR. An explicit
+# CALLS_LOG still wins - every shard sets one, which is how six of them append
+# to six ledgers instead of racing on one - but an EMPTY value now means "the
+# run's default" rather than the CWD-relative "data/calls.jsonl" that ships in
+# .env.example. A stale .env pinning the old path is the one way this run could
+# still split itself across two directories, so it is warned about rather than
+# honoured silently.
+_calls_log = os.environ.get("CALLS_LOG", "").strip()
+LOG = pathlib.Path(_calls_log) if _calls_log else DATA_DIR / "calls.jsonl"
+if _calls_log and RUN_SLUG:
+    try:
+        LOG.resolve().relative_to(DATA_DIR.resolve())
+    except ValueError:
+        import sys as _sys
+        print(f"[llm] WARNING  RUN_DIR={RUN_SLUG} writes to {DATA_DIR}, but CALLS_LOG "
+              f"points at {LOG} - this run's cost ledger will land outside it. "
+              f"Unset CALLS_LOG in .env to follow RUN_DIR.", file=_sys.stderr, flush=True)
+LOG.parent.mkdir(parents=True, exist_ok=True)
 
 MODEL = os.environ.get("MODEL", "")
 PRICE_IN = float(os.environ.get("PRICE_IN_PER_MTOK", 0))
@@ -105,6 +127,26 @@ _BUDGET_MARGIN = 1.15
 
 class BudgetExceeded(RuntimeError):
     pass
+
+
+class BackendUnreachable(RuntimeError):
+    """The model server did not answer, after the SDK's own retries.
+
+    openai.APIConnectionError re-raised as a project exception, so src.loop can
+    handle it without importing openai - the same shape ContextOverflow and
+    TruncatedResponse already have.
+
+    Why this class exists. The client is built with max_retries=MAX_RETRIES, so
+    the SDK retries inside ONE call and then raises; nothing above it caught the
+    result. A single connection blip therefore killed the whole shard - and under
+    a fleet, every shard at once, because they share one server. That is what
+    took down 3 of 6 E1 shards on 2026-09-01 with a bare traceback:
+
+        openai.APIConnectionError: Connection error.
+        shard exited with status 1 - re-run the identical command to resume
+
+    It is not a timeout. The server did not answer at all, across every retry.
+    """
 
 
 class ContextOverflow(RuntimeError):
@@ -326,7 +368,20 @@ def complete(
         kwargs["temperature"] = temperature
 
     t0 = time.time()
-    r = client().chat.completions.create(**kwargs)
+    try:
+        r = client().chat.completions.create(**kwargs)
+    except Exception as exc:                      # noqa: BLE001 - narrowed below
+        # Matched on module+name rather than isinstance, deliberately: an
+        # `import openai` inside this handler raises ModuleNotFoundError of its
+        # own on a host without the package, which then MASKS whatever actually
+        # went wrong. Found by running exactly that.
+        mod, name = (type(exc).__module__ or ""), type(exc).__name__
+        if not (mod.split(".")[0] == "openai"
+                and name in ("APIConnectionError", "APITimeoutError")):
+            raise
+        # The SDK has already retried MAX_RETRIES times, so this is not a hiccup
+        # within one call - the server was unreachable across all of them.
+        raise BackendUnreachable(f"{type(exc).__name__}: {exc}") from exc
     choice = r.choices[0]
     # `or ""`: content is None, not "", when the model emits no text at all.
     # src.proposer runs a regex over this and would raise TypeError instead of

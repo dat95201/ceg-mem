@@ -37,13 +37,13 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from src.adapter import TASKS, load
-from src.llm import (MODEL as LLM_MODEL, REASONING_EFFORT as LLM_REASONING_EFFORT,
+from src.llm import (BackendUnreachable, MODEL as LLM_MODEL, REASONING_EFFORT as LLM_REASONING_EFFORT,
                      BudgetExceeded, _is_reasoning, spent)
 from src.loop import MODES, run_episode
 from src.metrics import DEFAULT_METRICS_LOG, load_rounds
 from src.oracle import is_truly_correct, regression_report, split_pool
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+from src.paths import DATA_DIR, announce  # noqa: E402
 DEFAULT_OVERFIT_LOG = DATA_DIR / "overfit_checks.jsonl"
 DEFAULT_SEEDS = (1, 2, 3, 4, 5)
 # B=20, not the proposal's 10 or the paper's 12. SS VI-A-a's own arithmetic:
@@ -234,6 +234,16 @@ def run_sweep(
                     print(f"\nBUDGET CAP REACHED ({exc}) - stopping the sweep cleanly.")
                     print(f"Completed {n - 1}/{total} cells; re-run this command later to resume.")
                     return
+                except BackendUnreachable as exc:
+                    # Treated exactly like the budget cap: a clean stop, not a
+                    # traceback. Every cell finished so far is in the log and is
+                    # skipped on the identical re-run, so the cost of a dead
+                    # server is the current cell, never the shard.
+                    print(f"\nMODEL SERVER UNREACHABLE - stopping the sweep cleanly.\n  {exc}")
+                    print(f"Completed {n - 1}/{total} cells; they are logged and will be "
+                          f"skipped when you re-run this identical command.")
+                    print("  check it with:  curl -s $LLM_BASE_URL/models | head -c 200")
+                    return
 
                 status = f"repaired@{result.first_accept_round}" if result.accepted_patch else "exhausted"
                 # flush: a cell is minutes of wall clock, stdout block-buffers
@@ -290,12 +300,13 @@ def run_sweep(
 
 
 def main() -> None:
+    announce('run_eval')
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--programs", nargs="+", default=None, help="default: the frozen list in data/tasks.json")
+    parser.add_argument("--programs", nargs="+", default=None, help=f"default: the frozen list in {DATA_DIR / 'tasks.json'}")
     parser.add_argument("--programs-from", type=pathlib.Path, default=None,
                         help="read the program list from a file instead, in file "
                              "order: a shard list from scripts/eval_shard.sh, "
-                             "data/tasks.json, or one '<task>/<program>' per line. "
+                             f"{DATA_DIR / 'tasks.json'}, or one '<task>/<program>' per line. "
                              "Preferred over --programs for anything past a handful")
     parser.add_argument("--modes", nargs="+", default=list(MODES), choices=list(MODES))
     parser.add_argument("--seeds", nargs="+", type=int, default=list(DEFAULT_SEEDS))
@@ -385,7 +396,7 @@ def main() -> None:
         programs, corpus_source = _programs_from_file(args.programs_from)
     else:
         programs, corpus_source = (args.programs, "--programs") if args.programs \
-            else (_frozen_programs(), "data/tasks.json (frozen corpus)")
+            else (_frozen_programs(), f"{DATA_DIR / 'tasks.json'} (frozen corpus)")
     print(f"corpus: {len(programs)} faults from {corpus_source}", flush=True)
 
     unknown = [p for p in programs if p not in TASKS]

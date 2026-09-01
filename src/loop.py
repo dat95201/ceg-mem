@@ -31,7 +31,7 @@ from src.adapter import TASKS, load
 from src.memory import build_memory
 from src.metrics import RoundRecord, append_round
 from src.oracle import differential_test
-from src.llm import ContextOverflow
+from src.llm import BackendUnreachable, ContextOverflow
 from src.proposer import Attempt, TruncatedResponse, propose
 
 MODES = ("no_memory", "untyped", "typed")
@@ -42,6 +42,14 @@ MODES = ("no_memory", "untyped", "typed")
 # needs ~5.4 draws per retained attempt, so 10x leaves headroom for a task well
 # into the tail without letting a pathological cell run unbounded.
 FREE_GUARD_DRAW_CAP = 10
+
+# Consecutive rounds that may fail to reach the model server before the episode
+# gives up. One failure is weather and is recorded like any other unusable
+# proposal; a run of them is climate - the server is gone (OOM-killed, or a
+# recycled Colab runtime) and continuing only burns budget writing error rows.
+# The episode then raises BackendUnreachable so scripts/run_eval.py can stop the
+# sweep cleanly, with every finished cell still resumable.
+MAX_CONSECUTIVE_BACKEND_FAILURES = 5
 # Deliberately NOT in cell_signature. Raising the cap extends an episode that hit
 # it; it never changes a draw the episode already made, because the draw at round
 # k is a function of (task, seed, k) alone. So a cell re-run at a higher cap
@@ -274,6 +282,7 @@ def run_episode(
     # are the same number until free_guarded_rounds pulls them apart, and every
     # downstream join is on round_index, so it stays the record's key.
     budget_state = {"attempt_index": None}
+    consecutive_backend_failures = 0
     attempts = 0
     round_index = 0
     max_draws = budget * free_guard_draw_cap if free_guarded_rounds else budget
@@ -298,7 +307,7 @@ def run_episode(
                 reasoning_effort=reasoning_effort,
                 meta=call_meta,
             )
-        except (TruncatedResponse, ContextOverflow) as exc:
+        except (TruncatedResponse, ContextOverflow, BackendUnreachable) as exc:
             # The harness failed, not the proposal. Log the round - it did spend
             # a model call - and move on without touching memory, so a reply the
             # response budget cut short can never enter the evidence block or an
@@ -314,8 +323,25 @@ def run_episode(
             # task. Recorded as a spent round with no refutation instead, which
             # is what it is; the count is a threat-to-validity number, not a
             # crash. RUNBOOK.md.
-            kind = ("context_overflow" if isinstance(exc, ContextOverflow)
-                    else "truncated_response")
+            if isinstance(exc, BackendUnreachable):
+                kind = "backend_unreachable"
+                consecutive_backend_failures += 1
+                if consecutive_backend_failures >= MAX_CONSECUTIVE_BACKEND_FAILURES:
+                    _charge()
+                    append_round(_record(
+                        round_index=round_index, patch="", accept=False,
+                        counterexample_args=None,
+                        reason=f"proposal unusable: {exc}",
+                        examples_tried=0, coarse_type=None, fine_type=None,
+                        proposal_error=kind, sandbox_runs=0, **_cost(call_meta),
+                    ), **kwargs)
+                    raise BackendUnreachable(
+                        f"{MAX_CONSECUTIVE_BACKEND_FAILURES} consecutive rounds could not "
+                        f"reach the model server ({exc}). Stopping so the completed cells "
+                        f"stay resumable.") from exc
+            else:
+                kind = ("context_overflow" if isinstance(exc, ContextOverflow)
+                        else "truncated_response")
             # Charged even under free_guarded_rounds: nothing was guarded here,
             # the round simply failed, and leaving it free would let a task whose
             # proposer keeps truncating draw FREE_GUARD_DRAW_CAP x budget times.
@@ -329,6 +355,7 @@ def run_episode(
             continue
 
         guarded, guard_evaluations, blocked_by = False, 0, None
+        bucket_hit = bucket_hit_refuted = None
         guard_sec = 0.0
         if guard_on:
             t_guard = time.perf_counter()
@@ -336,6 +363,13 @@ def run_episode(
             guard_sec = round(time.perf_counter() - t_guard, 3)
             guarded, guard_evaluations = guard_result.blocked, guard_result.evaluations
             blocked_by = guard_result.blocked_by
+            if mode == "typed":
+                # Only the typed arm has an index, so only it can hit one.
+                # getattr, not attribute access: src.memory.GuardResult grew these
+                # two fields on 2026-09-01 and this loop must stay callable with
+                # any object that satisfies the older three-field contract.
+                bucket_hit = getattr(guard_result, "bucket_hit", None)
+                bucket_hit_refuted = getattr(guard_result, "bucket_hit_refuted", None)
             total_guard_evaluations += guard_evaluations
 
         # The one place the two accountings differ.
@@ -397,6 +431,7 @@ def run_episode(
                 guarded=True, guard_evaluations=guard_evaluations,
                 blocked_by_type=blocked_ft.key if blocked_ft else None,
                 blocked_by_type_true=blocked_true.key if blocked_true else None,
+                bucket_hit=bucket_hit, bucket_hit_refuted=bucket_hit_refuted,
                 guard_sec=guard_sec, oracle_sec=audit_sec or None,
                 # Guard evaluations only. --audit-guarded's oracle runs are
                 # deliberately excluded: the loop never used that verdict, so
@@ -425,6 +460,7 @@ def run_episode(
                 examples_tried=result.examples_tried,
                 coarse_type=None, fine_type=None,
                 guarded=False, guard_evaluations=guard_evaluations,
+                bucket_hit=bucket_hit, bucket_hit_refuted=bucket_hit_refuted,
                 oracle_error=result.oracle_error,
                 guard_sec=guard_sec, oracle_sec=oracle_sec,
                 sandbox_runs=guard_evaluations + result.examples_tried,
