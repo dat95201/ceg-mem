@@ -34,6 +34,7 @@ import argparse
 import collections
 import itertools
 import json
+import os
 import pathlib
 import random
 import sys
@@ -46,7 +47,7 @@ from src.metrics import DEFAULT_METRICS_LOG, load_rounds
 from src.oracle import outputs_equal
 from src.sandbox import run_program
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+from src.paths import DATA_DIR, announce  # noqa: E402
 GRANULARITIES = ("coarse", "fine")
 DEFAULT_MAX_PAIRS_PER_TYPE = 30
 
@@ -129,14 +130,20 @@ class _Progress:
         self.start = time.time()
         self.last = 0.0
 
-    def tick(self, *, pairs: int = 0, runs: int = 0, force: bool = False) -> None:
+    def tick(self, *, pairs: int = 0, runs: int = 0, force: bool = False) -> bool:
+        """True when this tick printed a line - the caller's cue to checkpoint.
+
+        Returning it, rather than taking a callback, keeps the partial write in
+        the function that owns the partial data and keeps this class about
+        printing.
+        """
         self.done += pairs
         self.runs += runs
         if self.every <= 0:
-            return
+            return False
         now = time.time()
         if not force and now - self.last < self.every:
-            return
+            return False
         self.last = now
         elapsed = now - self.start
         frac = self.done / self.total if self.total else 1.0
@@ -147,6 +154,7 @@ class _Progress:
         print(f"  [{self.label}] {self.done:6d}/{self.total} pairs {frac * 100:5.1f}%  "
               f"runs {self.runs:6d}  elapsed {_hms(elapsed)}  eta {eta}",
               flush=True)
+        return True
 
     def finish(self) -> None:
         if self.every > 0:
@@ -173,10 +181,36 @@ def plan(rows: list[dict], granularity: str, *, max_pairs_per_type: int) -> tupl
     return buckets, pairs
 
 
+def _summarise(per_task_trials: dict) -> tuple[float | None, dict]:
+    """(pooled rate, per-task rates) from the trials accumulated so far.
+
+    Split out of the tail of cross_refutation_rate so a checkpoint mid-run and
+    the final result are computed by the same code - a partial report that used
+    a second, simpler formula would be a partial report nobody could trust.
+    """
+    per_task = {
+        t: {"successes": sum(v), "trials": len(v), "rate": sum(v) / len(v) if v else None}
+        for t, v in per_task_trials.items()
+    }
+    total_s = sum(d["successes"] for d in per_task.values())
+    total_t = sum(d["trials"] for d in per_task.values())
+    return (total_s / total_t if total_t else None), per_task
+
+
 def cross_refutation_rate(rows: list[dict], granularity: str, *, max_pairs_per_type: int,
-                          rng: random.Random, progress: "_Progress | None" = None):
+                          rng: random.Random, progress: "_Progress | None" = None,
+                          checkpoint=None):
     """For each (task, type) bucket with >=2 refuted attempts, sample pairs and
-    check both cross-refutation directions. Returns (pooled_rate, ci, per_task)."""
+    check both cross-refutation directions. Returns (pooled_rate, ci, per_task).
+
+    `checkpoint(pooled, per_task, done, total)` is called on every printed
+    progress line. This measurement is hours of sandbox time; writing only at
+    the end means a run killed at hour three - by a Colab timeout, an OOM, a
+    closed laptop - leaves nothing at all. The interval is --progress-every, so
+    the same flag governs how often it prints and how much work is at risk.
+    The bootstrap CI is deliberately NOT computed for a checkpoint: it is 10,000
+    resamples and would dominate the interval it is meant to fit inside.
+    """
     by_bucket: dict[tuple[str, str], list[dict]] = collections.defaultdict(list)
     for row in rows:
         tkey = _type_key(row, granularity)
@@ -208,20 +242,16 @@ def cross_refutation_rate(rows: list[dict], granularity: str, *, max_pairs_per_t
                     continue  # no expected output for this case - not a valid comparison point
                 held = _still_diverges(task_name, dst["patch"], args, ref_value)
                 per_task_trials[task_name].append(held)
-                if progress is not None:
-                    progress.tick(runs=1)
-            if progress is not None:
-                progress.tick(pairs=1)
+                if progress is not None and progress.tick(runs=1) and checkpoint is not None:
+                    pooled, per_task = _summarise(per_task_trials)
+                    checkpoint(pooled, per_task, progress.done, progress.total)
+            if progress is not None and progress.tick(pairs=1) and checkpoint is not None:
+                pooled, per_task = _summarise(per_task_trials)
+                checkpoint(pooled, per_task, progress.done, progress.total)
 
     if progress is not None:
         progress.finish()
-    per_task = {
-        t: {"successes": sum(v), "trials": len(v), "rate": sum(v) / len(v) if v else None}
-        for t, v in per_task_trials.items()
-    }
-    total_s = sum(d["successes"] for d in per_task.values())
-    total_t = sum(d["trials"] for d in per_task.values())
-    pooled = total_s / total_t if total_t else None
+    pooled, per_task = _summarise(per_task_trials)
     ci = _bootstrap_ci([(d["successes"], d["trials"]) for d in per_task.values()], 10_000, rng)
     return pooled, ci, per_task
 
@@ -257,6 +287,7 @@ def waste_rate(rows: list[dict], granularity: str) -> tuple[float | None, dict]:
 
 
 def main() -> None:
+    announce('measure_coherence')
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--episodes-path", type=pathlib.Path, default=DEFAULT_METRICS_LOG)
     parser.add_argument("--max-pairs-per-type", type=int, default=DEFAULT_MAX_PAIRS_PER_TYPE,
@@ -312,25 +343,55 @@ def main() -> None:
     if args.plan_only:
         return
 
+    out_path = DATA_DIR / "coherence_report.json"
+
+    def write(blob: dict) -> None:
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        # Written to a sibling and renamed: os.replace is atomic on both POSIX
+        # and Windows, so a checkpoint interrupted mid-write cannot leave a
+        # half-flushed JSON file where the finished report used to be.
+        tmp = out_path.with_suffix(".json.tmp")
+        tmp.write_text(json.dumps(blob, indent=2) + "\n")
+        os.replace(tmp, out_path)
+
     for granularity in GRANULARITIES:
         _, pairs = plan(refuted, granularity, max_pairs_per_type=args.max_pairs_per_type)
         progress = _Progress(granularity, pairs, args.progress_every)
+        pooled_waste_g, per_task_waste_g = waste[granularity]
+
+        def checkpoint(pooled, per_task, done, total, _g=granularity,
+                       _w=(pooled_waste_g, per_task_waste_g)):
+            """Same shape as the finished report, plus a `partial` block saying
+            how far in it is. A reader that ignores `partial` still parses it;
+            one that checks knows not to quote the number."""
+            report["granularities"][_g] = {
+                "cross_refutation_rate": {"pooled": pooled, "ci95": None,
+                                          "per_task": per_task},
+                "waste_rate": {"pooled": _w[0], "per_task": _w[1]},
+                "partial": {"pairs_done": done, "pairs_total": total,
+                            "note": "checkpoint, not a result - ci95 is not "
+                                    "computed until the granularity finishes"},
+            }
+            report["partial"] = True
+            write(report)
+
         pooled_xr, ci_xr, per_task_xr = cross_refutation_rate(
             refuted, granularity, max_pairs_per_type=args.max_pairs_per_type, rng=rng,
-            progress=progress,
+            progress=progress, checkpoint=checkpoint,
         )
-        pooled_waste, per_task_waste = waste[granularity]
+        # Complete: the `partial` block goes away and the CI appears, which is
+        # how a reader tells a finished granularity from a checkpointed one.
         report["granularities"][granularity] = {
             "cross_refutation_rate": {"pooled": pooled_xr, "ci95": list(ci_xr), "per_task": per_task_xr},
-            "waste_rate": {"pooled": pooled_waste, "per_task": per_task_waste},
+            "waste_rate": {"pooled": pooled_waste_g, "per_task": per_task_waste_g},
         }
+        report["partial"] = any("partial" in g for g in report["granularities"].values()) \
+            or len(report["granularities"]) < len(GRANULARITIES)
+        write(report)
         print(f"[{granularity}] cross-refutation rate = {pooled_xr} (95% CI {ci_xr})", flush=True)
-        # Checkpoint after each granularity: coarse is the cheaper half, and a
-        # run that dies during fine should not throw it away too.
-        DATA_DIR.mkdir(exist_ok=True)
-        (DATA_DIR / "coherence_report.json").write_text(json.dumps(report, indent=2) + "\n")
 
-    out_path = DATA_DIR / "coherence_report.json"
+    report["partial"] = False
+    write(report)
     print(f"wrote {out_path}", flush=True)
 
 
