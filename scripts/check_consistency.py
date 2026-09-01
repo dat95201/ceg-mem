@@ -34,7 +34,7 @@ from scripts.fit_theory import (
 )
 from src.metrics import DEFAULT_METRICS_LOG, group_by_episode, load_rounds, summarize_episode
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+from src.paths import DATA_DIR, announce  # noqa: E402
 FLOAT_TOL = 1e-9
 
 
@@ -141,7 +141,7 @@ def _check_primary_metrics(analysis: dict, all_ok: list[bool]) -> None:
     if missing or missing_sections:
         all_ok.append(False)
         print(f"FAIL  primary_metrics: missing {missing + missing_sections} - "
-              f"data/analysis.json does not carry the pre-registered primary set")
+              f"{DATA_DIR / 'analysis.json'} does not carry the pre-registered primary set")
     else:
         all_ok.append(True)
         print(f"PASS  primary_metrics ({len(PRIMARY_METRICS)} + "
@@ -198,6 +198,7 @@ def _check_guard_soundness(episodes: list[dict], all_ok: list[bool]) -> None:
 
 
 def main() -> None:
+    announce('check_consistency')
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--episodes-path", type=pathlib.Path, default=DEFAULT_METRICS_LOG)
     parser.add_argument("--results-path", type=pathlib.Path, default=DATA_DIR / "results_real.json")

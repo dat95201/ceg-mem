@@ -21,9 +21,12 @@ paper/*.zip
 .DS_Store
 **/.DS_Store
 .claude/
+data/**/pool_strength_partial.json
 data/pool_strength_partial.json
+data/**/calls.jsonl
 data/calls.jsonl
 paper/*.zip
+data/**/*_smoke.jsonl
 data/*_smoke.jsonl
 # scripts/screen_shard.sh keeps the previous report before measure_pi.py
 # rewrites it from scratch. Churn, not an artifact - consolidate_screens.py's
@@ -37,3 +40,13 @@ data/*_smoke.jsonl
 # the corpus digest that produced them. Regenerated, not authored.
 data/shards/
 data/eval_shards/*.txt
+data/**/shards/
+data/**/eval_shards/*.txt
+
+# RUN_DIR: a named run writes to data/<slug>/ and logs/<slug>/ (src/paths.py).
+# logs/ is already ignored wholesale by `logs/*` at the top, so only the data
+# side needs saying - and it is deliberately NOT ignored. This repo tracks its
+# artifacts (133 files under data/), so a run's output should show up in
+# `git status` and be committed or discarded on purpose, exactly like the
+# default run's. The churn rules above are mirrored one level down so a named
+# run ignores the same junk the default run does.

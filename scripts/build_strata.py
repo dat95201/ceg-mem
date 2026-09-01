@@ -39,7 +39,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+from src.paths import DATA_DIR, announce  # noqa: E402
 
 from scripts.select_corpus import BANDS, PRIMARY_BANDS, band_of  # noqa: E402
 
@@ -164,6 +164,7 @@ def _read_pi(explicit: pathlib.Path | None) -> tuple[pathlib.Path, dict[str, flo
 
 
 def main() -> None:
+    announce('build_strata')
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--pi-source", type=pathlib.Path, default=None,
                         help="where measured pi_hat comes from. Default: "
@@ -229,8 +230,11 @@ def main() -> None:
         "rating_cuts": cuts,
         "bands": PAPER_REFERENCE_RANGES if by_pi else None,
         "primary_bands": primary,
-        "selection_source": ("data/tasks.json screen_pi_hat (pre-treatment)" if by_pi
-                             else "data/tasks.json difficulty (contest rating, pre-treatment)"),
+        # Provenance, so it must name the file this run actually read - two
+        # runs recording the identical "data/tasks.json" for different corpora
+        # is the failure src/paths.py exists to prevent.
+        "selection_source": (f"{DATA_DIR / 'tasks.json'} screen_pi_hat (pre-treatment)" if by_pi
+                             else f"{DATA_DIR / 'tasks.json'} difficulty (contest rating, pre-treatment)"),
         "reported_source": str(pi_path) if pi_path else None,
         "seed": seed,
         "n_total": len(tasks),

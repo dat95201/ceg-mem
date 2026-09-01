@@ -49,6 +49,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
+. scripts/run_dir_paths.sh
 
 # ── BACKEND - which proposer this shard talks to. Everything below keys off it.
 #    ollama: a local server this script starts, pins and verifies (the default,
@@ -79,8 +80,8 @@ BUDGET_USD_CAP="${BUDGET_USD_CAP:-}"
 LLM_BASE_URL_CLOUD="${LLM_BASE_URL:-}"       # empty = api.openai.com
 # ── knobs that are free to differ per machine ───────────────────────────────
 PORT="${PORT:-11435}"                        # own port, not the desktop app's
-TASKS="data/tasks.json"
-MERGED="data/episodes.jsonl"
+TASKS="$RUN_DATA/tasks.json"
+MERGED="$RUN_DATA/episodes.jsonl"
 
 EXP=""; FROM=""; TO=""; SEEDS=""; BUDGET=""; DRY_RUN=0
 CHECK_REGRESSION=0; REGRESSION_CAP=; UNIVERSE_OVERRIDE=; FREE_GUARDED=0; FREE_GUARD_CAP=
@@ -94,9 +95,9 @@ KEEP_SERVING=0; STOP_MODEL=1; RESUME_MERGED=1
 # keys here in step with the names it writes.
 universe_list() {
   case "$1" in
-    corpus) echo "data/eval_order.txt" ;;
-    sweep)  echo "data/sweep_programs.txt" ;;
-    trial)  echo "data/trial_programs.txt" ;;
+    corpus) echo "$RUN_DATA/eval_order.txt" ;;
+    sweep)  echo "$RUN_DATA/sweep_programs.txt" ;;
+    trial)  echo "$RUN_DATA/trial_programs.txt" ;;
     # A subset drawn on purpose - a demo, a rehearsal on ten tasks per band, the
     # programs one reviewer asked about. Written by whoever drew it, not by the
     # interleave below, so it is the one universe this script does not generate
@@ -105,8 +106,8 @@ universe_list() {
     # where handing the search more attempts can convert into a repair. E9's
     # universe. Derived, not drawn - scripts/build_live_universe.py writes it
     # (with the corpus digest header the read-time check below requires).
-    live)   echo "data/live_programs.txt" ;;
-    demo)   echo "data/demo_programs.txt" ;;
+    live)   echo "$RUN_DATA/live_programs.txt" ;;
+    demo)   echo "$RUN_DATA/demo_programs.txt" ;;
     *)      echo "" ;;
   esac
 }
@@ -132,7 +133,8 @@ universe_size() {
 usage() {
   sed -e "s/@N_CORPUS@/$(printf '%-5s' "$(universe_size corpus)")/" \
       -e "s/@N_SWEEP@/$(printf  '%-5s' "$(universe_size sweep)")/" \
-      -e "s/@N_TRIAL@/$(printf  '%-5s' "$(universe_size trial)")/" <<'USAGE'
+      -e "s/@N_TRIAL@/$(printf  '%-5s' "$(universe_size trial)")/" \
+      -e "s|@DATA@|$RUN_DATA|g" <<'USAGE'
 usage: bash scripts/eval_shard.sh --exp NAME [--from N --to M] [options]
 
   --exp NAME        which experiment. One of:
@@ -169,8 +171,8 @@ usage: bash scripts/eval_shard.sh --exp NAME [--from N --to M] [options]
                     corpus | sweep | live | trial | demo.  `live` is the sweep
                     minus the dead band - the tasks where extra attempts can
                     actually convert; scripts/build_live_universe.py writes it. `demo` reads
-                    data/demo_programs.txt, which YOU write - the other three are
-                    generated from data/tasks.json, this one is a draw. It must
+                    @DATA@/demo_programs.txt, which YOU write - the other three are
+                    generated from @DATA@/tasks.json, this one is a draw. It must
                     carry the same '# corpus_sha256:' header they do.
                     The universe is deliberately NOT in the cell key: the same
                     task/mode/seed is the same cell whichever list named it, so a
@@ -183,11 +185,11 @@ usage: bash scripts/eval_shard.sh --exp NAME [--from N --to M] [options]
                     Neither size belongs to this script - a re-freeze with
                     different quotas, or a band that under-filled, changes
                     both - so they are read off the lists, never written here:
-                      corpus  data/eval_order.txt       @N_CORPUS@
-                      sweep   data/sweep_programs.txt   @N_SWEEP@
-                      trial   data/trial_programs.txt   @N_TRIAL@
+                      corpus  @DATA@/eval_order.txt       @N_CORPUS@
+                      sweep   @DATA@/sweep_programs.txt   @N_SWEEP@
+                      trial   @DATA@/trial_programs.txt   @N_TRIAL@
                     A "-" means that list has not been cut yet; the first
-                    shard of that universe writes it from data/tasks.json.
+                    shard of that universe writes it from @DATA@/tasks.json.
   --seeds "1 2 3"   override the preset's seeds
   --budget B        override the preset's budget (default 20; trial 5)
   --backend B       ollama (default) or cloud. See the block below.
@@ -216,7 +218,7 @@ usage: bash scripts/eval_shard.sh --exp NAME [--from N --to M] [options]
                     and torn down at the end. Either way the served context
                     window is verified before anything is spent. Ignored by
                     --backend cloud.
-  --no-resume-merged  do not consult data/episodes.jsonl for finished cells
+  --no-resume-merged  do not consult @DATA@/episodes.jsonl for finished cells
   --stop-model      unload the model from memory on exit (default)
   --no-stop-model   leave it loaded, to warm-start the next shard
   --keep-serving    leave our own server up on exit (the process, not the
@@ -427,10 +429,14 @@ fi
 # *path*, so a shard is traceable back to the corpus it was cut from, and zsh
 # word-splits an unquoted $(...) but not an unquoted $VAR - which is how an
 # 85-name variable arrives at argparse as one unknown program.
-mkdir -p data/eval_shards logs
-python3 - "$TASKS" <<'PY'
+mkdir -p "$RUN_DATA/eval_shards" "$RUN_LOGS"
+run_banner "eval ${EXP}"
+python3 - "$TASKS" "$RUN_DATA" <<'PY'
 import hashlib, json, pathlib, sys
 
+# argv[2], not an interpolated $RUN_DATA: this heredoc is quoted (the code below
+# holds f-strings and braces), so the shell substitutes nothing inside it.
+DATA = pathlib.Path(sys.argv[2])
 tasks = json.loads(pathlib.Path(sys.argv[1]).read_text())["tasks"]
 # Name AND stratum: the stratum decides where a task lands in the interleave
 # below, so a re-freeze that kept every name but re-banded one task would leave
@@ -474,20 +480,20 @@ trial = [by[b][0] for b in ("dead", "medium", "easy") if by[b]]
 
 for name, names in (("eval_order", order), ("sweep_programs", sweep),
                     ("trial_programs", trial)):
-    path = pathlib.Path(f"data/{name}.txt")
+    path = DATA / f"{name}.txt"
     body = (f"# {name}: {len(names)} programs, strata interleaved evenly\n"
-            f"# corpus: data/tasks.json\n"
+            f"# corpus: {sys.argv[1]}\n"
             f"# corpus_sha256: {digest}\n" + "\n".join(names) + "\n")
     if path.exists():
         prev = [l for l in path.read_text().splitlines()
                 if l.startswith("# corpus_sha256: ")]
         if prev and prev[0].split(": ", 1)[1] != digest:
             sys.exit(
-                f"{path} was cut from a different data/tasks.json "
+                f"{path} was cut from a different {sys.argv[1]} "
                 f"({prev[0].split(': ', 1)[1][:12]}... vs {digest[:12]}...).\n"
                 "Every shard index would mean a different task, and episodes\n"
                 "already collected were run against the old list. Move the old\n"
-                "data/*_programs.txt, data/eval_order.txt and the episode logs\n"
+                f"{DATA}/*_programs.txt, {DATA}/eval_order.txt and the episode logs\n"
                 "aside deliberately, or restore the corpus they belong to.")
         if path.read_text() == body:
             continue
@@ -511,15 +517,15 @@ if [[ "$UNIVERSE" == live ]]; then
   need_live=0
   if [[ ! -f "$LIST_SRC" ]]; then
     need_live=1
-  elif [[ -f data/eval_order.txt ]]; then
-    want_d="$(sed -n 's/^# corpus_sha256: //p' data/eval_order.txt | head -1)"
+  elif [[ -f "$RUN_DATA/eval_order.txt" ]]; then
+    want_d="$(sed -n 's/^# corpus_sha256: //p' "$RUN_DATA/eval_order.txt" | head -1)"
     have_d="$(sed -n 's/^# corpus_sha256: //p' "$LIST_SRC" | head -1)"
     [[ -n "$want_d" && "$have_d" != "$want_d" ]] && need_live=1
   fi
   if (( need_live )); then
     echo "building $LIST_SRC (derived: the sweep minus the dead band)" >&2
     python3 scripts/build_live_universe.py >&2 || {
-      echo "could not build $LIST_SRC - freeze the corpus first (data/tasks.json)." >&2
+      echo "could not build $LIST_SRC - freeze the corpus first ($TASKS)." >&2
       exit 2; }
   fi
 fi
@@ -536,14 +542,14 @@ fi
 # indices, and then every shard boundary means something else. eval_order.txt
 # was just written or validated against the corpus frozen now, so its own header
 # is the authority and the digest is not recomputed here.
-CORPUS_DIGEST="$(sed -n 's/^# corpus_sha256: //p' data/eval_order.txt | head -1)"
+CORPUS_DIGEST="$(sed -n 's/^# corpus_sha256: //p' "$RUN_DATA/eval_order.txt" | head -1)"
 LIST_DIGEST="$(sed -n 's/^# corpus_sha256: //p' "$LIST_SRC" | head -1)"
 if [[ -z "$LIST_DIGEST" ]]; then
   echo "$LIST_SRC has no '# corpus_sha256: <digest>' header - add the digest of" >&2
-  echo "the data/tasks.json it was drawn from, or its indices trace to nothing." >&2
+  echo "the $TASKS it was drawn from, or its indices trace to nothing." >&2
   exit 2
 elif [[ -n "$CORPUS_DIGEST" && "$LIST_DIGEST" != "$CORPUS_DIGEST" ]]; then
-  echo "$LIST_SRC was cut from a different data/tasks.json" >&2
+  echo "$LIST_SRC was cut from a different $TASKS" >&2
   echo "  (${LIST_DIGEST:0:12}... vs ${CORPUS_DIGEST:0:12}...). Re-draw it." >&2
   exit 2
 fi
@@ -576,20 +582,20 @@ if [[ "$MODEL" != "qwen2.5-coder:7b" ]]; then
   SLUG="_$(printf '%s' "$MODEL" | tr -c 'A-Za-z0-9' '-' | sed 's/-\{1,\}/-/g;s/^-//;s/-$//')"
 fi
 TAG="$(printf '%s%s_%03d_%03d' "$EXP" "$SLUG" "$FROM" "$TO")"
-SHARD="data/eval_shards/${TAG}.txt"
-LOG="logs/eval_${TAG}.log"
+SHARD="$RUN_DATA/eval_shards/${TAG}.txt"
+LOG="$RUN_LOGS/eval_${TAG}.log"
 if (( MERGEABLE )); then
-  EPISODES="data/episodes_eval_${TAG}.jsonl"
-  OVERFIT="data/overfit_eval_${TAG}.jsonl"
-  LEDGER="data/calls_eval_${TAG}.jsonl"
+  EPISODES="$RUN_DATA/episodes_eval_${TAG}.jsonl"
+  OVERFIT="$RUN_DATA/overfit_eval_${TAG}.jsonl"
+  LEDGER="$RUN_DATA/calls_eval_${TAG}.jsonl"
 else
   # The trial is a test of the flags, not data. Nothing it writes is named
   # `*_eval_*`, which is what consolidate_evals.py globs: a B=5 episode of a
   # cell the grid never re-ran would otherwise merge in as a truncated one, and
   # the rehearsal's calls would land in the reported token profile.
-  EPISODES="data/episodes_trial.jsonl"
-  OVERFIT="data/overfit_trial.jsonl"
-  LEDGER="data/calls_trial.jsonl"
+  EPISODES="$RUN_DATA/episodes_trial.jsonl"
+  OVERFIT="$RUN_DATA/overfit_trial.jsonl"
+  LEDGER="$RUN_DATA/calls_trial.jsonl"
 fi
 
 python3 - "$LIST_SRC" "$FROM" "$TO" "$SHARD" "$EXP" <<'PY'
@@ -704,7 +710,7 @@ fi
 # the cache. The screen solves this by recording them in every shard report and
 # refusing to merge across a disagreement (consolidate_screens.py); this is the
 # same record, and consolidate_evals.py checks it the same way.
-META="data/eval_shards/${TAG}.meta.json"
+META="$RUN_DATA/eval_shards/${TAG}.meta.json"
 python3 - "$META" "$RUNTIME_FILE" "$EXP" "$FROM" "$TO" "$LIST_SRC" "$SHARD" \
          "$MODEL" "$TEMPERATURE" "$CONTEXT_LENGTH" "$SANDBOX_TIMEOUT_SEC" \
          "$GRANULARITY" "$BUDGET" "$SEEDS" "$MODES" "$EXTRA" "$EPISODES" \

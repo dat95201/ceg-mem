@@ -60,7 +60,7 @@ from src.adapter import TASKS, load
 from src.oracle import differential_test
 from src.sandbox import DEFAULT_TIMEOUT
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+from src.paths import DATA_DIR, announce  # noqa: E402
 DEFAULT_JOBS = max(1, (os.cpu_count() or 4) - 2)
 
 
@@ -167,6 +167,7 @@ def natural_mutant_curve(validation_path: pathlib.Path) -> dict:
 
 
 def main() -> None:
+    announce('measure_pool_strength')
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0],
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--tasks-path", type=pathlib.Path, default=DATA_DIR / "tasks.json")

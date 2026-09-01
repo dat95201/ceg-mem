@@ -25,7 +25,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from scripts.select_corpus import BANDS, PRIMARY_BANDS  # noqa: E402
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+from src.paths import DATA_DIR, announce  # noqa: E402
 # The ChatRepair `transcript` arm (E6) was removed unrun on 2026-08-29: it
 # tested no surviving claim, and the "typed index is flat, transcript grows
 # linearly" claim it existed for is already falsified by the typed arm alone
@@ -424,6 +424,7 @@ def context_tokens_by_round(episodes: list[dict]) -> dict:
 
 
 def main() -> None:
+    announce('analyze')
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--results-path", type=pathlib.Path, default=DATA_DIR / "results_real.json")
     parser.add_argument("--out", type=pathlib.Path, default=DATA_DIR / "analysis.json")

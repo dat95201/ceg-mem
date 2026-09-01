@@ -27,7 +27,7 @@ import numpy as np
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+from src.paths import DATA_DIR, announce  # noqa: E402
 OUT_DIR = pathlib.Path(__file__).resolve().parent
 STRATA = ("easy", "medium", "hard")
 MODES = ("no_memory", "untyped", "typed")
@@ -88,6 +88,7 @@ def _theory_fit_scatter(theory: dict, out_path: pathlib.Path) -> None:
 
 
 def main() -> None:
+    announce('make_figures')
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--analysis-path", type=pathlib.Path, default=DATA_DIR / "analysis.json")
     parser.add_argument("--theory-path", type=pathlib.Path, default=DATA_DIR / "theory_fit.json")

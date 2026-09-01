@@ -93,8 +93,11 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 from data.mutants import FAULT_TYPES, candidate_mutants  # noqa: E402
 from src.adapter import CODE_DIR, LANGUAGE_DIR, TEST_DIR  # noqa: E402
 
-ROOT = pathlib.Path(__file__).resolve().parent.parent
-DATA_DIR = ROOT / "data"
+from src.paths import DATA_DIR, ROOT, announce  # noqa: E402
+
+# NOTE: `data` is also a python package (data/mutants.py, imported above).
+# That import always resolves to ROOT/data/mutants.py and is unaffected by
+# RUN_DIR - source code in data/ stays put, only run OUTPUT moves.
 DATE_FILE = pathlib.Path(os.environ.get("CONDEFECTS_ROOT", "external/ConDefects")) / "date.txt"
 
 # ── the gates ────────────────────────────────────────────────────────────
@@ -423,6 +426,7 @@ def order(pool: list[Fault], *, seed: int) -> list[Fault]:
 
 
 def main() -> None:
+    announce('select_candidates')
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--date-min", default=DATE_MIN,
                         help="G5 contamination cut. The default is the latest "

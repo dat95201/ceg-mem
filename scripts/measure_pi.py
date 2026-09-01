@@ -30,7 +30,7 @@ from src.oracle import differential_test
 from src.proposer import TruncatedResponse, propose
 from src.sandbox import DEFAULT_TIMEOUT as SANDBOX_TIMEOUT
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+from src.paths import DATA_DIR, announce  # noqa: E402
 
 # One number for the whole screen, and scripts/screen_shard.sh passes the same
 # one explicitly. 10 is a first pass: it places a task roughly, and deepening is
@@ -81,7 +81,7 @@ def _frozen_programs() -> tuple[tuple[str, ...], str]:
             continue
         entries = data.get("tasks") or data.get("selected") or []
         if entries:
-            return tuple(t["name"] for t in entries), f"data/{filename} ({kind})"
+            return tuple(t["name"] for t in entries), f"{DATA_DIR / filename} ({kind})"
     return (), ""
 
 
@@ -132,7 +132,7 @@ def _resolve_programs(names: list[str] | None) -> tuple[tuple[str, ...], str]:
     frozen, source = _frozen_programs()
     if not frozen:
         raise SystemExit(
-            "no frozen corpus: neither data/tasks.json nor data/hard_120.json "
+            f"no frozen corpus: neither {DATA_DIR / 'tasks.json'} nor {DATA_DIR / 'hard_120.json'} "
             "exists.\nRun `python3 scripts/select_hard_tasks.py` for the draw, "
             "or scripts/validate_oracle.py for the gated corpus, or pass "
             "--programs explicitly"
@@ -295,6 +295,7 @@ def measure(
 
 
 def main() -> None:
+    announce('measure_pi')
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--programs", nargs="+", default=None,
                         help="default: the gated corpus in data/tasks.json, "

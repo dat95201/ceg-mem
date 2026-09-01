@@ -32,6 +32,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
+. scripts/run_dir_paths.sh
 
 DRY=0
 while [[ ${1:-} == --* ]]; do
@@ -43,17 +44,22 @@ while [[ ${1:-} == --* ]]; do
 done
 STAGE="${1:-status}"; shift || true
 
+# Before anything reads or writes: which run is this, and where does it live.
+# `status` prints it too - a status table for the wrong RUN_DIR is the most
+# expensive way to be told a stage is "done".
+run_banner "$STAGE"
+
 # ── the stage table ─────────────────────────────────────────────────────────
 # key | artifact it produces | the stage that must have run first | what it is
 STAGES=(
   "benchmark|external/ConDefects/Test||the ConDefects checkout and its test data"
-  "candidates|data/candidates.json|benchmark|Stage 0: the screening candidate pool"
-  "gate|data/pool/tasks.json|candidates|E0: the oracle gate, earns Assumption 1"
-  "screen|data/screen_merged.json|gate|E0b: measure pi_hat  (sharded, local model)"
-  "corpus|data/tasks.json|screen|freeze the corpus on the pi bands"
-  "pool-strength|data/pool_strength.json|corpus|the oracle's blind spot"
-  "eval|data/episodes.jsonl|corpus|E1-E5: the grid  (sharded, local model)"
-  "analyse|data/analysis.json|eval|freeze, analyse, fit, figures, consistency"
+  "candidates|$RUN_DATA/candidates.json|benchmark|Stage 0: the screening candidate pool"
+  "gate|$RUN_DATA/pool/tasks.json|candidates|E0: the oracle gate, earns Assumption 1"
+  "screen|$RUN_DATA/screen_merged.json|gate|E0b: measure pi_hat  (sharded, local model)"
+  "corpus|$RUN_DATA/tasks.json|screen|freeze the corpus on the pi bands"
+  "pool-strength|$RUN_DATA/pool_strength.json|corpus|the oracle's blind spot"
+  "eval|$RUN_DATA/episodes.jsonl|corpus|E1-E5: the grid  (sharded, local model)"
+  "analyse|$RUN_DATA/analysis.json|eval|freeze, analyse, fit, figures, consistency"
 )
 
 artifact_of() { for row in "${STAGES[@]}"; do IFS='|' read -r k a _ _ <<<"$row"; [[ $k == "$1" ]] && { echo "$a"; return; }; done; }
@@ -81,14 +87,15 @@ run() {
 # ── status ──────────────────────────────────────────────────────────────────
 if [[ "$STAGE" == "status" ]]; then
   echo
-  printf '%-14s %-9s %-34s %s\n' STAGE STATE ARTIFACT WHAT
-  printf '%-14s %-9s %-34s %s\n' "-----" "-----" "--------" "----"
+  W=$(( 34 + ${#RUN_DATA} - 4 ))   # 34 fit "data/..."; keep it fitting under a RUN_DIR
+  printf "%-14s %-9s %-${W}s %s\n" STAGE STATE ARTIFACT WHAT
+  printf "%-14s %-9s %-${W}s %s\n" "-----" "-----" "--------" "----"
   next=""
   for row in "${STAGES[@]}"; do
     IFS='|' read -r key art _ label <<<"$row"
     if have "$art"; then state="done"
     else state="--"; [[ -z "$next" ]] && next="$key"; fi
-    printf '%-14s %-9s %-34s %s\n' "$key" "$state" "$art" "$label"
+    printf "%-14s %-9s %-${W}s %s\n" "$key" "$state" "$art" "$label"
   done
   echo
   if [[ -n "$next" ]]; then
@@ -98,10 +105,10 @@ if [[ "$STAGE" == "status" ]]; then
   fi
   # A sharded stage is 'done' the moment its merged artifact exists, which says
   # nothing about coverage - that is the merge audit's job, not a file test.
-  if have data/screen_merged.json || have data/episodes.jsonl; then
+  if have $RUN_DATA/screen_merged.json || have $RUN_DATA/episodes.jsonl; then
     echo "coverage of the sharded stages is audited, not inferred:"
-    have data/screen_merged.json && echo "  python3 scripts/consolidate_screens.py"
-    have data/episodes.jsonl     && echo "  python3 scripts/consolidate_evals.py --dry-run"
+    have $RUN_DATA/screen_merged.json && echo "  python3 scripts/consolidate_screens.py"
+    have $RUN_DATA/episodes.jsonl     && echo "  python3 scripts/consolidate_evals.py --dry-run"
   fi
   echo
   exit 0
@@ -133,7 +140,7 @@ case "$STAGE" in
       shift
       run python3 scripts/consolidate_screens.py "$@"
     elif [[ $# -eq 0 ]]; then
-      echo "the screen is sharded: give it an index range over data/candidates.json." >&2
+      echo "the screen is sharded: give it an index range over $RUN_DATA/candidates.json." >&2
       echo "  bash scripts/pipeline.sh screen --from 1 --to 132" >&2
       echo "  bash scripts/pipeline.sh screen --merge        # once every shard is in" >&2
       echo "RUNBOOK.md is the runbook." >&2
@@ -149,11 +156,11 @@ case "$STAGE" in
     # a grid of 1/K: ask for a depth the screen never reached and select_corpus
     # drops every task below it; ask for less and a band whose edges enclose no
     # multiple of 1/K comes out empty with nothing to say so.
-    K="$(python3 -c "import json;print(json.load(open('data/screen_merged.json'))['min_calls_per_program'])")"
-    echo "screen depth reached: K = $K  (data/screen_merged.json)"
+    K="$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['min_calls_per_program'])" "$RUN_DATA/screen_merged.json")"
+    echo "screen depth reached: K = $K  ($RUN_DATA/screen_merged.json)"
     run python3 scripts/select_corpus.py \
-        --pool data/pool/tasks.json \
-        --screen data/screen_merged.json \
+        --pool $RUN_DATA/pool/tasks.json \
+        --screen $RUN_DATA/screen_merged.json \
         --min-calls "$K" "$@"
     run python3 scripts/build_strata.py
     ;;

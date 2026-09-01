@@ -68,8 +68,9 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
+. scripts/run_dir_paths.sh
 
-FLEET_ROOT="logs/fleet"
+FLEET_ROOT="$RUN_LOGS/fleet"
 LATEST_PTR="$FLEET_ROOT/LATEST"      # a file, not a symlink: logs/ is often a
                                      # Drive mount, and Drive and symlinks are
                                      # a bad pair.
@@ -112,8 +113,8 @@ USAGE
 # about how big a universe is would cut ranges past the end of it, and the one
 # that owns the answer is the one that walks it.
 universe_size_screen() {
-  [[ -f data/candidates.json ]] || die "data/candidates.json missing - run: bash scripts/pipeline.sh candidates"
-  python3 -c "import json,sys;print(len(json.load(open('data/candidates.json'))['candidates']))"
+  [[ -f "$RUN_DATA/candidates.json" ]] || die "$RUN_DATA/candidates.json missing - run: bash scripts/pipeline.sh candidates"
+  python3 -c "import json,sys;print(len(json.load(open(sys.argv[1]))['candidates']))" "$RUN_DATA/candidates.json"
 }
 
 # A dry-run proves the ARGUMENTS are good. It exits before eval_shard.sh ever
@@ -251,11 +252,11 @@ cmd_launch() {
   # to want, just never by accident.
   if [[ "$stage" == screen && -z "$calls" ]]; then
     local reached=""
-    [[ -f data/screen_merged.json ]] && reached="$(python3 -c "
-import json
-print(json.load(open('data/screen_merged.json')).get('min_calls_per_program',''))" 2>/dev/null || true)"
+    [[ -f "$RUN_DATA/screen_merged.json" ]] && reached="$(python3 -c "
+import json, sys
+print(json.load(open(sys.argv[1])).get('min_calls_per_program',''))" "$RUN_DATA/screen_merged.json" 2>/dev/null || true)"
     echo "  WARNING   no --calls given, so every shard takes screen_shard.sh's default depth."
-    [[ -n "$reached" ]] && echo "            data/screen_merged.json was measured at K=$reached - pass --calls $reached to match it."
+    [[ -n "$reached" ]] && echo "            $RUN_DATA/screen_merged.json was measured at K=$reached - pass --calls $reached to match it."
     echo
   fi
 
@@ -373,7 +374,7 @@ cmd_status() {
     # the reader open six identical logs to find one line.
     if (( n_alive == 0 && n_done == 0 )); then
       local first
-      first="$(ls "$RUN_DIR"/*.log 2>/dev/null | head -1)"
+      first="$(ls "$run"/*.log 2>/dev/null | head -1)"
       if [[ -n "$first" ]]; then
         echo
         echo "  EVERY shard failed, so this is one fault. Tail of $(basename "$first"):"

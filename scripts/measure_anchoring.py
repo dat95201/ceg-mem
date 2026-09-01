@@ -69,7 +69,7 @@ from src.adapter import TASKS, load
 from src.metrics import DEFAULT_METRICS_LOG, group_by_episode, load_rounds
 from src.typer import WHOLE_PROGRAM, edit_location
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+from src.paths import DATA_DIR, announce  # noqa: E402
 
 
 def _location_of(type_key: str | None) -> str | None:
@@ -154,6 +154,7 @@ def _rate(rows: list[dict], key: str) -> float | None:
 
 
 def main() -> None:
+    announce('measure_anchoring')
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--episodes-path", type=pathlib.Path, default=DEFAULT_METRICS_LOG)

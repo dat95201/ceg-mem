@@ -41,7 +41,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 from src.metrics import (DEFAULT_METRICS_LOG, build_crn_type_index, group_by_episode,
                          load_rounds, summarize_episode)
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+from src.paths import DATA_DIR, announce  # noqa: E402
 
 # The paper's three arms. Now identical to src.loop.MODES: the `transcript`
 # baseline that used to make the two differ was removed unrun on 2026-08-29 -
@@ -156,6 +156,7 @@ def _cell_key(summary: dict) -> tuple:
 
 
 def main() -> None:
+    announce('freeze_results')
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--experiment", default="all",
                          choices=["all", "main", "ablation", "oracle_sweep",

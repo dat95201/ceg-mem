@@ -38,7 +38,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from src.metrics import DEFAULT_METRICS_LOG, group_by_episode, load_rounds, summarize_episode
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+from src.paths import DATA_DIR, announce  # noqa: E402
 
 
 def arm_of(summary: dict) -> tuple:
@@ -165,6 +165,7 @@ def print_by_task(summaries: list[dict]) -> None:
 
 
 def main() -> None:
+    announce('summarize')
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--episodes-path", type=pathlib.Path, default=DEFAULT_METRICS_LOG)

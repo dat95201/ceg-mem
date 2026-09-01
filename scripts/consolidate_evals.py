@@ -49,7 +49,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from src.metrics import load_rounds  # noqa: E402
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+from src.paths import DATA_DIR, announce  # noqa: E402
 
 # Fields every shard must agree on. Unlike the sweep knobs (max_examples,
 # typing_noise_c, guard_on, steer_on) which are *supposed* to differ between
@@ -301,7 +301,7 @@ def check_coverage(rows: list[dict], budget: int) -> tuple[int, int]:
 
         if not universe:
             print(f"\n  {arm_name(arm):14s} {arm[0]:10s} - "
-                  f"data/{'eval_order' if uni_name == 'corpus' else 'sweep_programs'}.txt "
+                  f"{DATA_DIR / ('eval_order.txt' if uni_name == 'corpus' else 'sweep_programs.txt')} "
                   f"missing, so\n    there is nothing to check coverage against. "
                   f"Run any shard (even --dry-run) to write it.")
             continue
@@ -361,6 +361,7 @@ def merge_jsonl(paths: list[pathlib.Path], out: pathlib.Path, key, *, label: str
 
 
 def main() -> None:
+    announce('consolidate_evals')
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--episodes", nargs="+", default=None,

@@ -30,7 +30,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 from src.adapter import load
 from src.metrics import DEFAULT_METRICS_LOG, load_rounds
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+from src.paths import DATA_DIR, announce  # noqa: E402
 SAMPLE_SIZE = 150
 SAMPLE_SEED = 20260717
 
@@ -104,7 +104,7 @@ def label_session(annotator: str, episodes_path: pathlib.Path) -> None:
     print("then a property (e.g. 'IndexError', 'Timeout', 'WrongValue', or free text).")
     print("Type 'quit' at either prompt to stop and save progress.\n")
 
-    DATA_DIR.mkdir(exist_ok=True)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
     for row in remaining:
         _show_attempt(row)
         location = input("your location label> ").strip()
@@ -172,6 +172,7 @@ def compare(annotator_a: str, annotator_b: str) -> None:
 
 
 def main() -> None:
+    announce('label_tool')
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--annotator", help="label the shared 150-item sample as this annotator")
     parser.add_argument("--compare", nargs=2, metavar=("ANNOTATOR_A", "ANNOTATOR_B"))

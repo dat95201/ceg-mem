@@ -83,7 +83,7 @@ from src.metrics import DEFAULT_METRICS_LOG, load_rounds  # noqa: E402
 from src.oracle import outputs_equal  # noqa: E402
 from src.sandbox import run_program  # noqa: E402
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+from src.paths import DATA_DIR, announce  # noqa: E402
 GRANULARITIES = ("coarse", "fine")
 
 
@@ -227,6 +227,7 @@ def _reference_outputs(program, cases) -> dict:
 
 
 def main() -> None:
+    announce('measure_typing_coherence')
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--episodes-path", type=pathlib.Path, default=DEFAULT_METRICS_LOG)

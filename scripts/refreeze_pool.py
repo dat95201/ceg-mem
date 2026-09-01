@@ -44,10 +44,11 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import validate_oracle as vo  # noqa: E402  (path first, per above)
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data" / "pool"
+from src.paths import POOL_DIR as DATA_DIR, announce  # noqa: E402
 
 
 def main() -> None:
+    announce('refreeze_pool')
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--data-dir", type=pathlib.Path, default=DATA_DIR,

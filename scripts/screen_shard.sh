@@ -53,6 +53,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
+. scripts/run_dir_paths.sh
 
 # ── BACKEND - ollama (default; what the reported screen runs under) or cloud.
 #    A second proposer needs its OWN screen, because pi is a property of the
@@ -79,12 +80,14 @@ LLM_BASE_URL_CLOUD="${LLM_BASE_URL:-}"       # empty = api.openai.com
 # ── knobs that are free to differ per machine ───────────────────────────────
 CALLS="${CALLS:-10}"                         # draws per task; deepen later
 PORT="${PORT:-11435}"                        # own port, not the desktop app's
-POOL="data/candidates.json"
+POOL="$RUN_DATA/candidates.json"
 
 FROM=""; TO=""; OUT=""; DRY_RUN=0; KEEP_SERVING=0; STOP_MODEL=1
 
 usage() {
-  cat <<'USAGE'
+  # @DATA@ rather than $RUN_DATA: the heredoc is quoted so the usage text can
+  # hold $ and backticks safely. Same trick as eval_shard.sh's @N_TRIAL@.
+  sed -e "s|@DATA@|$RUN_DATA|g" <<'USAGE'
 usage: bash scripts/screen_shard.sh --from N --to M [options]
 
   --from N          first candidate index, 1-based inclusive
@@ -127,7 +130,7 @@ changing every other machine:
     BUDGET_USD_CAP=5 CONTEXT_LENGTH=128000 \
     bash scripts/screen_shard.sh --from 1 --to 320 --calls 10 \
          --backend cloud --model gpt-4o-mini \
-         --out data/screen_gpt4omini_001_320.json
+         --out @DATA@/screen_gpt4omini_001_320.json
 
 Merge the shards with:
   python3 scripts/consolidate_screens.py
@@ -170,7 +173,7 @@ if [[ "$BACKEND" == "cloud" ]]; then
   [[ -n "$OUT" ]] || {
     echo "--backend cloud needs an explicit --out. pi is a property of the model," >&2
     echo "so a second proposer's screen is a SECOND screen: written into the default" >&2
-    echo "data/screen_<range>.json it would sit beside the local one under the same" >&2
+    echo "$RUN_DATA/screen_<range>.json it would sit beside the local one under the same" >&2
     echo "name, and consolidate_screens.py would find two protocols in one merge." >&2
     exit 2; }
 fi
@@ -203,11 +206,12 @@ if [[ "$MODEL" != "qwen2.5-coder:7b" ]]; then
   SLUG="_$(printf '%s' "$MODEL" | tr -c 'A-Za-z0-9' '-' | sed 's/-\{1,\}/-/g;s/^-//;s/-$//')"
 fi
 TAG="$(printf '%03d_%03d' "$FROM" "$TO")"
-SHARD="data/shards/shard_${TAG}.txt"
-OUT="${OUT:-data/screen${SLUG}_${TAG}.json}"
-LEDGER="data/calls_screen${SLUG}_${TAG}.jsonl"
-LOG="logs/screen${SLUG}_${TAG}.log"
-mkdir -p data/shards logs
+SHARD="$RUN_DATA/shards/shard_${TAG}.txt"
+OUT="${OUT:-$RUN_DATA/screen${SLUG}_${TAG}.json}"
+LEDGER="$RUN_DATA/calls_screen${SLUG}_${TAG}.jsonl"
+LOG="$RUN_LOGS/screen${SLUG}_${TAG}.log"
+mkdir -p "$RUN_DATA/shards" "$RUN_LOGS"
+run_banner "screen ${TAG}"
 
 # ── the shard list ──────────────────────────────────────────────────────────
 # A file, not a command line. measure_pi.py records the *path* as the corpus

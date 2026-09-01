@@ -55,7 +55,7 @@ from src.adapter import TASKS, load  # noqa: E402
 from src.metrics import DEFAULT_METRICS_LOG, group_by_episode, load_rounds  # noqa: E402
 from src.typer import _changed_hunks  # noqa: E402
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+from src.paths import DATA_DIR, announce  # noqa: E402
 DEFAULT_OVERFIT_LOG = DATA_DIR / "overfit_checks.jsonl"
 # The ChatRepair `transcript` arm (E6) was removed unrun on 2026-08-29: it
 # tested no surviving claim, and the "typed index is flat, transcript grows
@@ -195,6 +195,7 @@ def _load_overfit(path: pathlib.Path) -> dict[str, dict]:
 
 
 def main() -> None:
+    announce('measure_patch_quality')
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--episodes-path", type=pathlib.Path, default=DEFAULT_METRICS_LOG)

@@ -48,7 +48,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+from src.paths import DATA_DIR, announce  # noqa: E402
 
 # Fields every shard must agree on. Each one changes what pi_hat *is*, not just
 # how precisely it is measured.
@@ -316,6 +316,7 @@ def merge_ledgers(paths: list[pathlib.Path], out: pathlib.Path) -> None:
 
 
 def main() -> None:
+    announce('consolidate_screens')
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--screens", nargs="+", default=None,

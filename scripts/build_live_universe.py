@@ -26,12 +26,15 @@ import os
 import pathlib
 import sys
 
-ROOT = pathlib.Path(__file__).resolve().parent.parent
-DATA = ROOT / "data"
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+
+from src.paths import DATA_DIR as DATA, ROOT, announce  # noqa: E402
+
 EXCLUDE = ("dead",)
 
 
 def main() -> None:
+    announce('build_live_universe')
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--source", type=pathlib.Path, default=DATA / "sweep_programs.txt")

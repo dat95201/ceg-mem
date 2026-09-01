@@ -47,7 +47,7 @@ from src.adapter import load
 from src.metrics import DEFAULT_METRICS_LOG, group_by_episode, load_rounds
 from src.typer import edit_location
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+from src.paths import DATA_DIR, announce  # noqa: E402
 MODES = ("no_memory", "untyped", "typed")
 
 
@@ -245,6 +245,7 @@ def failure_taxonomy(
 
 
 def main() -> None:
+    announce('fit_theory')
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--results-path", type=pathlib.Path, default=DATA_DIR / "results_real.json")
     parser.add_argument("--episodes-path", type=pathlib.Path, default=DEFAULT_METRICS_LOG)

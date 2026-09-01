@@ -74,7 +74,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 from src.metrics import (DEFAULT_METRICS_LOG, build_crn_type_index,  # noqa: E402
                          group_by_episode, load_rounds)
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+from src.paths import DATA_DIR, announce  # noqa: E402
 # The ChatRepair `transcript` arm (E6) was removed unrun on 2026-08-29: it
 # tested no surviving claim, and the "typed index is flat, transcript grows
 # linearly" claim it existed for is already falsified by the typed arm alone
@@ -434,6 +434,7 @@ def _mean(values: list) -> float | None:
 
 
 def main() -> None:
+    announce('measure_redundancy')
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--episodes-path", type=pathlib.Path, default=DEFAULT_METRICS_LOG)
