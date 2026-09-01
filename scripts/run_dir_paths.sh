@@ -41,7 +41,11 @@ else
   RUN_LOGS="logs"
 fi
 
-mkdir -p "$RUN_DATA" "$RUN_LOGS"
+# Deliberately NO mkdir here. Sourcing a path resolver should not touch the
+# filesystem: every stage already creates the directories it writes into
+# (oracle_gate.sh, screen_shard.sh and eval_shard.sh each have their own
+# `mkdir -p`), and a resolver that creates a directory just to answer a
+# question litters data/ with a folder per typo - and per test case.
 
 run_banner() {
   local stage="${1:-stage}"

@@ -36,6 +36,29 @@ CASES = {
 }
 
 
+def _cleanup(run_dir):
+    """Remove a directory this test caused to be created.
+
+    src/llm.py mkdir's the call ledger's parent at import time - right for a
+    real run, litter for a test that resolves eight RUN_DIR values including
+    `a/b` and `/etc`. Only ever removes an EMPTY directory, so it can never take
+    a real run's output with it.
+    """
+    if not run_dir:
+        return
+    slug = run_dir.strip().strip("/")
+    if not slug:
+        return
+    for base in ("data", "logs"):
+        parts = slug.split("/")
+        for i in range(len(parts), 0, -1):
+            d = ROOT / base / pathlib.Path(*parts[:i])
+            try:
+                d.rmdir()          # fails, harmlessly, if it is not empty
+            except OSError:
+                break
+
+
 def _env(run_dir):
     env = dict(os.environ)
     env.pop("RUN_DIR", None)
@@ -158,9 +181,25 @@ def test_every_stage_announces_where_it_writes():
         assert f"[{stem}] run=r1  ->  data/r1/" in r.stderr, f"{stem}: {r.stderr[:300]}"
 
 
+def test_the_resolver_does_not_create_anything():
+    """Sourcing scripts/run_dir_paths.sh answers a question; it must not make a
+    directory to do it, or every typo in RUN_DIR leaves one behind."""
+    probe = "_resolver_side_effect_probe"
+    _bash(probe)
+    for base in ("data", "logs"):
+        assert not (ROOT / base / probe).exists(), \
+            f"{base}/{probe} was created just by resolving a path"
+
+
+def teardown_module(module=None):
+    for run_dir in CASES:
+        _cleanup(run_dir)
+
+
 if __name__ == "__main__":
     n = 0
     for name, fn in sorted(globals().items()):
         if name.startswith("test_") and callable(fn):
             fn(); print(f"  ok  {name}"); n += 1
+    teardown_module()
     print(f"{n} passed")
