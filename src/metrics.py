@@ -12,7 +12,15 @@ import json
 import pathlib
 from typing import Any
 
-DEFAULT_METRICS_LOG = pathlib.Path("data/episodes.jsonl")
+from src.paths import EPISODES
+
+# Resolved from the repo root by src.paths, not from the CWD. It was
+# `pathlib.Path("data/episodes.jsonl")` and agreed with the twenty-one
+# root-relative DATA_DIR constants only because every bash entry point
+# cd's to $ROOT first; run one script from elsewhere and half the run
+# landed in a second directory without erroring. This is the default of
+# --episodes-path in ten scripts, so it is the one that mattered most.
+DEFAULT_METRICS_LOG = EPISODES
 
 
 @dataclasses.dataclass(frozen=True)
@@ -82,6 +90,16 @@ class RoundRecord:
     # needed or the c-sweep's per-type breakdown compares the typed arm's
     # beliefs against the other arms' facts.
     blocked_by_type_true: str | None = None
+    # Def. 3.1's coherence, recorded per round instead of estimated offline.
+    # bucket_hit: theta's guess landed on a non-empty eliminated bucket.
+    # bucket_hit_refuted: a counterexample from that bucket actually still
+    # refuted the candidate. mean(refuted | hit) IS the coherence the paper
+    # assumes is 1.0 when Prop. 4.5 blocks on a lookup alone. None outside the
+    # typed arm, which is the only one with an index to hit. Costs nothing -
+    # the guard has already done the work - and it is the number
+    # scripts/measure_coherence.py otherwise spends hours approximating.
+    bucket_hit: bool | None = None
+    bucket_hit_refuted: bool | None = None
 
     # ---- cost: the join to data/calls.jsonl -------------------------------
     # cache_key is the join key (the draw nonce is NOT - src.loop.proposal_nonce

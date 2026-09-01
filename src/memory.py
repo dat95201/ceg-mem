@@ -44,7 +44,13 @@ class GuardResult:
     """Outcome of one guard check."""
 
     blocked: bool
-    evaluations: int  # stored counterexamples actually re-run - the Prop. 4.5 cost
+    evaluations: int  # stored counterexamples consulted - the Prop. 4.5 count
+    # Program executions this consultation actually cost. Equal to `evaluations`
+    # unless a memo served one of them from a verdict already established this
+    # episode. Kept apart because the two answer different questions and the
+    # study reports both: Prop. 4.5 is about how many entries the INDEX makes you
+    # look at, and sandbox_runs is about what that costs to run.
+    sandbox_runs: int = 0
     # The stored attempt whose counterexample fired. Carried out so src.loop can
     # log its failure type, which is what makes "redundant attempt" ONE
     # definition across arms instead of two (DESIGN.md SS6's first open item):
@@ -55,6 +61,23 @@ class GuardResult:
     # stored it. Without this the column counted type repeats for one arm and
     # guard firings for the other while Theorem 4.3(b) assigned both the same R.
     blocked_by: "Attempt | None" = None
+    # Def. 3.1's coherence, measured in situ instead of estimated offline.
+    #
+    # bucket_hit: the candidate's guessed type had a NON-EMPTY eliminated bucket,
+    # i.e. theta says "we have been here before". bucket_hit_refuted: one of that
+    # bucket's counterexamples actually still refuted it. The ratio is exactly
+    # "does same type mean same behaviour" - the quantity Prop. 4.5's O(1) guard
+    # has to assume is 1.0 in order to block on a lookup alone, and the quantity
+    # scripts/measure_coherence.py needs hours of sandbox time to approximate.
+    # Logged per round, it costs nothing: the guard has already done the work.
+    #
+    # Measured on the frozen log (620 typed episodes, 3,284 bucket hits): 93.0%.
+    # The 7.0% remainder is not harmless - 88 of those 230 candidates were
+    # patches the oracle ACCEPTS, so a lookup-only guard would lose 20.7% of all
+    # repairs. Always None for the untyped and no-memory arms, which have no
+    # index to hit.
+    bucket_hit: bool = False
+    bucket_hit_refuted: bool = False
 
 
 def _case_key(attempt: Attempt) -> tuple[str, str] | None:
@@ -77,8 +100,19 @@ def _case_key(attempt: Attempt) -> tuple[str, str] | None:
     return (ft.task, attempt.result.args[0])
 
 
-def _still_refutes(attempt: Attempt, candidate_source: str) -> bool:
+def _still_refutes(attempt: Attempt, candidate_source: str,
+                   memo: dict | None = None, runs: list | None = None) -> bool:
     """Re-run attempt's stored counterexample against a *new* candidate.
+
+    `memo` caches the verdict on (task, case, patch). Running the SAME program
+    on the SAME input twice is a pure function - the second run cannot disagree
+    with the first except through sandbox-timeout jitter, which docs/DIAGNOSIS.md
+    SS5 bounds at 3 rounds in the whole study and which is itself a defect rather
+    than signal. It matters because the proposer repeats itself: duplicate_patch_rate
+    is 0.217 (data/redundancy.json), so roughly one guard call in five is
+    re-executing a program it has already executed against that exact case.
+    Sound by construction, and it does not change a single block decision -
+    only what Prop. 4.5's evaluation count is allowed to charge for.
 
     One sandboxed run of one test case, not a fresh sample of the whole pool -
     this is what keeps a guard check cheap relative to a full oracle round
@@ -95,10 +129,18 @@ def _still_refutes(attempt: Attempt, candidate_source: str) -> bool:
     case = task.case(attempt.result.args[0])
     if case is None:
         return False  # test data went away under us; do not block on a guess
+    key = None
+    if memo is not None:
+        key = (ft.task, attempt.result.args[0], candidate_source)
+        if key in memo:
+            return memo[key]
     cand = run_program(candidate_source, case.input_text)
-    if cand.timed_out or not cand.ok:
-        return True
-    return not outputs_equal(cand.value, ref.value)
+    if runs is not None:
+        runs[0] += 1
+    verdict = True if (cand.timed_out or not cand.ok) else not outputs_equal(cand.value, ref.value)
+    if key is not None:
+        memo[key] = verdict
+    return verdict
 
 
 class Memory:
@@ -148,8 +190,9 @@ class UntypedMemory(Memory):
                 continue
             evaluations += 1
             if _still_refutes(attempt, candidate_source):
-                return GuardResult(blocked=True, evaluations=evaluations, blocked_by=attempt)
-        return GuardResult(blocked=False, evaluations=evaluations)
+                return GuardResult(blocked=True, evaluations=evaluations,
+                                   sandbox_runs=evaluations, blocked_by=attempt)
+        return GuardResult(blocked=False, evaluations=evaluations, sandbox_runs=evaluations)
 
 
 class TypedMemory(Memory):
@@ -183,6 +226,7 @@ class TypedMemory(Memory):
         typing_noise_c: float = 1.0,
         typing_random: bool = False,
         guard_fallback: bool = True,
+        memo_guard: bool = False,
         rng: random.Random | None = None,
     ) -> None:
         super().__init__()
@@ -196,6 +240,12 @@ class TypedMemory(Memory):
         self._rng = rng or random.Random()
         self._by_location: dict[str, list[Attempt]] = {}
         self._seen_locations: list[str] = []
+        # (task, case, patch) -> verdict, for the episode. See _still_refutes.
+        # Default OFF: it lowers sandbox_runs, and the completed E2 grid was
+        # measured without it. Turning it on for new runs and comparing them
+        # against those numbers would be comparing two cost accountings.
+        self.memo_guard = memo_guard
+        self._verdicts: dict | None = {} if memo_guard else None
 
     def _true_type(self, attempt: Attempt):
         return attempt.failure_type(self.granularity)
@@ -282,7 +332,9 @@ class TypedMemory(Memory):
         # keys that store() never uses and silently never fire.
         guess = WHOLE_PROGRAM if self.granularity == "coarse" else edit_location(buggy_source, candidate_source)
         bucket = self._by_location.get(guess, [])
+        hit = bool(bucket)
         evaluations = 0
+        runs = [0]          # mutable: _still_refutes bumps it on a real execution
         seen_cases: set[tuple[str, str]] = set()
 
         # Phase 1 - the type-indexed bucket. Proposition 4.5's O(1) expected hit.
@@ -293,11 +345,13 @@ class TypedMemory(Memory):
                     continue
                 seen_cases.add(key)
             evaluations += 1
-            if _still_refutes(attempt, candidate_source):
-                return GuardResult(blocked=True, evaluations=evaluations, blocked_by=attempt)
+            if _still_refutes(attempt, candidate_source, memo=self._verdicts, runs=runs):
+                return GuardResult(blocked=True, evaluations=evaluations, sandbox_runs=runs[0],
+                                   blocked_by=attempt, bucket_hit=hit, bucket_hit_refuted=True)
 
         if not self.guard_fallback:
-            return GuardResult(blocked=False, evaluations=evaluations)
+            return GuardResult(blocked=False, evaluations=evaluations,
+                               sandbox_runs=runs[0], bucket_hit=hit)
 
         # Phase 2 - everything else, one run per distinct counterexample. Skipped
         # by identity for what phase 1 already tried, so an attempt is never run
@@ -312,10 +366,12 @@ class TypedMemory(Memory):
                     continue
                 seen_cases.add(key)
             evaluations += 1
-            if _still_refutes(attempt, candidate_source):
-                return GuardResult(blocked=True, evaluations=evaluations, blocked_by=attempt)
+            if _still_refutes(attempt, candidate_source, memo=self._verdicts, runs=runs):
+                return GuardResult(blocked=True, evaluations=evaluations, sandbox_runs=runs[0],
+                                   blocked_by=attempt, bucket_hit=hit, bucket_hit_refuted=False)
 
-        return GuardResult(blocked=False, evaluations=evaluations)
+        return GuardResult(blocked=False, evaluations=evaluations,
+                           sandbox_runs=runs[0], bucket_hit=hit)
 
 
 def build_memory(
@@ -325,6 +381,7 @@ def build_memory(
     typing_noise_c: float = 1.0,
     typing_random: bool = False,
     guard_fallback: bool = True,
+    memo_guard: bool = False,
     rng: random.Random | None = None,
 ) -> Memory:
     if mode == "no_memory":
@@ -334,7 +391,7 @@ def build_memory(
     if mode == "typed":
         return TypedMemory(granularity=granularity, typing_noise_c=typing_noise_c,
                            typing_random=typing_random, guard_fallback=guard_fallback,
-                           rng=rng)
+                           memo_guard=memo_guard, rng=rng)
     raise ValueError(f"mode must be one of {MODES}, got {mode!r}")
 
 
