@@ -95,8 +95,13 @@ usage: bash scripts/oracle_gate.sh [options]
                     freeze (~6-12 h): a timeout is a verdict, not a retry, so a
                     fault near the wall-clock limit can fail under parallel load
                     when it would have passed serially.
-  --corpus-size N   cohort size for the gate AND passing faults to freeze
+  --corpus-size N|auto
+                    cohort size for the gate AND passing faults to freeze
                     (default 360). See RUNBOOK.md section 2 for why not 115.
+                    `auto` takes the cohort to be every eligible fault, which is
+                    what you want whenever --reference-timeout has moved: the
+                    surviving count cannot be known before the walk, and a
+                    declared size the walk cannot reach refuses to freeze.
   --data-dir PATH   where tasks.json is written (default @DATA@/pool). Point a
                     rehearsal somewhere else so it cannot overwrite a freeze.
   --pool PATH       candidate list (default @DATA@/candidates.json)
@@ -191,7 +196,12 @@ PY
 # cannot fill the cohort, which comes out as "frozen": false.
 python3 - "${#NAMES[@]}" "$CORPUS_SIZE" <<'PY'
 import sys
-n, size = int(sys.argv[1]), int(sys.argv[2])
+n, raw = int(sys.argv[1]), sys.argv[2]
+if raw.strip().lower() == "auto":
+    # Nothing to be short of: the cohort will be whatever survives.
+    print(f"headroom     {n} candidates, cohort = every eligible fault (--corpus-size auto)")
+    raise SystemExit
+size = int(raw)
 ratio = n / size if size else 0
 print(f"headroom     {n} candidates for a {size}-fault pool ({ratio:.2f}x)")
 if ratio < 1.5:
@@ -206,7 +216,11 @@ PY
 cat <<EOP
 
 gate         >= 2/3 of a fault's scoreable natural mutants caught
-             pool freezes at >= $(python3 -c "import math;print(math.ceil(30/40*$CORPUS_SIZE))")/$CORPUS_SIZE of the cohort passing
+             pool freezes at >= $(python3 -c "
+import math, sys
+s = sys.argv[1]
+print('75%' if s.strip().lower() == 'auto'
+      else f'{math.ceil(30/40*int(s))}/{s}')" "$CORPUS_SIZE") of the cohort passing
 protocol     corpus_size=$CORPUS_SIZE  min_siblings=$MIN_SIBLINGS  max_examples=$MAX_EXAMPLES
              mutants_per_task=$MUTANTS_PER_TASK  reference_cases=$REFERENCE_CASES  seed=$SEED
              reference_timeout=${REFERENCE_TIMEOUT:-<validate_oracle.py default>}  (the slow-task filter)

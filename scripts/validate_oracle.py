@@ -544,7 +544,7 @@ def check_mutants(name: str, *, max_examples: int, seed: int, timeout: float,
 
 # ── driver ────────────────────────────────────────────────────────────────
 
-def run(names: list[str], *, corpus_size: int, max_examples: int, mutant_examples: int,
+def run(names: list[str], *, corpus_size: int | None, max_examples: int, mutant_examples: int,
         reference_cases: int, seed: int, timeout: float, full_pool_cap: int,
         reference_timeout: float = DEFAULT_REFERENCE_TIMEOUT,
         top_up: bool, jobs: int, mutants_per_task: int = MUTANTS_PER_TASK,
@@ -575,7 +575,11 @@ def run(names: list[str], *, corpus_size: int, max_examples: int, mutant_example
     # The hard band is the second case: 120 slots, no sub-quotas, so the walk
     # is a plain seeded sample of the pool.
     bands = tuple(bands) if band_of else (unstratified_label,)
-    quota = per_stratum if band_of else corpus_size
+    # corpus_size None is --corpus-size auto: no cap, so every eligible fault
+    # enters the cohort and the walk runs the candidate list to the end. math.inf
+    # compares correctly against len() and needs no branch at either use site.
+    auto = corpus_size is None
+    quota = per_stratum if band_of else (math.inf if auto else corpus_size)
     cohort_by: dict[str, list[str]] = {b: [] for b in bands}
     passing_by: dict[str, list[str]] = {b: [] for b in bands}
     t0 = time.monotonic()
@@ -693,6 +697,9 @@ def run(names: list[str], *, corpus_size: int, max_examples: int, mutant_example
     cohort = [n for b in bands for n in cohort_by[b]]
     passing = [n for b in bands for n in passing_by[b]]
     cohort_passing = [n for n in cohort if faults[n].get("passes")]
+    # Under auto the cohort IS the eligible population, so the size check below
+    # is satisfied by construction - there was no target to fall short of.
+    effective_size = len(cohort) if auto else corpus_size
     return {
         "usability_criterion": (
             "test data present; reference passes its own cases; the faulty "
@@ -706,7 +713,15 @@ def run(names: list[str], *, corpus_size: int, max_examples: int, mutant_example
         "task_pass_threshold": (
             f">= {MUTANT_CATCH_FRACTION:.2f} of the scoreable natural mutants caught"
         ),
-        "corpus_pass_threshold": f">= {corpus_threshold(corpus_size)}/{corpus_size} programs passing",
+        "corpus_pass_threshold":
+            f">= {corpus_threshold(effective_size)}/{effective_size} programs passing",
+        # "declared" = a cohort size fixed before the walk, and a walk that comes
+        # up short fails. "auto" = the cohort is every eligible fault, so the
+        # denominator is the population rather than a prefix of it. A reader
+        # comparing two freezes needs to know which, because the two make
+        # different claims.
+        "corpus_size": effective_size,
+        "corpus_size_mode": "auto" if auto else "declared",
         # Provenance. A corpus frozen against a salvaged partial test tree is
         # not the corpus the paper reports, and the only way to tell after the
         # fact is to have written down which tree it was read from.
@@ -725,7 +740,13 @@ def run(names: list[str], *, corpus_size: int, max_examples: int, mutant_example
         "cohort": cohort,
         "n_cohort": len(cohort),
         "n_cohort_passing": len(cohort_passing),
-        "corpus_gate_ok": len(cohort_passing) >= corpus_threshold(corpus_size) and len(cohort) == corpus_size,
+        "corpus_gate_ok": (len(cohort_passing) >= corpus_threshold(effective_size)
+                           and len(cohort) == effective_size),
+        # Told apart from "too many failed", because the two need opposite
+        # responses: a short walk wants a smaller --corpus-size (or auto), a low
+        # pass rate means the oracle did not clear the gate and no number fixes
+        # that.
+        "cohort_short_by": max(0, effective_size - len(cohort)),
         "n_passing": len(passing),
         "max_examples": max_examples,
         "mutant_examples": mutant_examples,
@@ -745,7 +766,7 @@ def run(names: list[str], *, corpus_size: int, max_examples: int, mutant_example
     }
 
 
-def write_tasks_json(report: dict, selected: list[str], *, corpus_size: int, seed: int,
+def write_tasks_json(report: dict, selected: list[str], *, seed: int,
                      data_dir: pathlib.Path = DATA_DIR) -> None:
     frozen = report["corpus_gate_ok"] and bool(selected)
     meta = report.get("strata_selection") or {}
@@ -773,7 +794,7 @@ def write_tasks_json(report: dict, selected: list[str], *, corpus_size: int, see
             f"{band}at most one fault per coding task; the gate is measured on the "
             f"first {report['n_cohort']} stage-1 survivors "
             f"({report['n_cohort_passing']} passed), and the corpus is topped up "
-            f"past that cohort until {corpus_size} passing programs are held"
+            f"past that cohort until {report['corpus_size']} passing programs are held"
         ),
         "n_selected": len(selected),
         "n_cohort": report["n_cohort"],
@@ -909,8 +930,14 @@ def main() -> None:
     announce('validate_oracle')
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--programs", nargs="+", default=None, help="validate exactly these faults")
-    parser.add_argument("--corpus-size", type=int, default=DEFAULT_CORPUS_SIZE,
-                        help="cohort size for the gate, and how many passing faults to freeze")
+    parser.add_argument("--corpus-size", default=DEFAULT_CORPUS_SIZE, metavar="N|auto",
+                        help=f"cohort size for the gate, and how many passing faults to "
+                             f"freeze (default {DEFAULT_CORPUS_SIZE}). `auto` takes the "
+                             f"cohort to be EVERY eligible fault instead of a declared "
+                             f"prefix - use it when you cannot know the count in advance, "
+                             f"which is the case whenever --reference-timeout moves. The "
+                             f"pass fraction stays pre-registered either way; only the "
+                             f"denominator changes, and the report says which mode ran")
     parser.add_argument("--max-examples", type=int, default=80,
                         help="test cases the oracle may run per fault in stage 1")
     parser.add_argument("--mutant-examples", type=int, default=None,
@@ -968,7 +995,25 @@ def main() -> None:
     if not SUPPORTED_PROGRAMS:
         raise SystemExit("no ConDefects faults found - run scripts/fetch_condefects.py first")
 
+    # Normalise --corpus-size once, here, so nothing downstream has to think
+    # about the string form. None is the in-band value for auto.
+    if str(args.corpus_size).strip().lower() == "auto":
+        args.corpus_size = None
+    else:
+        try:
+            args.corpus_size = int(args.corpus_size)
+        except ValueError:
+            raise SystemExit(f"--corpus-size takes an integer or `auto`, not "
+                             f"{args.corpus_size!r}")
+        if args.corpus_size < 1:
+            raise SystemExit("--corpus-size must be at least 1, or `auto`")
+
     stratified = args.select == "terciles" and args.programs is None
+    if stratified and args.corpus_size is None:
+        raise SystemExit(
+            "--corpus-size auto cannot be combined with --select terciles: a "
+            "stratified cohort holds an equal quota per level, and `auto` has no "
+            "quota to divide. Give an explicit size, or use --select hard/none.")
     if stratified and args.corpus_size % len(STRATA):
         raise SystemExit(
             f"--corpus-size {args.corpus_size} is not divisible by {len(STRATA)}; a "
@@ -981,13 +1026,19 @@ def main() -> None:
     if unknown:
         raise SystemExit(f"unknown fault(s): {unknown}")
     if args.programs is None:
-        names = names[:args.max_candidates or (max(args.corpus_size, 1) * 12)]
+        # Under auto there is no target to size the walk against, so the whole
+        # candidate list is the walk unless --max-candidates says otherwise.
+        cap = args.max_candidates or (None if args.corpus_size is None
+                                      else max(args.corpus_size, 1) * 12)
+        names = names[:cap] if cap else names
         band_of = {n: b for n, b in band_of.items() if n in set(names)}
 
     # Refuse a walk that cannot finish, before it spends hours proving it.
     # Only distinct coding tasks count: the corpus holds one fault each, and a
     # task is spent as soon as one of its faults reaches stage 2, pass or fail.
-    if args.select == "hard" and args.programs is None:
+    # Under auto the corpus is whatever survives, so there is no size to fall
+    # short of and nothing for the headroom check to refuse.
+    if args.select == "hard" and args.programs is None and args.corpus_size is not None:
         n_tasks = len({TASKS[n].task_id for n in names})
         needed = math.ceil(POOL_HEADROOM * args.corpus_size)
         if n_tasks < needed:
@@ -1041,11 +1092,12 @@ def main() -> None:
         quota = args.corpus_size // len(STRATA)
         selected = [n for b in STRATA for n in by_band[b][:quota]]
     else:
-        selected = [n for n, r in report["faults"].items() if r.get("passes")][:args.corpus_size]
+        passing_names = [n for n, r in report["faults"].items() if r.get("passes")]
+        selected = passing_names if args.corpus_size is None else passing_names[:args.corpus_size]
 
     args.data_dir.mkdir(parents=True, exist_ok=True)
     (args.data_dir / "oracle_validation.json").write_text(json.dumps(report, indent=2) + "\n")
-    write_tasks_json(report, selected, corpus_size=args.corpus_size, seed=args.seed,
+    write_tasks_json(report, selected, seed=args.seed,
                      data_dir=args.data_dir)
 
     n_missed = sum(r.get("n_missed", 0) for r in report["faults"].values())
@@ -1055,7 +1107,7 @@ def main() -> None:
           f"{report['n_ineligible']} excluded for having no sibling submission")
     print(f"stage 2: {report['n_cohort_passing']}/{report['n_cohort']} of the cohort caught "
           f">= {MUTANT_CATCH_FRACTION:.0%} of their natural mutants "
-          f"(threshold {corpus_threshold(args.corpus_size)}/{args.corpus_size}) "
+          f"(threshold {corpus_threshold(report['corpus_size'])}/{report['corpus_size']}) "
           f"-- {'MET' if report['corpus_gate_ok'] else 'NOT MET'}")
     n_caught = sum(r.get("mutants_caught", 0) for r in report["faults"].values())
     n_scored = sum(r.get("mutants_scored", 0) for r in report["faults"].values())
@@ -1080,7 +1132,21 @@ def main() -> None:
     print(f"corpus {'FROZEN' if report['corpus_gate_ok'] and selected else 'NOT FROZEN'}: "
           f"{len(selected)} faults, one per coding task, in {report['elapsed_sec']}s")
     if not report["corpus_gate_ok"]:
-        print("the oracle did not clear the mutation gate - do not run experiments on this corpus")
+        # Two failures wearing one message until now. They want opposite
+        # responses, so say which one happened.
+        short = report["cohort_short_by"]
+        if short:
+            print(f"the walk came up {short} short: {report['n_cohort']} eligible faults "
+                  f"were found, but --corpus-size asked for {report['corpus_size']}. This "
+                  f"is NOT a verdict on the oracle - "
+                  f"{report['n_cohort_passing']}/{report['n_cohort']} of what it did find "
+                  f"passed.\nRe-run with --corpus-size {report['n_cohort']}, or with "
+                  f"--corpus-size auto to take the cohort to be every eligible fault "
+                  f"(which is what you want whenever --reference-timeout has moved and the "
+                  f"count cannot be known in advance).")
+        else:
+            print("the oracle did not clear the mutation gate - do not run experiments "
+                  "on this corpus")
     print(f"wrote {args.data_dir}/oracle_validation.json and {args.data_dir}/tasks.json")
 
 
