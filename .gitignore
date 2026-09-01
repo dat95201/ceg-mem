@@ -43,6 +43,19 @@ data/eval_shards/*.txt
 data/**/shards/
 data/**/eval_shards/*.txt
 
+# The universe lists. eval_shard.sh rewrites all four from tasks.json on every
+# run and stamps each with the corpus digest that produced it, so a tracked copy
+# is a stale copy waiting to disagree with the corpus beside it. demo_programs
+# is NOT here: eval_shard.sh's help says that one is a draw you write by hand.
+data/eval_order.txt
+data/sweep_programs.txt
+data/trial_programs.txt
+data/live_programs.txt
+data/**/eval_order.txt
+data/**/sweep_programs.txt
+data/**/trial_programs.txt
+data/**/live_programs.txt
+
 # RUN_DIR: a named run writes to data/<slug>/ and logs/<slug>/ (src/paths.py).
 # logs/ is already ignored wholesale by `logs/*` at the top, so only the data
 # side needs saying - and it is deliberately NOT ignored. This repo tracks its
