@@ -42,7 +42,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+from src.paths import DATA_DIR, ROOT, announce  # noqa: E402
 
 # Paper SS VI-A / scripts/build_strata.py. Half-open upward except the top of
 # `easy`, so the bands tile [0, 1] with no gap and no overlap.
@@ -72,6 +72,34 @@ PRIMARY_BANDS = ("hard", "medium", "easy")
 # `dead` is generous: those are the cells where three of the four theoretical
 # results are most visible, not spare capacity.
 DEFAULT_QUOTAS = {"easy": 30, "medium": 20, "hard": 30, "too_easy": 15, "dead": 20}
+
+# A band below this is a hole in the design, not a small cell: the primary
+# comparison is per-band, and three of the paper's four theoretical results are
+# stated as varying WITH the band, so a band of four tasks cannot carry the
+# claim it is there to test. Enforced as an error rather than the warning
+# `short` used to print, because a corpus that under-fills silently is one the
+# analysis will happily run on and quietly under-power.
+MIN_PER_BAND = 10
+
+# Where the previous corpus lives, and therefore which tasks already have paid
+# episodes and a warm LLM cache. Under RUN_DIR this is the BASE corpus (plain
+# data/tasks.json), not the new run's - which is the point: a named run
+# re-selects against the corpus whose calls have already been bought.
+DEFAULT_PIN = ROOT / "data" / "tasks.json"
+
+
+def read_task_list(path: pathlib.Path) -> list[str]:
+    """Task names from a tasks.json freeze, or one name per line.
+
+    Accepts both so a pin can be an earlier corpus (the usual case) or a list
+    written by hand.
+    """
+    text = path.read_text()
+    if text.lstrip().startswith("{"):
+        blob = json.loads(text)
+        return [t["name"] for t in blob.get("tasks", [])]
+    return [ln.strip() for ln in text.splitlines()
+            if ln.strip() and not ln.startswith("#")]
 
 
 # Representative pi per band, for the cost projection only. Never used to
@@ -134,6 +162,7 @@ def merge_screens(paths: list[pathlib.Path]) -> dict[str, dict]:
 
 
 def main() -> None:
+    announce('select_corpus')
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--pool", type=pathlib.Path, default=DATA_DIR / "pool" / "tasks.json",
@@ -144,6 +173,20 @@ def main() -> None:
                         help=f"override a band quota (default: {DEFAULT_QUOTAS})")
     parser.add_argument("--min-calls", type=int, default=20,
                         help="a candidate screened with fewer draws than this is not placed")
+    parser.add_argument("--pin", type=pathlib.Path, action="append", default=None,
+                        metavar="PATH",
+                        help="a corpus (tasks.json) or task list whose members are taken "
+                             f"FIRST within their band. Default: {DEFAULT_PIN} if it exists. "
+                             "This is the cache-reuse mechanism - see --no-pin")
+    parser.add_argument("--no-pin", action="store_true",
+                        help="select purely by pool order, ignoring the previous corpus. "
+                             "Every task that changes places loses its paid episodes")
+    parser.add_argument("--min-per-band", type=int, default=MIN_PER_BAND,
+                        help=f"a band below this fails the selection (default {MIN_PER_BAND}); "
+                             "0 to allow any size")
+    parser.add_argument("--allow-unpinned", action="store_true",
+                        help="downgrade a pinned task that could not be placed from an "
+                             "error to a warning. Read what it says first")
     parser.add_argument("--out", type=pathlib.Path, default=DATA_DIR / "tasks.json")
     parser.add_argument("--audit-out", type=pathlib.Path, default=DATA_DIR / "screening.json")
     parser.add_argument("--force", action="store_true", help="overwrite an already-frozen corpus")
@@ -175,35 +218,146 @@ def main() -> None:
         raise SystemExit(f"screens disagree on the model: {sorted(models)} - "
                          f"pi_hat is model-specific, so they cannot be merged")
 
-    # The walk: pool order (the seeded candidate order validate_oracle.py froze),
-    # first-come per band. Deterministic given the pool freeze and the screen.
+    # ── the pin: which tasks already have paid episodes ─────────────────────
+    #
+    # THIS is the mechanism that makes a re-selection reuse the cache, and it is
+    # worth being precise about what it does and does not guarantee.
+    #
+    # What makes a cached episode replay for free is src.loop.cell_signature -
+    # task name, mode, seed, granularity, max_examples, typing noise, the two
+    # memory flags, the model. The BAND is not in it, and neither is the corpus
+    # a task was selected into. So a pinned task keeps every paid episode even
+    # if the re-screen moves it from `hard` to `medium`; the one thing that
+    # loses them is the task falling out of the corpus altogether.
+    #
+    # A task falls out for exactly one avoidable reason: its band filled up with
+    # other tasks before the walk reached it. Pool order is fixed, so that is a
+    # real risk whenever the quotas or the screen change. The pin removes it by
+    # walking twice - pinned tasks first, everyone else into what is left. Both
+    # passes are in pool order, so the result is still deterministic given the
+    # pool freeze and the screen.
+    #
+    # The unavoidable reasons are checked and reported, not worked around: a
+    # pinned task that no longer passes the oracle gate, was not screened deeply
+    # enough, or was dropped by the slow-task filter is genuinely gone, and
+    # keeping it would mean overriding the gate to protect a cache.
+    pin_paths = args.pin
+    if pin_paths is None:
+        pin_paths = [DEFAULT_PIN] if DEFAULT_PIN.exists() else []
+    if args.no_pin:
+        pin_paths = []
+    # Pinning the file we are about to write is a no-op that would freeze the
+    # corpus against itself forever - and it is the DEFAULT when RUN_DIR is
+    # unset, because then DEFAULT_PIN and --out are the same file. Say so
+    # rather than doing it.
+    kept_pins = []
+    for p in pin_paths:
+        if p.resolve() == args.out.resolve():
+            print(f"pin: {p} is this run's own output - ignored "
+                  f"(set RUN_DIR, or pass --pin explicitly, to pin a different corpus)")
+        else:
+            kept_pins.append(p)
+    pin_paths = kept_pins
+
+    pinned: list[str] = []
+    for p in pin_paths:
+        if not p.exists():
+            raise SystemExit(f"--pin {p} does not exist")
+        pinned.extend(read_task_list(p))
+    pinned_set = set(pinned)
+    if pinned_set:
+        print(f"pin: {len(pinned_set)} tasks from {', '.join(str(p) for p in pin_paths)}")
+
+    # ── the walk: pinned first, then pool order ─────────────────────────────
     taken: dict[str, list[dict]] = {b: [] for b in quotas}
+    audit_by_name: dict[str, dict] = {}
     audit = []
-    for entry in pool:
+
+    def consider(entry: dict, *, is_pin_pass: bool) -> None:
         name = entry["name"]
         screen = screens.get(name)
         if screen is None:
-            audit.append({"name": name, "disposition": "not_screened"})
-            continue
+            audit_by_name[name] = {"name": name, "disposition": "not_screened"}
+            return
         if screen["calls"] < args.min_calls:
-            audit.append({"name": name, "disposition": "under_screened",
-                          "pi_hat": screen["pi_hat"], "calls": screen["calls"]})
-            continue
+            audit_by_name[name] = {"name": name, "disposition": "under_screened",
+                                   "pi_hat": screen["pi_hat"], "calls": screen["calls"]}
+            return
         band = band_of(screen["pi_hat"])
         row = {"name": name, "pi_hat": screen["pi_hat"], "calls": screen["calls"],
-               "successes": screen["successes"], "band": band}
+               "successes": screen["successes"], "band": band,
+               "pinned": name in pinned_set}
         if len(taken[band]) < quotas[band]:
             taken[band].append({**entry, "stratum": band,
                                 "screen_pi_hat": screen["pi_hat"],
                                 "screen_successes": screen["successes"],
-                                "screen_calls": screen["calls"]})
-            audit.append({**row, "disposition": "selected"})
+                                "screen_calls": screen["calls"],
+                                "pinned": name in pinned_set})
+            audit_by_name[name] = {**row, "disposition": "selected",
+                                   "selected_in": "pin_pass" if is_pin_pass else "pool_pass"}
         else:
-            audit.append({**row, "disposition": "band_full"})
+            audit_by_name[name] = {**row, "disposition": "band_full"}
+
+    for entry in pool:                                   # pass 1: the paid corpus
+        if entry["name"] in pinned_set:
+            consider(entry, is_pin_pass=True)
+    for entry in pool:                                   # pass 2: everyone else
+        if entry["name"] not in pinned_set:
+            consider(entry, is_pin_pass=False)
+    audit = [audit_by_name[e["name"]] for e in pool if e["name"] in audit_by_name]
 
     selected = [t for band, _, _ in BANDS for t in taken[band]]
     counts = {b: len(v) for b, v in taken.items()}
     short = {b: quotas[b] - counts[b] for b in quotas if counts[b] < quotas[b]}
+
+    # ── did every pinned task survive? ──────────────────────────────────────
+    in_pool = {e["name"] for e in pool}
+    chosen = {t["name"] for t in selected}
+    lost = []
+    for name in pinned:
+        if name in chosen:
+            continue
+        if name not in in_pool:
+            why = "no longer in the gated pool (failed the oracle gate, or the slow-task filter dropped it)"
+        else:
+            why = audit_by_name.get(name, {}).get("disposition", "not reached by the walk")
+        lost.append((name, why))
+
+    kept = len(pinned_set & chosen)
+    if pinned_set:
+        print(f"pin: {kept}/{len(pinned_set)} kept - "
+              f"{kept} tasks' episodes and cached calls stay valid")
+    if lost:
+        # band_full among PINNED tasks is the one failure the pin exists to
+        # prevent, so it gets its own remedy line.
+        crowded = sorted({audit_by_name[n]["band"] for n, w in lost if w == "band_full"})
+        msg = [f"{len(lost)} pinned task(s) did not make the corpus:"]
+        msg += [f"  {n:30s} {w}" for n, w in lost[:40]]
+        if len(lost) > 40:
+            msg.append(f"  ... and {len(lost) - 40} more")
+        if crowded:
+            msg.append("")
+            msg.append(f"band(s) {crowded} filled before every pinned task was placed. "
+                       f"Raise the quota: --quota {crowded[0].upper()}=N. Nothing else "
+                       f"recovers those episodes - re-running them costs real calls.")
+        text = "\n".join(msg)
+        if args.allow_unpinned:
+            print("WARNING: " + text)
+        else:
+            raise SystemExit(text + "\n\nPass --allow-unpinned to accept the loss.")
+
+    # ── every band must be able to carry its own claim ──────────────────────
+    if args.min_per_band:
+        thin = {b: counts[b] for b in counts if counts[b] < args.min_per_band}
+        if thin:
+            raise SystemExit(
+                f"{thin} - every band needs at least {args.min_per_band} tasks "
+                f"(5 bands x {args.min_per_band} = {5 * args.min_per_band} minimum corpus).\n"
+                f"The primary comparison is per-band and three of the paper's four\n"
+                f"theoretical results are stated as varying WITH the band, so a band\n"
+                f"this thin cannot carry the claim it is there to test.\n"
+                f"Screen more candidates and re-run - the walk is deterministic, so\n"
+                f"already-selected tasks keep their places. Or pass --min-per-band 0.")
 
     corpus = {
         "frozen": True,
@@ -222,6 +376,20 @@ def main() -> None:
             "counts": counts,
             "short": short,
             "primary_bands": list(PRIMARY_BANDS),
+            "min_per_band": args.min_per_band,
+            # Provenance for the cache-reuse claim: which corpus was pinned,
+            # how many of its tasks survived, and what became of the rest.
+            "pin": {
+                "sources": [str(p) for p in pin_paths],
+                "n_pinned": len(pinned_set),
+                "n_kept": kept,
+                "lost": [{"name": n, "why": w} for n, w in lost],
+                "note": "pinned tasks are taken first within their band so a "
+                        "re-selection does not evict a task whose episodes are "
+                        "already paid for. Band membership is not in "
+                        "src.loop.cell_signature, so a kept task replays its "
+                        "cache even if the re-screen moves it to another band",
+            },
             "note": "stratum is fixed here, before any treatment; the pi_hat "
                     "reported in results comes from E1, an independent sample",
         },
