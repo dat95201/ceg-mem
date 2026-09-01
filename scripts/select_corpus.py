@@ -185,8 +185,10 @@ def main() -> None:
                         help=f"a band below this fails the selection (default {MIN_PER_BAND}); "
                              "0 to allow any size")
     parser.add_argument("--allow-unpinned", action="store_true",
-                        help="downgrade a pinned task that could not be placed from an "
-                             "error to a warning. Read what it says first")
+                        help="downgrade a BAND-FULL eviction from an error to a warning. "
+                             "Only that: a pinned task the gate rejected or the slow-task "
+                             "filter dropped is reported and the run continues either way, "
+                             "because no quota brings those back")
     parser.add_argument("--out", type=pathlib.Path, default=DATA_DIR / "tasks.json")
     parser.add_argument("--audit-out", type=pathlib.Path, default=DATA_DIR / "screening.json")
     parser.add_argument("--force", action="store_true", help="overwrite an already-frozen corpus")
@@ -311,35 +313,81 @@ def main() -> None:
     short = {b: quotas[b] - counts[b] for b in quotas if counts[b] < quotas[b]}
 
     # ── did every pinned task survive? ──────────────────────────────────────
+    #
+    # Two kinds of loss, and they need opposite responses.
+    #
+    #   RECOVERABLE  band_full - nothing about the task changed, the walk just
+    #                reached the quota first. Raising that band's quota gets it
+    #                back, and the episodes are still valid, so re-running them
+    #                would be paying twice for the same measurement. An error.
+    #
+    #   SETTLED      the gate rejected it, the slow-task filter dropped it, or
+    #                it was not screened deeply enough. It is gone on its merits
+    #                and no quota brings it back. Reported, then we continue -
+    #                this is the "except those the slow filter drops" case, and
+    #                making it fatal would mean every run of this pipeline needs
+    #                --allow-unpinned, which would in turn silence the case
+    #                above. That is exactly backwards.
     in_pool = {e["name"] for e in pool}
     chosen = {t["name"] for t in selected}
-    lost = []
+
+    # Why a task left the pool, from the gate's own report when it is beside the
+    # pool file. Worth the lookup: "the slow-task filter dropped it, reference
+    # needs >10s" is actionable and "not in the pool" is not.
+    gate_reason: dict[str, str] = {}
+    gate_report = args.pool.parent / "oracle_validation.json"
+    if gate_report.exists():
+        try:
+            faults = json.loads(gate_report.read_text()).get("faults", {})
+        except (ValueError, OSError):
+            faults = {}
+        for name, rec in faults.items():
+            if rec.get("slow"):
+                gate_reason[name] = (f"dropped by the slow-task filter "
+                                     f"(reference needs >{rec.get('reference_timeout')}s "
+                                     f"on one of its own cases)")
+            elif not rec.get("usable"):
+                gate_reason[name] = f"failed the oracle gate: {rec.get('reason')}"
+            elif rec.get("eligible") is False:
+                gate_reason[name] = "no sibling submission to validate the oracle against"
+            elif not rec.get("passes"):
+                gate_reason[name] = "did not catch enough of its natural mutants"
+
+    recoverable, settled = [], []
     for name in pinned:
         if name in chosen:
             continue
-        if name not in in_pool:
-            why = "no longer in the gated pool (failed the oracle gate, or the slow-task filter dropped it)"
+        disp = audit_by_name.get(name, {}).get("disposition")
+        if name in in_pool and disp == "band_full":
+            recoverable.append((name, audit_by_name[name]["band"]))
+        elif name not in in_pool:
+            settled.append((name, gate_reason.get(name, "no longer in the gated pool")))
         else:
-            why = audit_by_name.get(name, {}).get("disposition", "not reached by the walk")
-        lost.append((name, why))
+            settled.append((name, disp or "not reached by the walk"))
 
     kept = len(pinned_set & chosen)
     if pinned_set:
         print(f"pin: {kept}/{len(pinned_set)} kept - "
               f"{kept} tasks' episodes and cached calls stay valid")
-    if lost:
-        # band_full among PINNED tasks is the one failure the pin exists to
-        # prevent, so it gets its own remedy line.
-        crowded = sorted({audit_by_name[n]["band"] for n, w in lost if w == "band_full"})
-        msg = [f"{len(lost)} pinned task(s) did not make the corpus:"]
-        msg += [f"  {n:30s} {w}" for n, w in lost[:40]]
-        if len(lost) > 40:
-            msg.append(f"  ... and {len(lost) - 40} more")
-        if crowded:
-            msg.append("")
-            msg.append(f"band(s) {crowded} filled before every pinned task was placed. "
-                       f"Raise the quota: --quota {crowded[0].upper()}=N. Nothing else "
-                       f"recovers those episodes - re-running them costs real calls.")
+    if settled:
+        print(f"pin: {len(settled)} pinned task(s) are gone for good - no quota brings "
+              f"them back, and their episodes are spent:")
+        for name, why in settled[:40]:
+            print(f"     {name:30s} {why}")
+        if len(settled) > 40:
+            print(f"     ... and {len(settled) - 40} more")
+    if recoverable:
+        crowded = sorted({b for _, b in recoverable})
+        msg = [f"{len(recoverable)} pinned task(s) were evicted by a FULL BAND, which is "
+               f"the one loss this pin exists to prevent:"]
+        msg += [f"  {n:30s} band {b} filled first" for n, b in recoverable[:40]]
+        if len(recoverable) > 40:
+            msg.append(f"  ... and {len(recoverable) - 40} more")
+        msg.append("")
+        msg.append(f"Nothing is wrong with these tasks - the walk simply reached the quota "
+                   f"before it reached them, and their episodes are still valid. Raise the "
+                   f"quota: " + "  ".join(f"--quota {b.upper()}=N" for b in crowded))
+        msg.append("Re-running them instead costs real calls.")
         text = "\n".join(msg)
         if args.allow_unpinned:
             print("WARNING: " + text)
@@ -383,7 +431,8 @@ def main() -> None:
                 "sources": [str(p) for p in pin_paths],
                 "n_pinned": len(pinned_set),
                 "n_kept": kept,
-                "lost": [{"name": n, "why": w} for n, w in lost],
+                "lost_recoverable": [{"name": n, "band": b} for n, b in recoverable],
+                "lost_settled": [{"name": n, "why": w} for n, w in settled],
                 "note": "pinned tasks are taken first within their band so a "
                         "re-selection does not evict a task whose episodes are "
                         "already paid for. Band membership is not in "
