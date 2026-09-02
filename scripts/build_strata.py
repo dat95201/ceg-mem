@@ -295,6 +295,10 @@ def main() -> None:
         "selection_source": (f"{DATA_DIR / 'tasks.json'} screen_pi_hat (pre-treatment)" if by_pi
                              else f"{DATA_DIR / 'tasks.json'} difficulty (contest rating, pre-treatment)"),
         "reported_source": str(pi_path) if pi_path else None,
+        # What fixed the bands, and what that choice costs - computed above and,
+        # until 2026-09-02, never actually written into the file. The notebook
+        # cell that reads strata.json["band_source"] found that out first.
+        "band_source": band_source,
         "seed": seed,
         "n_total": len(tasks),
         "n_primary": n_primary,
