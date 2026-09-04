@@ -28,6 +28,7 @@ data/calls.jsonl
 paper/*.zip
 data/**/*_smoke.jsonl
 data/*_smoke.jsonl
+_to_delete/
 # scripts/screen_shard.sh keeps the previous report before measure_pi.py
 # rewrites it from scratch. Churn, not an artifact - consolidate_screens.py's
 # glob ignores it too.
