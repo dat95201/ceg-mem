@@ -1,0 +1,11 @@
+# experiment E9-freeguard, shard 9-12 of 24 (1-based, inclusive)
+# universe: data/official-2026-09-01/live_programs.txt
+# The tasks where pi_hat > 0, i.e. where extra attempts can convert into
+# a repair. Written by scripts/build_live_universe.py - do not hand-edit.
+# source: data/official-2026-09-01/sweep_programs.txt (30 tasks)
+# bands:  dead=6 [dropped]  hard=6  medium=6  easy=6  too_easy=6
+# corpus_sha256: 92a55fc40b1f9234cf9e6c6b0696955ed4e1c62aac042fb4feb2a3b5c1243711
+abc289_c/45901971
+abc286_d/45471607
+abc260_b/53041244
+abc298_d/45710768

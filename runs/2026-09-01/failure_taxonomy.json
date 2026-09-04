@@ -1,0 +1,92 @@
+{
+  "success_at_budget": {
+    "no_memory": {
+      "n_episodes": 495,
+      "success@8": {
+        "oracle_budget": 0.5636363636363636,
+        "proposal_budget": 0.5636363636363636
+      },
+      "success@10": {
+        "oracle_budget": 0.604040404040404,
+        "proposal_budget": 0.604040404040404
+      }
+    },
+    "untyped": {
+      "n_episodes": 849,
+      "success@8": {
+        "oracle_budget": 0.7126030624263839,
+        "proposal_budget": 0.5641931684334511
+      },
+      "success@10": {
+        "oracle_budget": 0.7126030624263839,
+        "proposal_budget": 0.6054181389870436
+      }
+    },
+    "typed": {
+      "n_episodes": 936,
+      "success@8": {
+        "oracle_budget": 0.7072649572649573,
+        "proposal_budget": 0.5854700854700855
+      },
+      "success@10": {
+        "oracle_budget": 0.7072649572649573,
+        "proposal_budget": 0.6164529914529915
+      }
+    }
+  },
+  "failure_taxonomy": {
+    "n_typed_episodes": 936,
+    "n_failed": 274,
+    "budget_exhaustion_rate": 0.29273504273504275,
+    "guard_miss_mean_per_episode": 0.06517094017094018,
+    "residual_redundant_proposal": "not separable from guard_miss with this implementation's instrumentation - see module docstring; reporting guard_miss for both taxonomy rows",
+    "anchoring_suspected_rate_among_failed": 0.16058394160583941,
+    "anchoring_suspected_episode_ids": [
+      "0a0020d65720",
+      "1576150b63b4",
+      "167a555eefe2",
+      "197906b4a76c",
+      "24b279988f8d",
+      "29d5433ea9c5",
+      "31fcee318aa5",
+      "3cda4622b5c5",
+      "3f0aef2df4ab",
+      "459e586a95b8",
+      "49055e13c80e",
+      "4e293296ed29",
+      "52800921dbae",
+      "52c1a92db582",
+      "54dc2e5626f2",
+      "54ff2b319f59",
+      "57279d06ae73",
+      "6e59ed9b1b6f",
+      "77e9aa558193",
+      "81cab68114e7",
+      "8736170541aa",
+      "8b641f7610a7",
+      "8d51fbbefda4",
+      "8e3310b66fb4",
+      "99b943fdabe5",
+      "9b624b178e89",
+      "a267fb24fbeb",
+      "a8af0456413d",
+      "ab052288a069",
+      "ab26f8b3509a",
+      "ac94524adb36",
+      "bec15197b7a3",
+      "c20bc5f5df79",
+      "c4acad107020",
+      "c626f06870b2",
+      "c64c327da058",
+      "cac2e06fdc74",
+      "cb0e62f44ad4",
+      "e20b16648403",
+      "e33a9b90be51",
+      "ecf6452fcbb5",
+      "edb0b0dd8d81",
+      "f18b67f61ee5",
+      "ffd665917fdb"
+    ],
+    "anchoring_note": "PROXY, not ground truth: flags a failed typed episode if the no_memory corpus of the same task ever accepted a patch touching a location this episode had already eliminated. Correlational evidence, not a causal trace of this episode's own proposer - reviewed manually before citing in the paper."
+  }
+}

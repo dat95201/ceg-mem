@@ -1,0 +1,41 @@
+{
+  "note": "every candidate in the pool and what became of it - the full screened distribution SS VI-A-c requires to be reported, including everything excluded",
+  "model": null,
+  "bands": {
+    "dead": [
+      0.0,
+      0.02
+    ],
+    "hard": [
+      0.02,
+      0.08
+    ],
+    "medium": [
+      0.08,
+      0.18
+    ],
+    "easy": [
+      0.18,
+      0.3501
+    ],
+    "too_easy": [
+      0.3501,
+      1.01
+    ]
+  },
+  "quotas": {
+    "easy": 30,
+    "medium": 20,
+    "hard": 30,
+    "too_easy": 15,
+    "dead": 20
+  },
+  "counts": {
+    "easy": 21,
+    "medium": 20,
+    "hard": 28,
+    "too_easy": 14,
+    "dead": 16
+  },
+  "candidates": []
+}

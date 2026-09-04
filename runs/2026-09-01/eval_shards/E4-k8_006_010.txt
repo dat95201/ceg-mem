@@ -1,0 +1,9 @@
+# experiment E4-k8, shard 6-10 of 30 (1-based, inclusive)
+# universe: data/official-2026-09-01/sweep_programs.txt
+# corpus: data/official-2026-09-01/tasks.json
+# corpus_sha256: 92a55fc40b1f9234cf9e6c6b0696955ed4e1c62aac042fb4feb2a3b5c1243711
+abc297_e/46197532
+abc287_d/45092019
+abc285_e/48880084
+abc250_g/31608048
+abc292_b/45575109

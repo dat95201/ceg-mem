@@ -1,0 +1,4400 @@
+{
+  "corpus": "/content/ceg-mem/data/official-2026-09-01/tasks.json",
+  "n_tasks": 99,
+  "max_examples": 80,
+  "full_pool_cap": 300,
+  "sites_per_type": 1,
+  "seed": 20260717,
+  "elapsed_sec": 1342.7,
+  "planted": {
+    "n_planted": 297,
+    "n_caught": 249,
+    "n_missed": 0,
+    "n_equivalent": 48,
+    "n_inconclusive": 0,
+    "n_unavailable": 0,
+    "catch_rate": 0.8384,
+    "equivalent_rate": 0.1616,
+    "catch_rate_by_max_examples": {
+      "1": 0.6466,
+      "2": 0.7871,
+      "3": 0.8072,
+      "5": 0.8876,
+      "10": 0.9518,
+      "20": 0.9799,
+      "40": 0.996,
+      "80": 1.0
+    },
+    "by_fault_type": {
+      "missing_guard": {
+        "caught": 90,
+        "equivalent": 9
+      },
+      "off_by_one": {
+        "caught": 82,
+        "equivalent": 17
+      },
+      "wrong_comparison": {
+        "caught": 77,
+        "equivalent": 22
+      }
+    }
+  },
+  "natural": {},
+  "complete": true,
+  "per_task": {
+    "abc324_d/54390162": {
+      "n_test_cases": 46,
+      "mutant_capacity": {
+        "off_by_one": 3,
+        "wrong_comparison": 5,
+        "missing_guard": 6
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L18:C13",
+          "note": "inflates an accumulator's step by one on every update",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -17,3 +17,3 @@\n     if can_sort(i**2):\n-      ans += 1\n+      ans += (1) + 1\n       #print(i**2, ans)\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L16:C8",
+          "note": "tightens `<=` to `<`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -15,3 +15,3 @@\n   \n-  while i**2 <= upper:\n+  while i**2 < upper:\n     if can_sort(i**2):\n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L46:C6",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -45,3 +45,3 @@\n       \n-      if not matches:\n+      if False:\n         return\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "agc065_c/48625236": {
+      "n_test_cases": 83,
+      "mutant_capacity": {
+        "off_by_one": 3,
+        "wrong_comparison": 5,
+        "missing_guard": 4
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L2:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -1,3 +1,3 @@\n T = int(input())\n-for _ in range(T):\n+for _ in range((T) - 1):\n     N = int(input())\n",
+          "examples_tried": 1,
+          "counterexample": "03_max_case_yes_36.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L11:C32",
+          "note": "tightens `>=` to `>`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n             Odd += 1\n-            if Odd % 2 == 0 and i >= Odd+1:\n+            if Odd % 2 == 0 and i > Odd+1:\n                 print(\"Yes\")\n",
+          "examples_tried": 1,
+          "counterexample": "03_max_case_yes_36.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L17:C4",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -16,3 +16,3 @@\n             Em = max(Em, i)\n-    if Test == 1:\n+    if False:\n         continue\n",
+          "examples_tried": 1,
+          "counterexample": "03_max_case_yes_36.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc355_b/55109474": {
+      "n_test_cases": 20,
+      "mutant_capacity": {
+        "off_by_one": 7,
+        "wrong_comparison": 2,
+        "missing_guard": 1
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L11:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n c.sort()\n-for i in range(n + m - 1):\n+for i in range((n + m - 1) - 1):\n     if c[i][1] == 1 and c[i+1][1] == 1:\n",
+          "examples_tried": 20,
+          "counterexample": "02_handmade_07.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L12:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n for i in range(n + m - 1):\n-    if c[i][1] == 1 and c[i+1][1] == 1:\n+    if c[i][1] != 1 and c[i+1][1] == 1:\n         print(\"Yes\")\n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_02.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L12:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n for i in range(n + m - 1):\n-    if c[i][1] == 1 and c[i+1][1] == 1:\n+    if False:\n         print(\"Yes\")\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc339_f/52897763": {
+      "n_test_cases": 80,
+      "mutant_capacity": {
+        "off_by_one": 5,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L3:C37",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -2,3 +2,3 @@\n mod = 98080989074039189058908908209991\n-a = [int(input())%mod for _ in range(n)]\n+a = [int(input())%mod for _ in range((n) - 1)]\n d = dict()\n",
+          "examples_tried": 4,
+          "counterexample": "hack_04.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L14:C11",
+          "note": "inverts a membership test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -13,3 +13,3 @@\n         value = i*j%mod\n-        if value in d: ans += d[value%mod]\n+        if value not in d: ans += d[value%mod]\n \n",
+          "examples_tried": 1,
+          "counterexample": "hack_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L14:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -13,3 +13,3 @@\n         value = i*j%mod\n-        if value in d: ans += d[value%mod]\n+        if False: ans += d[value%mod]\n \n",
+          "examples_tried": 3,
+          "counterexample": "hack_03.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "arc159_b/45431609": {
+      "n_test_cases": 41,
+      "mutant_capacity": {
+        "off_by_one": 6,
+        "wrong_comparison": 5,
+        "missing_guard": 5
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L17:C26",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -16,3 +16,3 @@\n         m = float(\"inf\")\n-        for i in range(1, int(diff**0.5) + 1):\n+        for i in range(1, (int(diff**0.5) + 1) - 1):\n             if diff % i == 0:\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L4:C3",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n a, b = map(int, input().split())\n-if a < b:\n+if a <= b:\n     a, b = b, a\n",
+          "examples_tried": 41,
+          "counterexample": null,
+          "full_pool_examples_tried": 41,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L4:C0",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n a, b = map(int, input().split())\n-if a < b:\n+if False:\n     a, b = b, a\n",
+          "examples_tried": 4,
+          "counterexample": "01_rnd_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "arc172_a/54670313": {
+      "n_test_cases": 27,
+      "mutant_capacity": {
+        "off_by_one": 7,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L6:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -5,3 +5,3 @@\n \n-for i in range(N):\n+for i in range((N) - 1):\n     D[A[i]] += 1\n",
+          "examples_tried": 2,
+          "counterexample": "in02.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L12:C7",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n     d = (H // 2 ** i) * (W // 2 ** i)\n-    if d - 4 * s < D[i]:\n+    if d - 4 * s <= D[i]:\n         print('No')\n",
+          "examples_tried": 1,
+          "counterexample": "in01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L12:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n     d = (H // 2 ** i) * (W // 2 ** i)\n-    if d - 4 * s < D[i]:\n+    if False:\n         print('No')\n",
+          "examples_tried": 2,
+          "counterexample": "in02.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc304_b/46153900": {
+      "n_test_cases": 22,
+      "mutant_capacity": {
+        "off_by_one": 2,
+        "wrong_comparison": 13,
+        "missing_guard": 7
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L19:C21",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -18,2 +18,2 @@\n     \n-print(N // 10**range(N) * 10**range(N) )+print(N // 10**range((N) - 1) * 10**range(N) )",
+          "examples_tried": 11,
+          "counterexample": "testcase06.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L4:C7",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n def range(n):\n-    if(n < 10**3):\n+    if(n <= 10**3):\n         return 0\n",
+          "examples_tried": 22,
+          "counterexample": null,
+          "full_pool_examples_tried": 22,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L16:C4",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -15,3 +15,3 @@\n         return 5\n-    elif(10**8 <= n < 10**9):\n+    elif(False):\n         return 6\n",
+          "examples_tried": 5,
+          "counterexample": "testcase00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc348_c/54707785": {
+      "n_test_cases": 30,
+      "mutant_capacity": {
+        "off_by_one": 4,
+        "wrong_comparison": 2,
+        "missing_guard": 2
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L3:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -2,3 +2,3 @@\n cs = {}\n-for i in range(n):\n+for i in range((n) - 1):\n   a, c = map(int, input().split())\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L15:C5",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -14,3 +14,3 @@\n   m = min(cs[k])\n-  if m > a:\n+  if m >= a:\n     c = k\n",
+          "examples_tried": 30,
+          "counterexample": null,
+          "full_pool_examples_tried": 30,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L15:C2",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -14,3 +14,3 @@\n   m = min(cs[k])\n-  if m > a:\n+  if False:\n     c = k\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc325_b/54778964": {
+      "n_test_cases": 24,
+      "mutant_capacity": {
+        "off_by_one": 6,
+        "wrong_comparison": 2,
+        "missing_guard": 1
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L5:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n \n-for i in range(N) :\n+for i in range((N) - 1) :\n     w,x = map(int,input().split())\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L15:C13",
+          "note": "tightens `>=` to `>`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -14,3 +14,3 @@\n         now_time = (X[i]+j)%24\n-        if ((now_time >= 9)and(now_time < 18)):\n+        if ((now_time > 9)and(now_time < 18)):\n             count += W[i]\n",
+          "examples_tried": 5,
+          "counterexample": "01_random_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L15:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -14,3 +14,3 @@\n         now_time = (X[i]+j)%24\n-        if ((now_time >= 9)and(now_time < 18)):\n+        if (False):\n             count += W[i]\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "arc155_c/40890958": {
+      "n_test_cases": 69,
+      "mutant_capacity": {
+        "off_by_one": 13,
+        "wrong_comparison": 8,
+        "missing_guard": 10
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L13:C39",
+          "note": "advances a slice's lower bound by one",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n     flag = 0\n-    for i1, i2 in zip(odd_pos, odd_pos[1:]):\n+    for i1, i2 in zip(odd_pos, odd_pos[(1) + 1:]):\n         if i2-i1 <= 2:\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L14:C11",
+          "note": "tightens `<=` to `<`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -13,3 +13,3 @@\n     for i1, i2 in zip(odd_pos, odd_pos[1:]):\n-        if i2-i1 <= 2:\n+        if i2-i1 < 2:\n             flag = 1\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L9:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -8,3 +8,3 @@\n     for i, a in enumerate(data):\n-        if a % 2:\n+        if False:\n             odd_pos.append(i)\n",
+          "examples_tried": 4,
+          "counterexample": "01_rand_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc297_e/46197532": {
+      "n_test_cases": 43,
+      "mutant_capacity": {
+        "off_by_one": 1,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L13:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n \n-for _ in range(k):\n+for _ in range((k) - 1):\n     u = heappop(hq)\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L16:C11",
+          "note": "inverts a negated membership test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -15,3 +15,3 @@\n     for a in A:\n-        if u + a not in ans:\n+        if u + a in ans:\n             heappush(hq, u+a)\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L16:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -15,3 +15,3 @@\n     for a in A:\n-        if u + a not in ans:\n+        if False:\n             heappush(hq, u+a)\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc357_a/55021619": {
+      "n_test_cases": 19,
+      "mutant_capacity": {
+        "off_by_one": 3,
+        "wrong_comparison": 4,
+        "missing_guard": 3
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L6:C19",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -5,3 +5,3 @@\n     hand = 0\n-    for i in range(len(h)):\n+    for i in range((len(h)) - 1):\n         hand = hand + h[i]\n",
+          "examples_tried": 5,
+          "counterexample": "hand_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L9:C11",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -8,3 +8,3 @@\n \n-        if hand > m:\n+        if hand >= m:\n             print(i)\n",
+          "examples_tried": 2,
+          "counterexample": "example_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L13:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n \n-        elif hand == m:\n+        elif False:\n             print(i+1)\n",
+          "examples_tried": 4,
+          "counterexample": "hand_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "arc173_e/51134374": {
+      "n_test_cases": 144,
+      "mutant_capacity": {
+        "off_by_one": 7,
+        "wrong_comparison": 11,
+        "missing_guard": 9
+      },
+      "n_planted": 3,
+      "n_caught": 1,
+      "n_missed": 0,
+      "n_equivalent": 2,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L9:C22",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -8,3 +8,3 @@\n     n1 = len(a)\n-    for i in range(1, n1):\n+    for i in range(1, (n1) - 1):\n         a1.append(a[0] ^ a[i])\n",
+          "examples_tried": 4,
+          "counterexample": "07_handmade_03.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L16:C15",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -15,3 +15,3 @@\n         for elem2 in basis:\n-            if elemcpy ^ elem2 < elemcpy:\n+            if elemcpy ^ elem2 <= elemcpy:\n                 elemcpy = elemcpy ^ elem2\n",
+          "examples_tried": 80,
+          "counterexample": null,
+          "full_pool_examples_tried": 144,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L62:C12",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -61,3 +61,3 @@\n             b = os.read(self._fd, max(os.fstat(self._fd).st_size, BUFSIZE))\n-            if not b:\n+            if False:\n                 break\n",
+          "examples_tried": 80,
+          "counterexample": null,
+          "full_pool_examples_tried": 144,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        }
+      ]
+    },
+    "abc330_c/54071794": {
+      "n_test_cases": 31,
+      "mutant_capacity": {
+        "off_by_one": 6,
+        "wrong_comparison": 5,
+        "missing_guard": 5
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L4:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n square = []\n-for i in range(10**7):\n+for i in range((10**7) - 1):\n     if i**2 > D:\n",
+          "examples_tried": 31,
+          "counterexample": null,
+          "full_pool_examples_tried": 31,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L5:C7",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n for i in range(10**7):\n-    if i**2 > D:\n+    if i**2 >= D:\n         break\n",
+          "examples_tried": 24,
+          "counterexample": "01_test_21.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L5:C4",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n for i in range(10**7):\n-    if i**2 > D:\n+    if False:\n         break\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc352_f/53476783": {
+      "n_test_cases": 62,
+      "mutant_capacity": {
+        "off_by_one": 44,
+        "wrong_comparison": 7,
+        "missing_guard": 9
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L2:C23",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -1,3 +1,3 @@\n n, m = map(int, input().split())\n-G = [[] for _ in range(n)]\n+G = [[] for _ in range((n) - 1)]\n for _ in range(m):\n",
+          "examples_tried": 1,
+          "counterexample": "sample00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L53:C19",
+          "note": "tightens `>=` to `>`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -52,3 +52,3 @@\n             for sft in range(n):\n-                if bit|(g[j]<<sft)>=(1<<n):\n+                if bit|(g[j]<<sft)>(1<<n):\n                     break\n",
+          "examples_tried": 62,
+          "counterexample": null,
+          "full_pool_examples_tried": 62,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L17:C8",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -16,3 +16,3 @@\n     for v, c in G[u]:\n-        if used[v]: continue\n+        if False: continue\n         res += dfs(v, d + c)\n",
+          "examples_tried": 1,
+          "counterexample": "sample00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc295_e/54729841": {
+      "n_test_cases": 42,
+      "mutant_capacity": {
+        "off_by_one": 24,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "n_planted": 3,
+      "n_caught": 1,
+      "n_missed": 0,
+      "n_equivalent": 2,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L15:C17",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -14,3 +14,3 @@\n \n-for i in range(1,n+1):\n+for i in range(1,(n+1) - 1):\n   p.append(p[-1]*i%mod)\n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L22:C5",
+          "note": "tightens `>=` to `>`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -21,3 +21,3 @@\n for i in range(1,m+1):\n-  if now>=k:\n+  if now>k:\n     break\n",
+          "examples_tried": 42,
+          "counterexample": null,
+          "full_pool_examples_tried": 42,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L22:C2",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -21,3 +21,3 @@\n for i in range(1,m+1):\n-  if now>=k:\n+  if False:\n     break\n",
+          "examples_tried": 42,
+          "counterexample": null,
+          "full_pool_examples_tried": 42,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        }
+      ]
+    },
+    "abc356_e/54889247": {
+      "n_test_cases": 25,
+      "mutant_capacity": {
+        "off_by_one": 33,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L34:C49",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -33,3 +33,3 @@\n \n-def InputIR(n):  return [InputI() for _ in range(n)]\n+def InputIR(n):  return [InputI() for _ in range((n) - 1)]\n def InputILR(n): return [InputIL() for _ in range(n)]\n",
+          "examples_tried": 25,
+          "counterexample": null,
+          "full_pool_examples_tried": 25,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L61:C11",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -60,3 +60,3 @@\n     for alpha in range(1, A[-1]//key+1):\n-        if alpha == 1:\n+        if alpha != 1:\n             ans += alpha * (le[(alpha+1)*key-1] - le[alpha*key]) * value\n",
+          "examples_tried": 1,
+          "counterexample": "min_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L61:C8",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -60,3 +60,3 @@\n     for alpha in range(1, A[-1]//key+1):\n-        if alpha == 1:\n+        if True:\n             ans += alpha * (le[(alpha+1)*key-1] - le[alpha*key]) * value\n",
+          "examples_tried": 2,
+          "counterexample": "random_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "arc155_a/40182881": {
+      "n_test_cases": 19,
+      "mutant_capacity": {
+        "off_by_one": 25,
+        "wrong_comparison": 11,
+        "missing_guard": 9
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L3:C19",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -2,3 +2,3 @@\n     T = int(input())\n-    for _ in range(T):\n+    for _ in range((T) - 1):\n         N, K = map(int, input().split())\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L6:C11",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -5,3 +5,3 @@\n         S = list(input())\n-        if K < N:\n+        if K <= N:\n             L1 = S + S[:K][::-1]\n",
+          "examples_tried": 19,
+          "counterexample": null,
+          "full_pool_examples_tried": 19,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L10:C16",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n             for i in range(N+K):\n-                if L1[i] != L1[-i-1] or L2[i] != L2[-i-1]:\n+                if False:\n                     break\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc308_c/45926524": {
+      "n_test_cases": 23,
+      "mutant_capacity": {
+        "off_by_one": 22,
+        "wrong_comparison": 7,
+        "missing_guard": 5
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L3:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -2,3 +2,3 @@\n p=[]\n-for i in range(n):\n+for i in range((n) - 1):\n     a,b=map(int,input().split())\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L10:C6",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n i=0\n-while i<n:\n+while i<=n:\n     if i<n-1 and p[i][0]==p[i+1][0]:\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L18:C12",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -17,3 +17,3 @@\n             j+=1\n-            if i+j==n:\n+            if False:\n                 break\n",
+          "examples_tried": 23,
+          "counterexample": null,
+          "full_pool_examples_tried": 23,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        }
+      ]
+    },
+    "abc346_b/55138933": {
+      "n_test_cases": 22,
+      "mutant_capacity": {
+        "off_by_one": 11,
+        "wrong_comparison": 4,
+        "missing_guard": 4
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L7:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n piano=list(piano)\n-for i in range(len(piano)):#\u4f55\u6587\u5b57\u3068\u308b\u304b\n+for i in range((len(piano)) - 1):#\u4f55\u6587\u5b57\u3068\u308b\u304b\n   i+=1\n",
+          "examples_tried": 22,
+          "counterexample": null,
+          "full_pool_examples_tried": 22,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L13:C9",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n       k+=1\n-      if piano[j+k]==\"w\":\n+      if piano[j+k]!=\"w\":\n         A[0]+=1\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L13:C6",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n       k+=1\n-      if piano[j+k]==\"w\":\n+      if False:\n         A[0]+=1\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc308_a/46165457": {
+      "n_test_cases": 20,
+      "mutant_capacity": {
+        "off_by_one": 8,
+        "wrong_comparison": 5,
+        "missing_guard": 4
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L5:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n bad=0\n-for i in range(8):\n+for i in range((8) - 1):\n     if S==S_sort:\n",
+          "examples_tried": 20,
+          "counterexample": null,
+          "full_pool_examples_tried": 20,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L7:C15",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n     if S==S_sort:\n-            if S[i]>675 or S[i]<100:\n+            if S[i]>=675 or S[i]<100:\n                 bad+=1\n",
+          "examples_tried": 11,
+          "counterexample": "01_random_07.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L11:C20",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n                 for j in range(8):\n-                    if not S[j]%25==0:\n+                    if False:\n                         bad+=1\n",
+          "examples_tried": 7,
+          "counterexample": "01_random_03.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc309_e/46214263": {
+      "n_test_cases": 53,
+      "mutant_capacity": {
+        "off_by_one": 19,
+        "wrong_comparison": 2,
+        "missing_guard": 4
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L9:C29",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -8,3 +8,3 @@\n p = lr()\n-tree = [set() for _ in range(N)]\n+tree = [set() for _ in range((N) - 1)]\n for i in range(1, N):\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L18:C11",
+          "note": "tightens `>=` to `>`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -17,3 +17,3 @@\n visit = [0]*N\n-cnt = 1 if ins[0] >= 0 else 0\n+cnt = 1 if ins[0] > 0 else 0\n while len(q):\n",
+          "examples_tried": 53,
+          "counterexample": null,
+          "full_pool_examples_tried": 53,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L22:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -21,3 +21,3 @@\n     for v in tree[s]:\n-        if not visit[v]:\n+        if False:\n             visit[v] = 1\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc310_d/53176077": {
+      "n_test_cases": 49,
+      "mutant_capacity": {
+        "off_by_one": 11,
+        "wrong_comparison": 5,
+        "missing_guard": 5
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L5:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n \n-for _ in range(M):\n+for _ in range((M) - 1):\n     a,b=map(lambda x:int(x)-1,input().split())\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L19:C11",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -18,3 +18,3 @@\n     for i in range(len(teams)):\n-        if len(teams[i])>0:\n+        if len(teams[i])>=0:\n             for t in teams[i]:\n",
+          "examples_tried": 49,
+          "counterexample": null,
+          "full_pool_examples_tried": 49,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L12:C4",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n def f(now):\n-    if now==N:\n+    if False:\n         #now\u3092N\u304b\u3089\u6ce2\u53ca\u3055\u305b\u3066\u3044\u304f\u304c\u3001\u305d\u306e\u3068\u304d\u3001\u3061\u3083\u3093\u3068teams\u304cT\u306b\u306a\u3063\u3066\u3044\u308c\u30701\u3092\u8fd4\u3059\u3088\u3046\u306b\u3059\u308b\u3002\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc353_b/54945668": {
+      "n_test_cases": 15,
+      "mutant_capacity": {
+        "off_by_one": 12,
+        "wrong_comparison": 6,
+        "missing_guard": 5
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L6:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -5,3 +5,3 @@\n dep_count = 0\n-for i in range(n):\n+for i in range((n) - 1):\n     if seat_count > a[i]:\n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L7:C7",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n for i in range(n):\n-    if seat_count > a[i]:\n+    if seat_count >= a[i]:\n         seat_count -= a[i]\n",
+          "examples_tried": 13,
+          "counterexample": "01_random_12.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L13:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n         seat_count -= a[i]\n-        if seat_count == 0:\n+        if False:\n             dep_count += 1\n",
+          "examples_tried": 15,
+          "counterexample": null,
+          "full_pool_examples_tried": 15,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        }
+      ]
+    },
+    "abc292_c/45291809": {
+      "n_test_cases": 26,
+      "mutant_capacity": {
+        "off_by_one": 11,
+        "wrong_comparison": 2,
+        "missing_guard": 2
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L9:C29",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -8,3 +8,3 @@\n     cnt = 0\n-    for range_num in range(1,int(i **0.5)+1):\n+    for range_num in range(1,(int(i **0.5)+1) - 1):\n         if i % range_num == 0:\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L11:C15",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n         if i % range_num == 0:\n-            if range_num * range_num < i:\n+            if range_num * range_num <= i:\n                 cnt += 2\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L10:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n     for range_num in range(1,int(i **0.5)+1):\n-        if i % range_num == 0:\n+        if False:\n             if range_num * range_num < i:\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc356_b/55010067": {
+      "n_test_cases": 25,
+      "mutant_capacity": {
+        "off_by_one": 11,
+        "wrong_comparison": 3,
+        "missing_guard": 3
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L4:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n X =[]\n-for i in range(N):\n+for i in range((N) - 1):\n   X.append(list(map(int,input().split())))\n",
+          "examples_tried": 1,
+          "counterexample": "hand.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L18:C5",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -17,3 +17,3 @@\n     break\n-  if Y[i] < A[i]:\n+  if Y[i] <= A[i]:\n     print('No')\n",
+          "examples_tried": 1,
+          "counterexample": "hand.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L16:C2",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -15,3 +15,3 @@\n for i in range(M):\n-  if Flag == False:\n+  if False:\n     break\n",
+          "examples_tried": 25,
+          "counterexample": null,
+          "full_pool_examples_tried": 25,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        }
+      ]
+    },
+    "abc331_d/53655797": {
+      "n_test_cases": 16,
+      "mutant_capacity": {
+        "off_by_one": 48,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L9:C34",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -8,3 +8,3 @@\n N, Q = map(int, input().split())\n-P = [list(input()) for i in range(N)]\n+P = [list(input()) for i in range((N) - 1)]\n score = [[0] * (N+1) for i in range(N+1)]\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L15:C11",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -14,3 +14,3 @@\n     for j in range(1, N+1):\n-        if P[i-1][j-1] == \"B\":\n+        if P[i-1][j-1] != \"B\":\n             score[i][j] = 1\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L15:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -14,3 +14,3 @@\n     for j in range(1, N+1):\n-        if P[i-1][j-1] == \"B\":\n+        if False:\n             score[i][j] = 1\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc303_d/45489398": {
+      "n_test_cases": 31,
+      "mutant_capacity": {
+        "off_by_one": 84,
+        "wrong_comparison": 6,
+        "missing_guard": 6
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L13:C30",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n Slen = len(S)\n-res = [[INF]*2 for i in range(Slen+1)]\n+res = [[INF]*2 for i in range((Slen+1) - 1)]\n res[0][0] = 0\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L16:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -15,3 +15,3 @@\n for i in range(Slen):\n-    if S[i] == 'a':\n+    if S[i] != 'a':\n         if res[i][0] != INF:\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L17:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -16,3 +16,3 @@\n     if S[i] == 'a':\n-        if res[i][0] != INF:\n+        if False:\n             res[i+1][0] = min(res[i+1][0], res[i][0] + X)\n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc287_d/45092019": {
+      "n_test_cases": 73,
+      "mutant_capacity": {
+        "off_by_one": 29,
+        "wrong_comparison": 7,
+        "missing_guard": 3
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L4:C28",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n \n-pre = [False for i in range(len(t)+1)]\n+pre = [False for i in range((len(t)+1) - 1)]\n back = [False for i in range(len(t)+1)]\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L9:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -8,3 +8,3 @@\n for i in range(1,len(t)+1):\n-    if s[i-1] == t[i-1] or (s[i-1] == \"?\" or t[i-1] == \"?\"):\n+    if s[i-1] != t[i-1] or (s[i-1] == \"?\" or t[i-1] == \"?\"):\n         pre[i] = True\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L9:C4",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -8,3 +8,3 @@\n for i in range(1,len(t)+1):\n-    if s[i-1] == t[i-1] or (s[i-1] == \"?\" or t[i-1] == \"?\"):\n+    if True:\n         pre[i] = True\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc341_e/53935483": {
+      "n_test_cases": 42,
+      "mutant_capacity": {
+        "off_by_one": 28,
+        "wrong_comparison": 11,
+        "missing_guard": 11
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L28:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -27,3 +27,3 @@\n \n-for i in range(Q):\n+for i in range((Q) - 1):\n     que,left,right = map(int, stdin.readline().split())\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L10:C10",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n     s = 0\n-    while pos > 0:\n+    while pos >= 0:\n         s += BIT[pos]\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L22:C4",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -21,3 +21,3 @@\n for i,v in enumerate(S):\n-    if i == 0:\n+    if False:\n         continue\n",
+          "examples_tried": 2,
+          "counterexample": "example_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc289_c/45901971": {
+      "n_test_cases": 26,
+      "mutant_capacity": {
+        "off_by_one": 4,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L4:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n l = []\n-for i in range(m):\n+for i in range((m) - 1):\n   c = int(input())\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L15:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -14,3 +14,3 @@\n       s = s | set(k)\n-    if len(s) == n:\n+    if len(s) != n:\n       ans += 1\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L15:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -14,3 +14,3 @@\n       s = s | set(k)\n-    if len(s) == n:\n+    if False:\n       ans += 1\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "arc157_d/39202960": {
+      "n_test_cases": 62,
+      "mutant_capacity": {
+        "off_by_one": 80,
+        "wrong_comparison": 26,
+        "missing_guard": 18
+      },
+      "n_planted": 3,
+      "n_caught": 1,
+      "n_missed": 0,
+      "n_equivalent": 2,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L12:C22",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n     candidates = []\n-    for i in range(1, 2002):\n+    for i in range(1, (2002) - 1):\n         if i * i > count_y:\n",
+          "examples_tried": 62,
+          "counterexample": null,
+          "full_pool_examples_tried": 62,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L13:C11",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n     for i in range(1, 2002):\n-        if i * i > count_y:\n+        if i * i >= count_y:\n             break\n",
+          "examples_tried": 6,
+          "counterexample": "01-003.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L8:C4",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n         count_y += s.count(\"Y\")\n-    if count_y % 2 == 1:\n+    if False:\n         return 0\n",
+          "examples_tried": 62,
+          "counterexample": null,
+          "full_pool_examples_tried": 62,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        }
+      ]
+    },
+    "abc307_d/45446603": {
+      "n_test_cases": 48,
+      "mutant_capacity": {
+        "off_by_one": 1,
+        "wrong_comparison": 2,
+        "missing_guard": 3
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L23:C20",
+          "note": "advances a slice's lower bound by one",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -22,3 +22,3 @@\n \n-            del ans[sakuzyo.pop():]\n+            del ans[(sakuzyo.pop()) + 1:]\n \n",
+          "examples_tried": 2,
+          "counterexample": "random_02.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L16:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -15,3 +15,3 @@\n     #print(sakuzyo)\n-    if mozi == \"(\":\n+    if mozi != \"(\":\n         sakuzyo.append(len(ans))\n",
+          "examples_tried": 2,
+          "counterexample": "random_02.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L16:C4",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -15,3 +15,3 @@\n     #print(sakuzyo)\n-    if mozi == \"(\":\n+    if True:\n         sakuzyo.append(len(ans))\n",
+          "examples_tried": 2,
+          "counterexample": "random_02.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc290_c/45228128": {
+      "n_test_cases": 62,
+      "mutant_capacity": {
+        "off_by_one": 5,
+        "wrong_comparison": 2,
+        "missing_guard": 2
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L4:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n A=input().split()\n-for i in range(n):\n+for i in range((n) - 1):\n   if not A[i] in a:\n",
+          "examples_tried": 2,
+          "counterexample": "test_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L5:C9",
+          "note": "inverts a membership test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n for i in range(n):\n-  if not A[i] in a:\n+  if not A[i] not in a:\n     a.add(int(A[i]))\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L5:C2",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n for i in range(n):\n-  if not A[i] in a:\n+  if False:\n     a.add(int(A[i]))\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "arc176_d/52897913": {
+      "n_test_cases": 16,
+      "mutant_capacity": {
+        "off_by_one": 82,
+        "wrong_comparison": 2,
+        "missing_guard": 4
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L8:C28",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n def prod(A,B,k,l,m):# A:k*l,B:l*m\n-    C=[[None for i in range(m)] for j in range(k)]\n+    C=[[None for i in range((m) - 1)] for j in range(k)]\n \n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L32:C3",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -31,3 +31,3 @@\n \n-if N==2:\n+if N!=2:\n     print(1)\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L32:C0",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -31,3 +31,3 @@\n \n-if N==2:\n+if False:\n     print(1)\n",
+          "examples_tried": 16,
+          "counterexample": null,
+          "full_pool_examples_tried": 16,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        }
+      ]
+    },
+    "abc326_c/54454360": {
+      "n_test_cases": 36,
+      "mutant_capacity": {
+        "off_by_one": 11,
+        "wrong_comparison": 3,
+        "missing_guard": 2
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L7:C19",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n \n-    for n in range(N-1):\n+    for n in range((N-1) - 1):\n         B.append(A[n+1]-A[n])\n",
+          "examples_tried": 7,
+          "counterexample": "test_04.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L17:C11",
+          "note": "tightens `>=` to `>`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -16,3 +16,3 @@\n         kazu+=1\n-        if kyori>=M:\n+        if kyori>M:\n             while kyori>=M:\n",
+          "examples_tried": 2,
+          "counterexample": "sample_02.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L17:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -16,3 +16,3 @@\n         kazu+=1\n-        if kyori>=M:\n+        if False:\n             while kyori>=M:\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc346_e/54144246": {
+      "n_test_cases": 43,
+      "mutant_capacity": {
+        "off_by_one": 25,
+        "wrong_comparison": 3,
+        "missing_guard": 4
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L20:C19",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -19,3 +19,3 @@\n     ops = []\n-    for i in range(m):\n+    for i in range((m) - 1):\n         t, a, x = next_array()\n",
+          "examples_tried": 1,
+          "counterexample": "sample00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L44:C11",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -43,3 +43,3 @@\n     for i in range(200001):\n-        if count[i] > 0:\n+        if count[i] >= 0:\n             res.append([str(i), str(count[i])])\n",
+          "examples_tried": 1,
+          "counterexample": "sample00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L31:C12",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -30,3 +30,3 @@\n         if t == 1:\n-            if not row_visited[a]:\n+            if False:\n                 row_visited[a] = True\n",
+          "examples_tried": 1,
+          "counterexample": "sample00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc319_b/46206496": {
+      "n_test_cases": 21,
+      "mutant_capacity": {
+        "off_by_one": 5,
+        "wrong_comparison": 4,
+        "missing_guard": 1
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L6:C29",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -5,3 +5,3 @@\n     n = getInt()\n-    a = [j for j in range(1, 10) if n % j == 0]\n+    a = [j for j in range(1, (10) - 1) if n % j == 0]\n \n",
+          "examples_tried": 7,
+          "counterexample": "006.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L6:C36",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -5,3 +5,3 @@\n     n = getInt()\n-    a = [j for j in range(1, 10) if n % j == 0]\n+    a = [j for j in range(1, 10) if n % j != 0]\n \n",
+          "examples_tried": 1,
+          "counterexample": "000.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L11:C8",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n         x = [b for b in a if i % (n / b) == 0]\n-        if len(x) == 0:\n+        if True:\n             r += '-'\n",
+          "examples_tried": 1,
+          "counterexample": "000.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc289_d/46033056": {
+      "n_test_cases": 59,
+      "mutant_capacity": {
+        "off_by_one": 13,
+        "wrong_comparison": 1,
+        "missing_guard": 3
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L17:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -16,3 +16,3 @@\n cantMove = [False] * (X+1)\n-for i in range(M):\n+for i in range((M) - 1):\n     cantMove[B[i]] = True\n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L26:C11",
+          "note": "tightens `<=` to `<`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -25,3 +25,3 @@\n     for a in A:\n-        if i + a <= X:\n+        if i + a < X:\n             dp[i+a] = True\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L22:C4",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -21,3 +21,3 @@\n for i in range(X):\n-    if cantMove[i] or not dp[i]:\n+    if False:\n         continue\n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc344_d/54876594": {
+      "n_test_cases": 58,
+      "mutant_capacity": {
+        "off_by_one": 29,
+        "wrong_comparison": 4,
+        "missing_guard": 4
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L5:C19",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n     S = []\n-    for _ in range(N):\n+    for _ in range((N) - 1):\n         tmp = input().split()\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L24:C19",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -23,3 +23,3 @@\n                 post_len = j + len(s)\n-                if post_len > len(T):\n+                if post_len >= len(T):\n                     break\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L24:C16",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -23,3 +23,3 @@\n                 post_len = j + len(s)\n-                if post_len > len(T):\n+                if False:\n                     break\n",
+          "examples_tried": 58,
+          "counterexample": null,
+          "full_pool_examples_tried": 58,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        }
+      ]
+    },
+    "abc333_b/54467069": {
+      "n_test_cases": 18,
+      "mutant_capacity": {
+        "off_by_one": 4,
+        "wrong_comparison": 238,
+        "missing_guard": 26
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L2:C7",
+          "note": "shifts a subscript index down by one",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -1,3 +1,3 @@\n s = input()\n-s1 = s[0]\n+s1 = s[(0) - 1]\n s2 = s[1]\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L7:C3",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n t2 = t[1]\n-if s1 == 'A' and s2 == 'C':\n+if s1 != 'A' and s2 == 'C':\n   if t1 == 'E' and t2 == 'B'  or t1 == 'B' and t2 == 'E' or t1 == 'D' and t2 == 'B' or t1 == 'B' and t2 == 'D'  or t1 == 'A' and t2 == 'D' or t1 == 'D' and t2 == 'A'  or t1 == 'E' and t2 == 'C' or t1 == 'C' and t2 == 'E' or t1 == 'A' and t2 == 'C' or t1 == 'C' and t2 == 'A':\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L7:C0",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n t2 = t[1]\n-if s1 == 'A' and s2 == 'C':\n+if True:\n   if t1 == 'E' and t2 == 'B'  or t1 == 'B' and t2 == 'E' or t1 == 'D' and t2 == 'B' or t1 == 'B' and t2 == 'D'  or t1 == 'A' and t2 == 'D' or t1 == 'D' and t2 == 'A'  or t1 == 'E' and t2 == 'C' or t1 == 'C' and t2 == 'E' or t1 == 'A' and t2 == 'C' or t1 == 'C' and t2 == 'A':\n",
+          "examples_tried": 4,
+          "counterexample": "01_test_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc339_b/54672032": {
+      "n_test_cases": 15,
+      "mutant_capacity": {
+        "off_by_one": 24,
+        "wrong_comparison": 5,
+        "missing_guard": 5
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L3:C29",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -2,3 +2,3 @@\n H,W,N=map(int,sys.stdin.readline().split())\n-grid=[[\".\"]*W for i in range(H)]\n+grid=[[\".\"]*W for i in range((H) - 1)]\n directions=((-1,0),(0,1),(1,0),(0,-1))\n",
+          "examples_tried": 1,
+          "counterexample": "sample00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L9:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -8,3 +8,3 @@\n for i in range(N):\n-    if grid[y][x]==\".\":\n+    if grid[y][x]!=\".\":\n         grid[y][x]=\"#\"\n",
+          "examples_tried": 1,
+          "counterexample": "sample00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L21:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -20,3 +20,3 @@\n         x=0\n-    elif x==-1:\n+    elif False:\n         x=W-1\n",
+          "examples_tried": 9,
+          "counterexample": "testcase05.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc314_d/46143343": {
+      "n_test_cases": 24,
+      "mutant_capacity": {
+        "off_by_one": 5,
+        "wrong_comparison": 7,
+        "missing_guard": 7
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L4:C51",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n Q = int(input())\n-TXC = [[i for i in input().split()] for _ in range(Q)]\n+TXC = [[i for i in input().split()] for _ in range((Q) - 1)]\n \n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L22:C3",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -21,3 +21,3 @@\n ans = []\n-if islower < isupper:\n+if islower <= isupper:\n     for c, lm in zip(li, lastmodified):\n",
+          "examples_tried": 6,
+          "counterexample": "01_random_05.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L18:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -17,3 +17,3 @@\n         islower = i\n-    elif t == 3:\n+    elif False:\n         isupper = i\n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc358_d/55035534": {
+      "n_test_cases": 33,
+      "mutant_capacity": {
+        "off_by_one": 8,
+        "wrong_comparison": 5,
+        "missing_guard": 5
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L14:C12",
+          "note": "inflates an accumulator's step by one on every update",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -13,3 +13,3 @@\n   if item_data[item_idx] >= friend_data[friend_idx]:\n-    cost += item_data[item_idx]\n+    cost += (item_data[item_idx]) + 1\n     friend_idx +=1\n",
+          "examples_tried": 1,
+          "counterexample": "sample00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L10:C3",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n friend_idx=0\n-if item_data[-1] < friend_data[-1]:\n+if item_data[-1] <= friend_data[-1]:\n   buy_flg=False\n",
+          "examples_tried": 6,
+          "counterexample": "testcase02.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L10:C0",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n friend_idx=0\n-if item_data[-1] < friend_data[-1]:\n+if False:\n   buy_flg=False\n",
+          "examples_tried": 33,
+          "counterexample": null,
+          "full_pool_examples_tried": 33,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        }
+      ]
+    },
+    "abc307_b/45983540": {
+      "n_test_cases": 30,
+      "mutant_capacity": {
+        "off_by_one": 5,
+        "wrong_comparison": 2,
+        "missing_guard": 3
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L3:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -2,3 +2,3 @@\n S = []\n-for i in range(N):\n+for i in range((N) - 1):\n   s = input()\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L11:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n   for j in range(N):\n-    if i == j:\n+    if i != j:\n       continue\n",
+          "examples_tried": 2,
+          "counterexample": "example_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L11:C4",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n   for j in range(N):\n-    if i == j:\n+    if False:\n       continue\n",
+          "examples_tried": 2,
+          "counterexample": "example_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc355_d/54769975": {
+      "n_test_cases": 22,
+      "mutant_capacity": {
+        "off_by_one": 8,
+        "wrong_comparison": 1,
+        "missing_guard": 2
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L5:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n \n-for i in range(N):\n+for i in range((N) - 1):\n     start, end = map(int, input().split())\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L16:C7",
+          "note": "tightens `<=` to `<`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -15,3 +15,3 @@\n while starts:\n-    if starts[-1] <= ends[-1]:\n+    if starts[-1] < ends[-1]:\n         # print(f\"start at {starts[-1]}, {n_active_intervals} active\")\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L16:C4",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -15,3 +15,3 @@\n while starts:\n-    if starts[-1] <= ends[-1]:\n+    if True:\n         # print(f\"start at {starts[-1]}, {n_active_intervals} active\")\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "arc161_a/44901264": {
+      "n_test_cases": 31,
+      "mutant_capacity": {
+        "off_by_one": 8,
+        "wrong_comparison": 4,
+        "missing_guard": 3
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L8:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n ans='Yes'\n-for i in range(n-1):\n+for i in range((n-1) - 1):\n   if(i>=1 and a[i]==a[i-1]):\n",
+          "examples_tried": 3,
+          "counterexample": "00-sample-003.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L4:C3",
+          "note": "tightens `>=` to `>`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n a.sort()\n-if(n>=2):\n+if(n>2):\n   a=a[1:]\n",
+          "examples_tried": 31,
+          "counterexample": null,
+          "full_pool_examples_tried": 31,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L4:C0",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n a.sort()\n-if(n>=2):\n+if(False):\n   a=a[1:]\n",
+          "examples_tried": 2,
+          "counterexample": "00-sample-002.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc287_c/45520506": {
+      "n_test_cases": 40,
+      "mutant_capacity": {
+        "off_by_one": 18,
+        "wrong_comparison": 6,
+        "missing_guard": 3
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L31:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -30,3 +30,3 @@\n deg = [0] * N\n-for _ in range(M):\n+for _ in range((M) - 1):\n     u, v = mp()\n",
+          "examples_tried": 1,
+          "counterexample": "00_example_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L17:C7",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -16,3 +16,3 @@\n def root(x):\n-    if p[x] < 0: return x\n+    if p[x] <= 0: return x\n     p[x] = root(p[x])\n",
+          "examples_tried": 1,
+          "counterexample": "00_example_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L17:C4",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -16,3 +16,3 @@\n def root(x):\n-    if p[x] < 0: return x\n+    if False: return x\n     p[x] = root(p[x])\n",
+          "examples_tried": 1,
+          "counterexample": "00_example_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc360_b/55141723": {
+      "n_test_cases": 29,
+      "mutant_capacity": {
+        "off_by_one": 8,
+        "wrong_comparison": 3,
+        "missing_guard": 3
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L3:C18",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -2,3 +2,3 @@\n \n-for w in range(1, len(S)):\n+for w in range(1, (len(S)) - 1):\n     S_cut = []\n",
+          "examples_tried": 29,
+          "counterexample": null,
+          "full_pool_examples_tried": 29,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L7:C11",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n         S_cut.append(S[i - w : i])\n-        if i + w > len(S):\n+        if i + w >= len(S):\n             S_cut.append(S[i:])\n",
+          "examples_tried": 6,
+          "counterexample": "01_random_02.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L7:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n         S_cut.append(S[i - w : i])\n-        if i + w > len(S):\n+        if False:\n             S_cut.append(S[i:])\n",
+          "examples_tried": 10,
+          "counterexample": "01_random_06.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "arc175_b/51713549": {
+      "n_test_cases": 24,
+      "mutant_capacity": {
+        "off_by_one": 14,
+        "wrong_comparison": 10,
+        "missing_guard": 9
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L13:C23",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n     if closed_cnt > open_cnt:\n-        for i in range(len(str)):\n+        for i in range((len(str)) - 1):\n             if (str[i] == ')'):\n",
+          "examples_tried": 24,
+          "counterexample": null,
+          "full_pool_examples_tried": 24,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L12:C7",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n     tmp = 0\n-    if closed_cnt > open_cnt:\n+    if closed_cnt >= open_cnt:\n         for i in range(len(str)):\n",
+          "examples_tried": 9,
+          "counterexample": "01_test_06.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L17:C16",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -16,3 +16,3 @@\n                 str[i] = '('\n-                if tmp == (closed_cnt - open_cnt)//2:\n+                if False:\n                     break\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc299_c/45695018": {
+      "n_test_cases": 29,
+      "mutant_capacity": {
+        "off_by_one": 7,
+        "wrong_comparison": 8,
+        "missing_guard": 7
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L7:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n x=0\n-for i in range(n):\n+for i in range((n) - 1):\n   if s[i]==\"-\":\n",
+          "examples_tried": 6,
+          "counterexample": "01_small_05.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L14:C5",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -13,3 +13,3 @@\n       lv+=1\n-  if lv>x:\n+  if lv>=x:\n     x=lv\n",
+          "examples_tried": 29,
+          "counterexample": null,
+          "full_pool_examples_tried": 29,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L12:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n   else:\n-    if dango==1:\n+    if False:\n       lv+=1\n",
+          "examples_tried": 6,
+          "counterexample": "01_small_05.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc334_e/52777689": {
+      "n_test_cases": 34,
+      "mutant_capacity": {
+        "off_by_one": 49,
+        "wrong_comparison": 18,
+        "missing_guard": 11
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L28:C31",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -27,3 +27,3 @@\n H, W = map(int, input().split())\n-vers = [[0] * W for i in range(H)]\n+vers = [[0] * W for i in range((H) - 1)]\n cnt = 0\n",
+          "examples_tried": 1,
+          "counterexample": "sample00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L17:C11",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -16,3 +16,3 @@\n         if rx == ry: return False \n-        if self.rank[rx] < self.rank[ry]: \n+        if self.rank[rx] <= self.rank[ry]: \n             rx, ry = ry, rx\n",
+          "examples_tried": 34,
+          "counterexample": null,
+          "full_pool_examples_tried": 34,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L16:C8",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -15,3 +15,3 @@\n         ry = self.find(y)\n-        if rx == ry: return False \n+        if False: return False \n         if self.rank[rx] < self.rank[ry]: \n",
+          "examples_tried": 1,
+          "counterexample": "sample00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc321_f/52979507": {
+      "n_test_cases": 72,
+      "mutant_capacity": {
+        "off_by_one": 16,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L11:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n \n-for i in range(Q):\n+for i in range((Q) - 1):\n   com, x = input().split()\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L14:C5",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -13,3 +13,3 @@\n   x = int(x)\n-  if com == '+':\n+  if com != '+':\n     for j in range(K, x-1, -1):\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L14:C2",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -13,3 +13,3 @@\n   x = int(x)\n-  if com == '+':\n+  if True:\n     for j in range(K, x-1, -1):\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc291_d/46165699": {
+      "n_test_cases": 50,
+      "mutant_capacity": {
+        "off_by_one": 56,
+        "wrong_comparison": 4,
+        "missing_guard": 4
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L2:C53",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -1,3 +1,3 @@\n N = int(input())\n-AB = [list(map(int, input().split())) for _ in range(N)]\n+AB = [list(map(int, input().split())) for _ in range((N) - 1)]\n mod = 998244353\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L8:C7",
+          "note": "inverts an inequality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n for i in range(1, N):\n-    if AB[i][0] != AB[i - 1][0]:\n+    if AB[i][0] == AB[i - 1][0]:\n         dp[i][0] += dp[i - 1][0]\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L8:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n for i in range(1, N):\n-    if AB[i][0] != AB[i - 1][0]:\n+    if False:\n         dp[i][0] += dp[i - 1][0]\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "arc154_b/43445291": {
+      "n_test_cases": 18,
+      "mutant_capacity": {
+        "off_by_one": 4,
+        "wrong_comparison": 4,
+        "missing_guard": 3
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L12:C15",
+          "note": "inflates an accumulator's step by one on every update",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n     while idx >= 0 and t[idx] != i:\n-        idx -= 1\n+        idx -= (1) + 1\n \n",
+          "examples_tried": 6,
+          "counterexample": "test_03.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L11:C10",
+          "note": "tightens `>=` to `>`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n for j, i in enumerate(s[::-1]):\n-    while idx >= 0 and t[idx] != i:\n+    while idx > 0 and t[idx] != i:\n         idx -= 1\n",
+          "examples_tried": 6,
+          "counterexample": "test_03.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L5:C0",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n \n-if sorted(list(s)) != sorted(list(t)):\n+if False:\n     print(-1)\n",
+          "examples_tried": 3,
+          "counterexample": "test_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc286_e/45217169": {
+      "n_test_cases": 46,
+      "mutant_capacity": {
+        "off_by_one": 35,
+        "wrong_comparison": 5,
+        "missing_guard": 4
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L6:C34",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -5,3 +5,3 @@\n \n-S = [list(input()) for _ in range(N)]\n+S = [list(input()) for _ in range((N) - 1)]\n \n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L21:C19",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -20,3 +20,3 @@\n             if S[from_i][to_i]=='Y' and (seen[to_i]==seen[from_i]+1 or seen[to_i]==-1):\n-                if max_value[start][to_i][1]<value+A[to_i]:\n+                if max_value[start][to_i][1]<=value+A[to_i]:\n                     max_value[start][to_i] = [seen[from_i]+1,value+A[to_i]]\n",
+          "examples_tried": 46,
+          "counterexample": null,
+          "full_pool_examples_tried": 46,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L20:C12",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -19,3 +19,3 @@\n         for to_i in range(N):\n-            if S[from_i][to_i]=='Y' and (seen[to_i]==seen[from_i]+1 or seen[to_i]==-1):\n+            if False:\n                 if max_value[start][to_i][1]<value+A[to_i]:\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc347_e/53797654": {
+      "n_test_cases": 24,
+      "mutant_capacity": {
+        "off_by_one": 30,
+        "wrong_comparison": 5,
+        "missing_guard": 5
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L16:C33",
+          "note": "narrows a slice's upper bound by one",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -15,3 +15,3 @@\n def input():\n-    return sys.stdin.readline()[:-1]\n+    return sys.stdin.readline()[:(-1) - 1]\n \n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L41:C7",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -40,3 +40,3 @@\n         l -= 1\n-    if i < Q+2:\n+    if i <= Q+2:\n         cumsum[i+1] = cumsum[i] + l\n",
+          "examples_tried": 24,
+          "counterexample": null,
+          "full_pool_examples_tried": 24,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L41:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -40,3 +40,3 @@\n         l -= 1\n-    if i < Q+2:\n+    if False:\n         cumsum[i+1] = cumsum[i] + l\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc308_d/54718266": {
+      "n_test_cases": 36,
+      "mutant_capacity": {
+        "off_by_one": 29,
+        "wrong_comparison": 4,
+        "missing_guard": 4
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L2:C26",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -1,3 +1,3 @@\n h,w=map(int,input().split())\n-grid=[['.' for _ in range(w+2)]]\n+grid=[['.' for _ in range((w+2) - 1)]]\n for _ in range(h):\n",
+          "examples_tried": 36,
+          "counterexample": null,
+          "full_pool_examples_tried": 36,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L20:C10",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -19,3 +19,3 @@\n     \n-    while len(box)>0:\n+    while len(box)>=0:\n         H,W=box.pop()\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L23:C12",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -22,3 +22,3 @@\n         for dh, dw in direction:\n-            if bool[H+dh][W+dw]==False and grid[H+dh][W+dw]==d[grid[H][W]]:\n+            if False:\n                 bool[H+dh][W+dw]=True\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc286_d/45471607": {
+      "n_test_cases": 67,
+      "mutant_capacity": {
+        "off_by_one": 26,
+        "wrong_comparison": 2,
+        "missing_guard": 2
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L15:C19",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -14,3 +14,3 @@\n     a, b = [], []\n-    for _ in range(n):\n+    for _ in range((n) - 1):\n         ai, bi = map(int, sys.stdin.readline().split())\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L42:C19",
+          "note": "tightens `>=` to `>`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -41,3 +41,3 @@\n             for k in range(b[i] + 1):\n-                if j >= k * a[i]:\n+                if j > k * a[i]:\n                     dp[i + 1][j] = dp[i + 1][j] or dp[i][j - k * a[i]]\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L42:C16",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -41,3 +41,3 @@\n             for k in range(b[i] + 1):\n-                if j >= k * a[i]:\n+                if False:\n                     dp[i + 1][j] = dp[i + 1][j] or dp[i][j - k * a[i]]\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "arc143_c/37392747": {
+      "n_test_cases": 36,
+      "mutant_capacity": {
+        "off_by_one": 8,
+        "wrong_comparison": 5,
+        "missing_guard": 4
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L4:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n \n-for i in range(n):\n+for i in range((n) - 1):\n     a_list[i] %= x+y\n",
+          "examples_tried": 36,
+          "counterexample": "sample02.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L9:C31",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -8,3 +8,3 @@\n for i in range(n):\n-    if a_list[i] // x == 0 and a_list[i] // y > 0:\n+    if a_list[i] // x == 0 and a_list[i] // y >= 0:\n         print(\"Second\")\n",
+          "examples_tried": 7,
+          "counterexample": "in07.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L15:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -14,3 +14,3 @@\n         exit()\n-    elif a_list[i] // x > 0:\n+    elif False:\n         flag = False\n",
+          "examples_tried": 35,
+          "counterexample": "sample01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc273_d/45461646": {
+      "n_test_cases": 29,
+      "mutant_capacity": {
+        "off_by_one": 26,
+        "wrong_comparison": 9,
+        "missing_guard": 9
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L8:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n \n-for _ in range(N):\n+for _ in range((N) - 1):\n     r,c=map(int,input().split())\n",
+          "examples_tried": 4,
+          "counterexample": "003.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L41:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -40,3 +40,3 @@\n     l=int(l)\n-    if d=='L':\n+    if d!='L':\n         if x in r_dic:\n",
+          "examples_tried": 1,
+          "counterexample": "000.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L10:C4",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n     r,c=map(int,input().split())\n-    if r not in r_dic:\n+    if True:\n         r_dic[r]=set()\n",
+          "examples_tried": 4,
+          "counterexample": "003.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc360_d/55161015": {
+      "n_test_cases": 28,
+      "mutant_capacity": {
+        "off_by_one": 8,
+        "wrong_comparison": 3,
+        "missing_guard": 3
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L19:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -18,3 +18,3 @@\n \n-for i in range(n):\n+for i in range((n) - 1):\n     if s[i] == '0':\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L5:C10",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n     m = (l+r)//2\n-    while l < r:\n+    while l <= r:\n         if a[m] <= x:\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L6:C8",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -5,3 +5,3 @@\n     while l < r:\n-        if a[m] <= x:\n+        if True:\n             l = m+1\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc287_e/54006112": {
+      "n_test_cases": 33,
+      "mutant_capacity": {
+        "off_by_one": 30,
+        "wrong_comparison": 2,
+        "missing_guard": 2
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L4:C19",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n     min_len = min(len(s1), len(s2))\n-    for i in range(min_len):\n+    for i in range((min_len) - 1):\n         if s1[i] == s2[i]:\n",
+          "examples_tried": 2,
+          "counterexample": "00_example_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L21:C7",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -20,3 +20,3 @@\n     lcp = calculate_LCP(L[i][0], L[i+1][0])\n-    if lcp > max_lcp:\n+    if lcp >= max_lcp:\n         L[i][2] = lcp\n",
+          "examples_tried": 33,
+          "counterexample": null,
+          "full_pool_examples_tried": 33,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L5:C8",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n     for i in range(min_len):\n-        if s1[i] == s2[i]:\n+        if True:\n             lcp_length += 1\n",
+          "examples_tried": 1,
+          "counterexample": "00_example_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc313_b/45739272": {
+      "n_test_cases": 26,
+      "mutant_capacity": {
+        "off_by_one": 9,
+        "wrong_comparison": 2,
+        "missing_guard": 2
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L4:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n \n-for _ in range(M):\n+for _ in range((M) - 1):\n     a, b = map(int, input().split())\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L12:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n for i in range(N):\n-    if P[i] == 0:\n+    if P[i] != 0:\n         ans.append(i)\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L12:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n for i in range(N):\n-    if P[i] == 0:\n+    if False:\n         ans.append(i)\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc337_d/54495605": {
+      "n_test_cases": 67,
+      "mutant_capacity": {
+        "off_by_one": 22,
+        "wrong_comparison": 13,
+        "missing_guard": 9
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L13:C17",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n   leng = 0\n-  for i in range(W):\n+  for i in range((W) - 1):\n     if s[i] == \"x\" :\n",
+          "examples_tried": 4,
+          "counterexample": "003.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L18:C9",
+          "note": "tightens `<=` to `<`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -17,3 +17,3 @@\n       leng += 1\n-      if 0<=leng<=K : p += dic[s[i]]\n+      if 0<leng<=K : p += dic[s[i]]\n       else :\n",
+          "examples_tried": 67,
+          "counterexample": null,
+          "full_pool_examples_tried": 67,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L21:C6",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -20,3 +20,3 @@\n         p += dic[s[i]] - dic[s[i-K]]\n-      if leng >= K and mx < p : mx = p\n+      if False : mx = p\n     # print(s,s[i],mx,p,leng)\n",
+          "examples_tried": 4,
+          "counterexample": "003.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc354_f/54039651": {
+      "n_test_cases": 46,
+      "mutant_capacity": {
+        "off_by_one": 40,
+        "wrong_comparison": 9,
+        "missing_guard": 10
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L38:C19",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -37,3 +37,3 @@\n def abc354_f():\n-    for _ in range(II()):\n+    for _ in range((II()) - 1):\n         n = II()\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L46:C15",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -45,3 +45,3 @@\n             idx = bisect_left(g, x)\n-            if idx < len(g):\n+            if idx <= len(g):\n                 g[idx] = x\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L4:C0",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n ConstType = 1\n-if ImportType:\n+if False:\n     import os, sys, random, threading\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "arc165_c/45734816": {
+      "n_test_cases": 62,
+      "mutant_capacity": {
+        "off_by_one": 34,
+        "wrong_comparison": 8,
+        "missing_guard": 11
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L6:C27",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -5,3 +5,3 @@\n \n-graph = [[] for i in range(n+1)]\n+graph = [[] for i in range((n+1) - 1)]\n \n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L17:C7",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -16,3 +16,3 @@\n     graph[i].sort(key=lambda x: x[1])\n-    if ok > graph[i][0][1]:\n+    if ok >= graph[i][0][1]:\n         ok = graph[i][0][1]\n",
+          "examples_tried": 62,
+          "counterexample": null,
+          "full_pool_examples_tried": 62,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L69:C8",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -68,3 +68,3 @@\n     for i in range(1, n+1):\n-        if visited[i] != -1:\n+        if False:\n             continue\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc338_c/54491236": {
+      "n_test_cases": 18,
+      "mutant_capacity": {
+        "off_by_one": 9,
+        "wrong_comparison": 2,
+        "missing_guard": 2
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L7:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n inf=float(\"inf\")\n-for x in range(max(q)+1):\n+for x in range((max(q)+1) - 1):\n     y=inf\n",
+          "examples_tried": 7,
+          "counterexample": "07-hidden.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L10:C11",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n     for i in range(n):\n-        if q[i]<x*a[i]:\n+        if q[i]<=x*a[i]:\n             y=-inf\n",
+          "examples_tried": 2,
+          "counterexample": "02-sample.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L13:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n             break\n-        elif b[i]>0:\n+        elif False:\n             y=min((q[i]-x*a[i])//b[i],y)\n",
+          "examples_tried": 1,
+          "counterexample": "01-sample.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc346_f/53286789": {
+      "n_test_cases": 50,
+      "mutant_capacity": {
+        "off_by_one": 21,
+        "wrong_comparison": 4,
+        "missing_guard": 5
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L7:C25",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n tl = len(T)\n-ind = [[] for i in range(26)]\n+ind = [[] for i in range((26) - 1)]\n for i in range(2 * sl):\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L32:C11",
+          "note": "tightens `>=` to `>`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -31,3 +31,3 @@\n         # print(k, itr, now, next)\n-        if itr >= N * sl:\n+        if itr > N * sl:\n             return False\n",
+          "examples_tried": 42,
+          "counterexample": "04_border_02.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L22:C8",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -21,3 +21,3 @@\n         a = ord(T[i]) - ord(\"a\")\n-        if cnt[a] == 0: return False\n+        if False: return False\n         now = cnt[a] * q + bisect.bisect_right(ind[a], r)\n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc301_d/45732372": {
+      "n_test_cases": 46,
+      "mutant_capacity": {
+        "off_by_one": 3,
+        "wrong_comparison": 3,
+        "missing_guard": 2
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L14:C20",
+          "note": "inflates an accumulator's step by one on every update",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -13,3 +13,3 @@\n         if c == '?' and ans + (1 << (m - 1 - i)) <= n:\n-            ans += (1 << (m - 1 - i))\n+            ans += ((1 << (m - 1 - i)) + 1)\n     print(ans)\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L8:C7",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n     ans = int(s.replace('?', '0'), 2)\n-    if ans > n:\n+    if ans >= n:\n         print(-1)\n",
+          "examples_tried": 33,
+          "counterexample": "05_random5_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L8:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n     ans = int(s.replace('?', '0'), 2)\n-    if ans > n:\n+    if False:\n         print(-1)\n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc322_e/53004931": {
+      "n_test_cases": 46,
+      "mutant_capacity": {
+        "off_by_one": 16,
+        "wrong_comparison": 2,
+        "missing_guard": 1
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L24:C19",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -23,3 +23,3 @@\n     dp[tuple([0]*K)] = 0\n-    for _ in range(N):\n+    for _ in range((N) - 1):\n         r = list(map(int,input().split()))\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L38:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -37,3 +37,3 @@\n \n-    if dp[tuple([P]*K)] == inf:\n+    if dp[tuple([P]*K)] != inf:\n         print(-1)\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L38:C4",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -37,3 +37,3 @@\n \n-    if dp[tuple([P]*K)] == inf:\n+    if True:\n         print(-1)\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc296_f/45226037": {
+      "n_test_cases": 48,
+      "mutant_capacity": {
+        "off_by_one": 36,
+        "wrong_comparison": 11,
+        "missing_guard": 11
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L21:C38",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -20,3 +20,3 @@\n def S(): return sys.stdin.buffer.readline().rstrip().decode('utf-8')\n-def IR(n): return [I() for i in range(n)]\n+def IR(n): return [I() for i in range((n) - 1)]\n def LIR(n): return [LI() for i in range(n)]\n",
+          "examples_tried": 48,
+          "counterexample": null,
+          "full_pool_examples_tried": 48,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L40:C11",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -39,3 +39,3 @@\n     def root(self, x):\n-        if self.table[x] < 0:\n+        if self.table[x] <= 0:\n             return x\n",
+          "examples_tried": 4,
+          "counterexample": "example_03.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L56:C8",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -55,3 +55,3 @@\n         r2 = self.root(y)\n-        if r1 == r2:\n+        if False:\n             return\n",
+          "examples_tried": 5,
+          "counterexample": "hand_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc330_f/48327716": {
+      "n_test_cases": 104,
+      "mutant_capacity": {
+        "off_by_one": 12,
+        "wrong_comparison": 4,
+        "missing_guard": 4
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L15:C19",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -14,3 +14,3 @@\n     sm = 0\n-    for i in range(N):\n+    for i in range((N) - 1):\n         a, b = X[i], X[N-1-i]\n",
+          "examples_tried": 80,
+          "counterexample": null,
+          "full_pool_examples_tried": 104,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L5:C10",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n     idx = (mx + mn)//2\n-    while mx-mn>1:\n+    while mx-mn>=1:\n         if func(idx):\n",
+          "examples_tried": 1,
+          "counterexample": "test_40.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L17:C8",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -16,3 +16,3 @@\n         a, b = X[i], X[N-1-i]\n-        if b-a < k:\n+        if False:\n             break\n",
+          "examples_tried": 1,
+          "counterexample": "test_40.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc354_e/54930119": {
+      "n_test_cases": 30,
+      "mutant_capacity": {
+        "off_by_one": 12,
+        "wrong_comparison": 3,
+        "missing_guard": 4
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L4:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n A, B = [None]*N, [None]*N\n-for i in range(N):\n+for i in range((N) - 1):\n     A[i], B[i] = map(int, input().split())\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L13:C19",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n             if M & 1<<i and M & 1<<j:\n-                if A[i] == A[j] or B[i] == B[j]:\n+                if A[i] != A[j] or B[i] == B[j]:\n                     res = res or turn == DFS(M ^ 1<<i ^ 1<<j, not turn)\n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L12:C12",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n         for j in range(i+1, N):\n-            if M & 1<<i and M & 1<<j:\n+            if False:\n                 if A[i] == A[j] or B[i] == B[j]:\n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc291_c/45751656": {
+      "n_test_cases": 38,
+      "mutant_capacity": {
+        "off_by_one": 5,
+        "wrong_comparison": 5,
+        "missing_guard": 5
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L8:C11",
+          "note": "inflates an accumulator's step by one on every update",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n     if c=='U':\n-        y+=1\n+        y+=(1) + 1\n     if c=='D':\n",
+          "examples_tried": 1,
+          "counterexample": "hand.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L7:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n for c in S:\n-    if c=='U':\n+    if c!='U':\n         y+=1\n",
+          "examples_tried": 4,
+          "counterexample": "min.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L7:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n for c in S:\n-    if c=='U':\n+    if False:\n         y+=1\n",
+          "examples_tried": 12,
+          "counterexample": "random_08.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc323_a/54513324": {
+      "n_test_cases": 23,
+      "mutant_capacity": {
+        "off_by_one": 1,
+        "wrong_comparison": 2,
+        "missing_guard": 3
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L6:C12",
+          "note": "shifts the constant 1 in an index expression by one",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -5,3 +5,3 @@\n for i, s in enumerate(S):\n-    if (i + 1) % 2 == 0:\n+    if (i + 2) % 2 == 0:\n         # print((i + 1), s)\n",
+          "examples_tried": 2,
+          "counterexample": "example_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L6:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -5,3 +5,3 @@\n for i, s in enumerate(S):\n-    if (i + 1) % 2 == 0:\n+    if (i + 1) % 2 != 0:\n         # print((i + 1), s)\n",
+          "examples_tried": 2,
+          "counterexample": "example_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L6:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -5,3 +5,3 @@\n for i, s in enumerate(S):\n-    if (i + 1) % 2 == 0:\n+    if False:\n         # print((i + 1), s)\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc271_c/45808178": {
+      "n_test_cases": 29,
+      "mutant_capacity": {
+        "off_by_one": 6,
+        "wrong_comparison": 2,
+        "missing_guard": 2
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L4:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n st = set()\n-for i in range(N):\n+for i in range((N) - 1):\n     st.add(a[i])\n",
+          "examples_tried": 4,
+          "counterexample": "01_one_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L13:C7",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n         s += 2\n-    if s > N:\n+    if s >= N:\n         break\n",
+          "examples_tried": 4,
+          "counterexample": "01_one_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L13:C4",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n         s += 2\n-    if s > N:\n+    if False:\n         break\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc278_c/45320717": {
+      "n_test_cases": 17,
+      "mutant_capacity": {
+        "off_by_one": 5,
+        "wrong_comparison": 3,
+        "missing_guard": 4
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L6:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -5,3 +5,3 @@\n \n-for i in range(Q):\n+for i in range((Q) - 1):\n     t, a, b = map(int, input().split())\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L8:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -7,3 +7,3 @@\n     t, a, b = map(int, input().split())\n-    if t==1:\n+    if t!=1:\n         follow[(a, b)] = True\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L14:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -13,3 +13,3 @@\n     \n-    elif t==3:\n+    elif False:\n         if follow[(a, b)] and follow[(b, a)]:\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc260_b/53041244": {
+      "n_test_cases": 30,
+      "mutant_capacity": {
+        "off_by_one": 20,
+        "wrong_comparison": 4,
+        "missing_guard": 4
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L11:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n \n-for i in range(x):\n+for i in range((x) - 1):\n     ans.add(-a[i][1])\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L16:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -15,3 +15,3 @@\n for i in range(n):\n-    if j == y:\n+    if j != y:\n         break\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L16:C4",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -15,3 +15,3 @@\n for i in range(n):\n-    if j == y:\n+    if False:\n         break\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc300_e/45250612": {
+      "n_test_cases": 25,
+      "mutant_capacity": {
+        "off_by_one": 72,
+        "wrong_comparison": 7,
+        "missing_guard": 7
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L4:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n div=[2,3,5]\n-for i in range(3):\n+for i in range((3) - 1):\n     x=div[i]\n",
+          "examples_tried": 3,
+          "counterexample": "00_sample_02.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L11:C3",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n         N//=x\n-if N>1:\n+if N>=1:\n     print(0)\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L7:C8",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n     while True:\n-        if N%x:\n+        if False:\n             break\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc250_g/31608048": {
+      "n_test_cases": 70,
+      "mutant_capacity": {
+        "off_by_one": 6,
+        "wrong_comparison": 5,
+        "missing_guard": 4
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L25:C15",
+          "note": "inflates an accumulator's step by one on every update",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -24,3 +24,3 @@\n     if s1 >= s2:\n-        ans += p-heappop(cand_heapq)\n+        ans += (p-heappop(cand_heapq)) + 1\n         heappush(selled_heapq,p)\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L14:C22",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -13,3 +13,3 @@\n     s2 = -1\n-    if cand_heapq and cand_heapq[0] < p:\n+    if cand_heapq and cand_heapq[0] <= p:\n         s1 = p-cand_heapq[0]\n",
+          "examples_tried": 70,
+          "counterexample": null,
+          "full_pool_examples_tried": 70,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L14:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -13,3 +13,3 @@\n     s2 = -1\n-    if cand_heapq and cand_heapq[0] < p:\n+    if False:\n         s1 = p-cand_heapq[0]\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc246_g/33284569": {
+      "n_test_cases": 65,
+      "mutant_capacity": {
+        "off_by_one": 16,
+        "wrong_comparison": 6,
+        "missing_guard": 4
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L27:C19",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -26,3 +26,3 @@\n     adjMap = defaultdict(set)\n-    for _ in range(n - 1):\n+    for _ in range((n - 1) - 1):\n         u, v = map(int, input().split())\n",
+          "examples_tried": 2,
+          "counterexample": "001.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L19:C27",
+          "note": "tightens `>=` to `>`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -18,3 +18,3 @@\n             subtree = max(0, subtree - 1)  # \u88ab\u5bf9\u65b9\u79fb\u9664\u4e86\u4e00\u4e2a\n-            subtree += int(values[cur] >= mid)  # \u6839\u8282\u70b9\u662f\u5426\u53ef\u4ee5\n+            subtree += int(values[cur] > mid)  # \u6839\u8282\u70b9\u662f\u5426\u53ef\u4ee5\n             return subtree\n",
+          "examples_tried": 1,
+          "counterexample": "000.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L15:C16",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -14,3 +14,3 @@\n             for next in adjMap[cur]:\n-                if next == pre:\n+                if False:\n                     continue\n",
+          "examples_tried": 1,
+          "counterexample": "000.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc281_f/45038482": {
+      "n_test_cases": 33,
+      "mutant_capacity": {
+        "off_by_one": 11,
+        "wrong_comparison": 1,
+        "missing_guard": 3
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L21:C38",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -20,3 +20,3 @@\n def S(): return sys.stdin.buffer.readline().rstrip().decode('utf-8')\n-def IR(n): return [I() for i in range(n)]\n+def IR(n): return [I() for i in range((n) - 1)]\n def LIR(n): return [LI() for i in range(n)]\n",
+          "examples_tried": 33,
+          "counterexample": null,
+          "full_pool_examples_tried": 33,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L34:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -33,3 +33,3 @@\n def f(t,l):\n-    if t==-1:\n+    if t!=-1:\n         return 0\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L34:C4",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -33,3 +33,3 @@\n def f(t,l):\n-    if t==-1:\n+    if False:\n         return 0\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc349_b/54895344": {
+      "n_test_cases": 17,
+      "mutant_capacity": {
+        "off_by_one": 7,
+        "wrong_comparison": 2,
+        "missing_guard": 1
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L13:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n \n-for i in range(len(word_count_list)):\n+for i in range((len(word_count_list)) - 1):\n     word_count_list[i]=word_list.count(i)\n",
+          "examples_tried": 14,
+          "counterexample": "02_handmade_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L18:C7",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -17,3 +17,3 @@\n for i in range(1,len(word_count_list)):\n-    if word_count_list[i] == 0 or word_count_list[i]== 2:\n+    if word_count_list[i] != 0 or word_count_list[i]== 2:\n         continue\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L18:C4",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -17,3 +17,3 @@\n for i in range(1,len(word_count_list)):\n-    if word_count_list[i] == 0 or word_count_list[i]== 2:\n+    if True:\n         continue\n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_02.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc336_d/53237033": {
+      "n_test_cases": 42,
+      "mutant_capacity": {
+        "off_by_one": 22,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "n_planted": 3,
+      "n_caught": 1,
+      "n_missed": 0,
+      "n_equivalent": 2,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L7:C18",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n r[0] = 1\n-for i in range(1, n):\n+for i in range(1, (n) - 1):\n     l[i] = min(l[i - 1] + 1, a[i])\n",
+          "examples_tried": 42,
+          "counterexample": null,
+          "full_pool_examples_tried": 42,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L13:C7",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n for i in range(n):\n-    if ans < min(l[i], r[n - i - 1]):\n+    if ans <= min(l[i], r[n - i - 1]):\n         ans = min(l[i], r[n - i - 1])\n",
+          "examples_tried": 42,
+          "counterexample": null,
+          "full_pool_examples_tried": 42,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L13:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n for i in range(n):\n-    if ans < min(l[i], r[n - i - 1]):\n+    if False:\n         ans = min(l[i], r[n - i - 1])\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "arc174_b/51697010": {
+      "n_test_cases": 40,
+      "mutant_capacity": {
+        "off_by_one": 10,
+        "wrong_comparison": 3,
+        "missing_guard": 3
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L2:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -1,3 +1,3 @@\n t=int(input())\n-for _ in range(t):\n+for _ in range((t) - 1):\n     A = list(map(int, input().split()))\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L9:C7",
+          "note": "tightens `<=` to `<`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -8,3 +8,3 @@\n         s-=(i+1)*j\n-    if s<=0:\n+    if s<0:\n         print(0)\n",
+          "examples_tried": 40,
+          "counterexample": null,
+          "full_pool_examples_tried": 40,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L9:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -8,3 +8,3 @@\n         s-=(i+1)*j\n-    if s<=0:\n+    if False:\n         print(0)\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc300_b/45723196": {
+      "n_test_cases": 38,
+      "mutant_capacity": {
+        "off_by_one": 12,
+        "wrong_comparison": 1,
+        "missing_guard": 3
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L6:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -5,3 +5,3 @@\n e = []\n-for j in range(b):\n+for j in range((b) - 1):\n     d.append(input())\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L13:C15",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -12,3 +12,3 @@\n         for j in range(c):\n-            if d[(i+x)%b][(j+y)%c] == e[i][j]:\n+            if d[(i+x)%b][(j+y)%c] != e[i][j]:\n                 pass \n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L21:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -20,3 +20,3 @@\n     for j in range(c):\n-        if f(i, j):\n+        if False:\n             ans = 1\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc331_e/53576352": {
+      "n_test_cases": 23,
+      "mutant_capacity": {
+        "off_by_one": 2,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L5:C68",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -4,3 +4,3 @@\n \n-pat = [list(map(lambda x:int(x)-1, input().split())) for _ in range(L)]\n+pat = [list(map(lambda x:int(x)-1, input().split())) for _ in range((L) - 1)]\n ng_set = set()\n",
+          "examples_tried": 13,
+          "counterexample": "03_max_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L16:C11",
+          "note": "inverts a membership test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -15,3 +15,3 @@\n     for b, j in P:\n-        if (i, j) in ng_set:\n+        if (i, j) not in ng_set:\n             continue\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L16:C8",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -15,3 +15,3 @@\n     for b, j in P:\n-        if (i, j) in ng_set:\n+        if False:\n             continue\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "arc160_c/41518740": {
+      "n_test_cases": 53,
+      "mutant_capacity": {
+        "off_by_one": 14,
+        "wrong_comparison": 1,
+        "missing_guard": 1
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L11:C17",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n inc = 0\n-for i in range(1,NX):\n+for i in range(1,(NX) - 1):\n     x = X[i]\n",
+          "examples_tried": 53,
+          "counterexample": null,
+          "full_pool_examples_tried": 53,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L16:C11",
+          "note": "tightens `<=` to `<`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -15,3 +15,3 @@\n     for j in reversed(range((x+inc)//2+1)):\n-        if j <= x // 2:\n+        if j < x // 2:\n             tmp += dp[0]\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L16:C8",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -15,3 +15,3 @@\n     for j in reversed(range((x+inc)//2+1)):\n-        if j <= x // 2:\n+        if True:\n             tmp += dp[0]\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc292_b/45575109": {
+      "n_test_cases": 17,
+      "mutant_capacity": {
+        "off_by_one": 7,
+        "wrong_comparison": 3,
+        "missing_guard": 3
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L4:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -3,3 +3,3 @@\n \n-for _ in range(q):\n+for _ in range((q) - 1):\n     t, x = map(int, input().split())\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L14:C11",
+          "note": "tightens `>=` to `>`, excluding the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -13,3 +13,3 @@\n     else:\n-        if p[x] >= 2:\n+        if p[x] > 2:\n             print(\"Yes\")\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L7:C4",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -6,3 +6,3 @@\n     x -= 1\n-    if t == 1:\n+    if True:\n         p[x] += 1\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc303_c/45578518": {
+      "n_test_cases": 20,
+      "mutant_capacity": {
+        "off_by_one": 6,
+        "wrong_comparison": 6,
+        "missing_guard": 6
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L3:C60",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -2,3 +2,3 @@\n S = input()\n-items = set(tuple(map(int, input().split())) for _ in range(M))\n+items = set(tuple(map(int, input().split())) for _ in range((M) - 1))\n #print(items)\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L18:C7",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -17,3 +17,3 @@\n     H -= 1\n-    if H < 0: res = False\n+    if H <= 0: res = False\n \n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L18:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -17,3 +17,3 @@\n     H -= 1\n-    if H < 0: res = False\n+    if False: res = False\n \n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_02.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "agc062_a/44358952": {
+      "n_test_cases": 27,
+      "mutant_capacity": {
+        "off_by_one": 7,
+        "wrong_comparison": 4,
+        "missing_guard": 3
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L3:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -2,3 +2,3 @@\n ans = []\n-for _ in range(t):\n+for _ in range((t) - 1):\n   n = int(input())\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L6:C5",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -5,3 +5,3 @@\n   s = input()\n-  if s[-1] == \"A\":\n+  if s[-1] != \"A\":\n     ans.append(\"A\")\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L6:C2",
+          "note": "forces a guarded branch to always be taken, so its else-case never runs",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -5,3 +5,3 @@\n   s = input()\n-  if s[-1] == \"A\":\n+  if True:\n     ans.append(\"A\")\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc353_a/55010639": {
+      "n_test_cases": 15,
+      "mutant_capacity": {
+        "off_by_one": 7,
+        "wrong_comparison": 2,
+        "missing_guard": 2
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L2:C56",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -1,3 +1,3 @@\n \n-input = [list(map(int, input().split())) for i in range(2)]\n+input = [list(map(int, input().split())) for i in range((2) - 1)]\n \n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L14:C7",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -13,3 +13,3 @@\n for i in range(len(HeightList)):\n-    if HeightList[i] > Height_FirstBuld:\n+    if HeightList[i] >= Height_FirstBuld:\n         print(i+1)\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L14:C4",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -13,3 +13,3 @@\n for i in range(len(HeightList)):\n-    if HeightList[i] > Height_FirstBuld:\n+    if False:\n         print(i+1)\n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc298_d/45710768": {
+      "n_test_cases": 20,
+      "mutant_capacity": {
+        "off_by_one": 6,
+        "wrong_comparison": 5,
+        "missing_guard": 5
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L3:C52",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -2,3 +2,3 @@\n Q = int(input())\n-q = [list(map(int, input().split())) for _ in range(Q)]\n+q = [list(map(int, input().split())) for _ in range((Q) - 1)]\n \n",
+          "examples_tried": 1,
+          "counterexample": "00_sample_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L10:C10",
+          "note": "relaxes a strict `>` to `>=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n     base = x\n-    while n > 0:\n+    while n >= 0:\n         if n % 2 == 1:\n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L11:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n     while n > 0:\n-        if n % 2 == 1:\n+        if False:\n             result = (result * base) % mod\n",
+          "examples_tried": 2,
+          "counterexample": "00_sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc350_f/54219104": {
+      "n_test_cases": 33,
+      "mutant_capacity": {
+        "off_by_one": 30,
+        "wrong_comparison": 15,
+        "missing_guard": 13
+      },
+      "n_planted": 3,
+      "n_caught": 1,
+      "n_missed": 0,
+      "n_equivalent": 2,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L11:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -10,3 +10,3 @@\n k=0\n-for i in range(len(t)):\n+for i in range((len(t)) - 1):\n     if t[i]==\"(\":\n",
+          "examples_tried": 33,
+          "counterexample": null,
+          "full_pool_examples_tried": 33,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L18:C15",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -17,3 +17,3 @@\n         if k%2==1:\n-            if ord(t[i])-ord(\"A\")<26:\n+            if ord(t[i])-ord(\"A\")<=26:\n                 t[i]=chr(ord(t[i])-ord(\"A\")+ord(\"a\"))\n",
+          "examples_tried": 33,
+          "counterexample": null,
+          "full_pool_examples_tried": 33,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L17:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -16,3 +16,3 @@\n     else:\n-        if k%2==1:\n+        if False:\n             if ord(t[i])-ord(\"A\")<26:\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc351_c/55122758": {
+      "n_test_cases": 38,
+      "mutant_capacity": {
+        "off_by_one": 5,
+        "wrong_comparison": 2,
+        "missing_guard": 2
+      },
+      "n_planted": 3,
+      "n_caught": 3,
+      "n_missed": 0,
+      "n_equivalent": 0,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L6:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -5,3 +5,3 @@\n \n-for i in range(n):\n+for i in range((n) - 1):\n     tmp = A[i]\n",
+          "examples_tried": 2,
+          "counterexample": "example_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L10:C11",
+          "note": "inverts an equality test",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n     while True:\n-        if len(ans) == 1:\n+        if len(ans) != 1:\n             break\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L12:C8",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -11,3 +11,3 @@\n             break\n-        elif ans[-1] != ans[-2]:\n+        elif False:\n             break\n",
+          "examples_tried": 1,
+          "counterexample": "example_00.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc339_e/52923119": {
+      "n_test_cases": 59,
+      "mutant_capacity": {
+        "off_by_one": 27,
+        "wrong_comparison": 4,
+        "missing_guard": 5
+      },
+      "n_planted": 3,
+      "n_caught": 1,
+      "n_missed": 0,
+      "n_equivalent": 2,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L21:C46",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -20,3 +20,3 @@\n             self._node[index] = value\n-        for index in range(self._size - 1, 0, -1):\n+        for index in range(self._size - 1, 0, (-1) - 1):\n             self._node[index] = self._combine_f(\n",
+          "examples_tried": 59,
+          "counterexample": null,
+          "full_pool_examples_tried": 59,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L10:C14",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -9,3 +9,3 @@\n         self._size = 1\n-        while self._size < self._n:\n+        while self._size <= self._n:\n             self._size <<= 1\n",
+          "examples_tried": 59,
+          "counterexample": null,
+          "full_pool_examples_tried": 59,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L46:C12",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -45,3 +45,3 @@\n         while L < R:\n-            if L & 1:\n+            if False:\n                 value_L = self._combine_f(value_L, self._node[L])\n",
+          "examples_tried": 3,
+          "counterexample": "sample02.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc286_g/38690639": {
+      "n_test_cases": 53,
+      "mutant_capacity": {
+        "off_by_one": 29,
+        "wrong_comparison": 7,
+        "missing_guard": 5
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L43:C33",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -42,3 +42,3 @@\n         root = self.find(x)\n-        return [i for i in range(self.n) if self.find(i) == root]\n+        return [i for i in range((self.n) - 1) if self.find(i) == root]\n  \n",
+          "examples_tried": 53,
+          "counterexample": null,
+          "full_pool_examples_tried": 53,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L16:C11",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -15,3 +15,3 @@\n     def find(self, x):\n-        if self.parents[x] < 0:\n+        if self.parents[x] <= 0:\n             return x\n",
+          "examples_tried": 4,
+          "counterexample": "hand_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L26:C8",
+          "note": "neutralises an early-exit guard, so the special case falls through into the general path",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -25,3 +25,3 @@\n  \n-        if x == y:\n+        if False:\n             return\n",
+          "examples_tried": 4,
+          "counterexample": "hand_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    },
+    "abc285_e/48880084": {
+      "n_test_cases": 63,
+      "mutant_capacity": {
+        "off_by_one": 32,
+        "wrong_comparison": 2,
+        "missing_guard": 2
+      },
+      "n_planted": 3,
+      "n_caught": 2,
+      "n_missed": 0,
+      "n_equivalent": 1,
+      "n_inconclusive": 0,
+      "n_unavailable": 0,
+      "mutants": [
+        {
+          "fault_type": "off_by_one",
+          "site": "L14:C15",
+          "note": "narrows a range() bound by one, dropping the last iteration",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -13,3 +13,3 @@\n productivity = [0]\n-for i in range(n):\n+for i in range((n) - 1):\n     productivity.append(productivity[-1] + base_productivity[i//2])\n",
+          "examples_tried": 63,
+          "counterexample": null,
+          "full_pool_examples_tried": 63,
+          "full_pool_counterexample": null,
+          "verdict": "equivalent"
+        },
+        {
+          "fault_type": "wrong_comparison",
+          "site": "L23:C11",
+          "note": "relaxes a strict `<` to `<=`, admitting the boundary case",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -22,3 +22,3 @@\n     for j in range(n):\n-        if j < n - 1:\n+        if j <= n - 1:\n             dp[i+1][j+1] = dp[i][j]\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "verdict": "caught"
+        },
+        {
+          "fault_type": "missing_guard",
+          "site": "L23:C8",
+          "note": "neutralises a guard, skipping its special-case handling",
+          "diff": "--- correctVersion.py\n+++ mutant.py\n@@ -22,3 +22,3 @@\n     for j in range(n):\n-        if j < n - 1:\n+        if False:\n             dp[i+1][j+1] = dp[i][j]\n",
+          "examples_tried": 1,
+          "counterexample": "sample_01.txt",
+          "verdict": "caught"
+        }
+      ]
+    }
+  }
+}

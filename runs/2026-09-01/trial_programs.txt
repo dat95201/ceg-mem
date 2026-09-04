@@ -1,0 +1,6 @@
+# trial_programs: 3 programs, strata interleaved evenly
+# corpus: data/official-2026-09-01/tasks.json
+# corpus_sha256: 92a55fc40b1f9234cf9e6c6b0696955ed4e1c62aac042fb4feb2a3b5c1243711
+agc065_c/48625236
+abc339_b/54672032
+abc360_d/55161015

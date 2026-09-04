@@ -1,0 +1,39 @@
+{
+  "corpus_sha256": "92a55fc40b1f9234cf9e6c6b0696955ed4e1c62aac042fb4feb2a3b5c1243711",
+  "episodes_path": "data/official-2026-09-01/episodes_eval_E5-random_001_001.jsonl",
+  "experiment": "E5-random",
+  "from": 1,
+  "grid": {
+    "budget": 5,
+    "extra": [
+      "--typing-random"
+    ],
+    "modes": [
+      "typed"
+    ],
+    "seeds": [
+      1
+    ]
+  },
+  "protocol": {
+    "backend": "ollama",
+    "budget_usd_cap": 1.0,
+    "context_length": 32768,
+    "granularity": "fine",
+    "model": "qwen2.5-coder:7b",
+    "price_in_per_mtok": 0.0,
+    "price_out_per_mtok": 0.0,
+    "reasoning_effort": null,
+    "sandbox_timeout_sec": 30.0,
+    "temperature": 1.0
+  },
+  "runtime": {
+    "backend": "ollama",
+    "context_length": 32768,
+    "model_digest": "dae161e27b0e90dd",
+    "quantization": "Q4_K_M"
+  },
+  "shard_list": "data/official-2026-09-01/eval_shards/E5-random_001_001.txt",
+  "to": 1,
+  "universe": "data/official-2026-09-01/sweep_programs.txt"
+}

@@ -1,0 +1,2891 @@
+{
+  "frozen": true,
+  "benchmark": "ConDefects (Python)",
+  "test_dir": "external/ConDefects/Test",
+  "model": null,
+  "selection": {
+    "mode": "inherited",
+    "stage": "inherited from a previously screened corpus, minus what the gate and the slow-task filter removed. screen_pi_hat and stratum are the frozen 2026-08 values; the REPORTED banding comes from E1 via scripts/build_strata.py (paper SS VI-A-c's second sample)",
+    "pool": "data/official-2026-09-01/pool/tasks.json",
+    "pool_size": 295,
+    "screened": 0,
+    "screens": [],
+    "min_calls": 20,
+    "bands": {
+      "dead": [
+        0.0,
+        0.02
+      ],
+      "hard": [
+        0.02,
+        0.08
+      ],
+      "medium": [
+        0.08,
+        0.18
+      ],
+      "easy": [
+        0.18,
+        0.3501
+      ],
+      "too_easy": [
+        0.3501,
+        1.01
+      ]
+    },
+    "quotas": {
+      "easy": 30,
+      "medium": 20,
+      "hard": 30,
+      "too_easy": 15,
+      "dead": 20
+    },
+    "counts": {
+      "easy": 21,
+      "medium": 20,
+      "hard": 28,
+      "too_easy": 14,
+      "dead": 16
+    },
+    "short": {},
+    "primary_bands": [
+      "hard",
+      "medium",
+      "easy"
+    ],
+    "min_per_band": 10,
+    "pin": {
+      "sources": [
+        "/content/ceg-mem/data/tasks.json"
+      ],
+      "n_pinned": 106,
+      "n_kept": 99,
+      "lost_recoverable": [],
+      "lost_settled": [
+        {
+          "name": "abc287_g/40891564",
+          "why": "dropped by the slow-task filter (reference needs >10.0s on one of its own cases)"
+        },
+        {
+          "name": "abc332_f/49265039",
+          "why": "dropped by the slow-task filter (reference needs >10.0s on one of its own cases)"
+        },
+        {
+          "name": "abc301_f/51429838",
+          "why": "dropped by the slow-task filter (reference needs >10.0s on one of its own cases)"
+        },
+        {
+          "name": "abc303_g/41906923",
+          "why": "dropped by the slow-task filter (reference needs >10.0s on one of its own cases)"
+        },
+        {
+          "name": "abc304_g/41991921",
+          "why": "dropped by the slow-task filter (reference needs >10.0s on one of its own cases)"
+        },
+        {
+          "name": "abc325_f/47205844",
+          "why": "dropped by the slow-task filter (reference needs >10.0s on one of its own cases)"
+        },
+        {
+          "name": "abc356_c/54900882",
+          "why": "dropped by the slow-task filter (reference needs >10.0s on one of its own cases)"
+        }
+      ],
+      "note": "pinned tasks are taken first within their band so a re-selection does not evict a task whose episodes are already paid for. Band membership is not in src.loop.cell_signature, so a kept task replays its cache even if the re-screen moves it to another band"
+    },
+    "note": "stratum is fixed here, before any treatment; the pi_hat reported in results comes from E1, an independent sample"
+  },
+  "n_selected": 99,
+  "candidate_order_sha256": "05bbb324e45be7ef7d440850a50cf8a95539bcc8efc7e80f395c7816700c4d1a",
+  "selected_sha256": "474b0e20b3f6986aea551b2971f14bea6da88f40ba527484abba523a5bb9036e",
+  "tasks": [
+    {
+      "name": "agc065_c/48625236",
+      "task_id": "agc065_c",
+      "program_id": "48625236",
+      "date": "2023-12-17",
+      "difficulty": 2414,
+      "loc": 22,
+      "fault_lines": [
+        11
+      ],
+      "n_test_cases": 83,
+      "counterexample": "03_max_case_yes_36.txt",
+      "stratum": "dead",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "agc065_c/48625380",
+        "agc065_c/49687882",
+        "agc065_c/49687962"
+      ],
+      "caught_submissions": [
+        "agc065_c/48625380",
+        "agc065_c/49687882",
+        "agc065_c/49687962"
+      ],
+      "screen_pi_hat": 0.0,
+      "screen_successes": 0,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc355_b/55109474",
+      "task_id": "abc355_b",
+      "program_id": "55109474",
+      "date": "2024-05-25",
+      "difficulty": 105,
+      "loc": 15,
+      "fault_lines": [
+        12
+      ],
+      "n_test_cases": 20,
+      "counterexample": "01_random_02.txt",
+      "stratum": "dead",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc355_b/55005403",
+        "abc355_b/55062153",
+        "abc355_b/55114037"
+      ],
+      "caught_submissions": [
+        "abc355_b/55005403",
+        "abc355_b/55062153",
+        "abc355_b/55114037"
+      ],
+      "screen_pi_hat": 0.0,
+      "screen_successes": 0,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc339_f/52897763",
+      "task_id": "abc339_f",
+      "program_id": "52897763",
+      "date": "2024-02-03",
+      "difficulty": 1716,
+      "loc": 16,
+      "fault_lines": [
+        2
+      ],
+      "n_test_cases": 80,
+      "counterexample": "test_43.txt",
+      "stratum": "dead",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc339_f/52982584",
+        "abc339_f/53281757",
+        "abc339_f/53967299"
+      ],
+      "caught_submissions": [
+        "abc339_f/52982584",
+        "abc339_f/53281757",
+        "abc339_f/53967299"
+      ],
+      "screen_pi_hat": 0.0,
+      "screen_successes": 0,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc324_d/54390162",
+      "task_id": "abc324_d",
+      "program_id": "54390162",
+      "date": "2023-10-14",
+      "difficulty": 895,
+      "loc": 55,
+      "fault_lines": [
+        13
+      ],
+      "n_test_cases": 46,
+      "counterexample": "03_small_36.txt",
+      "stratum": "dead",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc324_d/53028745",
+        "abc324_d/53183863",
+        "abc324_d/53944042"
+      ],
+      "caught_submissions": [
+        "abc324_d/53028745",
+        "abc324_d/53183863",
+        "abc324_d/53944042"
+      ],
+      "screen_pi_hat": 0.0,
+      "screen_successes": 0,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc356_e/54889247",
+      "task_id": "abc356_e",
+      "program_id": "54889247",
+      "date": "2024-06-01",
+      "difficulty": 1506,
+      "loc": 66,
+      "fault_lines": [
+        62
+      ],
+      "n_test_cases": 25,
+      "counterexample": "random_01.txt",
+      "stratum": "dead",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc356_e/54960213"
+      ],
+      "caught_submissions": [
+        "abc356_e/54960213"
+      ],
+      "screen_pi_hat": 0.0,
+      "screen_successes": 0,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc295_e/54729841",
+      "task_id": "abc295_e",
+      "program_id": "54729841",
+      "date": "2023-03-25",
+      "difficulty": 2157,
+      "loc": 29,
+      "fault_lines": [
+        24
+      ],
+      "n_test_cases": 42,
+      "counterexample": "01_random_00.txt",
+      "stratum": "dead",
+      "mutants_caught": 2,
+      "mutants_scored": 2,
+      "natural_mutants": [
+        "abc295_e/42176175",
+        "abc295_e/42264948"
+      ],
+      "caught_submissions": [
+        "abc295_e/42176175",
+        "abc295_e/42264948"
+      ],
+      "screen_pi_hat": 0.0,
+      "screen_successes": 0,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc348_c/54707785",
+      "task_id": "abc348_c",
+      "program_id": "54707785",
+      "date": "2024-04-06",
+      "difficulty": 156,
+      "loc": 18,
+      "fault_lines": [
+        18
+      ],
+      "n_test_cases": 30,
+      "counterexample": "00_sample_00.txt",
+      "stratum": "dead",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc348_c/54773465",
+        "abc348_c/54773547",
+        "abc348_c/55014351"
+      ],
+      "caught_submissions": [
+        "abc348_c/54773465",
+        "abc348_c/54773547",
+        "abc348_c/55014351"
+      ],
+      "screen_pi_hat": 0.0,
+      "screen_successes": 0,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "arc159_b/45431609",
+      "task_id": "arc159_b",
+      "program_id": "45431609",
+      "date": "2023-04-08",
+      "difficulty": 1438,
+      "loc": 25,
+      "fault_lines": [
+        12
+      ],
+      "n_test_cases": 41,
+      "counterexample": "00_sample_01.txt",
+      "stratum": "dead",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "arc159_b/43997330"
+      ],
+      "caught_submissions": [
+        "arc159_b/43997330"
+      ],
+      "screen_pi_hat": 0.0,
+      "screen_successes": 0,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "arc172_a/54670313",
+      "task_id": "arc172_a",
+      "program_id": "54670313",
+      "date": "2024-02-18",
+      "difficulty": 851,
+      "loc": 16,
+      "fault_lines": [
+        15
+      ],
+      "n_test_cases": 27,
+      "counterexample": "in12.txt",
+      "stratum": "dead",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "arc172_a/51114493",
+        "arc172_a/51434027",
+        "arc172_a/51757032"
+      ],
+      "caught_submissions": [
+        "arc172_a/51114493",
+        "arc172_a/51434027",
+        "arc172_a/51757032"
+      ],
+      "screen_pi_hat": 0.0,
+      "screen_successes": 0,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc304_b/46153900",
+      "task_id": "abc304_b",
+      "program_id": "46153900",
+      "date": "2023-06-03",
+      "difficulty": null,
+      "loc": 19,
+      "fault_lines": [
+        19
+      ],
+      "n_test_cases": 22,
+      "counterexample": "sample03.txt",
+      "stratum": "dead",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc304_b/45306152",
+        "abc304_b/45336297",
+        "abc304_b/45577481"
+      ],
+      "caught_submissions": [
+        "abc304_b/45306152",
+        "abc304_b/45336297",
+        "abc304_b/45577481"
+      ],
+      "screen_pi_hat": 0.0,
+      "screen_successes": 0,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "arc173_e/51134374",
+      "task_id": "arc173_e",
+      "program_id": "51134374",
+      "date": "2024-03-10",
+      "difficulty": 2869,
+      "loc": 100,
+      "fault_lines": [
+        33
+      ],
+      "n_test_cases": 144,
+      "counterexample": "07_handmade_14.txt",
+      "stratum": "dead",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "arc173_e/51138423"
+      ],
+      "caught_submissions": [
+        "arc173_e/51138423"
+      ],
+      "screen_pi_hat": 0.0,
+      "screen_successes": 0,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc325_b/54778964",
+      "task_id": "abc325_b",
+      "program_id": "54778964",
+      "date": "2023-10-21",
+      "difficulty": 171,
+      "loc": 18,
+      "fault_lines": [
+        15
+      ],
+      "n_test_cases": 24,
+      "counterexample": "00_sample_00.txt",
+      "stratum": "dead",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc325_b/54237927",
+        "abc325_b/54669093",
+        "abc325_b/54888009"
+      ],
+      "caught_submissions": [
+        "abc325_b/54237927",
+        "abc325_b/54669093",
+        "abc325_b/54888009"
+      ],
+      "screen_pi_hat": 0.0,
+      "screen_successes": 0,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "arc155_c/40890958",
+      "task_id": "arc155_c",
+      "program_id": "40890958",
+      "date": "2023-01-29",
+      "difficulty": 2219,
+      "loc": 52,
+      "fault_lines": [
+        18
+      ],
+      "n_test_cases": 69,
+      "counterexample": "05_test_02.txt",
+      "stratum": "dead",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "arc155_c/38465931",
+        "arc155_c/38467027",
+        "arc155_c/38471956"
+      ],
+      "caught_submissions": [
+        "arc155_c/38465931",
+        "arc155_c/38467027",
+        "arc155_c/38471956"
+      ],
+      "screen_pi_hat": 0.0,
+      "screen_successes": 0,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc297_e/46197532",
+      "task_id": "abc297_e",
+      "program_id": "46197532",
+      "date": "2023-04-09",
+      "difficulty": 1176,
+      "loc": 22,
+      "fault_lines": [
+        5
+      ],
+      "n_test_cases": 43,
+      "counterexample": "example_00.txt",
+      "stratum": "dead",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc297_e/46054755"
+      ],
+      "caught_submissions": [
+        "abc297_e/46054755"
+      ],
+      "screen_pi_hat": 0.0,
+      "screen_successes": 0,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc357_a/55021619",
+      "task_id": "abc357_a",
+      "program_id": "55021619",
+      "date": "2024-06-08",
+      "difficulty": 19,
+      "loc": 18,
+      "fault_lines": [
+        17
+      ],
+      "n_test_cases": 19,
+      "counterexample": "example_02.txt",
+      "stratum": "dead",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc357_a/54987751",
+        "abc357_a/54997913",
+        "abc357_a/55022235"
+      ],
+      "caught_submissions": [
+        "abc357_a/54987751",
+        "abc357_a/54997913",
+        "abc357_a/55022235"
+      ],
+      "screen_pi_hat": 0.0,
+      "screen_successes": 0,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc352_f/53476783",
+      "task_id": "abc352_f",
+      "program_id": "53476783",
+      "date": "2024-05-04",
+      "difficulty": 2052,
+      "loc": 75,
+      "fault_lines": [
+        73
+      ],
+      "n_test_cases": 62,
+      "counterexample": "testcase00.txt",
+      "stratum": "dead",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc352_f/54716291"
+      ],
+      "caught_submissions": [
+        "abc352_f/54716291"
+      ],
+      "screen_pi_hat": 0.0,
+      "screen_successes": 0,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc330_c/54071794",
+      "task_id": "abc330_c",
+      "program_id": "54071794",
+      "date": "2023-11-25",
+      "difficulty": 519,
+      "loc": 22,
+      "fault_lines": [
+        4
+      ],
+      "n_test_cases": 31,
+      "counterexample": "01_test_01.txt",
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc330_c/54054641",
+        "abc330_c/54284668",
+        "abc330_c/54320173"
+      ],
+      "caught_submissions": [
+        "abc330_c/54054641",
+        "abc330_c/54284668",
+        "abc330_c/54320173"
+      ],
+      "screen_pi_hat": 0.025,
+      "screen_successes": 1,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc339_e/52923119",
+      "task_id": "abc339_e",
+      "program_id": "52923119",
+      "date": "2024-02-03",
+      "difficulty": 1109,
+      "loc": 69,
+      "fault_lines": [
+        63
+      ],
+      "n_test_cases": 59,
+      "counterexample": "testcase00.txt",
+      "stratum": "hard",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc339_e/54055907"
+      ],
+      "caught_submissions": [
+        "abc339_e/54055907"
+      ],
+      "screen_pi_hat": 0.075,
+      "screen_successes": 3,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc309_e/46214263",
+      "task_id": "abc309_e",
+      "program_id": "46214263",
+      "date": "2023-07-08",
+      "difficulty": 957,
+      "loc": 28,
+      "fault_lines": [
+        18
+      ],
+      "n_test_cases": 53,
+      "counterexample": "01_srnd_00.txt",
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc309_e/45761344",
+        "abc309_e/45971969",
+        "abc309_e/46044734"
+      ],
+      "caught_submissions": [
+        "abc309_e/45761344",
+        "abc309_e/45971969",
+        "abc309_e/46044734"
+      ],
+      "screen_pi_hat": 0.05,
+      "screen_successes": 2,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc308_c/45926524",
+      "task_id": "abc308_c",
+      "program_id": "45926524",
+      "date": "2023-07-01",
+      "difficulty": 605,
+      "loc": 29,
+      "fault_lines": [
+        5
+      ],
+      "n_test_cases": 23,
+      "counterexample": "01_test_17.txt",
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc308_c/45936707",
+        "abc308_c/45973622",
+        "abc308_c/46192113"
+      ],
+      "caught_submissions": [
+        "abc308_c/45936707",
+        "abc308_c/45973622",
+        "abc308_c/46192113"
+      ],
+      "screen_pi_hat": 0.025,
+      "screen_successes": 1,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "arc155_a/40182881",
+      "task_id": "arc155_a",
+      "program_id": "40182881",
+      "date": "2023-01-29",
+      "difficulty": 1548,
+      "loc": 60,
+      "fault_lines": [
+        44
+      ],
+      "n_test_cases": 19,
+      "counterexample": "01_rand_01.txt",
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "arc155_a/40823834",
+        "arc155_a/44408199",
+        "arc155_a/45899321"
+      ],
+      "caught_submissions": [
+        "arc155_a/40823834",
+        "arc155_a/44408199",
+        "arc155_a/45899321"
+      ],
+      "screen_pi_hat": 0.025,
+      "screen_successes": 1,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc346_b/55138933",
+      "task_id": "abc346_b",
+      "program_id": "55138933",
+      "date": "2024-03-23",
+      "difficulty": 251,
+      "loc": 27,
+      "fault_lines": [
+        21
+      ],
+      "n_test_cases": 22,
+      "counterexample": "00_sample_00.txt",
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc346_b/54883700",
+        "abc346_b/54925895",
+        "abc346_b/55019091"
+      ],
+      "caught_submissions": [
+        "abc346_b/54883700",
+        "abc346_b/54925895",
+        "abc346_b/55019091"
+      ],
+      "screen_pi_hat": 0.05,
+      "screen_successes": 2,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "arc157_d/39202960",
+      "task_id": "arc157_d",
+      "program_id": "39202960",
+      "date": "2023-02-25",
+      "difficulty": 2435,
+      "loc": 113,
+      "fault_lines": [
+        54
+      ],
+      "n_test_cases": 62,
+      "counterexample": "01-008.txt",
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "arc157_d/39193714",
+        "arc157_d/39194356",
+        "arc157_d/39199908"
+      ],
+      "caught_submissions": [
+        "arc157_d/39193714",
+        "arc157_d/39194356",
+        "arc157_d/39199908"
+      ],
+      "screen_pi_hat": 0.025,
+      "screen_successes": 1,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc308_a/46165457",
+      "task_id": "abc308_a",
+      "program_id": "46165457",
+      "date": "2023-07-01",
+      "difficulty": 16,
+      "loc": 19,
+      "fault_lines": [
+        7
+      ],
+      "n_test_cases": 20,
+      "counterexample": "01_random_07.txt",
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc308_a/45931202",
+        "abc308_a/45947529",
+        "abc308_a/45959405"
+      ],
+      "caught_submissions": [
+        "abc308_a/45931202",
+        "abc308_a/45947529",
+        "abc308_a/45959405"
+      ],
+      "screen_pi_hat": 0.05,
+      "screen_successes": 2,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc310_d/53176077",
+      "task_id": "abc310_d",
+      "program_id": "53176077",
+      "date": "2023-07-15",
+      "difficulty": 1368,
+      "loc": 38,
+      "fault_lines": [
+        6
+      ],
+      "n_test_cases": 49,
+      "counterexample": "00_sample_03.txt",
+      "stratum": "hard",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc310_d/50903679"
+      ],
+      "caught_submissions": [
+        "abc310_d/50903679"
+      ],
+      "screen_pi_hat": 0.075,
+      "screen_successes": 3,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "arc165_c/45734816",
+      "task_id": "arc165_c",
+      "program_id": "45734816",
+      "date": "2023-09-17",
+      "difficulty": 1743,
+      "loc": 101,
+      "fault_lines": [
+        24
+      ],
+      "n_test_cases": 62,
+      "counterexample": "00_sample_03.txt",
+      "stratum": "hard",
+      "mutants_caught": 2,
+      "mutants_scored": 2,
+      "natural_mutants": [
+        "arc165_c/45716699",
+        "arc165_c/45733476"
+      ],
+      "caught_submissions": [
+        "arc165_c/45716699",
+        "arc165_c/45733476"
+      ],
+      "screen_pi_hat": 0.025,
+      "screen_successes": 1,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc353_b/54945668",
+      "task_id": "abc353_b",
+      "program_id": "54945668",
+      "date": "2024-05-11",
+      "difficulty": 51,
+      "loc": 23,
+      "fault_lines": [
+        20
+      ],
+      "n_test_cases": 15,
+      "counterexample": "01_random_09.txt",
+      "stratum": "hard",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc353_b/55018999"
+      ],
+      "caught_submissions": [
+        "abc353_b/55018999"
+      ],
+      "screen_pi_hat": 0.025,
+      "screen_successes": 1,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc292_c/45291809",
+      "task_id": "abc292_c",
+      "program_id": "45291809",
+      "date": "2023-03-04",
+      "difficulty": 444,
+      "loc": 25,
+      "fault_lines": [
+        19
+      ],
+      "n_test_cases": 26,
+      "counterexample": "00_sample_00.txt",
+      "stratum": "hard",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc292_c/45536157"
+      ],
+      "caught_submissions": [
+        "abc292_c/45536157"
+      ],
+      "screen_pi_hat": 0.075,
+      "screen_successes": 3,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc356_b/55010067",
+      "task_id": "abc356_b",
+      "program_id": "55010067",
+      "date": "2024-06-01",
+      "difficulty": 40,
+      "loc": 24,
+      "fault_lines": [
+        19
+      ],
+      "n_test_cases": 25,
+      "counterexample": "random_01.txt",
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc356_b/54954884",
+        "abc356_b/54957150",
+        "abc356_b/54965405"
+      ],
+      "caught_submissions": [
+        "abc356_b/54954884",
+        "abc356_b/54957150",
+        "abc356_b/54965405"
+      ],
+      "screen_pi_hat": 0.025,
+      "screen_successes": 1,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc331_d/53655797",
+      "task_id": "abc331_d",
+      "program_id": "53655797",
+      "date": "2023-12-02",
+      "difficulty": 1361,
+      "loc": 32,
+      "fault_lines": [
+        0
+      ],
+      "n_test_cases": 16,
+      "counterexample": "00_sample_00.txt",
+      "stratum": "hard",
+      "mutants_caught": 2,
+      "mutants_scored": 2,
+      "natural_mutants": [
+        "abc331_d/52719206",
+        "abc331_d/53468592"
+      ],
+      "caught_submissions": [
+        "abc331_d/52719206",
+        "abc331_d/53468592"
+      ],
+      "screen_pi_hat": 0.075,
+      "screen_successes": 3,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc303_d/45489398",
+      "task_id": "abc303_d",
+      "program_id": "45489398",
+      "date": "2023-05-27",
+      "difficulty": 778,
+      "loc": 34,
+      "fault_lines": [
+        11
+      ],
+      "n_test_cases": 31,
+      "counterexample": "02_rnd_01.txt",
+      "stratum": "hard",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc303_d/45744343"
+      ],
+      "caught_submissions": [
+        "abc303_d/45744343"
+      ],
+      "screen_pi_hat": 0.025,
+      "screen_successes": 1,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc287_d/45092019",
+      "task_id": "abc287_d",
+      "program_id": "45092019",
+      "date": "2023-01-28",
+      "difficulty": 796,
+      "loc": 25,
+      "fault_lines": [
+        17
+      ],
+      "n_test_cases": 73,
+      "counterexample": "02_rnd_03.txt",
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc287_d/45271287",
+        "abc287_d/45342192",
+        "abc287_d/45345625"
+      ],
+      "caught_submissions": [
+        "abc287_d/45271287",
+        "abc287_d/45342192",
+        "abc287_d/45345625"
+      ],
+      "screen_pi_hat": 0.075,
+      "screen_successes": 3,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc341_e/53935483",
+      "task_id": "abc341_e",
+      "program_id": "53935483",
+      "date": "2024-02-17",
+      "difficulty": 1223,
+      "loc": 54,
+      "fault_lines": [
+        34
+      ],
+      "n_test_cases": 42,
+      "counterexample": "hand_01.txt",
+      "stratum": "hard",
+      "mutants_caught": 2,
+      "mutants_scored": 2,
+      "natural_mutants": [
+        "abc341_e/54316816",
+        "abc341_e/54515840"
+      ],
+      "caught_submissions": [
+        "abc341_e/54316816",
+        "abc341_e/54515840"
+      ],
+      "screen_pi_hat": 0.025,
+      "screen_successes": 1,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc289_c/45901971",
+      "task_id": "abc289_c",
+      "program_id": "45901971",
+      "date": "2023-02-11",
+      "difficulty": 396,
+      "loc": 17,
+      "fault_lines": [
+        10
+      ],
+      "n_test_cases": 26,
+      "counterexample": "03_corner_01.txt",
+      "stratum": "hard",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc289_c/45332649"
+      ],
+      "caught_submissions": [
+        "abc289_c/45332649"
+      ],
+      "screen_pi_hat": 0.025,
+      "screen_successes": 1,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc286_e/45217169",
+      "task_id": "abc286_e",
+      "program_id": "45217169",
+      "date": "2023-01-21",
+      "difficulty": 1128,
+      "loc": 38,
+      "fault_lines": [
+        0
+      ],
+      "n_test_cases": 46,
+      "counterexample": "random_13.txt",
+      "stratum": "hard",
+      "mutants_caught": 2,
+      "mutants_scored": 2,
+      "natural_mutants": [
+        "abc286_e/45479724",
+        "abc286_e/46169747"
+      ],
+      "caught_submissions": [
+        "abc286_e/45479724",
+        "abc286_e/46169747"
+      ],
+      "screen_pi_hat": 0.025,
+      "screen_successes": 1,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc307_d/45446603",
+      "task_id": "abc307_d",
+      "program_id": "45446603",
+      "date": "2023-06-24",
+      "difficulty": 666,
+      "loc": 32,
+      "fault_lines": [
+        17
+      ],
+      "n_test_cases": 48,
+      "counterexample": "random_13.txt",
+      "stratum": "hard",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc307_d/45471496"
+      ],
+      "caught_submissions": [
+        "abc307_d/45471496"
+      ],
+      "screen_pi_hat": 0.025,
+      "screen_successes": 1,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc290_c/45228128",
+      "task_id": "abc290_c",
+      "program_id": "45228128",
+      "date": "2023-02-19",
+      "difficulty": 225,
+      "loc": 16,
+      "fault_lines": [
+        0
+      ],
+      "n_test_cases": 62,
+      "counterexample": "test_21.txt",
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc290_c/45270856",
+        "abc290_c/45296084",
+        "abc290_c/46128954"
+      ],
+      "caught_submissions": [
+        "abc290_c/45270856",
+        "abc290_c/45296084",
+        "abc290_c/46128954"
+      ],
+      "screen_pi_hat": 0.025,
+      "screen_successes": 1,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "arc176_d/52897913",
+      "task_id": "arc176_d",
+      "program_id": "52897913",
+      "date": "2024-04-21",
+      "difficulty": 2572,
+      "loc": 109,
+      "fault_lines": [
+        56
+      ],
+      "n_test_cases": 16,
+      "counterexample": "example_00.txt",
+      "stratum": "hard",
+      "mutants_caught": 2,
+      "mutants_scored": 2,
+      "natural_mutants": [
+        "arc176_d/52671232",
+        "arc176_d/52672133"
+      ],
+      "caught_submissions": [
+        "arc176_d/52671232",
+        "arc176_d/52672133"
+      ],
+      "screen_pi_hat": 0.025,
+      "screen_successes": 1,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc326_c/54454360",
+      "task_id": "abc326_c",
+      "program_id": "54454360",
+      "date": "2023-10-28",
+      "difficulty": 292,
+      "loc": 26,
+      "fault_lines": [
+        13
+      ],
+      "n_test_cases": 36,
+      "counterexample": "test_01.txt",
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc326_c/54306688",
+        "abc326_c/54400118",
+        "abc326_c/54412817"
+      ],
+      "caught_submissions": [
+        "abc326_c/54306688",
+        "abc326_c/54400118",
+        "abc326_c/54412817"
+      ],
+      "screen_pi_hat": 0.05,
+      "screen_successes": 2,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc346_e/54144246",
+      "task_id": "abc346_e",
+      "program_id": "54144246",
+      "date": "2024-03-23",
+      "difficulty": 1053,
+      "loc": 54,
+      "fault_lines": [
+        43
+      ],
+      "n_test_cases": 43,
+      "counterexample": "testcase00.txt",
+      "stratum": "hard",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc346_e/52762677"
+      ],
+      "caught_submissions": [
+        "abc346_e/52762677"
+      ],
+      "screen_pi_hat": 0.075,
+      "screen_successes": 3,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc319_b/46206496",
+      "task_id": "abc319_b",
+      "program_id": "46206496",
+      "date": "2023-09-09",
+      "difficulty": 70,
+      "loc": 18,
+      "fault_lines": [
+        6
+      ],
+      "n_test_cases": 21,
+      "counterexample": "006.txt",
+      "stratum": "hard",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc319_b/45808237",
+        "abc319_b/45811398",
+        "abc319_b/45813638"
+      ],
+      "caught_submissions": [
+        "abc319_b/45808237",
+        "abc319_b/45811398",
+        "abc319_b/45813638"
+      ],
+      "screen_pi_hat": 0.05,
+      "screen_successes": 2,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc289_d/46033056",
+      "task_id": "abc289_d",
+      "program_id": "46033056",
+      "date": "2023-02-11",
+      "difficulty": 551,
+      "loc": 29,
+      "fault_lines": [
+        22
+      ],
+      "n_test_cases": 59,
+      "counterexample": "01_handmade_06.txt",
+      "stratum": "hard",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc289_d/44672786"
+      ],
+      "caught_submissions": [
+        "abc289_d/44672786"
+      ],
+      "screen_pi_hat": 0.025,
+      "screen_successes": 1,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc344_d/54876594",
+      "task_id": "abc344_d",
+      "program_id": "54876594",
+      "date": "2024-03-09",
+      "difficulty": 854,
+      "loc": 43,
+      "fault_lines": [
+        18
+      ],
+      "n_test_cases": 58,
+      "counterexample": "test_32.txt",
+      "stratum": "hard",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc344_d/54960181"
+      ],
+      "caught_submissions": [
+        "abc344_d/54960181"
+      ],
+      "screen_pi_hat": 0.05,
+      "screen_successes": 2,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc333_b/54467069",
+      "task_id": "abc333_b",
+      "program_id": "54467069",
+      "date": "2023-12-16",
+      "difficulty": 89,
+      "loc": 73,
+      "fault_lines": [
+        58
+      ],
+      "n_test_cases": 18,
+      "counterexample": "01_test_01.txt",
+      "stratum": "hard",
+      "mutants_caught": 2,
+      "mutants_scored": 2,
+      "natural_mutants": [
+        "abc333_b/54487746",
+        "abc333_b/54528600"
+      ],
+      "caught_submissions": [
+        "abc333_b/54487746",
+        "abc333_b/54528600"
+      ],
+      "screen_pi_hat": 0.025,
+      "screen_successes": 1,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc339_b/54672032",
+      "task_id": "abc339_b",
+      "program_id": "54672032",
+      "date": "2024-02-03",
+      "difficulty": 202,
+      "loc": 28,
+      "fault_lines": [
+        28
+      ],
+      "n_test_cases": 15,
+      "counterexample": "sample00.txt",
+      "stratum": "medium",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc339_b/54311169"
+      ],
+      "caught_submissions": [
+        "abc339_b/54311169"
+      ],
+      "screen_pi_hat": 0.1,
+      "screen_successes": 4,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc314_d/46143343",
+      "task_id": "abc314_d",
+      "program_id": "46143343",
+      "date": "2023-08-12",
+      "difficulty": 585,
+      "loc": 31,
+      "fault_lines": [
+        30
+      ],
+      "n_test_cases": 24,
+      "counterexample": "01_random_05.txt",
+      "stratum": "medium",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc314_d/46146276"
+      ],
+      "caught_submissions": [
+        "abc314_d/46146276"
+      ],
+      "screen_pi_hat": 0.175,
+      "screen_successes": 7,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc358_d/55035534",
+      "task_id": "abc358_d",
+      "program_id": "55035534",
+      "date": "2024-06-15",
+      "difficulty": 393,
+      "loc": 24,
+      "fault_lines": [
+        17
+      ],
+      "n_test_cases": 33,
+      "counterexample": "testcase01.txt",
+      "stratum": "medium",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc358_d/54977408"
+      ],
+      "caught_submissions": [
+        "abc358_d/54977408"
+      ],
+      "screen_pi_hat": 0.175,
+      "screen_successes": 7,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc307_b/45983540",
+      "task_id": "abc307_b",
+      "program_id": "45983540",
+      "date": "2023-06-24",
+      "difficulty": 70,
+      "loc": 19,
+      "fault_lines": [
+        12
+      ],
+      "n_test_cases": 30,
+      "counterexample": "random_03.txt",
+      "stratum": "medium",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc307_b/45786032"
+      ],
+      "caught_submissions": [
+        "abc307_b/45786032"
+      ],
+      "screen_pi_hat": 0.125,
+      "screen_successes": 5,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc355_d/54769975",
+      "task_id": "abc355_d",
+      "program_id": "54769975",
+      "date": "2024-05-25",
+      "difficulty": 735,
+      "loc": 26,
+      "fault_lines": [
+        26
+      ],
+      "n_test_cases": 22,
+      "counterexample": "00_sample_03.txt",
+      "stratum": "medium",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc355_d/54962724"
+      ],
+      "caught_submissions": [
+        "abc355_d/54962724"
+      ],
+      "screen_pi_hat": 0.125,
+      "screen_successes": 5,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "arc161_a/44901264",
+      "task_id": "arc161_a",
+      "program_id": "44901264",
+      "date": "2023-05-28",
+      "difficulty": 285,
+      "loc": 16,
+      "fault_lines": [
+        8
+      ],
+      "n_test_cases": 31,
+      "counterexample": "01-001.txt",
+      "stratum": "medium",
+      "mutants_caught": 2,
+      "mutants_scored": 2,
+      "natural_mutants": [
+        "arc161_a/45669630",
+        "arc161_a/46209025"
+      ],
+      "caught_submissions": [
+        "arc161_a/45669630",
+        "arc161_a/46209025"
+      ],
+      "screen_pi_hat": 0.125,
+      "screen_successes": 5,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc287_c/45520506",
+      "task_id": "abc287_c",
+      "program_id": "45520506",
+      "date": "2023-01-28",
+      "difficulty": 466,
+      "loc": 41,
+      "fault_lines": [
+        29
+      ],
+      "n_test_cases": 40,
+      "counterexample": "02_path_00.txt",
+      "stratum": "medium",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc287_c/46180932"
+      ],
+      "caught_submissions": [
+        "abc287_c/46180932"
+      ],
+      "screen_pi_hat": 0.15,
+      "screen_successes": 6,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc360_b/55141723",
+      "task_id": "abc360_b",
+      "program_id": "55141723",
+      "date": "2024-06-30",
+      "difficulty": 78,
+      "loc": 20,
+      "fault_lines": [
+        16
+      ],
+      "n_test_cases": 29,
+      "counterexample": "01_random_00.txt",
+      "stratum": "medium",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc360_b/55142362"
+      ],
+      "caught_submissions": [
+        "abc360_b/55142362"
+      ],
+      "screen_pi_hat": 0.125,
+      "screen_successes": 5,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "arc175_b/51713549",
+      "task_id": "arc175_b",
+      "program_id": "51713549",
+      "date": "2024-03-24",
+      "difficulty": 924,
+      "loc": 46,
+      "fault_lines": [
+        40
+      ],
+      "n_test_cases": 24,
+      "counterexample": "01_test_15.txt",
+      "stratum": "medium",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "arc175_b/51749871",
+        "arc175_b/51792735",
+        "arc175_b/51933297"
+      ],
+      "caught_submissions": [
+        "arc175_b/51749871",
+        "arc175_b/51792735",
+        "arc175_b/51933297"
+      ],
+      "screen_pi_hat": 0.125,
+      "screen_successes": 5,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc299_c/45695018",
+      "task_id": "abc299_c",
+      "program_id": "45695018",
+      "date": "2023-04-22",
+      "difficulty": 280,
+      "loc": 33,
+      "fault_lines": [
+        30
+      ],
+      "n_test_cases": 29,
+      "counterexample": "01_small_05.txt",
+      "stratum": "medium",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc299_c/45221667",
+        "abc299_c/45333505",
+        "abc299_c/45334014"
+      ],
+      "caught_submissions": [
+        "abc299_c/45221667",
+        "abc299_c/45333505",
+        "abc299_c/45334014"
+      ],
+      "screen_pi_hat": 0.1,
+      "screen_successes": 4,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc334_e/52777689",
+      "task_id": "abc334_e",
+      "program_id": "52777689",
+      "date": "2023-12-23",
+      "difficulty": 1195,
+      "loc": 70,
+      "fault_lines": [
+        68
+      ],
+      "n_test_cases": 34,
+      "counterexample": "sample00.txt",
+      "stratum": "medium",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc334_e/52492868"
+      ],
+      "caught_submissions": [
+        "abc334_e/52492868"
+      ],
+      "screen_pi_hat": 0.15,
+      "screen_successes": 6,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc321_f/52979507",
+      "task_id": "abc321_f",
+      "program_id": "52979507",
+      "date": "2023-09-23",
+      "difficulty": 1645,
+      "loc": 22,
+      "fault_lines": [
+        3
+      ],
+      "n_test_cases": 72,
+      "counterexample": "test_04.txt",
+      "stratum": "medium",
+      "mutants_caught": 2,
+      "mutants_scored": 2,
+      "natural_mutants": [
+        "abc321_f/50281141",
+        "abc321_f/50314783"
+      ],
+      "caught_submissions": [
+        "abc321_f/50281141",
+        "abc321_f/50314783"
+      ],
+      "screen_pi_hat": 0.1,
+      "screen_successes": 4,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc291_d/46165699",
+      "task_id": "abc291_d",
+      "program_id": "46165699",
+      "date": "2023-02-26",
+      "difficulty": 720,
+      "loc": 20,
+      "fault_lines": [
+        19
+      ],
+      "n_test_cases": 50,
+      "counterexample": "01_small_02.txt",
+      "stratum": "medium",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc291_d/45489809",
+        "abc291_d/45519163",
+        "abc291_d/45745122"
+      ],
+      "caught_submissions": [
+        "abc291_d/45489809",
+        "abc291_d/45519163",
+        "abc291_d/45745122"
+      ],
+      "screen_pi_hat": 0.1,
+      "screen_successes": 4,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "arc154_b/43445291",
+      "task_id": "arc154_b",
+      "program_id": "43445291",
+      "date": "2023-01-22",
+      "difficulty": 1027,
+      "loc": 18,
+      "fault_lines": [
+        18
+      ],
+      "n_test_cases": 18,
+      "counterexample": "example_00.txt",
+      "stratum": "medium",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "arc154_b/40787964",
+        "arc154_b/40904177",
+        "arc154_b/43180385"
+      ],
+      "caught_submissions": [
+        "arc154_b/40787964",
+        "arc154_b/40904177",
+        "arc154_b/43180385"
+      ],
+      "screen_pi_hat": 0.15,
+      "screen_successes": 6,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc285_e/48880084",
+      "task_id": "abc285_e",
+      "program_id": "48880084",
+      "date": "2023-01-15",
+      "difficulty": 1466,
+      "loc": 33,
+      "fault_lines": [
+        26
+      ],
+      "n_test_cases": 63,
+      "counterexample": "test_29.txt",
+      "stratum": "medium",
+      "mutants_caught": 2,
+      "mutants_scored": 2,
+      "natural_mutants": [
+        "abc285_e/51473049",
+        "abc285_e/53461443"
+      ],
+      "caught_submissions": [
+        "abc285_e/51473049",
+        "abc285_e/53461443"
+      ],
+      "screen_pi_hat": 0.175,
+      "screen_successes": 7,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc347_e/53797654",
+      "task_id": "abc347_e",
+      "program_id": "53797654",
+      "date": "2024-03-30",
+      "difficulty": 1166,
+      "loc": 56,
+      "fault_lines": [
+        56
+      ],
+      "n_test_cases": 24,
+      "counterexample": "00_sample_01.txt",
+      "stratum": "medium",
+      "mutants_caught": 2,
+      "mutants_scored": 2,
+      "natural_mutants": [
+        "abc347_e/52950646",
+        "abc347_e/55155569"
+      ],
+      "caught_submissions": [
+        "abc347_e/52950646",
+        "abc347_e/55155569"
+      ],
+      "screen_pi_hat": 0.175,
+      "screen_successes": 7,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc308_d/54718266",
+      "task_id": "abc308_d",
+      "program_id": "54718266",
+      "date": "2023-07-01",
+      "difficulty": 619,
+      "loc": 30,
+      "fault_lines": [
+        27
+      ],
+      "n_test_cases": 36,
+      "counterexample": "01_random_01.txt",
+      "stratum": "medium",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc308_d/54535139"
+      ],
+      "caught_submissions": [
+        "abc308_d/54535139"
+      ],
+      "screen_pi_hat": 0.175,
+      "screen_successes": 7,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc286_d/45471607",
+      "task_id": "abc286_d",
+      "program_id": "45471607",
+      "date": "2023-01-21",
+      "difficulty": 607,
+      "loc": 51,
+      "fault_lines": [
+        43
+      ],
+      "n_test_cases": 67,
+      "counterexample": "hand_08.txt",
+      "stratum": "medium",
+      "mutants_caught": 2,
+      "mutants_scored": 2,
+      "natural_mutants": [
+        "abc286_d/45059364",
+        "abc286_d/45787313"
+      ],
+      "caught_submissions": [
+        "abc286_d/45059364",
+        "abc286_d/45787313"
+      ],
+      "screen_pi_hat": 0.175,
+      "screen_successes": 7,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "arc143_c/37392747",
+      "task_id": "arc143_c",
+      "program_id": "37392747",
+      "date": "2022-06-26",
+      "difficulty": 1805,
+      "loc": 21,
+      "fault_lines": [
+        12
+      ],
+      "n_test_cases": 36,
+      "counterexample": "in02.txt",
+      "stratum": "medium",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "arc143_c/33642213"
+      ],
+      "caught_submissions": [
+        "arc143_c/33642213"
+      ],
+      "screen_pi_hat": 0.15,
+      "screen_successes": 6,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc273_d/45461646",
+      "task_id": "abc273_d",
+      "program_id": "45461646",
+      "date": "2022-10-15",
+      "difficulty": 1119,
+      "loc": 61,
+      "fault_lines": [
+        60
+      ],
+      "n_test_cases": 29,
+      "counterexample": "001.txt",
+      "stratum": "medium",
+      "mutants_caught": 2,
+      "mutants_scored": 2,
+      "natural_mutants": [
+        "abc273_d/44934690",
+        "abc273_d/45053294"
+      ],
+      "caught_submissions": [
+        "abc273_d/44934690",
+        "abc273_d/45053294"
+      ],
+      "screen_pi_hat": 0.175,
+      "screen_successes": 7,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc360_d/55161015",
+      "task_id": "abc360_d",
+      "program_id": "55161015",
+      "date": "2024-06-30",
+      "difficulty": 159,
+      "loc": 29,
+      "fault_lines": [
+        25
+      ],
+      "n_test_cases": 28,
+      "counterexample": "01_random_00.txt",
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc360_d/55130899",
+        "abc360_d/55135895",
+        "abc360_d/55144134"
+      ],
+      "caught_submissions": [
+        "abc360_d/55130899",
+        "abc360_d/55135895",
+        "abc360_d/55144134"
+      ],
+      "screen_pi_hat": 0.325,
+      "screen_successes": 13,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc287_e/54006112",
+      "task_id": "abc287_e",
+      "program_id": "54006112",
+      "date": "2023-01-28",
+      "difficulty": 1093,
+      "loc": 30,
+      "fault_lines": [
+        26
+      ],
+      "n_test_cases": 33,
+      "counterexample": "03_random_04.txt",
+      "stratum": "easy",
+      "mutants_caught": 2,
+      "mutants_scored": 2,
+      "natural_mutants": [
+        "abc287_e/51264451",
+        "abc287_e/54495703"
+      ],
+      "caught_submissions": [
+        "abc287_e/51264451",
+        "abc287_e/54495703"
+      ],
+      "screen_pi_hat": 0.25,
+      "screen_successes": 10,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc313_b/45739272",
+      "task_id": "abc313_b",
+      "program_id": "45739272",
+      "date": "2023-08-05",
+      "difficulty": 213,
+      "loc": 18,
+      "fault_lines": [
+        16
+      ],
+      "n_test_cases": 26,
+      "counterexample": "00_sample_00.txt",
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc313_b/45691967",
+        "abc313_b/45757869",
+        "abc313_b/45889938"
+      ],
+      "caught_submissions": [
+        "abc313_b/45691967",
+        "abc313_b/45757869",
+        "abc313_b/45889938"
+      ],
+      "screen_pi_hat": 0.25,
+      "screen_successes": 10,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc337_d/54495605",
+      "task_id": "abc337_d",
+      "program_id": "54495605",
+      "date": "2024-01-20",
+      "difficulty": 760,
+      "loc": 44,
+      "fault_lines": [
+        42
+      ],
+      "n_test_cases": 67,
+      "counterexample": "007.txt",
+      "stratum": "easy",
+      "mutants_caught": 2,
+      "mutants_scored": 2,
+      "natural_mutants": [
+        "abc337_d/54308671",
+        "abc337_d/55025649"
+      ],
+      "caught_submissions": [
+        "abc337_d/54308671",
+        "abc337_d/55025649"
+      ],
+      "screen_pi_hat": 0.2,
+      "screen_successes": 8,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc354_f/54039651",
+      "task_id": "abc354_f",
+      "program_id": "54039651",
+      "date": "2024-05-18",
+      "difficulty": 1639,
+      "loc": 109,
+      "fault_lines": [
+        64
+      ],
+      "n_test_cases": 46,
+      "counterexample": "00_sample_00.txt",
+      "stratum": "easy",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc354_f/54029773"
+      ],
+      "caught_submissions": [
+        "abc354_f/54029773"
+      ],
+      "screen_pi_hat": 0.325,
+      "screen_successes": 13,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc330_f/48327716",
+      "task_id": "abc330_f",
+      "program_id": "48327716",
+      "date": "2023-11-25",
+      "difficulty": 1718,
+      "loc": 40,
+      "fault_lines": [
+        19
+      ],
+      "n_test_cases": 104,
+      "counterexample": "test_40.txt",
+      "stratum": "easy",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc330_f/48207650"
+      ],
+      "caught_submissions": [
+        "abc330_f/48207650"
+      ],
+      "screen_pi_hat": 0.325,
+      "screen_successes": 13,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc338_c/54491236",
+      "task_id": "abc338_c",
+      "program_id": "54491236",
+      "date": "2024-01-27",
+      "difficulty": 513,
+      "loc": 16,
+      "fault_lines": [
+        14
+      ],
+      "n_test_cases": 18,
+      "counterexample": "01-sample.txt",
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc338_c/54294909",
+        "abc338_c/54397398",
+        "abc338_c/54431526"
+      ],
+      "caught_submissions": [
+        "abc338_c/54294909",
+        "abc338_c/54397398",
+        "abc338_c/54431526"
+      ],
+      "screen_pi_hat": 0.225,
+      "screen_successes": 9,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc346_f/53286789",
+      "task_id": "abc346_f",
+      "program_id": "53286789",
+      "date": "2024-03-23",
+      "difficulty": 1840,
+      "loc": 46,
+      "fault_lines": [
+        32
+      ],
+      "n_test_cases": 50,
+      "counterexample": "04_border_02.txt",
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc346_f/53131253",
+        "abc346_f/53725760",
+        "abc346_f/54698915"
+      ],
+      "caught_submissions": [
+        "abc346_f/53131253",
+        "abc346_f/53725760",
+        "abc346_f/54698915"
+      ],
+      "screen_pi_hat": 0.225,
+      "screen_successes": 9,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc301_d/45732372",
+      "task_id": "abc301_d",
+      "program_id": "45732372",
+      "date": "2023-05-13",
+      "difficulty": 885,
+      "loc": 18,
+      "fault_lines": [
+        16
+      ],
+      "n_test_cases": 46,
+      "counterexample": "00_sample_00.txt",
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc301_d/45718315",
+        "abc301_d/45723653",
+        "abc301_d/45725346"
+      ],
+      "caught_submissions": [
+        "abc301_d/45718315",
+        "abc301_d/45723653",
+        "abc301_d/45725346"
+      ],
+      "screen_pi_hat": 0.3,
+      "screen_successes": 12,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc322_e/53004931",
+      "task_id": "abc322_e",
+      "program_id": "53004931",
+      "date": "2023-09-30",
+      "difficulty": 1193,
+      "loc": 43,
+      "fault_lines": [
+        38
+      ],
+      "n_test_cases": 46,
+      "counterexample": "example_01.txt",
+      "stratum": "easy",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc322_e/53314219"
+      ],
+      "caught_submissions": [
+        "abc322_e/53314219"
+      ],
+      "screen_pi_hat": 0.3,
+      "screen_successes": 12,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc296_f/45226037",
+      "task_id": "abc296_f",
+      "program_id": "45226037",
+      "date": "2023-04-01",
+      "difficulty": 1811,
+      "loc": 110,
+      "fault_lines": [
+        80
+      ],
+      "n_test_cases": 48,
+      "counterexample": "example_03.txt",
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc296_f/43917096",
+        "abc296_f/45331429",
+        "abc296_f/50949566"
+      ],
+      "caught_submissions": [
+        "abc296_f/43917096",
+        "abc296_f/45331429",
+        "abc296_f/50949566"
+      ],
+      "screen_pi_hat": 0.2,
+      "screen_successes": 8,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc300_e/45250612",
+      "task_id": "abc300_e",
+      "program_id": "45250612",
+      "date": "2023-04-29",
+      "difficulty": 1354,
+      "loc": 34,
+      "fault_lines": [
+        31
+      ],
+      "n_test_cases": 25,
+      "counterexample": "00_sample_02.txt",
+      "stratum": "easy",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc300_e/45218169"
+      ],
+      "caught_submissions": [
+        "abc300_e/45218169"
+      ],
+      "screen_pi_hat": 0.2,
+      "screen_successes": 8,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc354_e/54930119",
+      "task_id": "abc354_e",
+      "program_id": "54930119",
+      "date": "2024-05-18",
+      "difficulty": 1223,
+      "loc": 19,
+      "fault_lines": [
+        19
+      ],
+      "n_test_cases": 30,
+      "counterexample": "00_sample_00.txt",
+      "stratum": "easy",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc354_e/54730171"
+      ],
+      "caught_submissions": [
+        "abc354_e/54730171"
+      ],
+      "screen_pi_hat": 0.325,
+      "screen_successes": 13,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc291_c/45751656",
+      "task_id": "abc291_c",
+      "program_id": "45751656",
+      "date": "2023-02-26",
+      "difficulty": 188,
+      "loc": 19,
+      "fault_lines": [
+        3
+      ],
+      "n_test_cases": 38,
+      "counterexample": "random_15.txt",
+      "stratum": "easy",
+      "mutants_caught": 2,
+      "mutants_scored": 2,
+      "natural_mutants": [
+        "abc291_c/45227759",
+        "abc291_c/45313651"
+      ],
+      "caught_submissions": [
+        "abc291_c/45227759",
+        "abc291_c/45313651"
+      ],
+      "screen_pi_hat": 0.3,
+      "screen_successes": 12,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc323_a/54513324",
+      "task_id": "abc323_a",
+      "program_id": "54513324",
+      "date": "2023-10-07",
+      "difficulty": 15,
+      "loc": 17,
+      "fault_lines": [
+        7
+      ],
+      "n_test_cases": 23,
+      "counterexample": "example_00.txt",
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc323_a/54475716",
+        "abc323_a/54486886",
+        "abc323_a/54490439"
+      ],
+      "caught_submissions": [
+        "abc323_a/54475716",
+        "abc323_a/54486886",
+        "abc323_a/54490439"
+      ],
+      "screen_pi_hat": 0.225,
+      "screen_successes": 9,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc271_c/45808178",
+      "task_id": "abc271_c",
+      "program_id": "45808178",
+      "date": "2022-10-01",
+      "difficulty": 842,
+      "loc": 16,
+      "fault_lines": [
+        8
+      ],
+      "n_test_cases": 29,
+      "counterexample": "01_one_00.txt",
+      "stratum": "easy",
+      "mutants_caught": 2,
+      "mutants_scored": 2,
+      "natural_mutants": [
+        "abc271_c/45004566",
+        "abc271_c/45062381"
+      ],
+      "caught_submissions": [
+        "abc271_c/45004566",
+        "abc271_c/45062381"
+      ],
+      "screen_pi_hat": 0.25,
+      "screen_successes": 10,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc278_c/45320717",
+      "task_id": "abc278_c",
+      "program_id": "45320717",
+      "date": "2022-11-19",
+      "difficulty": 327,
+      "loc": 17,
+      "fault_lines": [
+        5
+      ],
+      "n_test_cases": 17,
+      "counterexample": "01_small_sns_03.txt",
+      "stratum": "easy",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc278_c/44900806"
+      ],
+      "caught_submissions": [
+        "abc278_c/44900806"
+      ],
+      "screen_pi_hat": 0.35,
+      "screen_successes": 14,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc260_b/53041244",
+      "task_id": "abc260_b",
+      "program_id": "53041244",
+      "date": "2022-07-17",
+      "difficulty": 195,
+      "loc": 32,
+      "fault_lines": [
+        32
+      ],
+      "n_test_cases": 30,
+      "counterexample": "test_03.txt",
+      "stratum": "easy",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc260_b/53719611"
+      ],
+      "caught_submissions": [
+        "abc260_b/53719611"
+      ],
+      "screen_pi_hat": 0.2,
+      "screen_successes": 8,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc250_g/31608048",
+      "task_id": "abc250_g",
+      "program_id": "31608048",
+      "date": "2022-05-08",
+      "difficulty": 2219,
+      "loc": 33,
+      "fault_lines": [
+        17
+      ],
+      "n_test_cases": 70,
+      "counterexample": "test_02.txt",
+      "stratum": "easy",
+      "mutants_caught": 2,
+      "mutants_scored": 2,
+      "natural_mutants": [
+        "abc250_g/36759156",
+        "abc250_g/51402169"
+      ],
+      "caught_submissions": [
+        "abc250_g/36759156",
+        "abc250_g/51402169"
+      ],
+      "screen_pi_hat": 0.325,
+      "screen_successes": 13,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc246_g/33284569",
+      "task_id": "abc246_g",
+      "program_id": "33284569",
+      "date": "2022-04-02",
+      "difficulty": 2313,
+      "loc": 58,
+      "fault_lines": [
+        25
+      ],
+      "n_test_cases": 65,
+      "counterexample": "000.txt",
+      "stratum": "easy",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc246_g/31385030",
+        "abc246_g/32131546",
+        "abc246_g/33722514"
+      ],
+      "caught_submissions": [
+        "abc246_g/31385030",
+        "abc246_g/32131546",
+        "abc246_g/33722514"
+      ],
+      "screen_pi_hat": 0.2,
+      "screen_successes": 8,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc281_f/45038482",
+      "task_id": "abc281_f",
+      "program_id": "45038482",
+      "date": "2022-12-10",
+      "difficulty": 1714,
+      "loc": 53,
+      "fault_lines": [
+        34
+      ],
+      "n_test_cases": 33,
+      "counterexample": "04_con_02.txt",
+      "stratum": "easy",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc281_f/45472060"
+      ],
+      "caught_submissions": [
+        "abc281_f/45472060"
+      ],
+      "screen_pi_hat": 0.3,
+      "screen_successes": 12,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc336_d/53237033",
+      "task_id": "abc336_d",
+      "program_id": "53237033",
+      "date": "2024-01-14",
+      "difficulty": 991,
+      "loc": 15,
+      "fault_lines": [
+        10
+      ],
+      "n_test_cases": 42,
+      "counterexample": "hand_04.txt",
+      "stratum": "too_easy",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc336_d/54268398",
+        "abc336_d/54315975",
+        "abc336_d/54659671"
+      ],
+      "caught_submissions": [
+        "abc336_d/54268398",
+        "abc336_d/54315975",
+        "abc336_d/54659671"
+      ],
+      "screen_pi_hat": 0.575,
+      "screen_successes": 23,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc349_b/54895344",
+      "task_id": "abc349_b",
+      "program_id": "54895344",
+      "date": "2024-04-13",
+      "difficulty": 89,
+      "loc": 23,
+      "fault_lines": [
+        13
+      ],
+      "n_test_cases": 17,
+      "counterexample": "02_handmade_01.txt",
+      "stratum": "too_easy",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc349_b/54719195",
+        "abc349_b/54749110",
+        "abc349_b/54751980"
+      ],
+      "caught_submissions": [
+        "abc349_b/54719195",
+        "abc349_b/54749110",
+        "abc349_b/54751980"
+      ],
+      "screen_pi_hat": 0.5,
+      "screen_successes": 20,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "arc160_c/41518740",
+      "task_id": "arc160_c",
+      "program_id": "41518740",
+      "date": "2023-05-14",
+      "difficulty": 1861,
+      "loc": 25,
+      "fault_lines": [
+        18
+      ],
+      "n_test_cases": 53,
+      "counterexample": "test_06.txt",
+      "stratum": "too_easy",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "arc160_c/41463787",
+        "arc160_c/41479555",
+        "arc160_c/41526904"
+      ],
+      "caught_submissions": [
+        "arc160_c/41463787",
+        "arc160_c/41479555",
+        "arc160_c/41526904"
+      ],
+      "screen_pi_hat": 0.525,
+      "screen_successes": 21,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "arc174_b/51697010",
+      "task_id": "arc174_b",
+      "program_id": "51697010",
+      "date": "2024-03-17",
+      "difficulty": 882,
+      "loc": 18,
+      "fault_lines": [
+        11
+      ],
+      "n_test_cases": 40,
+      "counterexample": "sample_01.txt",
+      "stratum": "too_easy",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "arc174_b/51471469",
+        "arc174_b/51473065",
+        "arc174_b/51500083"
+      ],
+      "caught_submissions": [
+        "arc174_b/51471469",
+        "arc174_b/51473065",
+        "arc174_b/51500083"
+      ],
+      "screen_pi_hat": 0.925,
+      "screen_successes": 37,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc300_b/45723196",
+      "task_id": "abc300_b",
+      "program_id": "45723196",
+      "date": "2023-04-29",
+      "difficulty": 353,
+      "loc": 29,
+      "fault_lines": [
+        1
+      ],
+      "n_test_cases": 38,
+      "counterexample": "00_sample_03.txt",
+      "stratum": "too_easy",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc300_b/45110485"
+      ],
+      "caught_submissions": [
+        "abc300_b/45110485"
+      ],
+      "screen_pi_hat": 0.675,
+      "screen_successes": 27,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc331_e/53576352",
+      "task_id": "abc331_e",
+      "program_id": "53576352",
+      "date": "2023-12-02",
+      "difficulty": 1018,
+      "loc": 21,
+      "fault_lines": [
+        16
+      ],
+      "n_test_cases": 23,
+      "counterexample": "00_sample_00.txt",
+      "stratum": "too_easy",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc331_e/52731476",
+        "abc331_e/52779261",
+        "abc331_e/54003123"
+      ],
+      "caught_submissions": [
+        "abc331_e/52731476",
+        "abc331_e/52779261",
+        "abc331_e/54003123"
+      ],
+      "screen_pi_hat": 0.75,
+      "screen_successes": 30,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc298_d/45710768",
+      "task_id": "abc298_d",
+      "program_id": "45710768",
+      "date": "2023-04-15",
+      "difficulty": 943,
+      "loc": 28,
+      "fault_lines": [
+        26
+      ],
+      "n_test_cases": 20,
+      "counterexample": "00_sample_01.txt",
+      "stratum": "too_easy",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc298_d/45550904"
+      ],
+      "caught_submissions": [
+        "abc298_d/45550904"
+      ],
+      "screen_pi_hat": 0.475,
+      "screen_successes": 19,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc292_b/45575109",
+      "task_id": "abc292_b",
+      "program_id": "45575109",
+      "date": "2023-03-04",
+      "difficulty": 39,
+      "loc": 17,
+      "fault_lines": [
+        14
+      ],
+      "n_test_cases": 17,
+      "counterexample": "01_corner_00.txt",
+      "stratum": "too_easy",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc292_b/44986856",
+        "abc292_b/45300323",
+        "abc292_b/45444129"
+      ],
+      "caught_submissions": [
+        "abc292_b/44986856",
+        "abc292_b/45300323",
+        "abc292_b/45444129"
+      ],
+      "screen_pi_hat": 0.575,
+      "screen_successes": 23,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc303_c/45578518",
+      "task_id": "abc303_c",
+      "program_id": "45578518",
+      "date": "2023-05-27",
+      "difficulty": 417,
+      "loc": 25,
+      "fault_lines": [
+        4
+      ],
+      "n_test_cases": 20,
+      "counterexample": "00_sample_01.txt",
+      "stratum": "too_easy",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc303_c/45491344",
+        "abc303_c/46045444",
+        "abc303_c/46147196"
+      ],
+      "caught_submissions": [
+        "abc303_c/45491344",
+        "abc303_c/46045444",
+        "abc303_c/46147196"
+      ],
+      "screen_pi_hat": 0.4,
+      "screen_successes": 16,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "agc062_a/44358952",
+      "task_id": "agc062_a",
+      "program_id": "44358952",
+      "date": "2023-05-21",
+      "difficulty": 1099,
+      "loc": 15,
+      "fault_lines": [
+        11
+      ],
+      "n_test_cases": 27,
+      "counterexample": "01_small_all_01.txt",
+      "stratum": "too_easy",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "agc062_a/42875065",
+        "agc062_a/43015792",
+        "agc062_a/43035982"
+      ],
+      "caught_submissions": [
+        "agc062_a/42875065",
+        "agc062_a/43015792",
+        "agc062_a/43035982"
+      ],
+      "screen_pi_hat": 0.85,
+      "screen_successes": 34,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc353_a/55010639",
+      "task_id": "abc353_a",
+      "program_id": "55010639",
+      "date": "2024-05-11",
+      "difficulty": 12,
+      "loc": 21,
+      "fault_lines": [
+        8
+      ],
+      "n_test_cases": 15,
+      "counterexample": "00_sample_01.txt",
+      "stratum": "too_easy",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc353_a/54934846",
+        "abc353_a/54951286",
+        "abc353_a/55035442"
+      ],
+      "caught_submissions": [
+        "abc353_a/54934846",
+        "abc353_a/54951286",
+        "abc353_a/55035442"
+      ],
+      "screen_pi_hat": 0.5,
+      "screen_successes": 20,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc350_f/54219104",
+      "task_id": "abc350_f",
+      "program_id": "54219104",
+      "date": "2024-04-20",
+      "difficulty": 1601,
+      "loc": 77,
+      "fault_lines": [
+        39
+      ],
+      "n_test_cases": 33,
+      "counterexample": "sample_01.txt",
+      "stratum": "too_easy",
+      "mutants_caught": 1,
+      "mutants_scored": 1,
+      "natural_mutants": [
+        "abc350_f/53750325"
+      ],
+      "caught_submissions": [
+        "abc350_f/53750325"
+      ],
+      "screen_pi_hat": 0.5,
+      "screen_successes": 20,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc286_g/38690639",
+      "task_id": "abc286_g",
+      "program_id": "38690639",
+      "date": "2023-01-21",
+      "difficulty": 2135,
+      "loc": 94,
+      "fault_lines": [
+        88
+      ],
+      "n_test_cases": 53,
+      "counterexample": "hand_01.txt",
+      "stratum": "too_easy",
+      "mutants_caught": 2,
+      "mutants_scored": 2,
+      "natural_mutants": [
+        "abc286_g/38302356",
+        "abc286_g/41126621"
+      ],
+      "caught_submissions": [
+        "abc286_g/38302356",
+        "abc286_g/41126621"
+      ],
+      "screen_pi_hat": 0.45,
+      "screen_successes": 18,
+      "screen_calls": 40,
+      "pinned": true
+    },
+    {
+      "name": "abc351_c/55122758",
+      "task_id": "abc351_c",
+      "program_id": "55122758",
+      "date": "2024-04-27",
+      "difficulty": 228,
+      "loc": 18,
+      "fault_lines": [
+        17
+      ],
+      "n_test_cases": 38,
+      "counterexample": "example_00.txt",
+      "stratum": "too_easy",
+      "mutants_caught": 3,
+      "mutants_scored": 3,
+      "natural_mutants": [
+        "abc351_c/54893576",
+        "abc351_c/54968121",
+        "abc351_c/54982997"
+      ],
+      "caught_submissions": [
+        "abc351_c/54893576",
+        "abc351_c/54968121",
+        "abc351_c/54982997"
+      ],
+      "screen_pi_hat": 0.65,
+      "screen_successes": 26,
+      "screen_calls": 40,
+      "pinned": true
+    }
+  ]
+}

@@ -1,0 +1,1162 @@
+{
+  "frozen": true,
+  "stratified_by": "measured pi_hat (pre-treatment screen)",
+  "proxy_warning": null,
+  "rating_cuts": null,
+  "bands": {
+    "dead": [
+      0.0,
+      0.02
+    ],
+    "hard": [
+      0.02,
+      0.08
+    ],
+    "medium": [
+      0.08,
+      0.18
+    ],
+    "easy": [
+      0.18,
+      0.3501
+    ],
+    "too_easy": [
+      0.3501,
+      1.01
+    ]
+  },
+  "primary_bands": [
+    "hard",
+    "medium",
+    "easy"
+  ],
+  "selection_source": "/content/ceg-mem/data/official-2026-09-01/tasks.json screen_pi_hat (pre-treatment)",
+  "reported_source": "/content/ceg-mem/data/official-2026-09-01/theory_fit.json",
+  "band_source": {
+    "band_from": "e1",
+    "pi_source": "/content/ceg-mem/data/official-2026-09-01/theory_fit.json",
+    "hold_out_seeds": [],
+    "n_banded_from_e1": 99,
+    "n_banded_from_screen": 0,
+    "caveat": "stratum comes from E1's own pi_hat. Common Random Numbers make round 1 of every arm the same draw, so a band defined by no_memory selects the same luck the memory arms saw: untyped-vs-typed within a band is unaffected (the band is symmetric between them), but any per-band comparison AGAINST no_memory is inflated by regression to the mean, and E1's own per-band pi_hat is tautological. Use --band-from screen, or --band-hold-out-seeds, if those matter."
+  },
+  "seed": null,
+  "n_total": 99,
+  "n_primary": 55,
+  "counts": {
+    "dead": 23,
+    "hard": 17,
+    "medium": 13,
+    "easy": 25,
+    "too_easy": 21
+  },
+  "n_moved": 0,
+  "migration_selected_to_reported": {
+    "dead": {
+      "dead": 23
+    },
+    "hard": {
+      "hard": 17
+    },
+    "medium": {
+      "medium": 13
+    },
+    "easy": {
+      "easy": 25
+    },
+    "too_easy": {
+      "too_easy": 21
+    }
+  },
+  "tasks": [
+    {
+      "name": "agc065_c/48625236",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "dead",
+      "screen_pi_hat": 0.0,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.0,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "abc355_b/55109474",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "dead",
+      "screen_pi_hat": 0.0,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.0,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "abc339_f/52897763",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "dead",
+      "screen_pi_hat": 0.0,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.0,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "abc324_d/54390162",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "dead",
+      "screen_pi_hat": 0.0,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.0,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "abc356_e/54889247",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "dead",
+      "screen_pi_hat": 0.0,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.01,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "abc295_e/54729841",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "dead",
+      "screen_pi_hat": 0.0,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.0,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "abc348_c/54707785",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "dead",
+      "screen_pi_hat": 0.0,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.0,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "arc159_b/45431609",
+      "stratum": "hard",
+      "band_from": "e1",
+      "screen_band": "dead",
+      "screen_pi_hat": 0.0,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.04,
+      "reported_band": "hard",
+      "moved": false
+    },
+    {
+      "name": "arc172_a/54670313",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "dead",
+      "screen_pi_hat": 0.0,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.0,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "abc304_b/46153900",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "dead",
+      "screen_pi_hat": 0.0,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.01,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "arc173_e/51134374",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "dead",
+      "screen_pi_hat": 0.0,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.0,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "abc325_b/54778964",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "dead",
+      "screen_pi_hat": 0.0,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.0,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "arc155_c/40890958",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "dead",
+      "screen_pi_hat": 0.0,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.0,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "abc297_e/46197532",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "dead",
+      "screen_pi_hat": 0.0,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.0,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "abc357_a/55021619",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "dead",
+      "screen_pi_hat": 0.0,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.0,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "abc352_f/53476783",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "dead",
+      "screen_pi_hat": 0.0,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.0,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "abc330_c/54071794",
+      "stratum": "hard",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.025,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.03,
+      "reported_band": "hard",
+      "moved": false
+    },
+    {
+      "name": "abc339_e/52923119",
+      "stratum": "medium",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.075,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.08,
+      "reported_band": "medium",
+      "moved": false
+    },
+    {
+      "name": "abc309_e/46214263",
+      "stratum": "medium",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.05,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.1,
+      "reported_band": "medium",
+      "moved": false
+    },
+    {
+      "name": "abc308_c/45926524",
+      "stratum": "hard",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.025,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.07,
+      "reported_band": "hard",
+      "moved": false
+    },
+    {
+      "name": "arc155_a/40182881",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.025,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.32,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc346_b/55138933",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.05,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.3,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "arc157_d/39202960",
+      "stratum": "hard",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.025,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.03,
+      "reported_band": "hard",
+      "moved": false
+    },
+    {
+      "name": "abc308_a/46165457",
+      "stratum": "medium",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.05,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.08,
+      "reported_band": "medium",
+      "moved": false
+    },
+    {
+      "name": "abc310_d/53176077",
+      "stratum": "hard",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.075,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.04,
+      "reported_band": "hard",
+      "moved": false
+    },
+    {
+      "name": "arc165_c/45734816",
+      "stratum": "hard",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.025,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.04,
+      "reported_band": "hard",
+      "moved": false
+    },
+    {
+      "name": "abc353_b/54945668",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.025,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.01,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "abc292_c/45291809",
+      "stratum": "hard",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.075,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.06976744186046512,
+      "reported_band": "hard",
+      "moved": false
+    },
+    {
+      "name": "abc356_b/55010067",
+      "stratum": "medium",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.025,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.08,
+      "reported_band": "medium",
+      "moved": false
+    },
+    {
+      "name": "abc331_d/53655797",
+      "stratum": "medium",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.075,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.09,
+      "reported_band": "medium",
+      "moved": false
+    },
+    {
+      "name": "abc303_d/45489398",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.025,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.0,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "abc287_d/45092019",
+      "stratum": "hard",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.075,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.0392156862745098,
+      "reported_band": "hard",
+      "moved": false
+    },
+    {
+      "name": "abc341_e/53935483",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.025,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.0,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "abc289_c/45901971",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.025,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.0,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "abc286_e/45217169",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.025,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.0,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "abc307_d/45446603",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.025,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.0,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "abc290_c/45228128",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.025,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.0,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "arc176_d/52897913",
+      "stratum": "hard",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.025,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.02,
+      "reported_band": "hard",
+      "moved": false
+    },
+    {
+      "name": "abc326_c/54454360",
+      "stratum": "hard",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.05,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.06,
+      "reported_band": "hard",
+      "moved": false
+    },
+    {
+      "name": "abc346_e/54144246",
+      "stratum": "hard",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.075,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.05,
+      "reported_band": "hard",
+      "moved": false
+    },
+    {
+      "name": "abc319_b/46206496",
+      "stratum": "dead",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.05,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.0,
+      "reported_band": "dead",
+      "moved": false
+    },
+    {
+      "name": "abc289_d/46033056",
+      "stratum": "medium",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.025,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.08088235294117647,
+      "reported_band": "medium",
+      "moved": false
+    },
+    {
+      "name": "abc344_d/54876594",
+      "stratum": "medium",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.05,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.14,
+      "reported_band": "medium",
+      "moved": false
+    },
+    {
+      "name": "abc333_b/54467069",
+      "stratum": "hard",
+      "band_from": "e1",
+      "screen_band": "hard",
+      "screen_pi_hat": 0.025,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.06,
+      "reported_band": "hard",
+      "moved": false
+    },
+    {
+      "name": "abc339_b/54672032",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "medium",
+      "screen_pi_hat": 0.1,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.19,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc314_d/46143343",
+      "stratum": "hard",
+      "band_from": "e1",
+      "screen_band": "medium",
+      "screen_pi_hat": 0.175,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.06,
+      "reported_band": "hard",
+      "moved": false
+    },
+    {
+      "name": "abc358_d/55035534",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "medium",
+      "screen_pi_hat": 0.175,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.33,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc307_b/45983540",
+      "stratum": "too_easy",
+      "band_from": "e1",
+      "screen_band": "medium",
+      "screen_pi_hat": 0.125,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.43,
+      "reported_band": "too_easy",
+      "moved": false
+    },
+    {
+      "name": "abc355_d/54769975",
+      "stratum": "medium",
+      "band_from": "e1",
+      "screen_band": "medium",
+      "screen_pi_hat": 0.125,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.17,
+      "reported_band": "medium",
+      "moved": false
+    },
+    {
+      "name": "arc161_a/44901264",
+      "stratum": "hard",
+      "band_from": "e1",
+      "screen_band": "medium",
+      "screen_pi_hat": 0.125,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.02,
+      "reported_band": "hard",
+      "moved": false
+    },
+    {
+      "name": "abc287_c/45520506",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "medium",
+      "screen_pi_hat": 0.15,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.3490566037735849,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc360_b/55141723",
+      "stratum": "medium",
+      "band_from": "e1",
+      "screen_band": "medium",
+      "screen_pi_hat": 0.125,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.13,
+      "reported_band": "medium",
+      "moved": false
+    },
+    {
+      "name": "arc175_b/51713549",
+      "stratum": "hard",
+      "band_from": "e1",
+      "screen_band": "medium",
+      "screen_pi_hat": 0.125,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.05,
+      "reported_band": "hard",
+      "moved": false
+    },
+    {
+      "name": "abc299_c/45695018",
+      "stratum": "hard",
+      "band_from": "e1",
+      "screen_band": "medium",
+      "screen_pi_hat": 0.1,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.075,
+      "reported_band": "hard",
+      "moved": false
+    },
+    {
+      "name": "abc334_e/52777689",
+      "stratum": "medium",
+      "band_from": "e1",
+      "screen_band": "medium",
+      "screen_pi_hat": 0.15,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.14,
+      "reported_band": "medium",
+      "moved": false
+    },
+    {
+      "name": "abc321_f/52979507",
+      "stratum": "medium",
+      "band_from": "e1",
+      "screen_band": "medium",
+      "screen_pi_hat": 0.1,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.16,
+      "reported_band": "medium",
+      "moved": false
+    },
+    {
+      "name": "abc291_d/46165699",
+      "stratum": "hard",
+      "band_from": "e1",
+      "screen_band": "medium",
+      "screen_pi_hat": 0.1,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.02531645569620253,
+      "reported_band": "hard",
+      "moved": false
+    },
+    {
+      "name": "arc154_b/43445291",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "medium",
+      "screen_pi_hat": 0.15,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.24,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc285_e/48880084",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "medium",
+      "screen_pi_hat": 0.175,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.25862068965517243,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc347_e/53797654",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "medium",
+      "screen_pi_hat": 0.175,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.29,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc308_d/54718266",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "medium",
+      "screen_pi_hat": 0.175,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.18,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc286_d/45471607",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "medium",
+      "screen_pi_hat": 0.175,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.3,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "arc143_c/37392747",
+      "stratum": "medium",
+      "band_from": "e1",
+      "screen_band": "medium",
+      "screen_pi_hat": 0.15,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.11,
+      "reported_band": "medium",
+      "moved": false
+    },
+    {
+      "name": "abc273_d/45461646",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "medium",
+      "screen_pi_hat": 0.175,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.27522935779816515,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc360_d/55161015",
+      "stratum": "too_easy",
+      "band_from": "e1",
+      "screen_band": "easy",
+      "screen_pi_hat": 0.325,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.53,
+      "reported_band": "too_easy",
+      "moved": false
+    },
+    {
+      "name": "abc287_e/54006112",
+      "stratum": "too_easy",
+      "band_from": "e1",
+      "screen_band": "easy",
+      "screen_pi_hat": 0.25,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.5,
+      "reported_band": "too_easy",
+      "moved": false
+    },
+    {
+      "name": "abc313_b/45739272",
+      "stratum": "too_easy",
+      "band_from": "e1",
+      "screen_band": "easy",
+      "screen_pi_hat": 0.25,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.36,
+      "reported_band": "too_easy",
+      "moved": false
+    },
+    {
+      "name": "abc337_d/54495605",
+      "stratum": "too_easy",
+      "band_from": "e1",
+      "screen_band": "easy",
+      "screen_pi_hat": 0.2,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.52,
+      "reported_band": "too_easy",
+      "moved": false
+    },
+    {
+      "name": "abc354_f/54039651",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "easy",
+      "screen_pi_hat": 0.325,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.25,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc330_f/48327716",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "easy",
+      "screen_pi_hat": 0.325,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.19,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc338_c/54491236",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "easy",
+      "screen_pi_hat": 0.225,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.18,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc346_f/53286789",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "easy",
+      "screen_pi_hat": 0.225,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.31,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc301_d/45732372",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "easy",
+      "screen_pi_hat": 0.3,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.29,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc322_e/53004931",
+      "stratum": "too_easy",
+      "band_from": "e1",
+      "screen_band": "easy",
+      "screen_pi_hat": 0.3,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.46,
+      "reported_band": "too_easy",
+      "moved": false
+    },
+    {
+      "name": "abc296_f/45226037",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "easy",
+      "screen_pi_hat": 0.2,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.31,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc300_e/45250612",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "easy",
+      "screen_pi_hat": 0.2,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.25,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc354_e/54930119",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "easy",
+      "screen_pi_hat": 0.325,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.18,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc291_c/45751656",
+      "stratum": "too_easy",
+      "band_from": "e1",
+      "screen_band": "easy",
+      "screen_pi_hat": 0.3,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.42,
+      "reported_band": "too_easy",
+      "moved": false
+    },
+    {
+      "name": "abc323_a/54513324",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "easy",
+      "screen_pi_hat": 0.225,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.26,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc271_c/45808178",
+      "stratum": "medium",
+      "band_from": "e1",
+      "screen_band": "easy",
+      "screen_pi_hat": 0.25,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.168141592920354,
+      "reported_band": "medium",
+      "moved": false
+    },
+    {
+      "name": "abc278_c/45320717",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "easy",
+      "screen_pi_hat": 0.35,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.24107142857142858,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc260_b/53041244",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "easy",
+      "screen_pi_hat": 0.2,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.1896551724137931,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc250_g/31608048",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "easy",
+      "screen_pi_hat": 0.325,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.29,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc246_g/33284569",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "easy",
+      "screen_pi_hat": 0.2,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.22,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc281_f/45038482",
+      "stratum": "too_easy",
+      "band_from": "e1",
+      "screen_band": "easy",
+      "screen_pi_hat": 0.3,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.3853211009174312,
+      "reported_band": "too_easy",
+      "moved": false
+    },
+    {
+      "name": "abc336_d/53237033",
+      "stratum": "too_easy",
+      "band_from": "e1",
+      "screen_band": "too_easy",
+      "screen_pi_hat": 0.575,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.36,
+      "reported_band": "too_easy",
+      "moved": false
+    },
+    {
+      "name": "abc349_b/54895344",
+      "stratum": "too_easy",
+      "band_from": "e1",
+      "screen_band": "too_easy",
+      "screen_pi_hat": 0.5,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.47,
+      "reported_band": "too_easy",
+      "moved": false
+    },
+    {
+      "name": "arc160_c/41518740",
+      "stratum": "too_easy",
+      "band_from": "e1",
+      "screen_band": "too_easy",
+      "screen_pi_hat": 0.525,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.53,
+      "reported_band": "too_easy",
+      "moved": false
+    },
+    {
+      "name": "arc174_b/51697010",
+      "stratum": "too_easy",
+      "band_from": "e1",
+      "screen_band": "too_easy",
+      "screen_pi_hat": 0.925,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.9,
+      "reported_band": "too_easy",
+      "moved": false
+    },
+    {
+      "name": "abc300_b/45723196",
+      "stratum": "too_easy",
+      "band_from": "e1",
+      "screen_band": "too_easy",
+      "screen_pi_hat": 0.675,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.8173076923076923,
+      "reported_band": "too_easy",
+      "moved": false
+    },
+    {
+      "name": "abc331_e/53576352",
+      "stratum": "too_easy",
+      "band_from": "e1",
+      "screen_band": "too_easy",
+      "screen_pi_hat": 0.75,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.7830188679245284,
+      "reported_band": "too_easy",
+      "moved": false
+    },
+    {
+      "name": "abc298_d/45710768",
+      "stratum": "easy",
+      "band_from": "e1",
+      "screen_band": "too_easy",
+      "screen_pi_hat": 0.475,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.19548872180451127,
+      "reported_band": "easy",
+      "moved": false
+    },
+    {
+      "name": "abc292_b/45575109",
+      "stratum": "too_easy",
+      "band_from": "e1",
+      "screen_band": "too_easy",
+      "screen_pi_hat": 0.575,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.54,
+      "reported_band": "too_easy",
+      "moved": false
+    },
+    {
+      "name": "abc303_c/45578518",
+      "stratum": "too_easy",
+      "band_from": "e1",
+      "screen_band": "too_easy",
+      "screen_pi_hat": 0.4,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.5,
+      "reported_band": "too_easy",
+      "moved": false
+    },
+    {
+      "name": "agc062_a/44358952",
+      "stratum": "too_easy",
+      "band_from": "e1",
+      "screen_band": "too_easy",
+      "screen_pi_hat": 0.85,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.87,
+      "reported_band": "too_easy",
+      "moved": false
+    },
+    {
+      "name": "abc353_a/55010639",
+      "stratum": "too_easy",
+      "band_from": "e1",
+      "screen_band": "too_easy",
+      "screen_pi_hat": 0.5,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.63,
+      "reported_band": "too_easy",
+      "moved": false
+    },
+    {
+      "name": "abc350_f/54219104",
+      "stratum": "too_easy",
+      "band_from": "e1",
+      "screen_band": "too_easy",
+      "screen_pi_hat": 0.5,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.51,
+      "reported_band": "too_easy",
+      "moved": false
+    },
+    {
+      "name": "abc286_g/38690639",
+      "stratum": "too_easy",
+      "band_from": "e1",
+      "screen_band": "too_easy",
+      "screen_pi_hat": 0.45,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.62,
+      "reported_band": "too_easy",
+      "moved": false
+    },
+    {
+      "name": "abc351_c/55122758",
+      "stratum": "too_easy",
+      "band_from": "e1",
+      "screen_band": "too_easy",
+      "screen_pi_hat": 0.65,
+      "screen_calls": 40,
+      "reported_pi_hat": 0.63,
+      "reported_band": "too_easy",
+      "moved": false
+    }
+  ]
+}

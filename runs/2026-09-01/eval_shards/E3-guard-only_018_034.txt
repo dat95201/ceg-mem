@@ -1,0 +1,21 @@
+# experiment E3-guard-only, shard 18-34 of 99 (1-based, inclusive)
+# universe: data/official-2026-09-01/eval_order.txt
+# corpus: data/official-2026-09-01/tasks.json
+# corpus_sha256: 92a55fc40b1f9234cf9e6c6b0696955ed4e1c62aac042fb4feb2a3b5c1243711
+abc307_b/45983540
+arc160_c/41518740
+abc346_b/55138933
+abc354_f/54039651
+abc324_d/54390162
+abc355_d/54769975
+arc157_d/39202960
+arc174_b/51697010
+abc330_f/48327716
+abc308_a/46165457
+arc161_a/44901264
+abc356_e/54889247
+abc310_d/53176077
+abc338_c/54491236
+abc300_b/45723196
+abc287_c/45520506
+arc165_c/45734816

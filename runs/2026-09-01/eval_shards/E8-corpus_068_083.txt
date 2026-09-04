@@ -1,0 +1,20 @@
+# experiment E8-corpus, shard 68-83 of 99 (1-based, inclusive)
+# universe: data/official-2026-09-01/eval_order.txt
+# corpus: data/official-2026-09-01/tasks.json
+# corpus_sha256: 92a55fc40b1f9234cf9e6c6b0696955ed4e1c62aac042fb4feb2a3b5c1243711
+agc062_a/44358952
+abc323_a/54513324
+abc307_d/45446603
+abc325_b/54778964
+abc285_e/48880084
+abc290_c/45228128
+abc271_c/45808178
+abc353_a/55010639
+arc176_d/52897913
+abc347_e/53797654
+arc155_c/40890958
+abc278_c/45320717
+abc326_c/54454360
+abc350_f/54219104
+abc308_d/54718266
+abc260_b/53041244

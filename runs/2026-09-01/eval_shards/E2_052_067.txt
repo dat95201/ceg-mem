@@ -1,0 +1,20 @@
+# experiment E2, shard 52-67 of 99 (1-based, inclusive)
+# universe: data/official-2026-09-01/eval_order.txt
+# corpus: data/official-2026-09-01/tasks.json
+# corpus_sha256: 92a55fc40b1f9234cf9e6c6b0696955ed4e1c62aac042fb4feb2a3b5c1243711
+abc334_e/52777689
+arc172_a/54670313
+abc292_b/45575109
+abc300_e/45250612
+abc287_d/45092019
+abc321_f/52979507
+abc341_e/53935483
+abc304_b/46153900
+abc354_e/54930119
+abc303_c/45578518
+abc289_c/45901971
+abc291_d/46165699
+abc291_c/45751656
+arc173_e/51134374
+abc286_e/45217169
+arc154_b/43445291
