@@ -153,6 +153,25 @@ class RoundRecord:
     # than re-derived: round_index counts DRAWS and no longer equals the attempt
     # count once the two come apart, and every success@B curve needs the latter.
     attempt_index: int | None = None
+    # ---- baseline-comparison arms (E10/E11/E12) ----------------------------
+    # E10-chat: "chat" puts the ChatRepair-style transcript of past attempts in
+    # the prompt; history_restarts counts conversation restarts so far. In the
+    # cell key (src.loop.cell_signature) - a transcript arm is its own cell.
+    history: str = "off"
+    history_restarts: int = 0
+    # E11-selftest: proposals must pass model-generated tests before the oracle
+    # is paid. selftest_blocked marks a round the filter stopped; selftest_runs
+    # is what the filter cost in sandbox executions this round; selftest_cases
+    # is how many usable cases the cached generation produced (0 = inert).
+    selftest: bool = False
+    selftest_blocked: bool = False
+    selftest_runs: int = 0
+    selftest_cases: int | None = None
+    # E12-randskip: the informed-skipping control - the proposal was discarded
+    # unverified with probability oracle_skip_p; budget charged, nothing stored.
+    oracle_skip_p: float = 0.0
+    oracle_skipped: bool = False
+
     # Program executions this round: the oracle's `examples_tried` on an oracle
     # round, `guard_evaluations` on a guarded one. THE primary cost unit.
     #
@@ -321,13 +340,23 @@ def summarize_episode(rows: list[dict[str, Any]],
     already stopped at its first accept the two are identical.
     """
     rows = sorted(rows, key=lambda r: r["round_index"])
-    oracle_rows_logged = [r for r in rows if not r.get("guarded", False)]
+
+    def _hits_oracle(r: dict) -> bool:
+        """A round that actually reached the oracle. Guarded, selftest-blocked
+        (E11) and randomly-skipped (E12) rounds all stop short of it; each is
+        its own field because each is a different arm's mechanism. Old rows
+        carry none of the new keys, so this reads exactly as it always did."""
+        return (not r.get("guarded", False)
+                and not r.get("selftest_blocked", False)
+                and not r.get("oracle_skipped", False))
+
+    oracle_rows_logged = [r for r in rows if _hits_oracle(r)]
     accepted_rows = [r for r in oracle_rows_logged if r["accept"]]
     accepted = bool(accepted_rows)
     first_accept_round = accepted_rows[0]["round_index"] if accepted else None
 
     effective = rows if not accepted else [r for r in rows if r["round_index"] <= first_accept_round]
-    oracle_rows = [r for r in effective if not r.get("guarded", False)]
+    oracle_rows = [r for r in effective if _hits_oracle(r)]
     oracle_calls_to_accept = len(oracle_rows) if accepted else None
 
     # Type repeats, measured on every round that carries a type. A guarded round
@@ -389,7 +418,13 @@ def summarize_episode(rows: list[dict[str, Any]],
         if r["accept"]:
             continue
         tkey = r.get("fine_type")
-        if tkey is None and r.get("guarded", False) and crn_types is not None:
+        stopped_short = (r.get("guarded", False) or r.get("selftest_blocked", False)
+                         or r.get("oracle_skipped", False))
+        if tkey is None and stopped_short and crn_types is not None:
+            # The CRN join covers E11/E12 exactly as it covers the guard: their
+            # prompts are unconditioned, so the paired no-memory draw is the
+            # byte-identical patch. E10-chat diverges from round 2 like the
+            # steered typed arm and stays censored without an audit.
             tkey = crn_types.get(
                 (r["task"], r.get("seed", 0), r["round_index"], r.get("patch") or ""))
         if tkey is None:
@@ -399,13 +434,16 @@ def summarize_episode(rows: list[dict[str, Any]],
             redundancy_unknown += 1
             continue
         if tkey in seen_any:
-            if r.get("guarded", False):
+            if stopped_short:
+                # "caught" = the redundant proposal never reached the oracle,
+                # whichever mechanism stopped it - guard, self-test filter or
+                # random skip. Which one it was is on the row.
                 redundancy_caught += 1
             else:
                 redundancy_paid += 1
         seen_any.add(tkey)
 
-    n_guarded = len(effective) - len(oracle_rows)
+    n_guarded = sum(1 for r in effective if r.get("guarded", False))
     # The arm-neutral redundancy count (DESIGN.md SS6, first open item). A guarded
     # round is redundant because it provably reproduced a counterexample already
     # in memory - `blocked_by_type` names which one - and that holds for the flat
@@ -458,6 +496,16 @@ def summarize_episode(rows: list[dict[str, Any]],
         # False - which would pool a free-guarded arm straight into the charged one
         # and put two different success@B curves on one axis.
         "free_guarded_rounds": first.get("free_guarded_rounds", False),
+        # Baseline arms: identity first (same leak class as typing_random - a
+        # key that is never written reads default and pools into the main
+        # grid), then the per-episode counts.
+        "history": first.get("history", "off"),
+        "history_restarts": max((r.get("history_restarts") or 0) for r in rows),
+        "selftest": first.get("selftest", False),
+        "n_selftest_blocked": sum(1 for r in effective if r.get("selftest_blocked")),
+        "selftest_runs": sum(r.get("selftest_runs") or 0 for r in effective),
+        "oracle_skip_p": first.get("oracle_skip_p", 0.0),
+        "n_oracle_skipped": sum(1 for r in effective if r.get("oracle_skipped")),
         "reasoning_effort": first.get("reasoning_effort"),
         "n_rounds": len(effective), "n_oracle_calls": len(oracle_rows), "n_guarded": n_guarded,
         # ---- the primary cost unit ----------------------------------------
@@ -470,9 +518,11 @@ def summarize_episode(rows: list[dict[str, Any]],
         # RoundRecord.sandbox_runs existed, where a guarded round's only executions
         # were its guard evaluations and an oracle round's were its examples.
         "sandbox_runs": sum(_round_runs(r) for r in effective),
-        "sandbox_runs_to_accept": (sum(_round_runs(r) for r in oracle_rows)
-                                   + sum(_round_runs(r) for r in effective
-                                         if r.get("guarded", False))) if accepted else None,
+        # Every effective round's executions. Identical to the old
+        # oracle-rows-plus-guarded sum on old logs (the only other rows there,
+        # proposal errors, run nothing) and it now also bills E11's self-test
+        # executions on the rounds that carry them.
+        "sandbox_runs_to_accept": sum(_round_runs(r) for r in effective) if accepted else None,
         "attempts": sum(1 for r in effective
                         if r.get("attempt_index") is not None) or len(effective),
         "n_rounds_logged": len(rows), "n_oracle_calls_logged": len(oracle_rows_logged),

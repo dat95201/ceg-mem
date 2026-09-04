@@ -102,7 +102,10 @@ def cell_key(task: str, mode: str, seed: int, guard_on: bool, steer_on: bool,
              audit_guarded: bool = False,
              reasoning_effort: str | None = None,
              typing_random: bool = False,
-             free_guarded_rounds: bool = False) -> tuple:
+             free_guarded_rounds: bool = False,
+             history: str = "off",
+             selftest: bool = False,
+             oracle_skip_p: float = 0.0) -> tuple:
     """Identity of one experiment cell.
 
     model and granularity belong here for the same reason every other knob
@@ -127,7 +130,7 @@ def cell_key(task: str, mode: str, seed: int, guard_on: bool, steer_on: bool,
     return (task, mode, seed, guard_on, steer_on, max_examples, typing_noise_c,
             force_full_budget, model, granularity,
             audit_guarded, reasoning_effort, typing_random,
-            free_guarded_rounds)
+            free_guarded_rounds, history, selftest, oracle_skip_p)
 
 
 def _cell_key(row: dict) -> tuple:
@@ -140,6 +143,8 @@ def _cell_key(row: dict) -> tuple:
         row.get("audit_guarded", False),
         row.get("reasoning_effort"), row.get("typing_random", False),
         row.get("free_guarded_rounds", False),
+        row.get("history", "off"), row.get("selftest", False),
+        row.get("oracle_skip_p", 0.0),
     )
 
 
@@ -197,6 +202,12 @@ def run_sweep(
     reasoning_effort: str | None = None,
     free_guarded_rounds: bool = False,
     free_guard_draw_cap: int = 10,
+    history: str = "off",
+    history_cap_tokens: int = 6000,
+    history_restart_after: int = 5,
+    selftest: bool = False,
+    selftest_cases: int = 5,
+    oracle_skip_p: float = 0.0,
 ) -> None:
     done = _completed_cells(episodes_path, budget, force_full_budget, also=resume_from)
     total = len(programs) * len(modes) * len(seeds)
@@ -211,7 +222,8 @@ def run_sweep(
                 cell = cell_key(task_name, mode, seed, guard_on, steer_on, max_examples,
                                 typing_noise_c, force_full_budget, model, granularity,
                                 audit_guarded, reasoning_effort,
-                                typing_random, free_guarded_rounds)
+                                typing_random, free_guarded_rounds,
+                                history, selftest, oracle_skip_p)
                 if cell in done:
                     print(f"[{n:4d}/{total}] {task_name:28s} {mode:10s} seed={seed} - already complete, skipping",
                           flush=True)
@@ -229,6 +241,10 @@ def run_sweep(
                         reasoning_effort=reasoning_effort,
                         free_guarded_rounds=free_guarded_rounds,
                         free_guard_draw_cap=free_guard_draw_cap,
+                        history=history, history_cap_tokens=history_cap_tokens,
+                        history_restart_after=history_restart_after,
+                        selftest=selftest, selftest_cases=selftest_cases,
+                        oracle_skip_p=oracle_skip_p,
                     )
                 except BudgetExceeded as exc:
                     print(f"\nBUDGET CAP REACHED ({exc}) - stopping the sweep cleanly.")
@@ -375,6 +391,34 @@ def main() -> None:
                              "guards and one that does not. Costs sandbox time, no model "
                              "calls, and defeats the saving E2 measures - run it as its own "
                              "cell on a subset, not over the reported grid")
+    parser.add_argument("--history", choices=["off", "chat"], default="off",
+                        help="E10-chat, the ChatRepair-family baseline: 'chat' puts the "
+                             "full conversation so far in the prompt - every failed patch "
+                             "and the counterexample that killed it - and restarts the "
+                             "conversation per --history-cap-tokens / --history-restart-after. "
+                             "Round 1 is byte-identical to no_memory (CRN). In the cell key")
+    parser.add_argument("--history-cap-tokens", type=int, default=6000,
+                        help="E10: restart the conversation when the transcript exceeds "
+                             "this (estimated at 4 chars/token). NOT in the cell key - it "
+                             "is a rendering policy, like --free-guard-draw-cap")
+    parser.add_argument("--history-restart-after", type=int, default=5,
+                        help="E10: restart the conversation after this many consecutive "
+                             "failed attempts since the last restart. NOT in the cell key")
+    parser.add_argument("--selftest", choices=["off", "on"], default="off",
+                        help="E11, the CodeT-family baseline: one cached model call "
+                             "generates test cases per task, and every proposal must pass "
+                             "them BEFORE the oracle is paid. A blocked round charges the "
+                             "budget and stores nothing - a self-test verdict is not "
+                             "oracle-grade evidence. In the cell key")
+    parser.add_argument("--selftest-cases", type=int, default=5,
+                        help="E11: how many cases to ask the model for. NOT in the cell "
+                             "key; the generation is cached per (task, model) either way")
+    parser.add_argument("--oracle-skip-p", type=float, default=0.0,
+                        help="E12, the informed-skipping control: discard a proposal "
+                             "unverified with this probability (seeded per cell, so a "
+                             "re-run replays the same skips). 0.37 matches the typed "
+                             "guard's measured block share of proposals on the main grid. "
+                             "In the cell key")
     parser.add_argument("--reasoning-effort", default=None, choices=["low", "medium", "high"],
                         help="o-series models only (o4-mini, o3, ...). Part of the protocol: "
                              "it changes the proposal distribution, so it is in the cache "
@@ -457,6 +501,10 @@ def main() -> None:
         reasoning_effort=reasoning_effort,
         free_guarded_rounds=args.free_guarded_rounds,
         free_guard_draw_cap=args.free_guard_draw_cap,
+        history=args.history, history_cap_tokens=args.history_cap_tokens,
+        history_restart_after=args.history_restart_after,
+        selftest=args.selftest == "on", selftest_cases=args.selftest_cases,
+        oracle_skip_p=args.oracle_skip_p,
     )
     print(f"\ntotal spent so far: ${spent():.4f}")
 

@@ -465,7 +465,12 @@ def main() -> None:
                 # uncensored inside one number.
                 and not r.get("audit_guarded", False)
                 and not r.get("typing_random", False)
-                and not r.get("free_guarded_rounds", False))
+                and not r.get("free_guarded_rounds", False)
+                # The baseline-comparison arms (E10/E11/E12) - same leak class:
+                # a key never written reads default and pools into the grid.
+                and r.get("history", "off") == "off"
+                and not r.get("selftest", False)
+                and not r.get("oracle_skip_p", 0.0))
 
     main_grid = {eid: rs for eid, rs in by_episode.items() if is_main(rs)}
     print(f"{len(rows)} rounds | {len(by_episode)} episodes "

@@ -193,6 +193,14 @@ def _is_main_grid(ep: dict) -> bool:
         # curve. Same class of leak as typing_random: a key that is never
         # written reads False, and the arm pools into the charged grid.
         and not ep.get("free_guarded_rounds", False)
+        # The baseline-comparison arms (E10/E11/E12). E10 and E12 run
+        # mode=no_memory at ffb=False so the ffb-match above already excludes
+        # them from the no-memory arm - these three exist so nothing about that
+        # coincidence is load-bearing, and so E11b (typed + selftest) cannot
+        # pool into the typed mean the way E8-audit once did.
+        and ep.get("history", "off") == "off"
+        and not ep.get("selftest", False)
+        and not ep.get("oracle_skip_p", 0.0)
     )
 
 

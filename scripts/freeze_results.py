@@ -112,7 +112,8 @@ def expected_cells(programs: list[str], sweep_programs: list[str], experiment: s
                 # comparable. The memory arms stop at their first accept.
                 full = mode == "no_memory"
                 for seed in DEFAULT_SEEDS_MAIN:
-                    cells.add((task, mode, seed, True, True, 100, 1.0, full, False, 0, False))
+                    cells.add((task, mode, seed, True, True, 100, 1.0, full, False, 0, False,
+                               "off", False, 0.0))
 
     if experiment in ("all", "ablation"):
         # Three seeds, not five: E3 attributes the effect between guard and
@@ -120,20 +121,24 @@ def expected_cells(programs: list[str], sweep_programs: list[str], experiment: s
         # two extra seeds would cost as much as the whole typing sweep.
         for task in programs:
             for seed in DEFAULT_SEEDS_SWEEP:
-                cells.add((task, "typed", seed, False, True, 100, 1.0, False, False, 0, False))  # steering-only
-                cells.add((task, "typed", seed, True, False, 100, 1.0, False, False, 0, False))  # guard-only
+                cells.add((task, "typed", seed, False, True, 100, 1.0, False, False, 0, False,
+                           "off", False, 0.0))  # steering-only
+                cells.add((task, "typed", seed, True, False, 100, 1.0, False, False, 0, False,
+                           "off", False, 0.0))  # guard-only
 
     if experiment in ("all", "oracle_sweep"):
         for task in sweep_programs:
             for seed in DEFAULT_SEEDS_SWEEP:
                 for n in DEFAULT_MAX_EXAMPLES_SWEEP:
-                    cells.add((task, "typed", seed, True, True, n, 1.0, False, False, 0, False))
+                    cells.add((task, "typed", seed, True, True, n, 1.0, False, False, 0, False,
+                               "off", False, 0.0))
 
     if experiment in ("all", "typing_sweep"):
         for task in sweep_programs:
             for seed in DEFAULT_SEEDS_SWEEP:
                 for c in DEFAULT_TYPING_C_SWEEP:
-                    cells.add((task, "typed", seed, True, True, 100, c, False, False, 0, False))
+                    cells.add((task, "typed", seed, True, True, 100, c, False, False, 0, False,
+                               "off", False, 0.0))
 
     return cells
 
@@ -152,6 +157,9 @@ def _cell_key(summary: dict) -> tuple:
         summary.get("audit_guarded", False),
         summary.get("typing_random", False),
         summary.get("free_guarded_rounds", False),
+        summary.get("history", "off"),
+        summary.get("selftest", False),
+        summary.get("oracle_skip_p", 0.0),
     )
 
 

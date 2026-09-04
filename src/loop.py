@@ -32,9 +32,16 @@ from src.memory import build_memory
 from src.metrics import RoundRecord, append_round
 from src.oracle import differential_test
 from src.llm import BackendUnreachable, ContextOverflow
-from src.proposer import Attempt, TruncatedResponse, propose
+from src.proposer import Attempt, TruncatedResponse, format_transcript, propose
+from src.selftest import make_filter
 
 MODES = ("no_memory", "untyped", "typed")
+
+# The transcript cap (E10-chat) is enforced in characters, estimated at 4 chars
+# per token - the same back-of-envelope src.proposer.budget_for_source uses. An
+# estimate is enough: the cap exists so a conversation restarts instead of
+# growing without bound, not to hit an exact window.
+_CHARS_PER_TOKEN_EST = 4
 
 # Under free_guarded_rounds a guarded round is free, so a memory that guards
 # everything would draw forever. 10x the attempt budget is the ceiling: the
@@ -76,6 +83,9 @@ def cell_signature(
     typing_random: bool = False,
     model: str | None = None,
     free_guarded_rounds: bool = False,
+    history: str = "off",
+    selftest: bool = False,
+    oracle_skip_p: float = 0.0,
 ) -> str:
     """Canonical string identity of one experiment cell.
 
@@ -117,6 +127,15 @@ def cell_signature(
     # so the 35,755 rounds already in data/episodes.jsonl keep their episode ids.
     if free_guarded_rounds:
         parts.append("freeguard=True")
+    # The baseline-arm knobs (E10-chat / E11-selftest / E12-randskip), appended
+    # conditionally for the same reason as every knob above: an ordinary cell
+    # keeps the episode id it has always had.
+    if history != "off":
+        parts.append(f"history={history}")
+    if selftest:
+        parts.append("selftest=True")
+    if oracle_skip_p:
+        parts.append(f"skip={oracle_skip_p!r}")
     # model belongs here for the reason every other knob does, and its absence
     # was a real hazard: episode_id was model-independent, so the same
     # task/mode/seed run under two proposers collided in
@@ -179,6 +198,12 @@ def run_episode(
     reasoning_effort: str | None = None,
     free_guarded_rounds: bool = False,
     free_guard_draw_cap: int = FREE_GUARD_DRAW_CAP,
+    history: str = "off",
+    history_cap_tokens: int = 6000,
+    history_restart_after: int = 5,
+    selftest: bool = False,
+    selftest_cases: int = 5,
+    oracle_skip_p: float = 0.0,
     rng: random.Random | None = None,
 ) -> EpisodeResult:
     """propose -> guard -> oracle -> record, repeated up to `budget` rounds.
@@ -230,6 +255,7 @@ def run_episode(
         audit_guarded=audit_guarded,
         reasoning_effort=reasoning_effort, typing_random=typing_random, model=model,
         free_guarded_rounds=free_guarded_rounds,
+        history=history, selftest=selftest, oracle_skip_p=oracle_skip_p,
     )
     # Deterministic, not uuid4: a cell that died halfway and is re-run rewrites
     # its own rounds in data/episodes.jsonl (src.metrics.load_rounds collapses on
@@ -243,6 +269,18 @@ def run_episode(
         rng = random.Random("typing-noise|" + cell)
     memory = build_memory(mode, granularity=granularity, typing_noise_c=typing_noise_c,
                           typing_random=typing_random, rng=rng)
+
+    # ---- baseline-arm state (E10/E11/E12) ----------------------------------
+    # E12: deterministic skips, seeded from the cell - a re-run replays the
+    # identical skip sequence, so the resume index sees the same episode.
+    skip_rng = random.Random("oracle-skip|" + cell) if oracle_skip_p > 0 else None
+    # E11: one cached test-generation call per (task, model). make_filter
+    # memoises per process and the draw is nonce-deterministic; an unparseable
+    # reply yields an inert filter (0 cases) rather than a failed episode.
+    st_filter = make_filter(task_name, task.spec_note, model=model,
+                            n_cases=selftest_cases) if selftest else None
+    # E10: the transcript renders history[start:]; a restart moves start.
+    hist_state = {"start": 0, "restarts": 0}
 
     accepted_patch: str | None = None
     first_accept_round: int | None = None
@@ -259,6 +297,8 @@ def run_episode(
             audit_guarded=audit_guarded,
             reasoning_effort=reasoning_effort,
             free_guarded_rounds=free_guarded_rounds,
+            history=history, history_restarts=hist_state["restarts"],
+            selftest=selftest, oracle_skip_p=oracle_skip_p,
             # Read out of the mutable cell rather than threaded through five
             # call sites: it is a property of the round, decided once the guard
             # has spoken, and every append_round below is inside that round.
@@ -297,11 +337,27 @@ def run_episode(
         round_index += 1
         budget_state["attempt_index"] = None
         call_meta: dict = {}
+        # E10-chat: the conversation block, with ChatRepair's restart policy.
+        # Decided BEFORE the draw so an over-cap transcript never ships: the
+        # restart clears it and this round proposes from a fresh conversation.
+        # Round 1 is always empty, so its prompt - and its cached draw - stays
+        # byte-identical to no_memory's (CRN round-1 identity).
+        transcript = ""
+        if history == "chat":
+            transcript = format_transcript(memory.history[hist_state["start"]:])
+            fails_since = sum(1 for a in memory.history[hist_state["start"]:]
+                              if not a.result.accept)
+            if transcript and (len(transcript) > history_cap_tokens * _CHARS_PER_TOKEN_EST
+                               or fails_since >= history_restart_after):
+                hist_state["start"] = len(memory.history)
+                hist_state["restarts"] += 1
+                transcript = ""
         try:
             patch = propose(
                 task_name, program.buggy_source, task.name,
                 mode, memory.history, model=model, granularity=granularity,
                 disable_steering=not steer_on,
+                transcript_block=transcript,
                 nonce=proposal_nonce(task_name, seed, round_index),
                 spec_note=task.spec_note,
                 reasoning_effort=reasoning_effort,
@@ -442,6 +498,51 @@ def run_episode(
             ), **kwargs)
             continue  # oracle call avoided; still consumes one round of budget
 
+        # ---- E11: self-generated tests, before the oracle is paid -----------
+        # The CodeT-family baseline: block with a-priori (model-made) knowledge
+        # where the guard blocks with accumulated refutations. A blocked round
+        # charges the budget, stores nothing (a self-test verdict is not
+        # oracle-grade evidence), and never reaches the oracle.
+        st_runs, st_cases = 0, None
+        if st_filter is not None:
+            st = st_filter.check(patch)
+            st_runs, st_cases = st.runs, st.n_cases
+            if st.blocked:
+                _charge()
+                append_round(_record(
+                    round_index=round_index, patch=patch, accept=False,
+                    counterexample_args=None,
+                    reason=f"selftest: failed self-generated case {st.failed_case}",
+                    examples_tried=0, coarse_type=None, fine_type=None,
+                    guarded=False, guard_evaluations=guard_evaluations,
+                    bucket_hit=bucket_hit, bucket_hit_refuted=bucket_hit_refuted,
+                    selftest_blocked=True, selftest_runs=st_runs,
+                    selftest_cases=st_cases, guard_sec=guard_sec,
+                    sandbox_runs=guard_evaluations + st_runs,
+                    **_cost(call_meta),
+                ), **kwargs)
+                continue
+
+        # ---- E12: the random-skip control ------------------------------------
+        # "To Run or Not to Run" operationalized: discard this proposal
+        # unverified with probability p. The guard skips calls it can PROVE
+        # would fail; this skips blindly at the guard's measured rate. If the
+        # outcomes matched, informed skipping would be worthless.
+        if skip_rng is not None and skip_rng.random() < oracle_skip_p:
+            _charge()
+            append_round(_record(
+                round_index=round_index, patch=patch, accept=False,
+                counterexample_args=None,
+                reason=f"oracle skipped at random (p={oracle_skip_p})",
+                examples_tried=0, coarse_type=None, fine_type=None,
+                guarded=False, guard_evaluations=guard_evaluations,
+                oracle_skipped=True, guard_sec=guard_sec,
+                selftest_runs=st_runs, selftest_cases=st_cases,
+                sandbox_runs=guard_evaluations + st_runs,
+                **_cost(call_meta),
+            ), **kwargs)
+            continue
+
         t_oracle = time.perf_counter()
         result = differential_test(
             task, patch, program.correct_source,
@@ -463,7 +564,8 @@ def run_episode(
                 bucket_hit=bucket_hit, bucket_hit_refuted=bucket_hit_refuted,
                 oracle_error=result.oracle_error,
                 guard_sec=guard_sec, oracle_sec=oracle_sec,
-                sandbox_runs=guard_evaluations + result.examples_tried,
+                selftest_runs=st_runs, selftest_cases=st_cases,
+                sandbox_runs=guard_evaluations + st_runs + result.examples_tried,
                 **_cost(call_meta),
             ), **kwargs)
             continue
@@ -487,9 +589,11 @@ def run_episode(
             stored_type=stored_ft.key if stored_ft else None,
             guarded=False, guard_evaluations=guard_evaluations,
             guard_sec=guard_sec, oracle_sec=oracle_sec,
-            # The guard ran and lost, so its evaluations are real work this
-            # round spent and belong in the round's cost alongside the oracle's.
-            sandbox_runs=guard_evaluations + result.examples_tried,
+            selftest_runs=st_runs, selftest_cases=st_cases,
+            # The guard (and, under E11, the self-test filter) ran and lost, so
+            # their executions are real work this round spent and belong in the
+            # round's cost alongside the oracle's.
+            sandbox_runs=guard_evaluations + st_runs + result.examples_tried,
             **_cost(call_meta),
         ), **kwargs)
 

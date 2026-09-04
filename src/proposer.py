@@ -229,6 +229,28 @@ def _exclusion_block(mode: str, history: list[Attempt], granularity: str) -> str
     return "\n".join(lines)
 
 
+def format_transcript(history: list[Attempt]) -> str:
+    """E10-chat: the conversation-history block (the ChatRepair family).
+
+    Shows every refuted attempt IN FULL - the whole patch source plus the
+    counterexample that killed it - which is what a conversational repair agent
+    actually carries and what neither the untyped arm (nothing, by the theory's
+    definition) nor the typed arm (one representative counterexample per class,
+    never the patches) ever shows. The caller owns the restart policy: this
+    renders whatever slice of history it is handed and an empty slice renders
+    to "", so round 1 stays byte-identical to no_memory (CRN round-1 identity).
+    """
+    refuted = _refuted(history)
+    if not refuted:
+        return ""
+    lines = ["Previous attempts in this conversation. Every one of them was "
+             "tested and FAILED - do not repeat them:"]
+    for i, a in enumerate(refuted, 1):
+        lines.append(f"\n#### Attempt {i}\n```python\n{a.patch.rstrip()}\n```\n"
+                     f"Failed: {_format_counterexample(a)}")
+    return "\n".join(lines)
+
+
 def build_prompt(
     task_name: str,
     buggy_source: str,
@@ -239,6 +261,7 @@ def build_prompt(
     granularity: str = "fine",
     disable_steering: bool = False,
     spec_note: str = "",
+    transcript_block: str = "",
 ) -> str:
     """program_label: how the fault is named to the model. ConDefects programs
     are whole scripts with no single function under repair, so this is the
@@ -274,6 +297,10 @@ def build_prompt(
     ]
     if spec_note:
         sections.append(spec_note)
+    if transcript_block:
+        # E10-chat only. Empty everywhere else, so every existing arm's prompt
+        # is byte-for-byte what it was - and keeps its cache entries.
+        sections.append(transcript_block)
     if evidence_block:
         sections.append(evidence_block)
     if exclusion_block:
@@ -389,6 +416,7 @@ def propose(
     granularity: str = "fine",
     max_tokens: int | None = None,
     disable_steering: bool = False,
+    transcript_block: str = "",
     nonce: str = "",
     temperature: float | None = None,
     spec_note: str = "",
@@ -411,7 +439,7 @@ def propose(
     prompt = build_prompt(
         task_name, buggy_source, program_label, mode, history,
         granularity=granularity, disable_steering=disable_steering,
-        spec_note=spec_note,
+        spec_note=spec_note, transcript_block=transcript_block,
     )
     if max_tokens is None:
         max_tokens = budget_for_source(buggy_source, model=model)

@@ -164,6 +164,19 @@ usage: bash scripts/eval_shard.sh --exp NAME [--from N --to M] [options]
                                       back to the search. Cor. 4.4 is only
                                       testable here - charged to the budget the
                                       guard cannot change an outcome at all
+                      E10-chat        baseline (ChatRepair family, ISSTA'24):
+                                      the full conversation - every failed
+                                      patch + its counterexample - in the
+                                      prompt, restart on overflow; no guard.
+                                      Corpus universe, seeds 1-3
+                      E11-selftest    baseline (CodeT family, ICLR'23):
+                                      proposals must pass model-generated
+                                      tests BEFORE the oracle is paid. Sweep
+                      E11b-selftest-guard  compose: typed guard + selftest
+                      E12-randskip    control: skip the oracle at random with
+                                      p=0.37, the typed guard's block share.
+                                      If this matched the guard, WHICH calls
+                                      you skip would not matter. Sweep
   --free-guard-draw-cap N  with the flag above, stop after N x --budget draws.
                     NOT in the cell key - a re-run at a higher N tops the same
                     episode up rather than forking a second one.
@@ -364,7 +377,35 @@ case "$EXP" in
   # is the first question a reviewer asks about a typed index.
   E5-random)
     MODES="typed"; EXTRA="--typing-random"; UNIVERSE="sweep" ;;
-  # The ChatRepair baseline. Full seeds, whole corpus - it is reported beside
+  # ── baseline-comparison arms (branch enhance/method-comparison) ────────────
+  # E10: the ChatRepair-family baseline (ISSTA'24), as a mechanism port: the
+  # prompt carries the whole conversation so far - every failed patch and the
+  # counterexample that killed it - and the conversation RESTARTS (transcript
+  # cleared) after 5 straight fails or ~6k transcript tokens, the half of
+  # ChatRepair reimplementations usually drop. No guard: mode is no_memory, so
+  # round 1 is byte-identical to E1's draw (CRN) and every divergence after it
+  # is the transcript's own doing. Corpus universe at 3 seeds - it pairs with
+  # the E3 ablation arms, not the 5-seed main grid.
+  E10-chat)
+    MODES="no_memory"; EXTRA="--history chat"; DEF_SEEDS="1 2 3" ;;
+  # E11: the CodeT-family baseline (ICLR'23): one cached model call generates
+  # test cases per task, and every proposal must pass them BEFORE the oracle is
+  # paid. The one baseline that attacks oracle cost the way the guard does - by
+  # blocking calls - but with a-priori model knowledge instead of accumulated
+  # refutations. E11b composes it WITH the typed guard (steer off): self-tests
+  # catch a-priori failures, the guard catches repeats.
+  E11-selftest)
+    MODES="no_memory"; EXTRA="--selftest on --check-overfit"; UNIVERSE="sweep" ;;
+  E11b-selftest-guard)
+    MODES="typed"; EXTRA="--selftest on --steer off --check-overfit"; UNIVERSE="sweep" ;;
+  # E12: the control for "To Run or Not to Run" (ISSTA'26): skip oracle calls
+  # AT RANDOM with p=0.37, the typed guard's measured block share of proposals
+  # on the main grid (7.37 blocked of ~20 draws). The guard skips calls it can
+  # prove would fail; this skips blindly at the same rate - the E5-random
+  # falsifier logic, one level up. Success is predicted to DROP; if it did not,
+  # informed skipping would be worthless.
+  E12-randskip)
+    MODES="no_memory"; EXTRA="--oracle-skip-p 0.37"; UNIVERSE="sweep" ;;
   # Redundancy audit: pay the oracle on guarded rounds too, so a guarded round
   # carries the failure type it would have had. Without it every type-based
   # redundancy count is censored in exactly the arms that guard, and an arm
