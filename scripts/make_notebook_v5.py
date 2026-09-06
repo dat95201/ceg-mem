@@ -20,6 +20,21 @@ BRANCH = "feat/p1-1-policy-comparison"
 HDR = "# " + "─" * 76 + "\n"
 
 
+CONFIG = """
+
+# ── P1-1, the baseline comparison (section 13) ──────────────────────────────
+# Which log the verdict matrix and the policy simulation read. The frozen run is
+# the one the paper reports; point this at RUN_DIR's own episodes.jsonl only if
+# you are rebuilding the matrix for a different run.
+EPISODES = "runs/2026-09-01/episodes.jsonl"
+
+# Sandbox workers for the matrix build. Every candidate-case pair is a
+# subprocess, so this is bounded by CORES, not VRAM - 2 on a Colab CPU, 8 or
+# more on a workstation. It changes nothing measured; only how long it takes.
+MATRIX_JOBS = 2
+"""
+
+
 def md(text):
     return {"cell_type": "markdown", "metadata": {}, "source": text.splitlines(keepends=True)}
 
@@ -65,13 +80,25 @@ sessions with `RUN_DIR` on Drive, or run it on a workstation overnight and copy
 the result depends on which machine produced it: no model is called and the
 sandbox verdict is a pure function of (program, input)."""),
 
+code(HDR + """# STAGE   P1-1: the policy tests
+# READS   tests/test_policies.py
+# WRITES  nothing
+# TIME    ~5 s
+# SKIP?   NO. Eight seconds here beats a day of CPU on a broken ordering
+""" + HDR + """import os; os.chdir(WORKDIR)
+# No LLM and no sandbox: a hand-built verdict matrix, five policies, eight
+# claims. The one that matters pins the 2026-08-31 soundness correction - the
+# indexed guard must block exactly the rounds the flat store blocks, because the
+# bucket says where to look FIRST and never where to STOP.
+!python3 tests/test_policies.py"""),
+
 code(HDR + """# STAGE   P1-1 stage 1: cost of the verdict matrix - nothing runs
 # READS   data/<RUN_DIR>/episodes.jsonl (or --episodes)
 # WRITES  nothing
 # TIME    ~10 s
 # SKIP?   NO. Read the estimate before spending a day of CPU
 """ + HDR + """import os; os.chdir(WORKDIR)
-EPISODES = "runs/2026-09-01/episodes.jsonl"   # the frozen log; or leave to RUN_DIR's own
+# EPISODES and MATRIX_JOBS are set in section 1, with everything else.
 !python3 scripts/build_verdict_matrix.py --episodes {EPISODES} --plan-only"""),
 
 code(HDR + """# STAGE   P1-1 stage 1: build the matrix
@@ -82,11 +109,11 @@ code(HDR + """# STAGE   P1-1 stage 1: build the matrix
 """ + HDR + """import os; os.chdir(WORKDIR)
 RUN_LOGS = f"logs/{RUN_DIR}" if RUN_DIR else "logs"
 os.makedirs(RUN_LOGS, exist_ok=True)
-# --jobs: sandbox runs are subprocesses, so this is bounded by cores, not VRAM.
-# The adapter's case cache is dropped between tasks (one AtCoder task's test data
-# reaches 84 MB), so memory stays flat however long this runs.
+# MATRIX_JOBS is in section 1. The adapter's case cache is dropped between tasks
+# (one AtCoder task's test data reaches 84 MB), so memory stays flat however long
+# this runs, and a re-run after a disconnect resumes per (task, patch).
 !nohup python3 scripts/build_verdict_matrix.py --episodes {EPISODES} \\
-    --jobs 2 --progress-every 120 > {RUN_LOGS}/verdicts.log 2>&1 &
+    --jobs {MATRIX_JOBS} --progress-every 120 > {RUN_LOGS}/verdicts.log 2>&1 &
 print("launched; watch it with the next cell. Safe to re-run after a disconnect.")"""),
 
 code(HDR + """# STAGE   watch the matrix build
@@ -159,6 +186,16 @@ def main():
             hits += 1
     if hits != 1:
         print(f"warning: patched BRANCH in {hits} cells, expected 1", file=sys.stderr)
+
+    # 1b. section 13's two settings, appended to the section-1 config cell
+    for c in cells:
+        s = "".join(c["source"])
+        if c["cell_type"] == "code" and "STAGE   configuration" in s:
+            if "EPISODES" not in s:
+                c["source"] = (s.rstrip("\n") + "\n" + CONFIG).splitlines(keepends=True)
+            break
+    else:
+        print("warning: configuration cell not found", file=sys.stderr)
 
     # 2. the title
     first = "".join(cells[0]["source"])
