@@ -84,17 +84,16 @@ workflow~\cite{xia2025agentless}, and general frameworks add verbal
 self-reflection~\cite{shinn2023reflexion,chen2024selfdebug}. In all of them the
 record of past attempts is a flat transcript and the cost model is dollars or
 tokens. The closest memory-augmented system,
-ExpeRepair~\cite{mu2026experepair}, retrieves ``concrete repair
-demonstrations'' and ``abstract, reflective insights'' to condition generation
-but never validation; nothing in that index recognizes that a new candidate is
-refuted by an input already in hand. Concurrently, Vo et
+ExpeRepair~\cite{mu2026experepair}, retrieves demonstrations and reflective
+insights to condition generation but never validation; nothing in that index
+recognizes that a new candidate is refuted by an input already in hand. Vo et
 al.~\cite{vo2026merit} type failures for text-to-SQL repair, conditioning
 \emph{retrieval for the prompt} where we condition \emph{the order of
-validation}; their caveat that the typed variant ``is not reliably separated
-from untyped dynamic retrieval'' is, on our reading, what we measure directly
-in \cref{sec:results}. The guard is a property of memory rather than of a
-controller, so it is orthogonal to every agent above. Finally, since a patch
-can pass the visible tests and still be wrong~\cite{xiong2018patchsim} and
+validation}, and report their typed variant ``is not reliably separated from
+untyped dynamic retrieval''---the phenomenon we measure directly. The guard is
+a property of memory, not of a controller, so it is orthogonal to every agent
+above. Finally, since a patch can pass the visible tests and still be
+wrong~\cite{xiong2018patchsim} and
 LLM-era benchmarks must worry about leakage, we use
 ConDefects~\cite{wu2024condefects} rather than
 Defects4J~\cite{just2014defects4j} or SWE-bench~\cite{jimenez2024swebench}, and

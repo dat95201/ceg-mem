@@ -298,11 +298,12 @@ def fig_oracle_depth():
     ax.plot(ks, acc, color=BLUE, marker="o", markeredgewidth=0, ls=(0, (5, 2)),
             label="accepted by the oracle", zorder=3)
     ax.plot(ks, tru, color=RED, marker="s", markeredgewidth=0,
-            label="truly correct (audited)", zorder=4)
+            label="passes the whole pool (audited)", zorder=4)
     ax.plot(ks, ovf, color=MAGENTA, marker="D", markeredgewidth=0, ls=(0, (1, 1.6)),
             label="overfitting among accepts", zorder=3)
     ax.fill_between(ks, tru, acc, color=BLUE, alpha=0.10, zorder=2)
-    ax.annotate("false\nacceptance", xy=(3.35, 0.655), fontsize=6.8, color=BLUE)
+    ax.annotate("accepted but\nnot pool-adequate", xy=(3.35, 0.655), fontsize=6.8,
+                color=BLUE)
     ax.annotate("saturates at $k{\\approx}20$", xy=(13, 0.585), fontsize=6.8, color=RED)
     ax.set_xscale("log")
     ax.set_xticks(ks)

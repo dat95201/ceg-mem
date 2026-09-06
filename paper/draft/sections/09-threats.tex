@@ -49,14 +49,16 @@ A per-cell test overstates precision, so every headline comparison is reported
 at both units with a task-clustered interval (\cref{tab:main}); all keep their
 sign there, with typed-versus-untyped weakening from \pval{0.007} to
 \pval{0.030} as it should. Only two outcomes on three arms are confirmatory.
-The dead-band steering result is the weakest positive we report---one band of
-five, per-task \pval{0.047}, no formal interaction test---so we treat it as a
-hypothesis. Finally, the comparison a reader will want is against a
+The dead-band result now has the interaction test it lacked
+(\cref{sec:results-ablation}), and the test does not support the reading we
+first gave it. What survives is a difficulty dependence of the \emph{whole}
+agent, one band up and one down on $23$ and $17$ tasks, which we report as
+exploratory. Finally, the comparison a reader will want is against a
 per-modification-point prioritizer~\cite{venugopal2020modification}, the
-mechanism our guard is closest to (\cref{sec:related-order}), reimplemented
-here so that only the key varies. Three such arms are implemented and pass the
-round-1 pairing test; none has been run at scale, which is why
-\cref{tab:positioning} is argued mechanically rather than measured.
+mechanism our guard is closest to, reimplemented here so only the key varies.
+Three such arms are implemented and pass the round-1 pairing test; none has
+been run at scale, which is why \cref{tab:positioning} is argued mechanically
+rather than measured.
 
 \paragraph{Reproducibility, and what ``pre-specified'' means.}
 We say \emph{pre-specified} rather than pre-registered: metrics, arms,

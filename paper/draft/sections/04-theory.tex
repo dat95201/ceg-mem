@@ -61,12 +61,11 @@ is invariant to it.
 \end{corollary}
 
 \Cref{cor:budget} shaped the study and applies to untyped memory as much as
-typed. Under the accounting \cref{sec:results} uses---one proposal, one unit of
-budget---the guard provably cannot change which round first accepts, so any gap
-between a guarded arm and its unguarded twin is a soundness bug rather than a
-result, and we test exactly that (\cref{sec:results-integrity}). It also makes
-the first half untestable there, which is why we run a separate free-guarded
-condition (\cref{sec:results-e9}).
+typed. Under the accounting \cref{sec:results} uses---one proposal, one budget
+unit---the guard cannot change which round first accepts, so any gap between a
+guarded arm and its unguarded twin is a soundness bug, not a result
+(\cref{sec:results-integrity}); it also makes the first half untestable there,
+hence the free-guarded condition (\cref{sec:results-ablation}).
 
 \paragraph{Three further results, stated in full in the supplement.}
 Under an i.i.d.\ proposer and \emph{ideal typing}---which also requires

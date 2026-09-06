@@ -46,11 +46,11 @@ this paper's result into a null one.
 
 \paragraph{Instrumentation and replay.}
 One record per round carries the patch, verdict, counterexample, both type
-granularities, the guard's accounting (entries consulted, sandbox
-re-executions, whether the bucket was hit and whether its counterexample
-fired), token counts, and wall-clock split between model, oracle sandbox and
-guard sandbox. Episode summaries come from one function shared by every
-consumer, so ``oracle calls to repair'' cannot mean two things in two tables.
+granularities, the guard's accounting (entries consulted, re-executions,
+whether the bucket was hit and whether its counterexample fired), token counts,
+and wall-clock split between model, oracle sandbox and guard sandbox. Episode
+summaries come from one function shared by every consumer, so ``oracle calls to
+repair'' cannot mean two things in two tables.
 Every model call is cached under a key containing the full prompt, model,
 temperature, output budget and the draw nonce $(\textit{task}, \textit{seed},
 \textit{round})$, which omits the arm and so implements common random numbers

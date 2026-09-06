@@ -107,12 +107,12 @@ otherwise. The steered proposer renormalizes onto the surviving support:
 \label{eq:steer}
 \end{equation}
 This is what a flat transcript cannot do---excluding a class requires having
-one---and it idealizes an operation that, with an LLM, can only be
-\emph{requested}: an exclusion instruction plus class-matched evidence in the
-prompt. Whether the request is honored is empirical;
+one---and it idealizes an operation an LLM can only be \emph{asked} to perform:
+an exclusion instruction plus class-matched evidence in the prompt. Whether the
+request is honored is empirical;
 \cref{sec:results-ablation} answers no for a 7B proposer, while the same
 renormalization applied on the guard side, by not charging blocked rounds, does
-deliver (\cref{sec:results-e9}).
+deliver (\cref{sec:results-ablation}).
 
 \subsection{The repair loop}
 Each round draws a steered proposal, guards it against memory, and calls the

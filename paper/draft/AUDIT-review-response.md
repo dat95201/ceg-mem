@@ -424,3 +424,72 @@ it, so those two results are directional rather than calibrated.
 | What supports expected $O(1)$ guard cost? | Nothing — the claim is withdrawn everywhere (§IV, abstract, `prop:guardcost`) |
 | Is "correct" semantic, full-pool, or depth-$k$? | All three named and each claim assigned (§III-A, §VII-D, §IX) |
 | What eliminated set labels no-memory attempts redundant? | $E^{\rm obs}$, the observed-type history (`def:eobs`) |
+
+---
+
+## F. Review 3 — empirical design, statistics, reproducibility
+
+Most of Review 3 was already answered by the first two passes. Three of its
+requests were not, and acting on them changed two of the paper's claims.
+
+### What the requested statistics actually said
+
+**The difficulty-by-steering interaction (W6, request 7).** The reviewer asked
+for the test instead of five band-wise $p$-values. Running it at the task unit,
+permuting band labels over tasks (20,000 draws), gives a two-part answer:
+
+| | dead | hard | medium | easy | too-easy | omnibus |
+|---|---:|---:|---:|---:|---:|---:|
+| typed − no memory | **+9.6 pp** [2.6, 18.3] | **−11.8 pp** [−28.2, 4.7] | −6.2 | 0.0 | 0.0 | *p* = **0.023** |
+| steer-only − no memory | +5.8 [−4.4, 18.8] | +3.9 [−15.7, 21.6] | 0.0 | 0.0 | 0.0 | *p* = **0.87** |
+
+So the full agent's effect **does** depend on difficulty — but as one band up
+and one band **down**, not as a dead-band bonus. And isolating the prompt half
+erases the pattern entirely. The paper's reading, "steering pays only in the
+hardest band," is withdrawn from the abstract, the introduction, §VII-C and the
+threats section.
+
+**The free-guarded pooling (W7).** The reviewer asked us not to pool dependent
+arms without a hierarchical or permutation analysis. The 111 matched pairs come
+from only **19 tasks**; permuting the free/base label a whole task at a time
+gives ***p* = 0.061**, not the 0.004 the cell-level sign test reported. Now
+stated as suggestive and not confirmed. (The nine "missing" cells were never
+missing a twin — every free cell has its base pair; the condition simply
+completed 171 of a targeted 180.)
+
+**Total sandbox seconds (request 2).** Executions were already split guard/
+oracle; seconds were not summed. Per episode: **72.9 s → 38.2 s** (no memory →
+typed), with guard-side 4.2 s of the 38.2. Both units now sit in
+`tab:testwork`, and §VII-A says the reduction is not an artifact of the unit.
+
+### The questions, answered
+
+| Question | Answer |
+|---|---|
+| Do case-executions include guard replays? | Yes, and now in seconds too |
+| Are seeds independent draws or cache identifiers? | **Independent draws.** `src/llm.py` sends no sampling seed to the backend; the seed enters only the cache key. Round 1 shares a prompt across a task's five seeds and returns **4.43 distinct patches of five** on average, never one. Pairing is memoization, not a shared RNG — now said in §VI-B |
+| Guard correction before or after seeing outcomes? | Already answered: after an *earlier* run's accounting, before the reported run |
+| Why 939 of 1,256 in the regression audit? | Already answered: 317 faults ship no case the buggy version passed |
+| How often is $k{=}100$ the whole pool? | Already answered: 97 of 99 faults |
+
+### Smaller fixes
+
+- **Attrition (W2, request 3).** The stage counts are now in the body, not only
+  in a supplement table the submission build drops: 526 → −64 reference
+  disagrees, −48 too slow, −7 unresolved, −112 one fault per coding task, −196
+  quota → 99.
+- **Artifact (W9).** Data Availability now enumerates what ships: source, log,
+  corpus artifacts, prompt templates, pinned model manifest, lockfile, response
+  cache, six extractors.
+- **"Truly correct" (W10).** `tools/make_figures.py` labelled a series *truly
+  correct* and shaded $G_k \setminus G_{\rm pool}$ as *false acceptance*, which
+  contradicts the paper's own definitions. Relabelled to pool adequacy.
+- **Five orphan supplement tables.** `testwork`, `tasklevel`, `perband`,
+  `integrity` and `freeguard` were `\input` by *no* section — they rendered in
+  neither build. A regression from the page-cut pass; now wired into the
+  preprint, which grows to 16 pages.
+
+### Still open, and why
+
+W1 (one model, one corpus) and the baseline comparisons need runs, not edits.
+They are scoped in `PLAN-experiments.md`.

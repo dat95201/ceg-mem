@@ -41,12 +41,11 @@ is refuted and validating it further buys nothing. In the synthesis loop this
 idea comes from, the criterion could never fire---a constrained synthesizer
 cannot emit a candidate that its accumulated counterexamples refute---but an
 LLM proposer is under no such obligation and repeats itself in one proposal out
-of four (\cref{sec:related-cegis}). The obstacle is that today's agents
-keep a flat conversational transcript~\cite{xia2024chatrepair,%
-shinn2023reflexion,chen2024selfdebug}, which neither \emph{retrieves}---as the
-dialogue grows it dilutes the signal and overflows the window---nor
-\emph{generalizes}: it records that patch $p_3$ failed test $t$, not that every
-patch sharing $p_3$'s defect will fail the same way.
+of four (\cref{sec:related-cegis}). The obstacle is that today's agents keep a
+flat conversational transcript~\cite{xia2024chatrepair,shinn2023reflexion,%
+chen2024selfdebug}, which neither \emph{retrieves}---it dilutes as the dialogue
+grows---nor \emph{generalizes}: it records that patch $p_3$ failed test $t$,
+not that every patch sharing $p_3$'s defect will fail the same way.
 
 \paragraph{Our approach: keep the evidence, index it by where the patch edits.}
 When a proposal $p$ is refuted by counterexample $x$, \CEGMem\ stores
@@ -86,9 +85,9 @@ execution it is, total program executions \fold{2.2}, at unchanged repair rate;
 at a matched two-call budget it lifts repair from $31.9\%$ to $55.8\%$. Two
 results cut against the architecture as proposed and we report them as primary:
 prompt-side steering is null on every outcome metric while costing $+128\%$
-prompt tokens and making the full agent the slowest of five arms, and it pays
-only in the hardest band. The configuration we recommend is consequently the
-guard alone.
+prompt tokens and making the full agent the slowest of five arms, with no band
+surviving a formal interaction test. The configuration we recommend is
+consequently the guard alone.
 
 \paragraph{Contributions.}
 \emph{(i)} An architecture separating verification-side guarding from

@@ -13,10 +13,13 @@ misfires (RQ5).
 \subsection{Corpus and protocol}
 We use ConDefects~\cite{wu2024condefects}, whose faults are AtCoder contest
 submissions from 2021--2023, curated to limit the training-data leakage that
-afflicts older benchmarks. Corpus construction is frozen; \appref{tab:attrition}
-{the supplement} gives the count and reason at each stage, from \num{526}
-examined candidates to the \num{99} frozen faults, themselves a strict subset
-of a previously frozen \num{106} so nothing entered on the basis of results.
+afflicts older benchmarks. Corpus construction is frozen and takes \num{526}
+examined candidates to \num{99}: $-64$ whose reference disagreed with the
+shipped output, $-48$ too slow, $-7$ unresolved, $-112$ because a coding task
+may contribute one fault, and $-196$ where the band quotas over the screened
+pool of \num{295} filled at $99$ of a targeted $115$
+(\appref{tab:attrition}{the supplement}). The \num{99} are a strict subset of a
+previously frozen \num{106}, so nothing entered on the basis of results.
 Two filters matter. The \emph{oracle gate} admits a fault only if the reference
 reproduces the shipped outputs, at least one shipped case exposes the fault,
 and its natural mutants are caught---this is what makes \cref{as:sound} hold by
@@ -68,10 +71,13 @@ therefore receive the same completion, which pairs them on common random
 numbers~\cite{law2000simulation} rather than buying the same draw repeatedly,
 and makes round~1 identical in every arm since memory is empty there. When
 prompts diverge, the prompt separates the cache keys, so nothing is shared that
-should not be. This is what makes the central comparisons tight rather than
-merely large, and it has a consequence we state plainly: the draw table is
-fixed by construction, so all inference is \emph{conditional} on it and the
-replication axis is tasks $\times$ seeds, not re-sampling of the model.
+should not be. No sampling seed reaches the backend---the seed enters only the
+cache key---so a task's five seeds are five \emph{independent} draws at
+$T = 1.0$: round~1 shares their prompt yet returns $4.43$ distinct patches of
+five on average, never one. Pairing is memoization, not a shared RNG, and it
+has a consequence we state plainly: the draw table is fixed once drawn, so all
+inference is \emph{conditional} on it and the replication axis is tasks
+$\times$ seeds, not re-sampling of the model.
 
 \subsection{Metrics and statistics}
 Two outcomes on the three main arms are \textbf{confirmatory}: repair rate at a
@@ -82,15 +88,14 @@ an arm with no guard loses a total-call comparison \emph{by construction}. On
 the budget curve nothing is guaranteed: spending fewer calls helps only if the
 calls spent still find repairs.
 
-Secondary metrics are oracle calls; \emph{total program executions}---every run
-of a candidate against a case, whether the oracle asked for it or the guard
-did, so guard replays are billed to the arm performing them; \emph{paid} and
-\emph{caught} redundant verifications; guard entries consulted and seconds;
-tokens; and wall-clock. Redundancy is counted the same way in every arm: a
-blocked round carries no class of its own, so we recover it through the pairing
-from the byte-identical no-memory round the oracle already paid for. Where that
-recovery is unavailable---the steered arm, whose draws diverge---we report the
-censored fraction ($52\%$ of typed rounds).
+Secondary metrics are oracle calls; \emph{total program executions and the
+seconds they take}---every run of a candidate against a case, whether the
+oracle asked for it or the guard did; \emph{paid} and \emph{caught} redundant
+verifications; entries consulted; tokens; and wall-clock. Redundancy is counted
+the same way in every arm: a blocked round carries no class of its own, so we
+recover it through the pairing from the byte-identical no-memory round the
+oracle already paid for. Where that recovery is unavailable---the steered arm,
+whose draws diverge---we report the censored fraction ($52\%$).
 
 Cells are paired on $(\textit{task}, \textit{seed})$; the default test is the
 exact two-sided sign test with $\Atwelve$~\cite{vargha2000effect} for effect

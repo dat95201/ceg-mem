@@ -1,0 +1,180 @@
+{
+  "_provenance": {
+    "run": "../../runs/2026-09-01",
+    "rule": "arm identity identical to review_addenda.py cfg(); no program was executed and no model was called to produce any number here",
+    "n_perm": 20000,
+    "n_boot": 10000,
+    "rng_seed": 20260906
+  },
+  "seeds": {
+    "note": "src/llm.py sends no sampling seed to the backend; the seed enters only the cache key, so two seeds are two independent draws from the proposer at T=1.0. Round 1 has an identical prompt across seeds, so identical patches would mean the draws were not independent.",
+    "tasks": 99,
+    "seeds_per_task_min": 5,
+    "seeds_per_task_max": 5,
+    "distinct_round1_patches_mean": 4.43,
+    "tasks_with_all_seeds_distinct": 61,
+    "tasks_with_one_patch_for_every_seed": 0
+  },
+  "interaction": {
+    "_note": "the dead-vs-rest contrast was chosen after seeing the band-wise results and is exploratory; the omnibus spread test needed no such choice. Both contrasts are reported because the paper's band claim is stated for typed-vs-no-memory and decomposed through steer-only.",
+    "steer_only_vs_no_memory": {
+      "unit": "task",
+      "n_tasks": 99,
+      "n_cells": 297,
+      "by_band": {
+        "dead": {
+          "n_tasks": 23,
+          "mean": 0.058,
+          "ci95": [
+            -0.0435,
+            0.1884
+          ]
+        },
+        "easy": {
+          "n_tasks": 25,
+          "mean": 0.0,
+          "ci95": [
+            0.0,
+            0.0
+          ]
+        },
+        "hard": {
+          "n_tasks": 17,
+          "mean": 0.0392,
+          "ci95": [
+            -0.1569,
+            0.2157
+          ]
+        },
+        "medium": {
+          "n_tasks": 13,
+          "mean": 0.0,
+          "ci95": [
+            -0.1026,
+            0.1026
+          ]
+        },
+        "too_easy": {
+          "n_tasks": 21,
+          "mean": 0.0,
+          "ci95": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "dead_within_band_sign_test": {
+        "wins": 3,
+        "losses": 2,
+        "ties": 18,
+        "p": 1.0
+      },
+      "dead_minus_rest": 0.0492,
+      "p_perm_dead_vs_rest": 0.3585,
+      "p_perm_any_band_difference": 0.874
+    },
+    "typed_vs_no_memory": {
+      "unit": "task",
+      "n_tasks": 99,
+      "n_cells": 495,
+      "by_band": {
+        "dead": {
+          "n_tasks": 23,
+          "mean": 0.0957,
+          "ci95": [
+            0.0261,
+            0.1826
+          ]
+        },
+        "easy": {
+          "n_tasks": 25,
+          "mean": 0.0,
+          "ci95": [
+            -0.032,
+            0.032
+          ]
+        },
+        "hard": {
+          "n_tasks": 17,
+          "mean": -0.1176,
+          "ci95": [
+            -0.2824,
+            0.0471
+          ]
+        },
+        "medium": {
+          "n_tasks": 13,
+          "mean": -0.0615,
+          "ci95": [
+            -0.2,
+            0.0615
+          ]
+        },
+        "too_easy": {
+          "n_tasks": 21,
+          "mean": 0.0,
+          "ci95": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "dead_within_band_sign_test": {
+        "wins": 7,
+        "losses": 1,
+        "ties": 15,
+        "p": 0.0703
+      },
+      "dead_minus_rest": 0.1325,
+      "p_perm_dead_vs_rest": 0.0075,
+      "p_perm_any_band_difference": 0.0229
+    }
+  },
+  "free_guarded": {
+    "n_matched_pairs": 111,
+    "n_tasks": 19,
+    "free_better": 9,
+    "base_better": 0,
+    "ties": 102,
+    "statistic_free_minus_base": 9,
+    "p_cluster_permutation": 0.0605,
+    "note": "the sign test in the paper treats cells as independent; this permutes the free/base label for an entire task at once, which is the dependence the two pooled arms actually have"
+  },
+  "test_work_seconds": {
+    "guard_only": {
+      "n_cells": 297,
+      "guard_sec_per_cell": 4.04,
+      "oracle_sec_per_cell": 28.31,
+      "total_sandbox_sec_per_cell": 32.36,
+      "executions_per_cell_check": 43.57
+    },
+    "no_memory": {
+      "n_cells": 495,
+      "guard_sec_per_cell": 0.0,
+      "oracle_sec_per_cell": 72.91,
+      "total_sandbox_sec_per_cell": 72.91,
+      "executions_per_cell_check": 95.68
+    },
+    "steer_only": {
+      "n_cells": 297,
+      "guard_sec_per_cell": 0.0,
+      "oracle_sec_per_cell": 72.21,
+      "total_sandbox_sec_per_cell": 72.21,
+      "executions_per_cell_check": 92.41
+    },
+    "typed": {
+      "n_cells": 495,
+      "guard_sec_per_cell": 4.2,
+      "oracle_sec_per_cell": 34.01,
+      "total_sandbox_sec_per_cell": 38.21,
+      "executions_per_cell_check": 43.01
+    },
+    "untyped": {
+      "n_cells": 495,
+      "guard_sec_per_cell": 7.11,
+      "oracle_sec_per_cell": 34.38,
+      "total_sandbox_sec_per_cell": 41.49,
+      "executions_per_cell_check": 44.45
+    }
+  }
+}

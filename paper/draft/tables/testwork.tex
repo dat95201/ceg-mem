@@ -1,9 +1,11 @@
 \begin{table}[t]
 \centering
 \footnotesize
-\caption{Total program executions per episode, split into the guard's replays
-and the oracle's checks. The guard \emph{does} execute---this is the accounting
-in which ``avoid a validation'' has to pay for itself, and it does. The split
+\caption{All sandboxed work per episode---first as program executions, then as
+the seconds those executions took---split into the guard's replays and the
+oracle's checks. Both are counted to the first accepting round, the convention
+every cost number in the paper uses. The guard \emph{does} execute, and this is
+the accounting in which it has to pay for itself. The split
 is conservative against the memory arms: a guard consultation is billed as an
 execution even when per-input deduplication or within-round memoization means
 no process was started, so their guard-side column is an upper bound.}
@@ -20,6 +22,13 @@ no process was started, so their guard-side column is an upper bound.}
 \armuntyped\ & 495 & 44.45 & 10.20 & 34.25 & 22.9 \\
 \armguard\   & 297 & 43.57 &  9.74 & 33.83 & 22.4 \\
 \armtyped\   & 495 & \bfseries 43.01 & 9.38 & 33.64 & 21.8 \\
+\midrule
+\multicolumn{6}{@{}l}{\itshape the same work in \emph{sandbox seconds}} \\
+\armnomem\   & 495 & 72.91 & 0.00 & 72.91 & 0 \\
+\armsteer\   & 297 & 72.21 & 0.00 & 72.21 & 0 \\
+\armuntyped\ & 495 & 41.49 & 7.11 & 34.38 & 17.1 \\
+\armguard\   & 297 & 32.36 & 4.04 & 28.31 & 12.5 \\
+\armtyped\   & 495 & \bfseries 38.21 & 4.20 & 34.01 & 11.0 \\
 \bottomrule
 \end{tabular}
 

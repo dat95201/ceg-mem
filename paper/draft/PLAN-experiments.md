@@ -200,3 +200,69 @@ does and why it was written that way.
   them makes the free-guarded condition a balanced design and turns two
   suggestive *p*-values into one pooled test that does not need the
   shared-tasks caveat.
+
+---
+
+# Experiments still outstanding after three reviews
+
+Ordered by value per unit of cost. The first two need **no model calls at
+all** — the response cache already holds every completion, and the arms below
+build prompts identical to ones already drawn — so they cost sandbox time only.
+
+## A. Guard soundness below full depth — *cheap, closes a named gap*
+
+Review 2's residual hazard: `src/oracle.py` redraws its check set per call, so
+a stored counterexample can fall outside a later draw. At $k = 100$ the draw
+exhausts the pool for 97 of 99 faults, which is why the existing audit
+(0 acceptances in 4,411 blocked rounds) is uninformative — and below $k = 100$,
+where the hazard is real, the audit was never run.
+
+**Run:** `--audit-guarded` at $k \in \{20, 8, 3\}$ over the 90-cell depth-sweep
+universe. **Cost:** model calls all cached; roughly 3 × 90 × 1.7 oracle calls of
+sandbox work. **Outcome:** either a Clopper–Pearson bound on a real hazard, or
+the first observed guard-soundness violation — both publishable.
+
+## B. Class-exclusive refutation — *cheap, closes Review 2's C4*
+
+Theorems 3 and 4 need a counterexample of class $\tau$ to refute **no**
+candidate of another class; Assumption 2 now says so and admits our index does
+not meet it. Nothing measures how badly.
+
+**Run:** the offline cross-refutation study already built for informativeness,
+but scored *across* classes rather than within. **Cost:** comparable to the
+26,048 executions that study already spent. **Outcome:** the number that turns
+"directional prediction" into a calibrated one.
+
+## C. The two closest baselines — *moderate, the #1 ask of Reviews 1 and 3*
+
+Both reviews want the guard measured against the mechanism it most resembles.
+Three arms are implemented and pass the round-1 pairing test.
+
+1. **Per-modification-point prioritizer** (Venugopal et al.): a per-edit-location
+   ordered test suite, no counterexample store. Isolates *the key*.
+2. **Fault-recorded prioritizer** (Qi et al.): order by which cases killed
+   earlier candidates. Isolates *the evidence*.
+3. **Dedup-only guard**: the store with no ordering at all. Isolates *the index*.
+
+**Cost:** these arms do not steer, so their prompts match the no-memory arm and
+every draw is a cache hit — sandbox only, ~500 cells each at roughly no
+memory's 73 s of sandbox per cell. **Outcome:** the positioning table stops
+being argued mechanically.
+
+## D. A second proposer — *expensive, the largest external-validity gap*
+
+Every number is `qwen2.5-coder:7b` at $T = 1.0$. The steering null is the
+result most likely to be scale-dependent: a larger model might obey an
+instruction a 7B ignores.
+
+**Run:** the three main arms on one larger open-weight model. **Cost:** this is
+the one that breaks the cache — roughly 4,700 completions per arm, ~14k total.
+**Outcome:** either the steering null generalizes, or the paper's headline
+recommendation is scoped to small proposers, which is worth knowing either way.
+
+## E. A repository-scale benchmark — *out of scope; disclose instead*
+
+ConDefects faults are single-file competitive-programming submissions with a
+rich shipped pool, which is exactly what makes a clean counterexample oracle
+possible. Transplanting the loop to SWE-bench-style issues is a different
+paper's worth of harness work. §IX says so plainly rather than gesturing at it.
