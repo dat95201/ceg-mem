@@ -13,6 +13,7 @@
 \usepackage{multirow}
 \usepackage{graphicx}
 \usepackage{xcolor}
+\usepackage{accsupp}
 \usepackage[ruled,vlined,linesnumbered]{algorithm2e}
 \usepackage{siunitx}
 \usepackage{tikz}
@@ -39,8 +40,16 @@
 \definecolor{cmRule}{HTML}{D8D8D4}
 
 % ── notation, defined once so the body never hand-writes a symbol ─────────
-\newcommand{\CEGMem}{\textsc{CEGMem}}
-\newcommand{\Sketch}{\textsc{Sketch}}
+% Small caps that survive text extraction. \textsc{CEGMem} sets "CEGM" and
+% "em" in two different fonts, so pdftotext emits "CEGM EM": the name is
+% unsearchable, a reviewer's copy-paste is wrong, and a screen reader spells
+% it letter by letter. accsupp attaches the plain spelling as the extractable
+% text and moves no glyph. Every small-caps NAME goes through \scname; plain
+% \textsc stays available for ordinary small-caps text.
+\DeclareRobustCommand{\scname}[1]{%
+  \texorpdfstring{\BeginAccSupp{method=escape,ActualText={#1}}\textsc{#1}\EndAccSupp{}}{#1}}
+\newcommand{\CEGMem}{\scname{CEGMem}}
+\newcommand{\Sketch}{\scname{Sketch}}
 \newcommand{\cand}{\mathcal{P}}                 % candidate space
 \newcommand{\spec}{\varphi}                     % specification
 \newcommand{\Oracle}{\mathcal{O}}               % counterexample oracle
@@ -72,19 +81,11 @@
 \newcommand{\oracledepth}{k}
 
 % arm names, so a rename is one edit
-\newcommand{\armnomem}{\textsc{no-mem}}
-\newcommand{\armuntyped}{\textsc{untyped}}
-\newcommand{\armtyped}{\textsc{typed}}
-\newcommand{\armguard}{\textsc{guard-only}}
-\newcommand{\armsteer}{\textsc{steer-only}}
-
-% Theorem bodies are italic and they name arms, which are small caps; Times
-% has no italic small caps, so declare the substitution rather than emitting a
-% font warning at every occurrence. Harmless for classes that do not use ptm.
-\AtBeginDocument{%
-  \DeclareFontShape{T1}{ptm}{m}{scit}{<->ssub*ptm/m/sc}{}%
-  \DeclareFontShape{T1}{ptm}{b}{scit}{<->ssub*ptm/b/sc}{}%
-}
+\newcommand{\armnomem}{\scname{no-mem}}
+\newcommand{\armuntyped}{\scname{untyped}}
+\newcommand{\armtyped}{\scname{typed}}
+\newcommand{\armguard}{\scname{guard-only}}
+\newcommand{\armsteer}{\scname{steer-only}}
 
 % ── page-limit switch ─────────────────────────────────────────────────────
 % A 10+2 submission cannot carry an appendix: the two extra pages are for
