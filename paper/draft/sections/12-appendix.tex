@@ -228,6 +228,21 @@ number that trigger an execution, so a cost measured in seconds can fall while
 a cost measured in consultations does not.
 \end{proof}
 
+\section{Errata in the frozen artifacts}
+\label{app:errata}
+
+Two records in the frozen run are wrong, and we correct them here rather than
+rewrite a frozen file. \texttt{strata.json} reports \texttt{n\_moved: 0} with a
+diagonal migration matrix; recomputing from its own per-task $\pihat$ fields
+shows $42$ of $99$ tasks report in a different band than they were selected
+into (\cref{sec:design}). And \texttt{screening.json} carries a note promising
+``every candidate in the pool and what became of it \dots\ including everything
+excluded'' above an \emph{empty} list: the candidates screened and then
+discarded once a band's quota filled were never recorded, which is why no
+design weights exist for this corpus. \texttt{tools/corpus\_addenda.py}
+recomputes both from the artifacts that are correct, and writes
+\texttt{corpus.json}; neither correction touches any measured outcome.
+
 \section{Sensitivity: the timeout-edge fault}
 \label{app:sensitivity}
 

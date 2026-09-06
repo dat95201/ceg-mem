@@ -231,3 +231,23 @@ row, and §VI-C's restatement of the unit-of-analysis argument had drifted from
 disclosure that makes a claim weaker or narrower, and every line removed was a
 sentence the paper already said somewhere else. No measured quantity was
 dropped to make room.
+
+---
+
+# Fourth pass: the corpus, and what paid for it
+
+Review 3's attrition questions turned into three artifact-level findings (see
+AUDIT §G) and about 17 lines of new body text. The space came from one place:
+
+**Table III, the ablation table, moved to the supplement.** Every number in it
+already appears in the RQ3 prose two paragraphs above it -- repair 0.707/0.704,
+entries consulted 9.74/10.02, guard seconds 6.66 to 4.04, wall-clock -14%,
+steering's repair 0.707 to 0.727, oracle calls 9.45 to 8.81, prompt tokens 4519
+to 10296. It was a picture of a paragraph. That is the CUT-rationale rule from
+the first pass applied to the last float that broke it.
+
+An expense-gradient table was drafted to replace it and then cut too: three
+rows did not earn a float, and the six numbers read fine in prose.
+
+The submission is 10 content pages + 1 reference page. The preprint is now 17,
+carrying seven supplement tables, the errata section and the proofs.

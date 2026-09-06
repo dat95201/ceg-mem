@@ -16,19 +16,22 @@ submissions from 2021--2023, curated to limit the training-data leakage that
 afflicts older benchmarks. Corpus construction is frozen and takes \num{526}
 examined candidates to \num{99}: $-64$ whose reference disagreed with the
 shipped output, $-48$ too slow, $-7$ unresolved, $-112$ because a coding task
-may contribute one fault, and $-196$ where the band quotas over the screened
-pool of \num{295} filled at $99$ of a targeted $115$
-(\appref{tab:attrition}{the supplement}). The \num{99} are a strict subset of a
-previously frozen \num{106}, so nothing entered on the basis of results.
-Two filters matter. The \emph{oracle gate} admits a fault only if the reference
-reproduces the shipped outputs, at least one shipped case exposes the fault,
-and its natural mutants are caught---this is what makes \cref{as:sound} hold by
-construction. The \emph{slow-reference filter} then drops any fault whose
-reference needs over \SI{10}{\second} on one of its first $20$ cases. It is
-mechanical, pre-declared and arm-independent but \emph{not}
-difficulty-independent---the faults it removed are rated $2042$ against $940$
-for those kept---so it selects away the most expensive oracles
-(\cref{sec:threats}).
+may contribute one fault, and $-196$ never screened at all
+(\appref{tab:attrition}{the supplement}). That last figure describes a
+sequential procedure honestly: candidates were screened at $40$ model calls
+each and admitted until each band's quota filled, so this is a quota sample,
+not a probability sample of a characterized pool. The \num{99} are a strict
+subset of a previously frozen \num{106}, so nothing entered on the basis of
+results. The \emph{oracle gate} admits a fault only if the reference reproduces
+the shipped outputs, at least one shipped case exposes the fault, and its
+natural mutants are caught---which is what makes \cref{as:sound} hold by
+construction. The \emph{slow-reference filter} then drops a fault whose
+reference needs over \SI{10}{\second} on one of its first $20$ cases. Its unit
+is the wrong one---cost is per \emph{call}---and $45$ of the $99$ faults it
+kept still hold a call over that same threshold, the slowest
+\SI{504}{\second}. What it removed is \emph{difficulty} ($2042$ against $940$),
+a correlate of oracle cost rather than oracle cost;
+\cref{sec:threats} measures which way that biases us.
 
 \ifsuppmatter\else\input{tables/attrition}\fi
 
@@ -49,9 +52,14 @@ Tasks are banded by the proposer's own per-round success rate $\pihat$,
 estimated from the no-memory arm run past its first accept so early stopping
 does not bias it: \emph{dead} ($\pihat < 0.02$; $23$ tasks), \emph{hard}
 ($17$), \emph{medium} ($13$), \emph{easy} ($25$), \emph{too-easy} ($21$), with
-pooled $\pihat = 0.207$ over \num{9896} scored rounds. Banding on that arm's
-own rate makes per-band comparisons \emph{against} no memory inflated by
-regression to the mean, so we report those columns as descriptive only; the
+pooled $\pihat = 0.207$ over \num{9896} scored rounds. This is a \emph{post
+hoc} covariate and not the design: the $40$-call selection screen quantizes
+$\pihat$ to $0.025$, so the \emph{hard} band admits three attainable values and
+one success in forty separates it from \emph{dead}. $42$ of the $99$ tasks
+report in a different band than they were selected into---\emph{hard}
+$28 \to 17$, draining into \emph{dead} $16 \to 23$---so the quota did not
+survive measurement, and per-band comparisons against no memory are inflated by
+regression to the mean. We report those columns as descriptive only; the
 typed-versus-untyped contrast within a band is unaffected, since under common
 random numbers the band comes from a draw the two arms share symmetrically.
 

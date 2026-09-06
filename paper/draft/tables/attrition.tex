@@ -2,9 +2,15 @@
 \centering
 \footnotesize
 \caption{Corpus attrition, recomputed from the frozen screening record. Every
-filter is arm-independent and ran before any treatment, but the
-slow-reference filter is not difficulty-independent, so we report its profile
-and not only its count.}
+filter is arm-independent and ran before any treatment. Two caveats travel with
+it. Screening was \emph{sequential}---candidates were measured at $40$ model
+calls each and admitted until a band's quota filled---so the final row is a
+quota sample and the $196$ were never screened, which is why no design weights
+exist for this corpus. And the slow-reference filter thresholds the
+\emph{reference}'s per-case latency over the first $20$ cases, while the cost
+that matters is per \emph{call}: cases run times the slower of candidate and
+reference. That is why it left $45$ of the $99$ kept faults holding a call
+slower than its own \SI{10}{\second} threshold.}
 \label{tab:attrition}
 \setlength{\tabcolsep}{3pt}
 \begin{tabular}{@{}L{3.4cm}rL{3.6cm}@{}}
@@ -22,8 +28,8 @@ Usable & 407 & \\
   pool size capped at 295 \\
 Screened pool & 295 & mutant gate: catches ${\ge}0.67$ of scoreable natural
   mutants; 295/295 passed \\
-\ \ stratum quota not filled & $-196$ & band quotas over the pool: 115
-  targeted, 99 filled \\
+\ \ never screened & $-196$ & sequential screening stopped once the band
+  quotas filled: 115 targeted, 99 filled, the rest unmeasured \\
 \midrule
 \textbf{Frozen corpus} & \textbf{99} & a strict subset of a previously frozen
   106, so nothing entered on the basis of results \\

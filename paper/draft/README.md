@@ -174,3 +174,32 @@ same 10+2 limit, same template, and a closer topical fit.
       the entries from a search engine.
 - [ ] `sec:availability` promises the frozen log and the extractor. Point it at
       the real artifact DOI once minted.
+
+## Errata in the frozen run artifacts
+
+Found while answering Review 3's attrition questions. Neither touches a
+measured outcome; both are records *about* the corpus.
+
+1. **`runs/2026-09-01/strata.json` — `n_moved: 0` is false.** The file also
+   ships a diagonal `migration_selected_to_reported`. Recomputing from the
+   file's own `screen_pi_hat` / `reported_pi_hat` fields gives **42 of 99**
+   tasks in a different band than they were selected into (hard 28 → 17,
+   draining into dead 16 → 23). The cause is resolution: the selection screen
+   ran 40 calls per task, quantising pi-hat to 0.025, while the `hard` band
+   spans [0.02, 0.08) — three attainable values, so one success in forty
+   separates hard from dead.
+
+2. **`runs/2026-09-01/screening.json` — `candidates` is an empty list**, under
+   a note promising "every candidate in the pool and what became of it …
+   including everything excluded". Screening was sequential: candidates were
+   measured at 40 calls each and admitted until each band's quota filled, and
+   the ones screened-then-discarded were not recorded. Consequently the 196
+   pool members outside the corpus were never measured, **no design weights
+   exist**, and post-stratification to the 295-member pool is not computable
+   from the shipped artifacts.
+
+The frozen files are left as they are, so the audit trail stays intact.
+`tools/corpus_addenda.py` recomputes the correct migration matrix, the oracle
+expense distribution among the kept faults, and the cost gradient, and writes
+`corpus.json`. The paper cites the recomputed values and says in §VI-A that the
+corpus is a quota sample rather than a probability sample.

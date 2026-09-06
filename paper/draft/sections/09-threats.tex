@@ -38,11 +38,16 @@ we predict, and do not test, that the guard result transfers, it being a
 property of the runtime. \emph{One fault distribution, and a filtered one}:
 ConDefects faults are single-file competitive-programming submissions with a
 rich shipped pool, which is what makes a clean counterexample oracle possible
-and is unlike a repository-scale issue, and the slow-reference filter
-(\cref{sec:design}) removed the harder ones, so our cost reductions understate
-and our repair rates overstate. \emph{One scale of memory}: episodes run at
-most $20$ rounds and memory holds a median of one entry when the guard fires,
-which is why we claim nothing for the index.
+and is unlike a repository-scale issue. The slow-reference filter thinned the
+harder faults; rather than assert which way that biases us we measure it inside
+the kept corpus, where oracle cost still spans a factor of \num{1800}: the
+saving in sandbox seconds is \fold{1.00} in the cheapest third of faults and
+\fold{2.07} in the dearest (\cref{sec:results-cost}), so the aggregate sits in
+exactly the regime the filter thinned, and the dropped faults would have
+deepened it rather than reversed it. Because the corpus is a quota sample (\cref{sec:design}), none of
+this is a population estimate; the paired design is what carries the claims. \emph{One scale of memory}: episodes run at most $20$ rounds and
+memory holds a median of one entry when the guard fires, which is why we claim
+nothing for the index.
 
 \paragraph{Statistical validity, and baselines we did not run.}
 A per-cell test overstates precision, so every headline comparison is reported

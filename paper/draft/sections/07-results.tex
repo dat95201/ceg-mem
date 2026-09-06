@@ -40,6 +40,19 @@ effect that flatters neither arm, since both totals are reported. Typing does
 $170/146$, \pval{0.20}); it reduces the time those consultations take.
 \appref{tab:testwork}{The supplement} gives both units per arm.
 
+\paragraph{The saving is not spread evenly.}
+One oracle call costs between \SI{0.06}{\second} and \SI{110}{\second}
+depending on the fault, and the reduction tracks that. In terciles of oracle
+expense, sandbox seconds fall \fold{1.00}, \fold{1.15} and \fold{2.07}: where
+validation is cheap the guard's replays cost about what they displace, so no
+time is saved at all. Executions fall in every tercile (\fold{1.68} to
+\fold{2.66}) because that unit does not price a case
+(\appref{tab:expense}{the supplement}). The mechanism buys \emph{time} only
+where validation is expensive, which is also what makes the slow-reference
+filter's bias measurable (\cref{sec:threats}).
+
+\ifsuppmatter\else\input{tables/expense}\fi
+
 \ifsuppmatter\else\input{tables/testwork}\fi
 \ifsuppmatter\else\input{tables/tasklevel}\fi
 
@@ -111,7 +124,7 @@ affect blocking correctness (guaranteed by the fallback scan,
 \subsection{RQ3: which operation does the work?}
 \label{sec:results-ablation}
 
-\input{tables/ablation}
+\ifsuppmatter\else\input{tables/ablation}\fi
 
 \paragraph{The guard: identical outcomes, cheaper answers.}
 \armguard\ and \armuntyped\ share their draws, so they should produce identical

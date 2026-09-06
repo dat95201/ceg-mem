@@ -493,3 +493,76 @@ typed), with guard-side 4.2 s of the 38.2. Both units now sit in
 
 W1 (one model, one corpus) and the baseline comparisons need runs, not edits.
 They are scoped in `PLAN-experiments.md`.
+
+---
+
+## G. The corpus, re-examined (Tier 0)
+
+Pressing on the 526 → 99 attrition found three things the table did not say.
+None of them touches a measured outcome; all of them touch what the corpus
+*is*.
+
+### What the record actually shows
+
+**The −196 was mis-described.** Only the 99 selected tasks were ever screened —
+`tasks.json` gives every one `screen_calls = 40`, totalling exactly 3,960
+calls, and `pool/tasks.json` (the 295) carries **no π̂ field at all**. So the
+196 were never measured, the pool has no band distribution, and the corpus is a
+**sequential quota sample with an unrecorded rejection stream** — not a
+stratified sample. Consequence: **no design weights exist**, and
+post-stratification cannot be computed from the shipped artifacts.
+
+**The screen could not have stratified anything.** 40 calls quantise π̂ to
+0.025 while the `hard` band spans [0.02, 0.08) — three attainable values, so
+one success in forty separates hard from dead. Recomputing:
+
+| | dead | hard | medium | easy | too-easy |
+|---|---:|---:|---:|---:|---:|
+| selected as | 16 | **28** | 20 | 21 | 14 |
+| reports as | **23** | **17** | 13 | 25 | 21 |
+
+**42 of 99 tasks moved band.** `strata.json` records `n_moved: 0` and a
+diagonal migration matrix — both false, now corrected in `corpus.json` and
+documented as an erratum.
+
+**The slow-reference filter used the wrong unit.** It thresholds the
+*reference's* per-case latency over the *first 20* cases; cost is per **call** =
+cases run × the slower of candidate and reference. Among the 99 faults it
+*kept*: **45 have an oracle call over its own 10 s threshold**, 11 over 60 s,
+the slowest **504 s**. What it removed is difficulty (2042 vs 940), a correlate
+of oracle cost, not oracle cost.
+
+### The fix that cost nothing
+
+The paper used to *assert* that its cost reductions understate what the dropped
+faults would show. That is now **measured inside the kept corpus**, whose
+oracle cost still spans a factor of 1,800:
+
+| oracle expense | n | sandbox s/ep | | executions/ep | |
+|---|---:|---:|---:|---:|---:|
+| 0.46 s/call (cheapest third) | 33 | 4.7 | **×1.00** | 54.8 | ×1.68 |
+| 2.27 s/call | 33 | 17.3 | ×1.15 | 99.0 | ×2.14 |
+| 19.48 s/call (dearest third) | 33 | 196.7 | **×2.07** | 133.3 | ×2.66 |
+
+Two honest readings, both now in the paper. The corpus-level saving sits in
+exactly the regime the filter thinned, so the dropped faults would have
+*deepened* the effect. But per fault there is **no rank association**
+(ρ = 0.00): an expensive oracle enlarges the bill, it does not make an
+individual episode a better bet. And where validation is cheap the guard's
+replays cost about what they displace — **no time is saved at all** (×1.00),
+even though executions still fall ×1.68. The mechanism buys *time* only where
+validation is expensive; that is a sharper claim than the paper made before.
+
+### Changed in the paper
+
+- §VI-A: "−196 never screened at all"; the corpus called a **quota sample, not
+  a probability sample**; the slow filter's unit named as wrong, with 45/99 and
+  504 s.
+- §VI-A: the band is a **post hoc covariate**, with the screen's resolution and
+  the 42/99 migration stated.
+- §VII-A: new paragraph, *The saving is not spread evenly*, with the terciles.
+- §IX: the assertion replaced by the measurement, plus "none of this is a
+  population estimate; the paired design is what carries the claims."
+- Appendix: an **Errata** section for the two bad records.
+- Table III (ablation) moved to the supplement to pay for the above — every one
+  of its numbers is already in the RQ3 prose.

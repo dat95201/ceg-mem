@@ -1,0 +1,31 @@
+\begin{table}[t]
+\centering
+\footnotesize
+\caption{Where the saving actually sits. The \num{99} kept faults, in terciles
+of how expensive one oracle call is on them---a property of the fault, measured
+on \armnomem. Cost is counted to the first accepting round, as everywhere else.
+The corpus-level saving is concentrated in the expensive tercile, which is what
+makes the slow-reference filter's bias measurable rather than assumed
+(\cref{sec:threats}). Per \emph{fault} there is no rank association between
+oracle expense and reduction ($\rho = 0.00$): an expensive oracle enlarges the
+bill, it does not make an individual episode a better bet.}
+\label{tab:expense}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.06}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+& & \multicolumn{2}{c}{\textbf{sandbox s / ep.}}
+  & \multicolumn{2}{c}{\textbf{executions / ep.}} \\
+\cmidrule(l){3-4}\cmidrule(l){5-6}
+\textbf{s / oracle call} & \textbf{n} & \armnomem & $\to$ \armtyped
+  & \armnomem & $\to$ \armtyped \\
+\midrule
+$0.46$ (cheapest third) & 33 & 4.7 & \fold{1.00} & 54.8 & \fold{1.68} \\
+$2.27$                  & 33 & 17.3 & \fold{1.15} & 99.0 & \fold{2.14} \\
+$19.48$ (dearest third) & 33 & \bfseries 196.7 & \bfseries \fold{2.07}
+  & 133.3 & \bfseries \fold{2.66} \\
+\midrule
+all \num{99}            & 99 & 72.9 & \fold{1.91} & 95.7 & \fold{2.22} \\
+\bottomrule
+\end{tabular}
+\end{table}
