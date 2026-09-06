@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
-"""Build notebook v5 from v4: the P1-1 baseline-comparison stage, and the branch.
+"""Build notebook v5 from v4: one job, the P1-1 baseline comparison.
 
-v5 = v4 plus one new section and two edits. Nothing in v4 is reordered or
-rewritten, so a reader who knows v4 can diff the two in a minute:
+v5 is v4 with section 13 replaced. A reader who knows v4 can diff the two in a
+minute:
 
   * the config cell points BRANCH at feat/p1-1-policy-comparison
-  * the title cell says what v5 adds
-  * a new section 13, "P1-1 - the baseline comparison", inserted before the
-    optional second-proposer section, which becomes 14
+  * section 13 is now "P1-1 - the baseline comparison": Qi'13 and Venugopal'20
+    against the guard, over byte-identical candidates, zero model calls
+  * v4's section 13, the optional cloud proposer, is REMOVED along with its
+    CLOUD_* settings
+
+Removing the cloud section is scope, not a judgement on it: a second proposer is
+still the answer to the review's external-validity point (P1-10), and it is
+still needed. It is out of v5 because v5 exists to run one thing, and a notebook
+that offers a paid API call next to a free one invites the wrong cell to be run
+first. v4 keeps it intact, and re-adding it here is a copy of two cells.
 """
 import json
 import pathlib
@@ -187,12 +194,22 @@ def main():
     if hits != 1:
         print(f"warning: patched BRANCH in {hits} cells, expected 1", file=sys.stderr)
 
-    # 1b. section 13's two settings, appended to the section-1 config cell
+    # 1b. section 13's two settings replace v4's CLOUD_* block in the config cell
     for c in cells:
         s = "".join(c["source"])
         if c["cell_type"] == "code" and "STAGE   configuration" in s:
+            lines = s.splitlines(keepends=True)
+            start = next((i for i, l in enumerate(lines)
+                          if l.startswith("# ── the second proposer")), None)
+            if start is not None:
+                end = next((i for i in range(start, len(lines))
+                            if lines[i].startswith("CLOUD_BUDGET")), start)
+                del lines[start:end + 1]
+                print(f"  dropped {end - start + 1} CLOUD_* lines from the config cell")
+            s = "".join(lines).rstrip("\n")
             if "EPISODES" not in s:
-                c["source"] = (s.rstrip("\n") + "\n" + CONFIG).splitlines(keepends=True)
+                s += "\n" + CONFIG
+            c["source"] = s.splitlines(keepends=True)
             break
     else:
         print("warning: configuration cell not found", file=sys.stderr)
@@ -207,19 +224,27 @@ def main():
         "calls). `BRANCH` points at `" + BRANCH + "`.",
     ).splitlines(keepends=True)
 
-    # 3. renumber the optional second-proposer section, then insert before it
+    # 3. v4's section 13 (the cloud proposer) comes out; P1-1 takes its place.
+    #    Matched on content rather than position: the markdown heading, and the
+    #    one code cell that reads CLOUD_API_KEY. Everything after it - the fleet
+    #    status cell, "After a disconnect" - is generic and stays.
     at = None
     for i, c in enumerate(cells):
-        s = "".join(c["source"])
-        if c["cell_type"] == "markdown" and "## 13. Optional: a second proposer" in s:
-            c["source"] = s.replace("## 13. Optional: a second proposer",
-                                    "## 14. Optional: a second proposer").splitlines(keepends=True)
+        if c["cell_type"] == "markdown" and \
+                "## 13. Optional: a second proposer" in "".join(c["source"]):
             at = i
             break
     if at is None:
         at = len(cells)
-        print("warning: section 13 not found, appending at the end", file=sys.stderr)
-    nb["cells"] = cells[:at] + NEW + cells[at:]
+        print("warning: v4 section 13 not found; appending P1-1 at the end",
+              file=sys.stderr)
+        drop = 0
+    else:
+        drop = 1
+        if at + 1 < len(cells) and "CLOUD_API_KEY" in "".join(cells[at + 1]["source"]):
+            drop = 2
+        print(f"  dropped {drop} cell(s) of v4's optional cloud proposer")
+    nb["cells"] = cells[:at] + NEW + cells[at + drop:]
 
     DST.write_text(json.dumps(nb, indent=1, ensure_ascii=False))
     print(f"{DST}: {len(nb['cells'])} cells ({len(cells)} + {len(NEW)}), BRANCH={BRANCH}")
