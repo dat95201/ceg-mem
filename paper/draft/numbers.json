@@ -1,0 +1,1575 @@
+{
+ "provenance": {
+  "run": "runs/2026-09-01",
+  "frozen": true,
+  "experiment": "main",
+  "model": "qwen2.5-coder:7b",
+  "n_episodes_frozen": 3654,
+  "n_expected_cells": 1485,
+  "n_missing_cells": 0,
+  "band_source": {
+   "band_from": "e1",
+   "pi_source": "/content/ceg-mem/data/official-2026-09-01/theory_fit.json",
+   "hold_out_seeds": [],
+   "n_banded_from_e1": 99,
+   "n_banded_from_screen": 0,
+   "caveat": "stratum comes from E1's own pi_hat. Common Random Numbers make round 1 of every arm the same draw, so a band defined by no_memory selects the same luck the memory arms saw: untyped-vs-typed within a band is unaffected (the band is symmetric between them), but any per-band comparison AGAINST no_memory is inflated by regression to the mean, and E1's own per-band pi_hat is tautological. Use --band-from screen, or --band-hold-out-seeds, if those matter."
+  }
+ },
+ "protocol": {
+  "corpus_tasks": 99,
+  "seeds_main": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "seeds_ablation": [
+   1,
+   2,
+   3
+  ],
+  "budget": 20,
+  "oracle_k": 100,
+  "cells_main_per_arm": 495,
+  "cells_ablation_per_arm": 297,
+  "bands": {
+   "dead": 23,
+   "hard": 17,
+   "medium": 13,
+   "easy": 25,
+   "too_easy": 21
+  }
+ },
+ "main": {
+  "paired_cells": 495,
+  "no_memory": {
+   "n_cells": 495,
+   "success": 0.703,
+   "oracle_calls": 9.4747,
+   "sandbox_runs": 95.6848,
+   "o2a": 5.0287,
+   "redundancy_paid": 4.4808,
+   "redundancy_caught": 0,
+   "redundancy_present": 4.4808,
+   "redundancy_unknown": 0.004,
+   "blocked": 0,
+   "guard_evaluations": 0,
+   "guard_sec": 0.0,
+   "tokens_in": 4546.3838,
+   "tokens_out": 2495.7535,
+   "wall_sec": 108.8017,
+   "proposals": 9.4747,
+   "rounds": 9.4747
+  },
+  "untyped": {
+   "n_cells": 495,
+   "success": 0.699,
+   "oracle_calls": 1.9131,
+   "sandbox_runs": 44.4465,
+   "o2a": 2.0058,
+   "redundancy_paid": 0.101,
+   "redundancy_caught": 4.398,
+   "redundancy_present": 4.499,
+   "redundancy_unknown": 0.0263,
+   "blocked": 7.6465,
+   "guard_evaluations": 10.198,
+   "guard_sec": 7.1141,
+   "tokens_in": 4592.4566,
+   "tokens_out": 2514.8525,
+   "wall_sec": 77.6166,
+   "proposals": 9.5596,
+   "rounds": 9.5596,
+   "x_oracle_vs_nomem": 4.953,
+   "x_sandbox_vs_nomem": 2.153,
+   "x_paid_vs_nomem": 44.36
+  },
+  "typed": {
+   "n_cells": 495,
+   "success": 0.697,
+   "oracle_calls": 1.8343,
+   "sandbox_runs": 43.0141,
+   "o2a": 1.9217,
+   "redundancy_paid": 0.0788,
+   "redundancy_caught": 2.8222,
+   "redundancy_present": 2.901,
+   "redundancy_unknown": 2.7778,
+   "blocked": 7.3717,
+   "guard_evaluations": 9.3758,
+   "guard_sec": 4.1996,
+   "tokens_in": 6726.7253,
+   "tokens_out": 2500.7677,
+   "wall_sec": 140.4626,
+   "proposals": 9.2061,
+   "rounds": 9.2061,
+   "x_oracle_vs_nomem": 5.165,
+   "x_sandbox_vs_nomem": 2.224,
+   "x_paid_vs_nomem": 56.86
+  }
+ },
+ "typed_vs_untyped": {
+  "success": {
+   "wins": 37,
+   "losses": 36,
+   "ties": 422,
+   "p": 1.0
+  },
+  "oracle_calls": {
+   "wins": 93,
+   "losses": 59,
+   "ties": 343,
+   "p": 0.007234542621729949
+  },
+  "sandbox_runs": {
+   "wins": 170,
+   "losses": 146,
+   "ties": 179,
+   "p": 0.19563772180533845
+  },
+  "o2a": {
+   "wins": 41,
+   "losses": 23,
+   "ties": 245,
+   "p": 0.0327657590988232
+  },
+  "redundancy_paid": {
+   "wins": 25,
+   "losses": 16,
+   "ties": 454,
+   "p": 0.21102359760880063
+  },
+  "redundancy_caught": {
+   "wins": 185,
+   "losses": 89,
+   "ties": 221,
+   "p": 6.731606790424435e-09
+  },
+  "redundancy_present": {
+   "wins": 188,
+   "losses": 90,
+   "ties": 217,
+   "p": 4.161591155974601e-09
+  },
+  "redundancy_unknown": {
+   "wins": 2,
+   "losses": 127,
+   "ties": 366,
+   "p": 2.464423906498926e-35
+  },
+  "blocked": {
+   "wins": 136,
+   "losses": 139,
+   "ties": 220,
+   "p": 0.9040329523478771
+  },
+  "guard_evaluations": {
+   "wins": 163,
+   "losses": 131,
+   "ties": 201,
+   "p": 0.07043202093360511
+  },
+  "guard_sec": {
+   "wins": 202,
+   "losses": 186,
+   "ties": 107,
+   "p": 0.44639412021639663
+  },
+  "tokens_in": {
+   "wins": 106,
+   "losses": 284,
+   "ties": 105,
+   "p": 7.023232693730123e-20
+  },
+  "tokens_out": {
+   "wins": 176,
+   "losses": 207,
+   "ties": 112,
+   "p": 0.1251825930128528
+  },
+  "wall_sec": {
+   "wins": 224,
+   "losses": 270,
+   "ties": 1,
+   "p": 0.04279484590789497
+  },
+  "proposals": {
+   "wins": 126,
+   "losses": 117,
+   "ties": 252,
+   "p": 0.6079026780896735
+  },
+  "rounds": {
+   "wins": 126,
+   "losses": 117,
+   "ties": 252,
+   "p": 0.6079026780896735
+  },
+  "success_flips": {
+   "typed_wins": 36,
+   "untyped_wins": 37,
+   "p": 1.0
+  },
+  "a12_oracle_calls": 0.5237,
+  "primary_bands_oracle_calls": {
+   "wins": 71,
+   "losses": 39,
+   "ties": 165,
+   "p": 0.0029436388593452253,
+   "n_cells": 275
+  },
+  "per_task_wilcoxon_oracle_calls": {
+   "n_tasks": 99,
+   "p": 0.02242
+  },
+  "per_task_wilcoxon_sandbox_runs": {
+   "n_tasks": 99,
+   "p": 0.05004
+  },
+  "tokens_in_ratio": 1.4647,
+  "wall_sec_ratio_main": 1.8097
+ },
+ "success_at_oracle_budget": {
+  "note": "fraction of cells repaired within b ORACLE calls; b counted in oracle calls, not proposals - the resource the guard spends",
+  "no_memory": {
+   "1": 0.2141,
+   "2": 0.3192,
+   "3": 0.3737,
+   "4": 0.4384,
+   "5": 0.4828,
+   "6": 0.5232,
+   "7": 0.5414,
+   "8": 0.5636,
+   "9": 0.5818,
+   "10": 0.604,
+   "11": 0.6162,
+   "12": 0.6323,
+   "13": 0.6384,
+   "14": 0.6444,
+   "15": 0.6525,
+   "16": 0.6586,
+   "17": 0.6667,
+   "18": 0.6747,
+   "19": 0.699,
+   "20": 0.703
+  },
+  "untyped": {
+   "1": 0.2121,
+   "2": 0.5131,
+   "3": 0.6707,
+   "4": 0.697,
+   "5": 0.699,
+   "6": 0.699,
+   "7": 0.699,
+   "8": 0.699,
+   "9": 0.699,
+   "10": 0.699,
+   "11": 0.699,
+   "12": 0.699,
+   "13": 0.699,
+   "14": 0.699,
+   "15": 0.699,
+   "16": 0.699,
+   "17": 0.699,
+   "18": 0.699,
+   "19": 0.699,
+   "20": 0.699
+  },
+  "typed": {
+   "1": 0.2141,
+   "2": 0.5576,
+   "3": 0.6788,
+   "4": 0.6949,
+   "5": 0.697,
+   "6": 0.697,
+   "7": 0.697,
+   "8": 0.697,
+   "9": 0.697,
+   "10": 0.697,
+   "11": 0.697,
+   "12": 0.697,
+   "13": 0.697,
+   "14": 0.697,
+   "15": 0.697,
+   "16": 0.697,
+   "17": 0.697,
+   "18": 0.697,
+   "19": 0.697,
+   "20": 0.697
+  },
+  "guard_only": {
+   "1": 0.2121,
+   "2": 0.5286,
+   "3": 0.6869,
+   "4": 0.7071,
+   "5": 0.7071,
+   "6": 0.7071,
+   "7": 0.7071,
+   "8": 0.7071,
+   "9": 0.7071,
+   "10": 0.7071,
+   "11": 0.7071,
+   "12": 0.7071,
+   "13": 0.7071,
+   "14": 0.7071,
+   "15": 0.7071,
+   "16": 0.7071,
+   "17": 0.7071,
+   "18": 0.7071,
+   "19": 0.7071,
+   "20": 0.7071
+  },
+  "steer_only": {
+   "1": 0.2121,
+   "2": 0.3401,
+   "3": 0.4074,
+   "4": 0.4646,
+   "5": 0.4949,
+   "6": 0.5387,
+   "7": 0.5657,
+   "8": 0.596,
+   "9": 0.6162,
+   "10": 0.6296,
+   "11": 0.67,
+   "12": 0.6902,
+   "13": 0.6936,
+   "14": 0.7003,
+   "15": 0.7003,
+   "16": 0.7071,
+   "17": 0.7104,
+   "18": 0.7239,
+   "19": 0.7239,
+   "20": 0.7273
+  }
+ },
+ "success_at_proposal_budget": {
+  "no_memory": {
+   "1": 0.2141,
+   "2": 0.3192,
+   "3": 0.3737,
+   "4": 0.4384,
+   "5": 0.4828,
+   "6": 0.5232,
+   "7": 0.5414,
+   "8": 0.5636,
+   "9": 0.5818,
+   "10": 0.604,
+   "11": 0.6162,
+   "12": 0.6323,
+   "13": 0.6384,
+   "14": 0.6444,
+   "15": 0.6525,
+   "16": 0.6586,
+   "17": 0.6667,
+   "18": 0.6747,
+   "19": 0.699,
+   "20": 0.703
+  },
+  "untyped": {
+   "1": 0.2121,
+   "2": 0.3172,
+   "3": 0.3717,
+   "4": 0.4343,
+   "5": 0.4788,
+   "6": 0.5192,
+   "7": 0.5374,
+   "8": 0.5596,
+   "9": 0.5778,
+   "10": 0.6,
+   "11": 0.6101,
+   "12": 0.6263,
+   "13": 0.6323,
+   "14": 0.6384,
+   "15": 0.6465,
+   "16": 0.6525,
+   "17": 0.6606,
+   "18": 0.6707,
+   "19": 0.6949,
+   "20": 0.699
+  },
+  "typed": {
+   "1": 0.2141,
+   "2": 0.3374,
+   "3": 0.4081,
+   "4": 0.4727,
+   "5": 0.5212,
+   "6": 0.5434,
+   "7": 0.5515,
+   "8": 0.5778,
+   "9": 0.598,
+   "10": 0.6081,
+   "11": 0.6202,
+   "12": 0.6424,
+   "13": 0.6566,
+   "14": 0.6606,
+   "15": 0.6646,
+   "16": 0.6687,
+   "17": 0.6788,
+   "18": 0.6808,
+   "19": 0.6889,
+   "20": 0.697
+  }
+ },
+ "per_band": {
+  "dead": {
+   "n_tasks": 23,
+   "n_cells": 115,
+   "no_memory": {
+    "oracle_calls": 19.826,
+    "sandbox_runs": 214.34,
+    "success": 0.0261,
+    "redundancy_paid": 11.0174,
+    "tokens_in": 8343.8
+   },
+   "untyped": {
+    "oracle_calls": 1.617,
+    "sandbox_runs": 38.75,
+    "success": 0.0261,
+    "redundancy_paid": 0.1565,
+    "tokens_in": 8343.8
+   },
+   "typed": {
+    "oracle_calls": 1.635,
+    "sandbox_runs": 41.37,
+    "success": 0.1217,
+    "redundancy_paid": 0.0957,
+    "tokens_in": 12577.7
+   },
+   "x_typed_vs_nomem_oracle": 12.13,
+   "x_typed_vs_nomem_paid": 115.1,
+   "typed_vs_untyped_oracle": {
+    "wins": 18,
+    "losses": 19,
+    "ties": 78,
+    "p": 1.0
+   },
+   "typed_vs_untyped_success_flips": {
+    "typed": 14,
+    "untyped": 3
+   }
+  },
+  "hard": {
+   "n_tasks": 17,
+   "n_cells": 85,
+   "no_memory": {
+    "oracle_calls": 13.812,
+    "sandbox_runs": 93.76,
+    "success": 0.6706,
+    "redundancy_paid": 7.1412,
+    "tokens_in": 8347.9
+   },
+   "untyped": {
+    "oracle_calls": 2.318,
+    "sandbox_runs": 50.68,
+    "success": 0.6706,
+    "redundancy_paid": 0.1529,
+    "tokens_in": 8347.9
+   },
+   "typed": {
+    "oracle_calls": 2.141,
+    "sandbox_runs": 42.89,
+    "success": 0.5529,
+    "redundancy_paid": 0.1647,
+    "tokens_in": 11958.3
+   },
+   "x_typed_vs_nomem_oracle": 6.45,
+   "x_typed_vs_nomem_paid": 43.4,
+   "typed_vs_untyped_oracle": {
+    "wins": 32,
+    "losses": 17,
+    "ties": 36,
+    "p": 0.04438416098714981
+   },
+   "typed_vs_untyped_success_flips": {
+    "typed": 13,
+    "untyped": 23
+   }
+  },
+  "medium": {
+   "n_tasks": 13,
+   "n_cells": 65,
+   "no_memory": {
+    "oracle_calls": 7.662,
+    "sandbox_runs": 72.58,
+    "success": 0.9231,
+    "redundancy_paid": 3.0462,
+    "tokens_in": 3450.0
+   },
+   "untyped": {
+    "oracle_calls": 2.277,
+    "sandbox_runs": 51.23,
+    "success": 0.9231,
+    "redundancy_paid": 0.0769,
+    "tokens_in": 3450.0
+   },
+   "typed": {
+    "oracle_calls": 2.185,
+    "sandbox_runs": 50.03,
+    "success": 0.8615,
+    "redundancy_paid": 0.0769,
+    "tokens_in": 5661.5
+   },
+   "x_typed_vs_nomem_oracle": 3.51,
+   "x_typed_vs_nomem_paid": 39.6,
+   "typed_vs_untyped_oracle": {
+    "wins": 15,
+    "losses": 10,
+    "ties": 40,
+    "p": 0.42435622215270996
+   },
+   "typed_vs_untyped_success_flips": {
+    "typed": 5,
+    "untyped": 9
+   }
+  },
+  "easy": {
+   "n_tasks": 25,
+   "n_cells": 125,
+   "no_memory": {
+    "oracle_calls": 4.472,
+    "sandbox_runs": 48.85,
+    "success": 0.984,
+    "redundancy_paid": 1.072,
+    "tokens_in": 2268.5
+   },
+   "untyped": {
+    "oracle_calls": 2.112,
+    "sandbox_runs": 48.18,
+    "success": 0.968,
+    "redundancy_paid": 0.104,
+    "tokens_in": 2450.9
+   },
+   "typed": {
+    "oracle_calls": 1.976,
+    "sandbox_runs": 45.98,
+    "success": 0.984,
+    "redundancy_paid": 0.072,
+    "tokens_in": 3050.9
+   },
+   "x_typed_vs_nomem_oracle": 2.26,
+   "x_typed_vs_nomem_paid": 14.9,
+   "typed_vs_untyped_oracle": {
+    "wins": 24,
+    "losses": 12,
+    "ties": 89,
+    "p": 0.06524533522315323
+   },
+   "typed_vs_untyped_success_flips": {
+    "typed": 4,
+    "untyped": 2
+   }
+  },
+  "too_easy": {
+   "n_tasks": 21,
+   "n_cells": 105,
+   "no_memory": {
+    "oracle_calls": 1.705,
+    "sandbox_runs": 37.34,
+    "success": 1.0,
+    "redundancy_paid": 0.1143,
+    "tokens_in": 700.4
+   },
+   "untyped": {
+    "oracle_calls": 1.448,
+    "sandbox_runs": 36.99,
+    "success": 1.0,
+    "redundancy_paid": 0.0095,
+    "tokens_in": 700.4
+   },
+   "typed": {
+    "oracle_calls": 1.419,
+    "sandbox_runs": 37.04,
+    "success": 1.0,
+    "redundancy_paid": 0,
+    "tokens_in": 1118.8
+   },
+   "x_typed_vs_nomem_oracle": 1.2,
+   "x_typed_vs_nomem_paid": null,
+   "typed_vs_untyped_oracle": {
+    "wins": 4,
+    "losses": 1,
+    "ties": 100,
+    "p": 0.375
+   },
+   "typed_vs_untyped_success_flips": {
+    "typed": 0,
+    "untyped": 0
+   }
+  }
+ },
+ "e3_guard_only": {
+  "paired_cells": 297,
+  "outcome_identical_cells": 295,
+  "untyped": {
+   "n_cells": 495,
+   "success": 0.7037,
+   "oracle_calls": 1.8855,
+   "sandbox_runs": 44.5859,
+   "o2a": 1.9952,
+   "redundancy_paid": 0.0909,
+   "redundancy_caught": 4.3603,
+   "redundancy_present": 4.4512,
+   "redundancy_unknown": 0.0135,
+   "blocked": 7.6431,
+   "guard_evaluations": 10.0202,
+   "guard_sec": 6.6627,
+   "tokens_in": 4560.6667,
+   "tokens_out": 2524.7441,
+   "wall_sec": 80.4467,
+   "proposals": 9.5286,
+   "rounds": 9.5286
+  },
+  "guard_only": {
+   "n_cells": 297,
+   "success": 0.7071,
+   "oracle_calls": 1.8653,
+   "sandbox_runs": 43.5657,
+   "o2a": 1.981,
+   "redundancy_paid": 0.0842,
+   "redundancy_caught": 4.3468,
+   "redundancy_present": 4.431,
+   "redundancy_unknown": 0,
+   "blocked": 7.5859,
+   "guard_evaluations": 9.7374,
+   "guard_sec": 4.0439,
+   "tokens_in": 4518.6162,
+   "tokens_out": 2506.5825,
+   "wall_sec": 68.8658,
+   "proposals": 9.4512,
+   "rounds": 9.4512
+  },
+  "guard_sec_sign": {
+   "wins": 191,
+   "losses": 40,
+   "ties": 66,
+   "p": 8.679640048628435e-25
+  },
+  "guard_evaluations_sign": {
+   "wins": 19,
+   "losses": 13,
+   "ties": 265,
+   "p": 0.37708558747544885
+  },
+  "wall_sec_sign": {
+   "wins": 238,
+   "losses": 57,
+   "ties": 2,
+   "p": 1.8657270822560466e-27
+  },
+  "guard_sec_reduction": 0.3931
+ },
+ "e3_steer_only": {
+  "paired_cells": 297,
+  "no_memory": {
+   "n_cells": 495,
+   "success": 0.7071,
+   "oracle_calls": 9.4512,
+   "sandbox_runs": 95.303,
+   "o2a": 5.081,
+   "redundancy_paid": 4.431,
+   "redundancy_caught": 0,
+   "redundancy_present": 4.431,
+   "redundancy_unknown": 0,
+   "blocked": 0,
+   "guard_evaluations": 0,
+   "guard_sec": 0.0,
+   "tokens_in": 4518.6162,
+   "tokens_out": 2506.5825,
+   "wall_sec": 110.7526,
+   "proposals": 9.4512,
+   "rounds": 9.4512
+  },
+  "steer_only": {
+   "n_cells": 297,
+   "success": 0.7273,
+   "oracle_calls": 8.8148,
+   "sandbox_runs": 92.4074,
+   "o2a": 4.6204,
+   "redundancy_paid": 4.1616,
+   "redundancy_caught": 0,
+   "redundancy_present": 4.1616,
+   "redundancy_unknown": 0.0067,
+   "blocked": 0,
+   "guard_evaluations": 0,
+   "guard_sec": 0.0,
+   "tokens_in": 10296.3333,
+   "tokens_out": 2421.4444,
+   "wall_sec": 98.1854,
+   "proposals": 8.8148,
+   "rounds": 8.8148
+  },
+  "oracle_calls_sign": {
+   "wins": 80,
+   "losses": 71,
+   "ties": 146,
+   "p": 0.5151625027710791
+  },
+  "tokens_in_sign": {
+   "wins": 64,
+   "losses": 170,
+   "ties": 63,
+   "p": 2.8295568168078226e-12
+  },
+  "success_flips": {
+   "steer_only": 23,
+   "no_memory": 17,
+   "p": 0.42959050784338615
+  },
+  "tokens_in_increase": 1.2786
+ },
+ "dead_band": {
+  "n_cells_ablation": 69,
+  "no_memory": 0.0435,
+  "untyped": 0.0435,
+  "guard_only": 0.0435,
+  "steer_only": 0.1014,
+  "typed": 0.1449,
+  "typed_vs_untyped_per_task_p": 0.04688,
+  "typed_main_success": 0.1217,
+  "untyped_main_success": 0.0261,
+  "no_memory_main_success": 0.0261
+ },
+ "wall_clock_five_arms": {
+  "n_cells": 297,
+  "no_memory": 110.75,
+  "untyped": 80.45,
+  "typed": 155.02,
+  "guard_only": 68.87,
+  "steer_only": 98.19,
+  "typed_over_guard_only": 2.251
+ },
+ "e4_oracle_depth": {
+  "100": {
+   "n_cells": 90,
+   "accepted_rate": 0.6778,
+   "n_audited": 60,
+   "n_overfit": 0,
+   "overfit_rate": 0.0,
+   "true_success": 0.6778,
+   "oracle_calls": 1.867,
+   "sandbox_runs": 47.17,
+   "tokens_in": 6078.6
+  },
+  "20": {
+   "n_cells": 90,
+   "accepted_rate": 0.7333,
+   "n_audited": 66,
+   "n_overfit": 5,
+   "overfit_rate": 0.0758,
+   "true_success": 0.6778,
+   "oracle_calls": 1.722,
+   "sandbox_runs": 25.92,
+   "tokens_in": 5934.1
+  },
+  "8": {
+   "n_cells": 90,
+   "accepted_rate": 0.8,
+   "n_audited": 72,
+   "n_overfit": 15,
+   "overfit_rate": 0.2083,
+   "true_success": 0.6333,
+   "oracle_calls": 1.7,
+   "sandbox_runs": 15.1,
+   "tokens_in": 4829.7
+  },
+  "3": {
+   "n_cells": 90,
+   "accepted_rate": 0.8667,
+   "n_audited": 78,
+   "n_overfit": 31,
+   "overfit_rate": 0.3974,
+   "true_success": 0.5222,
+   "oracle_calls": 1.522,
+   "sandbox_runs": 8.11,
+   "tokens_in": 3589.3
+  }
+ },
+ "e5_typing_noise": {
+  "1.0": {
+   "n_cells": 90,
+   "success": 0.6778,
+   "oracle_calls": 1.867,
+   "redundancy_paid": 0.0444,
+   "redundancy_caught": 4.8,
+   "guard_sec": 2.921,
+   "guard_evaluations": 9.856
+  },
+  "0.9": {
+   "n_cells": 90,
+   "success": 0.6778,
+   "oracle_calls": 1.856,
+   "redundancy_paid": 0.0444,
+   "redundancy_caught": 4.789,
+   "guard_sec": 2.747,
+   "guard_evaluations": 9.844
+  },
+  "0.75": {
+   "n_cells": 90,
+   "success": 0.7111,
+   "oracle_calls": 1.878,
+   "redundancy_paid": 0.0444,
+   "redundancy_caught": 4.411,
+   "guard_sec": 2.7,
+   "guard_evaluations": 9.344
+  },
+  "0.5": {
+   "n_cells": 90,
+   "success": 0.6889,
+   "oracle_calls": 1.878,
+   "redundancy_paid": 0.0444,
+   "redundancy_caught": 4.411,
+   "guard_sec": 2.695,
+   "guard_evaluations": 10.222
+  },
+  "0.25": {
+   "n_cells": 90,
+   "success": 0.7111,
+   "oracle_calls": 1.878,
+   "redundancy_paid": 0.0444,
+   "redundancy_caught": 4.067,
+   "guard_sec": 2.924,
+   "guard_evaluations": 9.622
+  },
+  "0.0": {
+   "n_cells": 90,
+   "success": 0.7111,
+   "oracle_calls": 1.878,
+   "redundancy_paid": 0.0444,
+   "redundancy_caught": 4.044,
+   "guard_sec": 3.061,
+   "guard_evaluations": 9.867
+  },
+  "random": {
+   "n_cells": 90,
+   "success": 0.6889,
+   "oracle_calls": 1.844,
+   "redundancy_paid": 0.0444,
+   "redundancy_caught": 4.467,
+   "guard_sec": 2.942,
+   "guard_evaluations": 9.822
+  }
+ },
+ "e9_free_guarded": {
+  "no_memory": {
+   "n_cells": 60,
+   "base": {
+    "success": 0.8,
+    "oracle_calls": 8.617,
+    "proposals": 8.62,
+    "tokens_in": 3225.7
+   },
+   "free": {
+    "success": 0.7833,
+    "oracle_calls": 8.6,
+    "proposals": 8.6,
+    "tokens_in": 3213.7
+   },
+   "success_flips": {
+    "free": 0,
+    "base": 1,
+    "p": 1.0
+   }
+  },
+  "untyped": {
+   "n_cells": 57,
+   "base": {
+    "success": 0.7719,
+    "oracle_calls": 2.123,
+    "proposals": 9.3,
+    "tokens_in": 3488.4
+   },
+   "free": {
+    "success": 0.8596,
+    "oracle_calls": 2.088,
+    "proposals": 14.56,
+    "tokens_in": 5205.9
+   },
+   "success_flips": {
+    "free": 5,
+    "base": 0,
+    "p": 0.0625
+   }
+  },
+  "typed": {
+   "n_cells": 54,
+   "base": {
+    "success": 0.8148,
+    "oracle_calls": 2.019,
+    "proposals": 7.65,
+    "tokens_in": 5105.9
+   },
+   "free": {
+    "success": 0.8889,
+    "oracle_calls": 2.093,
+    "proposals": 13.44,
+    "tokens_in": 9359.8
+   },
+   "success_flips": {
+    "free": 4,
+    "base": 0,
+    "p": 0.125
+   }
+  },
+  "pooled_memory_arms": {
+   "wins": 9,
+   "losses": 0,
+   "ties": 102,
+   "p": 0.00390625
+  }
+ },
+ "soundness": {
+  "k100_audited_accepts": 1256,
+  "k100_overfit": 0,
+  "k100_regression_audited": 939,
+  "k100_regression_broken": 0,
+  "pool_strength": {
+   "n_planted": 297,
+   "n_caught": 249,
+   "n_missed": 0,
+   "n_equivalent": 48,
+   "catch_rate": 0.8384
+  }
+ },
+ "coherence": {
+  "coarse": {
+   "pooled": 0.8224967490247074,
+   "ci95": [
+    0.7900259067357513,
+    0.8523637303022474
+   ],
+   "n_tasks": 99
+  },
+  "fine": {
+   "pooled": 0.9077786251225624,
+   "ci95": [
+    0.8840412687959609,
+    0.9288754480286738
+   ],
+   "n_tasks": 99
+  },
+  "in_vivo_bucket_hit_rate_main_grid": {
+   "rate": 0.3652,
+   "n_guarded_rounds": 6569,
+   "_note": "share of guard decisions the type-matched bucket settles alone, typed + guard-only arms, full corpus"
+  }
+ },
+ "redundancy_metrics": {
+  "no_memory": {
+   "n_episodes": 495,
+   "duplicate_patch_rate": 0.2042804410428015,
+   "duplicate_patches_total": 1710,
+   "unparseable_patches_total": 29,
+   "fsrr": 0.37395276503253616,
+   "ncdr": 0.39111255036881265,
+   "ncdr_refutations": 0.6260472349674638,
+   "elimination_yield": 0.39111255036881265,
+   "epr": 0.7240307033589707,
+   "type_entropy_bits": 1.677079686306421,
+   "type_metrics_censored": 0.33312017319217807,
+   "budget": 20,
+   "auc_proposal": 0.5614141414141414,
+   "auc_oracle": 0.5614141414141414
+  },
+  "untyped": {
+   "n_episodes": 495,
+   "duplicate_patch_rate": 0.20591802904402584,
+   "duplicate_patches_total": 1728,
+   "unparseable_patches_total": 29,
+   "fsrr": 0.37421157044996056,
+   "ncdr": 0.5511447811447812,
+   "ncdr_refutations": 0.9612393162393162,
+   "elimination_yield": 0.16593040660471942,
+   "epr": 0.49625188578608215,
+   "type_entropy_bits": 1.6873642339743233,
+   "type_metrics_censored": 0.33163461049449416,
+   "budget": 20,
+   "auc_proposal": 0.5569696969696969,
+   "auc_oracle": 0.6638383838383837
+  },
+  "typed": {
+   "n_episodes": 495,
+   "duplicate_patch_rate": 0.21808678715002008,
+   "duplicate_patches_total": 1806,
+   "unparseable_patches_total": 26,
+   "fsrr": 0.28637449833499085,
+   "ncdr": 0.5432996632996632,
+   "ncdr_refutations": 0.9640102827763496,
+   "elimination_yield": 0.17065230626985953,
+   "epr": 0.5136210182450449,
+   "type_entropy_bits": 1.1046850303608777,
+   "type_metrics_censored": 0.5209442054246914,
+   "budget": 20,
+   "auc_proposal": 0.5745454545454546,
+   "auc_oracle": 0.6648484848484849
+  }
+ },
+ "repeated_sampling": {
+  "n_episodes": 495,
+  "n_tasks": 99,
+  "budget": 20,
+  "pi_hat_pooled": 0.2074575586095392,
+  "n_scored_rounds": 9896,
+  "n_accepts": 2053,
+  "pi_task_median": 0.14,
+  "auc_empirical": 0.5614141414141414,
+  "auc_analytic": 0.563887288016613,
+  "auc_analytic_pooled": 0.8108129034453949
+ },
+ "patch_quality": {
+  "no_memory": {
+   "n_accepted_episodes": 348,
+   "loc_ratio": 4.91642371234208,
+   "hunk_ratio": 2.7361516034985423,
+   "correct_over_plausible": null,
+   "overfit_rate": null,
+   "regression_rate": null
+  },
+  "untyped": {
+   "n_accepted_episodes": 346,
+   "loc_ratio": 4.933528836754643,
+   "hunk_ratio": 2.7375366568914954,
+   "correct_over_plausible": 1.0,
+   "overfit_rate": 0.0,
+   "regression_rate": 0.0
+  },
+  "typed": {
+   "n_accepted_episodes": 345,
+   "loc_ratio": 4.4603174603174605,
+   "hunk_ratio": 2.5238095238095237,
+   "correct_over_plausible": 1.0,
+   "overfit_rate": 0.0,
+   "regression_rate": 0.0
+  }
+ },
+ "anchoring": {
+  "1.0": {
+   "n_episodes": 1503,
+   "anchoring_rate": 0.057218895542248835,
+   "exclusion_rate": 0.0998003992015968,
+   "per_stratum": {
+    "dead": {
+     "anchoring_rate": 0.1972972972972973,
+     "n_episodes": 370
+    },
+    "easy": {
+     "anchoring_rate": 0.0,
+     "n_episodes": 398
+    },
+    "hard": {
+     "anchoring_rate": 0.048582995951417005,
+     "n_episodes": 247
+    },
+    "medium": {
+     "anchoring_rate": 0.005780346820809248,
+     "n_episodes": 173
+    },
+    "too_easy": {
+     "anchoring_rate": 0.0,
+     "n_episodes": 315
+    }
+   }
+  },
+  "0.9": {
+   "n_episodes": 90,
+   "anchoring_rate": 0.05555555555555555,
+   "exclusion_rate": 0.08888888888888889,
+   "per_stratum": {
+    "dead": {
+     "anchoring_rate": 0.18518518518518517,
+     "n_episodes": 27
+    },
+    "easy": {
+     "anchoring_rate": 0.0,
+     "n_episodes": 27
+    },
+    "hard": {
+     "anchoring_rate": 0.0,
+     "n_episodes": 12
+    },
+    "medium": {
+     "anchoring_rate": 0.0,
+     "n_episodes": 6
+    },
+    "too_easy": {
+     "anchoring_rate": 0.0,
+     "n_episodes": 18
+    }
+   }
+  },
+  "0.75": {
+   "n_episodes": 90,
+   "anchoring_rate": 0.05555555555555555,
+   "exclusion_rate": 0.08888888888888889,
+   "per_stratum": {
+    "dead": {
+     "anchoring_rate": 0.18518518518518517,
+     "n_episodes": 27
+    },
+    "easy": {
+     "anchoring_rate": 0.0,
+     "n_episodes": 27
+    },
+    "hard": {
+     "anchoring_rate": 0.0,
+     "n_episodes": 12
+    },
+    "medium": {
+     "anchoring_rate": 0.0,
+     "n_episodes": 6
+    },
+    "too_easy": {
+     "anchoring_rate": 0.0,
+     "n_episodes": 18
+    }
+   }
+  },
+  "0.5": {
+   "n_episodes": 90,
+   "anchoring_rate": 0.05555555555555555,
+   "exclusion_rate": 0.08888888888888889,
+   "per_stratum": {
+    "dead": {
+     "anchoring_rate": 0.18518518518518517,
+     "n_episodes": 27
+    },
+    "easy": {
+     "anchoring_rate": 0.0,
+     "n_episodes": 27
+    },
+    "hard": {
+     "anchoring_rate": 0.0,
+     "n_episodes": 12
+    },
+    "medium": {
+     "anchoring_rate": 0.0,
+     "n_episodes": 6
+    },
+    "too_easy": {
+     "anchoring_rate": 0.0,
+     "n_episodes": 18
+    }
+   }
+  },
+  "0.25": {
+   "n_episodes": 90,
+   "anchoring_rate": 0.05555555555555555,
+   "exclusion_rate": 0.08888888888888889,
+   "per_stratum": {
+    "dead": {
+     "anchoring_rate": 0.18518518518518517,
+     "n_episodes": 27
+    },
+    "easy": {
+     "anchoring_rate": 0.0,
+     "n_episodes": 27
+    },
+    "hard": {
+     "anchoring_rate": 0.0,
+     "n_episodes": 12
+    },
+    "medium": {
+     "anchoring_rate": 0.0,
+     "n_episodes": 6
+    },
+    "too_easy": {
+     "anchoring_rate": 0.0,
+     "n_episodes": 18
+    }
+   }
+  },
+  "0.0": {
+   "n_episodes": 90,
+   "anchoring_rate": 0.05555555555555555,
+   "exclusion_rate": 0.08888888888888889,
+   "per_stratum": {
+    "dead": {
+     "anchoring_rate": 0.18518518518518517,
+     "n_episodes": 27
+    },
+    "easy": {
+     "anchoring_rate": 0.0,
+     "n_episodes": 27
+    },
+    "hard": {
+     "anchoring_rate": 0.0,
+     "n_episodes": 12
+    },
+    "medium": {
+     "anchoring_rate": 0.0,
+     "n_episodes": 6
+    },
+    "too_easy": {
+     "anchoring_rate": 0.0,
+     "n_episodes": 18
+    }
+   }
+  }
+ },
+ "failure_taxonomy": {
+  "n_typed_episodes": 936,
+  "n_failed": 274,
+  "budget_exhaustion_rate": 0.29273504273504275,
+  "guard_miss_mean_per_episode": 0.06517094017094018,
+  "residual_redundant_proposal": "not separable from guard_miss with this implementation's instrumentation - see module docstring; reporting guard_miss for both taxonomy rows",
+  "anchoring_suspected_rate_among_failed": 0.16058394160583941,
+  "anchoring_note": "PROXY, not ground truth: flags a failed typed episode if the no_memory corpus of the same task ever accepted a patch touching a location this episode had already eliminated. Correlational evidence, not a causal trace of this episode's own proposer - reviewed manually before citing in the paper."
+ },
+ "theory_fit": {
+  "no_memory_arm": {
+   "n_tasks": 79,
+   "r": 0.6574221163440555,
+   "relative_mae": 1.3273289572903422
+  },
+  "memory_arm": {
+   "n_tasks": 88,
+   "r": null,
+   "relative_mae": NaN
+  }
+ },
+ "integrity": {
+  "duplicate_cell_groups": 0,
+  "duplicate_groups_disagreeing": 0,
+  "disagreeing_examples": [],
+  "crn_round1_identity_vs_E1": {
+   "untyped": {
+    "n": 495,
+    "identical": 495
+   },
+   "typed": {
+    "n": 495,
+    "identical": 495
+   },
+   "guard_only": {
+    "n": 297,
+    "identical": 297
+   },
+   "steer_only": {
+    "n": 297,
+    "identical": 297
+   }
+  }
+ },
+ "e5_typing_noise_bucket_hit": {
+  "_note": "sweep universe only (30 tasks x seeds 1-3) so every level of c is measured over the same cells",
+  "0.0": 0.3306,
+  "0.25": 0.3329,
+  "0.5": 0.3316,
+  "0.75": 0.3529,
+  "0.9": 0.3477,
+  "1.0": 0.3388,
+  "random": 0.3377,
+  "_n_rounds": {
+   "0.0": 741,
+   "0.25": 733,
+   "0.5": 766,
+   "0.75": 734,
+   "0.9": 768,
+   "1.0": 1576,
+   "random": 758
+  }
+ },
+ "prompt_growth": {
+  "no_memory": {
+   "slope_tokens_per_round": 0.052,
+   "round1_mean": 477.6,
+   "round20_mean": 478.8
+  },
+  "untyped": {
+   "slope_tokens_per_round": -1.158,
+   "round1_mean": 477.6,
+   "round20_mean": 471.0
+  },
+  "typed": {
+   "slope_tokens_per_round": 5.892,
+   "round1_mean": 477.6,
+   "round20_mean": 778.4
+  }
+ },
+ "sensitivity_exclude_timeout_edge": {
+  "excluded_tasks": [
+   "abc285_e/48880084"
+  ],
+  "excluded_cells_diverging_in_ablation": [
+   "abc285_e/48880084|1",
+   "abc285_e/48880084|3"
+  ],
+  "n_cells_kept": 490,
+  "no_memory": {
+   "n_cells": 490,
+   "success": 0.702,
+   "oracle_calls": 9.4959,
+   "sandbox_runs": 95.192,
+   "o2a": 5.0378,
+   "redundancy_paid": 4.5,
+   "tokens_in": 4551.8
+  },
+  "untyped": {
+   "n_cells": 490,
+   "success": 0.702,
+   "oracle_calls": 1.9,
+   "sandbox_runs": 43.476,
+   "o2a": 2,
+   "redundancy_paid": 0.0959,
+   "tokens_in": 4551.8
+  },
+  "typed": {
+   "n_cells": 490,
+   "success": 0.6939,
+   "oracle_calls": 1.8327,
+   "sandbox_runs": 42.567,
+   "o2a": 1.9206,
+   "redundancy_paid": 0.0796,
+   "tokens_in": 6779.5
+  },
+  "typed_vs_untyped_oracle_calls": {
+   "wins": 90,
+   "losses": 59,
+   "ties": 341,
+   "p": 0.013712033079849216
+  },
+  "budget_curve_b1_b8": {
+   "no_memory": {
+    "1": 0.2122,
+    "2": 0.3184,
+    "3": 0.3735,
+    "4": 0.4367,
+    "5": 0.4816,
+    "6": 0.5224,
+    "7": 0.5408,
+    "8": 0.5633
+   },
+   "untyped": {
+    "1": 0.2122,
+    "2": 0.5163,
+    "3": 0.6755,
+    "4": 0.702,
+    "5": 0.702,
+    "6": 0.702,
+    "7": 0.702,
+    "8": 0.702
+   },
+   "typed": {
+    "1": 0.2122,
+    "2": 0.5571,
+    "3": 0.6755,
+    "4": 0.6918,
+    "5": 0.6939,
+    "6": 0.6939,
+    "7": 0.6939,
+    "8": 0.6939
+   }
+  },
+  "x_oracle_typed_vs_nomem": 5.181,
+  "x_paid_typed_vs_nomem": 56.53,
+  "guard_sec_sign_excl": {
+   "wins": 189,
+   "losses": 40,
+   "ties": 65,
+   "p": 2.3778729070150428e-24
+  },
+  "guard_sec_untyped": 4.853,
+  "guard_sec_guard_only": 3.979,
+  "outcome_identical_excl": 294,
+  "n_cells_kept_ablation": 294
+ },
+ "e5_control_tests": {
+  "_note": "typed c=1.0 vs each control, paired on the same 90 sweep cells; 'wins' = c=1.0 better",
+  "tests": {
+   "random": {
+    "n_cells": 90,
+    "redundancy_caught": {
+     "wins": 9,
+     "losses": 0,
+     "ties": 81,
+     "p": 0.003906
+    },
+    "redundancy_paid": {
+     "wins": 0,
+     "losses": 0,
+     "ties": 90,
+     "p": 1.0
+    },
+    "guard_sec": {
+     "wins": 39,
+     "losses": 36,
+     "ties": 15,
+     "p": 0.817554
+    },
+    "guard_evaluations": {
+     "wins": 4,
+     "losses": 6,
+     "ties": 80,
+     "p": 0.753906
+    },
+    "oracle_calls": {
+     "wins": 2,
+     "losses": 4,
+     "ties": 84,
+     "p": 0.6875
+    },
+    "success": {
+     "wins": 0,
+     "losses": 1,
+     "ties": 89,
+     "p": 1.0
+    }
+   },
+   "c0.0": {
+    "n_cells": 90,
+    "redundancy_caught": {
+     "wins": 15,
+     "losses": 1,
+     "ties": 74,
+     "p": 0.000519
+    },
+    "redundancy_paid": {
+     "wins": 0,
+     "losses": 0,
+     "ties": 90,
+     "p": 1.0
+    },
+    "guard_sec": {
+     "wins": 39,
+     "losses": 36,
+     "ties": 15,
+     "p": 0.817554
+    },
+    "guard_evaluations": {
+     "wins": 10,
+     "losses": 9,
+     "ties": 71,
+     "p": 1.0
+    },
+    "oracle_calls": {
+     "wins": 5,
+     "losses": 4,
+     "ties": 81,
+     "p": 1.0
+    },
+    "success": {
+     "wins": 0,
+     "losses": 3,
+     "ties": 87,
+     "p": 0.25
+    }
+   },
+   "c0.5": {
+    "n_cells": 90,
+    "redundancy_caught": {
+     "wins": 9,
+     "losses": 1,
+     "ties": 80,
+     "p": 0.021484
+    },
+    "redundancy_paid": {
+     "wins": 0,
+     "losses": 0,
+     "ties": 90,
+     "p": 1.0
+    },
+    "guard_sec": {
+     "wins": 36,
+     "losses": 39,
+     "ties": 15,
+     "p": 0.817554
+    },
+    "guard_evaluations": {
+     "wins": 9,
+     "losses": 4,
+     "ties": 77,
+     "p": 0.266846
+    },
+    "oracle_calls": {
+     "wins": 3,
+     "losses": 2,
+     "ties": 85,
+     "p": 1.0
+    },
+    "success": {
+     "wins": 0,
+     "losses": 1,
+     "ties": 89,
+     "p": 1.0
+    }
+   },
+   "c0.75": {
+    "n_cells": 90,
+    "redundancy_caught": {
+     "wins": 7,
+     "losses": 0,
+     "ties": 83,
+     "p": 0.015625
+    },
+    "redundancy_paid": {
+     "wins": 0,
+     "losses": 0,
+     "ties": 90,
+     "p": 1.0
+    },
+    "guard_sec": {
+     "wins": 36,
+     "losses": 39,
+     "ties": 15,
+     "p": 0.817554
+    },
+    "guard_evaluations": {
+     "wins": 1,
+     "losses": 6,
+     "ties": 83,
+     "p": 0.125
+    },
+    "oracle_calls": {
+     "wins": 3,
+     "losses": 2,
+     "ties": 85,
+     "p": 1.0
+    },
+    "success": {
+     "wins": 0,
+     "losses": 3,
+     "ties": 87,
+     "p": 0.25
+    }
+   }
+  }
+ },
+ "bucket_index": {
+  "_note": "the O(1) path, in vivo",
+  "main_grid": {
+   "guarded_rounds": 6569,
+   "hit_rate": 0.3652,
+   "refuted_given_hit": 0.9596
+  },
+  "sweep_by_level": {
+   "1.0": {
+    "hit_rate": 0.3388,
+    "refuted_given_hit": 0.9588
+   },
+   "0.9": {
+    "hit_rate": 0.3477,
+    "refuted_given_hit": 0.9625
+   },
+   "0.75": {
+    "hit_rate": 0.3529,
+    "refuted_given_hit": 0.9653
+   },
+   "0.5": {
+    "hit_rate": 0.3316,
+    "refuted_given_hit": 0.9961
+   },
+   "0.25": {
+    "hit_rate": 0.3329,
+    "refuted_given_hit": 1.0
+   },
+   "0.0": {
+    "hit_rate": 0.3306,
+    "refuted_given_hit": 1.0
+   },
+   "random": {
+    "hit_rate": 0.3377,
+    "refuted_given_hit": 0.9609
+   }
+  },
+  "_caveat": "refuted|hit RISES as coherence falls because a mistyped bucket accumulates counterexamples from many true locations and is therefore fuller and more heterogeneous; it is not a clean coherence proxy. Def. 3.1's coherence is measured offline instead (coherence_report)."
+ }
+}

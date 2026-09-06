@@ -1,0 +1,103 @@
+\section{Formal Core}
+\label{sec:theory}
+
+Two conventions govern this section. Every guarantee is about what a finite
+oracle certifies---$\Gpool$ where we can get it, $\Gk$ where the depth
+matters---and never silently about $\Gstar$; and the
+guard is analyzed as an \emph{index}, which changes the order in which stored
+counterexamples are consulted but not the worst case, so we claim a measured
+cost reduction and not an asymptotic separation. Statements and proofs of
+everything below are in \appref{app:proofs}{the supplementary material}.
+
+\begin{assumption}[Refutation soundness]
+\label{as:sound}
+When $\Ok$ refutes a candidate it returns a genuine witness: if
+$\Ok(p) = x$ then $\lnot\spec(p, x)$.
+\end{assumption}
+
+\Cref{as:sound} constrains \emph{refutation}, not acceptance. It is the only
+oracle property the guard needs; it holds for any oracle reporting a failing
+execution it actually ran, and for ours it also requires the reference to be
+right, which the corpus gate enforces (\cref{sec:design}). It has one soft
+edge: a \emph{timeout} verdict is a resource fact rather than a witness of
+$\lnot\spec$, and the one fault whose candidates sit at the sandbox limit
+produces every cross-arm inconsistency we observe
+(\cref{sec:results-integrity}). The converse---that acceptance implies
+correctness---is assumed nowhere: at depth $\oracledepth$ it is false in
+general, and \cref{sec:results-depth} measures how false.
+
+\begin{theorem}[Guard soundness]
+\label{thm:sound}
+Under \cref{as:sound}, if $\mathrm{Guard}_\mem(p) = 1$ with witness $x$ then
+$p \notin \Gpool$, and hence $p \notin \Gstar$; and $p \notin \Gk$ for every
+check set containing $x$, which includes every $\Xk$ that exhausts the pool. No
+candidate such a call would have accepted is ever blocked, however widely the
+guard searches. If \CEGMem\ returns $\hat p$, then $\hat p$ passed every input
+its accepting call drew.
+\end{theorem}
+
+The theorem is about the guard, not the oracle: \cref{eq:guard} blocks only on
+a counterexample that is \emph{re-executed and still fails}, so widening the
+search can only find more true refutations, and nothing here says
+$\hat p \in \Gstar$. Its second clause can fail only on a redrawn $\Xk$ that
+omits the witness, so we test rather than assume: an audit condition pays the
+oracle on blocked rounds and asks whether it accepts, and over \num{4411}
+blocked rounds it never did. That is not a tight bound on the hazard---where
+$\Xk$ exhausts the pool the audit confirms what already holds by construction,
+and below $\oracledepth = 100$, where the hazard is real, it was not run---but
+it does establish that the implemented guard blocks nothing the implemented
+oracle accepts. This is falsifier F1, with the requirement that a guarded arm's
+repair rate equal its unguarded twin's.
+
+\begin{corollary}[Budgeted success]
+\label{cor:budget}
+For any guard sound in the sense of \cref{thm:sound}: if blocked rounds are
+\emph{not} charged against the proposal budget $\budget$, the probability of
+repairing within $\budget$ charged proposals cannot fall, and rises strictly
+only on realizations where a block moves the first accepting draw from beyond
+$\budget$ to within it. If blocked rounds \emph{are} charged, the guard
+is outcome-neutral: under common random numbers the round of first acceptance
+is invariant to it.
+\end{corollary}
+
+\Cref{cor:budget} shaped the study and applies to untyped memory as much as
+typed. Under the accounting \cref{sec:results} uses---one proposal, one unit of
+budget---the guard provably cannot change which round first accepts, so any gap
+between a guarded arm and its unguarded twin is a soundness bug rather than a
+result, and we test exactly that (\cref{sec:results-integrity}). It also makes
+the first half untestable there, which is why we run a separate free-guarded
+condition (\cref{sec:results-e9}).
+
+\paragraph{Three further results, stated in full in the supplement.}
+Under an i.i.d.\ proposer and \emph{ideal typing}---which also requires
+refutation to be class-exclusive, an idealization our $\loc$ index does not
+meet---typed memory halts on an unbounded run within $\Kreach{+}1$ oracle calls
+\emph{and} $\Kreach{+}1$ proposals, $\Kreach$ being the reachable failure
+classes, while untyped memory attains the call bound and no proposal bound.
+Expected oracle calls fall from $1/\pi$ to $1 + \Dred$ with either memory,
+$\Dred = \sum_\tau q_\tau/(q_\tau + \pi)$. And counting redundancy against the
+\emph{observed-type history}---the classes already refuted this episode whether
+or not the arm records them, which is what makes it measurable in a memory-free
+arm---redundant attempts \emph{paid} fall to $0$ with either memory, while
+those \emph{generated} fall to $0$ only with typed memory, which needs steering
+to work; \cref{sec:results-ablation} reports that it does not. Of the three
+budget quantities only two are bounded: not \emph{charged} proposals, which
+include blocked rounds. These are directional predictions, and
+\cref{sec:results-assumptions} reports which of the closed forms the data
+supports.
+
+\paragraph{What the index costs.}
+Our guard consults the $\loc$-matched bucket first and then the rest of memory
+(\cref{sec:impl}). Both it and a flat scan short-circuit at the first entry
+that still refutes, and both consult all of memory when none does, so their
+worst cases coincide and no asymptotic separation exists. What differs is where
+in the order a refuting entry is found: the index saves to the extent that
+refuting entries concentrate in the bucket---$35\%$ of guard decisions in vivo,
+a rate the random-partition control matches (\cref{sec:results-typing})---and
+pays $\lvert\mem[\loc(p)]\rvert$ extra consultations on a miss. On this corpus
+there is little order to exploit: memory holds a median of one entry when the
+guard fires, and $86\%$ of blocks resolve on the first consultation. Separately, deduplicating stored
+counterexamples by input and memoizing verdicts within a round reduce
+\emph{executions} at unchanged \emph{consultations}---which is the signature
+\cref{sec:results-ablation} finds, and the reason our claim there is a measured
+constant factor.

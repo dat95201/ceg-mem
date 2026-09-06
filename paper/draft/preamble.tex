@@ -1,0 +1,129 @@
+% ---------------------------------------------------------------------------
+% Shared preamble: everything that is independent of the document class, so
+% main.tex (portable preprint) and main-acmart.tex (submission) render the
+% identical body. Class-specific setup lives in the two drivers.
+% ---------------------------------------------------------------------------
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+\usepackage{siunitx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds,calc}
+
+% Ragged-right p column: a justified narrow p column stretches its last line
+% into an underfull box, which in a table reads as a typo rather than as
+% typesetting. Every prose column in tables/ uses L{...}.
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\sisetup{
+  detect-all,
+  group-separator = {,},        % English convention: 1,485 not 1 485
+  group-minimum-digits = 4,
+  table-align-text-post = false,
+}
+
+% ── palette shared with figures/make_figures.py: change in one place ───────
+\definecolor{cmRef}{HTML}{6B6B6B}      % the no-memory reference arm
+\definecolor{cmBlue}{HTML}{2F6FE0}     % untyped
+\definecolor{cmRed}{HTML}{C1553B}      % typed
+\definecolor{cmGreen}{HTML}{2F8F6B}    % guard-only
+\definecolor{cmMagenta}{HTML}{A64BA6}  % steer-only
+\definecolor{cmRule}{HTML}{D8D8D4}
+
+% ── notation, defined once so the body never hand-writes a symbol ─────────
+\newcommand{\CEGMem}{\textsc{CEGMem}}
+\newcommand{\Sketch}{\textsc{Sketch}}
+\newcommand{\cand}{\mathcal{P}}                 % candidate space
+\newcommand{\spec}{\varphi}                     % specification
+\newcommand{\Oracle}{\mathcal{O}}               % counterexample oracle
+% Two correctness sets, never conflated: what is semantically correct, and
+% what a finite oracle certifies. \Gk is what every theorem in the paper is
+% about; \Gstar is what a reader may wrongly assume it is about.
+\newcommand{\good}{G}                           % legacy alias, avoid in new text
+\newcommand{\Gstar}{G^{\star}}                  % semantically correct on all of X
+\newcommand{\Gk}{G_{\oracledepth}}              % accepted by the depth-k oracle
+\newcommand{\Gpool}{G_{\mathrm{pool}}}          % passes the entire shipped pool
+\newcommand{\Xk}{X_{\oracledepth}}              % the check set one oracle call draws
+\newcommand{\Ok}{\Oracle_{\oracledepth}}        % the implemented depth-k oracle
+\newcommand{\loc}{\lambda}                      % edit location: the pre-oracle key
+\newcommand{\wmass}{w}                          % base mass of a class
+\newcommand{\elimobs}{\elim^{\mathrm{obs}}}     % observed-type history (arm-neutral)
+\newcommand{\types}{\mathcal{T}}                % failure types
+\newcommand{\ttype}{\theta}                     % type map
+\newcommand{\elim}{E}                           % eliminated types
+\newcommand{\mem}{\mathcal{M}}                  % typed memory
+\newcommand{\prop}{\mathcal{G}}                 % proposer
+\newcommand{\Kreach}{K}                         % reachable failure types
+\newcommand{\budget}{B}                         % per-episode budget
+\newcommand{\coh}{c}                            % typing coherence
+\newcommand{\info}{\rho}                        % oracle informativeness
+\newcommand{\Dred}{D}                           % expected distinct types drawn
+\newcommand{\pihat}{\hat{\pi}}
+\newcommand{\qhat}{\hat{q}}
+\newcommand{\Atwelve}{\hat{A}_{12}}
+\newcommand{\oracledepth}{k}
+
+% arm names, so a rename is one edit
+\newcommand{\armnomem}{\textsc{no-mem}}
+\newcommand{\armuntyped}{\textsc{untyped}}
+\newcommand{\armtyped}{\textsc{typed}}
+\newcommand{\armguard}{\textsc{guard-only}}
+\newcommand{\armsteer}{\textsc{steer-only}}
+
+% Theorem bodies are italic and they name arms, which are small caps; Times
+% has no italic small caps, so declare the substitution rather than emitting a
+% font warning at every occurrence. Harmless for classes that do not use ptm.
+\AtBeginDocument{%
+  \DeclareFontShape{T1}{ptm}{m}{scit}{<->ssub*ptm/m/sc}{}%
+  \DeclareFontShape{T1}{ptm}{b}{scit}{<->ssub*ptm/b/sc}{}%
+}
+
+% ── page-limit switch ─────────────────────────────────────────────────────
+% A 10+2 submission cannot carry an appendix: the two extra pages are for
+% references only. \suppmattertrue makes every reference to appendix content
+% resolve to the supplementary archive instead of to a \cref that would dangle.
+% The drivers set it; the section bodies never test it directly.
+\newif\ifsuppmatter
+\suppmatterfalse
+\newcommand{\appref}[2]{\ifsuppmatter #2\else\cref{#1}\fi}
+
+% Content that ships only in the full version: floats whose numbers are stated
+% in the text anyway, the appendix, and the extended tables. In the submission
+% build these vanish and their references resolve through \appref, so the two
+% builds share one prose source and cannot drift.
+\newcommand{\fullonly}[1]{\ifsuppmatter\else#1\fi}
+\newcommand{\supponly}[1]{\ifsuppmatter #1\fi}
+
+% Results whose statements live in the supplement in the submission build. In
+% the full build these render as ordinary \cref numbers; in the submission
+% build they render as names, so the prose reads correctly either way and no
+% reference dangles.
+\newcommand{\Rnonrep}{\appref{thm:nonrep}{the round-bound theorem}}
+\newcommand{\Rredund}{\appref{thm:redund}{the redundancy theorem}}
+\newcommand{\Rguardcost}{\appref{prop:guardcost}{the index-cost proposition}}
+\newcommand{\Rmemoryless}{\appref{as:memoryless}{the i.i.d.-proposer assumption}}
+\newcommand{\Rideal}{\appref{as:ideal}{the ideal-typing assumption}}
+
+% ── small formatting helpers ───────────────────────────────────────────────
+\newcommand{\best}[1]{\textbf{#1}}
+\newcommand{\sig}[1]{{\footnotesize #1}}
+\newcommand{\pval}[1]{$p\,{=}\,#1$}
+\newcommand{\plt}[1]{$p\,{<}\,#1$}
+\newcommand{\fold}[1]{$\times#1$}
+\newcommand{\pp}[1]{#1\,pp}
+
+% A finding box: one sentence per research question, so a reader who reads
+% only the boxes still leaves with the paper's claims and their caveats.
+\newenvironment{finding}[1]
+  {\par\vspace{2pt}\noindent\begin{tabular}{@{}p{0.965\linewidth}@{}}
+   \toprule[0.9pt]
+   \textbf{#1}\\[1pt]}
+  {\\\bottomrule[0.9pt]\end{tabular}\vspace{3pt}\par}

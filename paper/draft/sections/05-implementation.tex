@@ -1,0 +1,61 @@
+\section{Implementation}
+\label{sec:impl}
+
+\CEGMem\ is \num{4700} lines of Python. Three components matter, plus one
+design error whose correction is the difference between a null result and the
+paper's main finding.
+
+\paragraph{Proposer and oracle.}
+One LLM call per round returns a whole rewritten program in a fenced block. The
+prompt carries the buggy source, worked input/output examples (identical in
+every arm, so the specification cannot confound the comparison) and---only in
+the steered arm---the evidence and exclusion blocks of \cref{eq:steer}. Output
+budget is sized per program so a truncated reply cannot enter memory as a
+\emph{harness} failure; truncations, overflows and backend errors are logged as
+spent rounds that leave memory untouched. The oracle $\Ok$ is a differential
+tester: candidate and reference run on a per-call sample $\Xk$ of the fault's
+shipped pool in a sandbox with a \SI{30}{\second} per-case limit, and the first
+disagreement is returned as a case \emph{name}, so re-executing it later is
+cheap. Acceptance means agreement on every case in $\Xk$; the reference is
+never visible to the proposer.
+
+\paragraph{The type map, and the key the guard can use.}
+$\ttype$ is the pair (edit location, violated property). The location is a pure
+diff against the buggy source and so is computable \emph{before} execution,
+which is what makes it usable as the guard's index $\loc$; the property is read
+off the failing execution---wrong output, uncaught exception, or timeout. We
+report the \emph{fine} granularity (line-range location); a \emph{coarse}
+variant collapsing it to the whole program measures how much the location half
+contributes (\cref{sec:results-typing}).
+
+\paragraph{An implementation correction.}
+Our first guard searched the $\loc$-matched bucket \emph{and nothing else},
+which makes the index a \emph{partition}---sound as a stopping rule only if its
+key decides refutation. It does not: the key is where a candidate edits,
+refutation is decided by which input it gets wrong, and the two are close to
+independent. The frozen log prices the mistake exactly: of the typed rounds
+that reached the oracle and were refuted, $68.9\%$ came back carrying a
+counterexample \emph{already in memory}---every one a round the flat scan would
+have blocked. The fix is fifteen lines: search the bucket first, then fall back
+to the rest of memory, deduplicating by counterexample input and memoizing
+verdicts within the call---which is also why this paper claims no asymptotic
+advantage for the index, since the two guards then share a worst case. Every
+number here is from the corrected guard; we report the error because a
+bucket-only guard is the natural first implementation and it silently turns
+this paper's result into a null one.
+
+\paragraph{Instrumentation and replay.}
+One record per round carries the patch, verdict, counterexample, both type
+granularities, the guard's accounting (entries consulted, sandbox
+re-executions, whether the bucket was hit and whether its counterexample
+fired), token counts, and wall-clock split between model, oracle sandbox and
+guard sandbox. Episode summaries come from one function shared by every
+consumer, so ``oracle calls to repair'' cannot mean two things in two tables.
+Every model call is cached under a key containing the full prompt, model,
+temperature, output budget and the draw nonce $(\textit{task}, \textit{seed},
+\textit{round})$, which omits the arm and so implements common random numbers
+(\cref{sec:design}); a cell therefore replays byte-for-byte and a stale entry
+cannot answer a different prompt.
+Episode identity is a deterministic hash of the experiment cell, so an
+interrupted run rewrites its own rounds instead of appending a truncated
+duplicate.

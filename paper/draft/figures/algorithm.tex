@@ -1,0 +1,31 @@
+\begin{algorithm}[t]
+\caption{\CEGMem: counterexample-guided repair with typed memory. The two
+memory operations are lines~\ref{alg:steer} (steer) and \ref{alg:guard}
+(guard); switching each off independently yields the five arms of
+\cref{sec:design}.}
+\label{alg:cegmem}
+\DontPrintSemicolon
+\SetKwInOut{Input}{Input}
+\SetKwInOut{Output}{Output}
+\Input{task $(\cand, \spec, \Ok)$, proposer $\prop$, budget $\budget$}
+\Output{a repaired patch, or $\bot$}
+$\mem \leftarrow \emptyset$; $\elim \leftarrow \emptyset$
+  \tcp*{typed memory; eliminated types}
+\For{$t \leftarrow 1$ \KwTo $\budget$}{
+  $p_t \sim \prop(\cdot \mid \elim)$ \label{alg:steer}
+    \tcp*{steer: avoid eliminated types, \cref{eq:steer}}
+  \If{$\mathrm{Guard}_\mem(p_t)$ \label{alg:guard}}{
+    \textbf{continue}
+      \tcp*{a stored counterexample already refutes $p_t$, \cref{eq:guard}}
+  }
+  $r \leftarrow \Ok(p_t)$ \tcp*{the expensive verification round}
+  \If{$r = \textsf{accept}$}{
+    \KwRet $p_t$ \tcp*{$p_t$ passed every $x \in \Xk$, \cref{thm:sound}}
+  }
+  $x_t \leftarrow r$; $\tau_t \leftarrow \ttype(p_t, x_t)$\;
+  $\mem \leftarrow \mem \cup \{(p_t, x_t, \tau_t)\}$;
+  $\elim \leftarrow \elim \cup \{\tau_t\}$
+    \tcp*{store $+$ eliminate the class}
+}
+\KwRet $\bot$\;
+\end{algorithm}

@@ -1,0 +1,30 @@
+Large language model repair agents iterate: propose a patch, run the tests,
+read the failure, try again. Recent measurement shows how expensive the running
+is and how little of it pays---agents average $8.8$ test executions per
+SWE-bench task and ``apply execution indiscriminately.'' Classical repair cuts
+that work either by relating candidate patches to one another, which an
+unenumerable candidate space rules out, or by ordering the tests so a doomed
+candidate dies on the first, which nothing rules out.
+
+We carry the second mechanism into the LLM loop and change what it orders from.
+\CEGMem\ retains counterexamples and indexes them by edit location---the half
+of a failure label a diff supplies without executing anything---then
+re-executes a stored one against each new candidate, resolving the round as
+soon as an input already in hand still breaks it. In the synthesis loop this
+idea comes from such replay would be vacuous, since a constrained synthesizer
+cannot emit a candidate its own counterexamples refute; an LLM repeats itself
+in one proposal out of four. We prove guard soundness against a finite oracle,
+a $\Kreach{+}1$ round bound and strict redundancy reduction, and show the index
+is \emph{not} asymptotically cheaper than a flat scan.
+
+We then run the loop on $99$ ConDefects faults with a local
+\texttt{qwen2.5-coder:7b} proposer, five arms and \num{1485} pre-specified
+main-grid cells, every arm paired by common random numbers so round~$1$ is the identical
+draw in all of them. Memory cuts oracle calls per episode \fold{5.2} and---%
+counting guard replays as the executions they are---total program executions
+\fold{2.2}, at unchanged repair rate; at a matched budget of two oracle calls
+it lifts repair from $31.9\%$ to $55.8\%$ (task-clustered $95\%$ CI on the gain
+$[18.4, 29.5]$\,pp). One result cuts against the architecture as proposed and
+we report it as primary: prompt-side steering is null on every outcome metric
+at $+128\%$ prompt tokens, and pays only in the hardest band. The guard alone,
+not the full typed agent, is what we recommend.

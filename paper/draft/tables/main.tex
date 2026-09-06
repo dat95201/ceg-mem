@@ -1,0 +1,50 @@
+\begin{table*}[t]
+\centering
+\footnotesize
+\caption{Main comparison, all \num{495} paired cells (\num{99} faults $\times$
+$5$ seeds), means per episode. Guard replays are billed as program executions.
+Because seeds of one task share a fault, a model and a cache, the per-cell sign
+test is anti-conservative, so each row also carries the per-task test and a
+task-clustered bootstrap interval on the paired difference (\num{10000}
+resamples of the \num{99} tasks); the task-level result carries each claim, and
+every comparison keeps its sign and significance there. Rows where \armtyped\
+is \emph{worse} are marked, because two of them are findings.}
+\label{tab:main}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.06}
+\begin{tabular}{@{}l S[table-format=4.2] S[table-format=4.2] S[table-format=4.2] L{2.5cm}L{2.2cm}L{2.5cm}@{}}
+\toprule
+& {\armnomem} & {\armuntyped} & {\armtyped} &
+  \textbf{\sig{per cell, ty vs.\ un}} & \textbf{\sig{per task}} &
+  \textbf{\sig{clustered CI}} \\
+\midrule
+Repair @ $\budget{=}20$ & 0.703 & 0.699 & 0.697 &
+  \sig{$36/37$, \pval{1.0}} & \sig{parity} & \sig{---} \\
+Repair @ $b{=}2$ calls & 0.319 & 0.513 & \bfseries 0.558 &
+  \multicolumn{2}{l}{\sig{primary metric; gain over \armnomem}} &
+  \sig{$[+0.184, +0.295]$} \\
+\addlinespace[2pt]
+Oracle calls / ep. & 9.47 & 1.91 & \bfseries 1.83 &
+  \sig{$93/59$, \pval{0.007}} & \sig{$36/19$, \pval{0.030}} &
+  \sig{$[-0.141, -0.018]$} \\
+\quad vs.\ \armnomem & \multicolumn{3}{c}{\sig{\fold{4.95}, \fold{5.17}}} &
+  \sig{$325/10$, \plt{10^{-80}}} & \sig{$88/0$, \plt{10^{-26}}} &
+  \sig{$[-9.07, -6.27]$} \\
+Program exec.\ / ep. & 95.68 & 44.45 & \bfseries 43.01 &
+  \sig{$170/146$, \pval{0.20}} & \sig{vs.\ \armnomem:} & \\
+\quad vs.\ \armnomem & \multicolumn{3}{c}{\sig{\fold{2.22}}} &
+  \sig{$251/113$, \plt{10^{-12}}} & \sig{$63/30$, \pval{0.0008}} &
+  \sig{$[-84.1, -28.3]$} \\
+Redundant \emph{paid} / ep. & 4.481 & 0.101 & \bfseries 0.079 &
+  \multicolumn{2}{l}{\sig{vs.\ \armnomem: \fold{44.4}, \fold{56.9}}} &
+  \sig{$[-5.37, -3.52]$} \\
+Entries consulted / ep. & 0.00 & 10.20 & 9.38 &
+  \sig{$163/131$, \pval{0.07}} & & \\
+\addlinespace[2pt]
+Prompt tokens / ep. & \bfseries 4546 & 4592 & 6727 &
+  \sig{$\mathbf{+46\%}$, \plt{10^{-19}}} & & \\
+Wall-clock s / ep. & 108.8 & \bfseries 77.6 & 140.5 &
+  \sig{$\mathbf{+81\%}$, \pval{0.043}} & & \\
+\bottomrule
+\end{tabular}
+\end{table*}

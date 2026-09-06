@@ -1,0 +1,409 @@
+% ===========================================================================
+% Bibliography for the CEGMem draft.
+%
+% Every entry below was verified against the publisher record or the paper's
+% own PDF in September 2026. Six entries carry a note because the obvious
+% citation is wrong in a way a reviewer would catch:
+%
+%   solarlezama2006sketching  the paper never uses the term "CEGIS"; cite it as
+%                             the loop SKETCH introduced, not as coining a name.
+%   xia2025agentless          the published title drops the "Agentless:" prefix.
+%   wu2024condefects          published title says "Complementary", not "New",
+%                             and it is an FSE Companion paper.
+%   shinn2023reflexion        the NeurIPS camera-ready has five authors; a sixth
+%                             appears only on arXiv.
+%   xiao2024expressapr        the TSE journal paper, not the ASE'23 tool demo.
+%   law2000simulation         Kelton is a co-author only through the 3rd edition.
+% ===========================================================================
+
+% ── the opening measurement ────────────────────────────────────────────────
+@inproceedings{lin2026run,
+  title        = {To Run or Not to Run: Analyzing the Cost-Effectiveness of Code
+                  Execution in {LLM}-Based Program Repair},
+  author       = {Lin, Zhihao and Zhu, Junhua and Zhou, Mingyi and Wang, Xin and
+                  Sun, Zhensu and Yang, Renyu and Lo, David and Li, Li},
+  booktitle    = {Proceedings of the 35th ACM SIGSOFT International Symposium on
+                  Software Testing and Analysis (ISSTA)},
+  year         = {2026},
+  note         = {To appear},
+  eprint       = {2606.26978},
+  archiveprefix= {arXiv},
+  primaryclass = {cs.SE},
+  doi          = {10.48550/arXiv.2606.26978}
+}
+
+@article{chen2026rethinking,
+  title        = {Rethinking the Value of Agent-Generated Tests for {LLM}-Based
+                  Software Engineering Agents},
+  author       = {Chen, Zhi and Sun, Zhensu and Shi, Yuling and Peng, Chao and
+                  Gu, Xiaodong and Lo, David and Jiang, Lingxiao},
+  journal      = {arXiv preprint arXiv:2602.07900},
+  year         = {2026},
+  eprint       = {2602.07900},
+  archiveprefix= {arXiv},
+  primaryclass = {cs.SE}
+}
+
+@article{ehrlich2025codemonkeys,
+  title        = {{CodeMonkeys}: Scaling Test-Time Compute for Software
+                  Engineering},
+  author       = {Ehrlich, Ryan and Brown, Bradley and Juravsky, Jordan and
+                  Clark, Ronald and R{\'e}, Christopher and Mirhoseini, Azalia},
+  journal      = {arXiv preprint arXiv:2501.14723},
+  year         = {2025},
+  eprint       = {2501.14723},
+  archiveprefix= {arXiv},
+  primaryclass = {cs.SE}
+}
+
+% ── LLM repair agents ──────────────────────────────────────────────────────
+@inproceedings{xia2024chatrepair,
+  title     = {Automated Program Repair via Conversation: Fixing 162 out of 337
+               Bugs for \$0.42 Each using {ChatGPT}},
+  author    = {Xia, Chunqiu Steven and Zhang, Lingming},
+  booktitle = {Proceedings of the 33rd ACM SIGSOFT International Symposium on
+               Software Testing and Analysis (ISSTA)},
+  pages     = {819--831},
+  year      = {2024},
+  publisher = {ACM},
+  doi       = {10.1145/3650212.3680323}
+}
+
+@inproceedings{bouzenia2025repairagent,
+  title     = {{RepairAgent}: An Autonomous, {LLM}-Based Agent for Program Repair},
+  author    = {Bouzenia, Islem and Devanbu, Premkumar and Pradel, Michael},
+  booktitle = {Proceedings of the IEEE/ACM 47th International Conference on
+               Software Engineering (ICSE)},
+  pages     = {2188--2200},
+  year      = {2025},
+  doi       = {10.1109/ICSE55347.2025.00157}
+}
+
+@inproceedings{zhang2024autocoderover,
+  title     = {{AutoCodeRover}: Autonomous Program Improvement},
+  author    = {Zhang, Yuntong and Ruan, Haifeng and Fan, Zhiyu and
+               Roychoudhury, Abhik},
+  booktitle = {Proceedings of the 33rd ACM SIGSOFT International Symposium on
+               Software Testing and Analysis (ISSTA)},
+  pages     = {1592--1604},
+  year      = {2024},
+  publisher = {ACM},
+  doi       = {10.1145/3650212.3680384}
+}
+
+@inproceedings{yang2024sweagent,
+  title        = {{SWE-agent}: Agent-Computer Interfaces Enable Automated
+                  Software Engineering},
+  author       = {Yang, John and Jimenez, Carlos E. and Wettig, Alexander and
+                  Lieret, Kilian and Yao, Shunyu and Narasimhan, Karthik and
+                  Press, Ofir},
+  booktitle    = {Advances in Neural Information Processing Systems 37 (NeurIPS)},
+  pages        = {50528--50652},
+  year         = {2024},
+  eprint       = {2405.15793},
+  archiveprefix= {arXiv},
+  primaryclass = {cs.SE}
+}
+
+@article{xia2025agentless,
+  title        = {Demystifying {LLM}-Based Software Engineering Agents},
+  author       = {Xia, Chunqiu Steven and Deng, Yinlin and Dunn, Soren and
+                  Zhang, Lingming},
+  journal      = {Proceedings of the ACM on Software Engineering},
+  volume       = {2},
+  number       = {FSE},
+  pages        = {801--824},
+  year         = {2025},
+  publisher    = {ACM},
+  doi          = {10.1145/3715754},
+  note         = {The arXiv version is titled ``Agentless: Demystifying
+                  LLM-based Software Engineering Agents'' (arXiv:2407.01489)}
+}
+
+% ── verbal / structured agent memory ──────────────────────────────────────
+@inproceedings{shinn2023reflexion,
+  title        = {Reflexion: Language Agents with Verbal Reinforcement Learning},
+  author       = {Shinn, Noah and Cassano, Federico and Gopinath, Ashwin and
+                  Narasimhan, Karthik and Yao, Shunyu},
+  booktitle    = {Advances in Neural Information Processing Systems 36 (NeurIPS)},
+  pages        = {8634--8652},
+  year         = {2023},
+  eprint       = {2303.11366},
+  archiveprefix= {arXiv},
+  primaryclass = {cs.AI},
+  note         = {Author list follows the NeurIPS camera-ready}
+}
+
+@inproceedings{chen2024selfdebug,
+  title        = {Teaching Large Language Models to Self-Debug},
+  author       = {Chen, Xinyun and Lin, Maxwell and Sch{\"a}rli, Nathanael and
+                  Zhou, Denny},
+  booktitle    = {The Twelfth International Conference on Learning
+                  Representations (ICLR)},
+  year         = {2024},
+  eprint       = {2304.05128},
+  archiveprefix= {arXiv},
+  primaryclass = {cs.CL}
+}
+
+@inproceedings{olausson2024selfrepair,
+  title        = {Is Self-Repair a Silver Bullet for Code Generation?},
+  author       = {Olausson, Theo X. and Inala, Jeevana Priya and Wang, Chenglong
+                  and Gao, Jianfeng and Solar-Lezama, Armando},
+  booktitle    = {The Twelfth International Conference on Learning
+                  Representations (ICLR)},
+  year         = {2024},
+  eprint       = {2306.09896},
+  archiveprefix= {arXiv},
+  primaryclass = {cs.CL}
+}
+
+@inproceedings{mu2026experepair,
+  title        = {{ExpeRepair}: Dual-Memory Enhanced {LLM}-based
+                  Repository-Level Program Repair},
+  author       = {Mu, Fangwen and Wang, Junjie and Shi, Lin and Wang, Song and
+                  Li, Shoubin and Wang, Qing},
+  booktitle    = {Proceedings of the ACM International Conference on the
+                  Foundations of Software Engineering (FSE)},
+  year         = {2026},
+  note         = {To appear},
+  eprint       = {2506.10484},
+  archiveprefix= {arXiv},
+  primaryclass = {cs.SE}
+}
+
+@article{vo2026merit,
+  title        = {Causal Episodic Memory for Feedback-Driven Agent Repair},
+  author       = {Vo, Khang Nhat Hoang and Chu, Tam Minh and Dinh, Anh Trac Duc
+                  and Bui, Thuyen Vinh Ha and Quan, Tho},
+  journal      = {arXiv preprint arXiv:2608.05906},
+  year         = {2026},
+  eprint       = {2608.05906},
+  archiveprefix= {arXiv},
+  primaryclass = {cs.SE}
+}
+
+% ── generated tests as a filter ───────────────────────────────────────────
+@inproceedings{chen2023codet,
+  title        = {{CodeT}: Code Generation with Generated Tests},
+  author       = {Chen, Bei and Zhang, Fengji and Nguyen, Anh and Zan, Daoguang
+                  and Lin, Zeqi and Lou, Jian-Guang and Chen, Weizhu},
+  booktitle    = {The Eleventh International Conference on Learning
+                  Representations (ICLR)},
+  year         = {2023},
+  eprint       = {2207.10397},
+  archiveprefix= {arXiv},
+  primaryclass = {cs.CL}
+}
+
+% ── counterexample-guided synthesis ──────────────────────────────────────
+@inproceedings{solarlezama2006sketching,
+  title     = {Combinatorial Sketching for Finite Programs},
+  author    = {Solar-Lezama, Armando and Tancau, Liviu and Bod{\'i}k, Rastislav
+               and Seshia, Sanjit A. and Saraswat, Vijay},
+  booktitle = {Proceedings of the 12th International Conference on Architectural
+               Support for Programming Languages and Operating Systems (ASPLOS)},
+  pages     = {404--415},
+  year      = {2006},
+  publisher = {ACM},
+  doi       = {10.1145/1168857.1168907},
+  note      = {Introduces the counterexample-guided synthesis loop; the term
+               ``CEGIS'' does not appear in the paper}
+}
+
+% ── accelerating patch validation ────────────────────────────────────────
+@inproceedings{chen2021uniapr,
+  title     = {Fast and Precise On-the-fly Patch Validation for All},
+  author    = {Chen, Lingchao and Ouyang, Yicheng and Zhang, Lingming},
+  booktitle = {Proceedings of the 43rd IEEE/ACM International Conference on
+               Software Engineering (ICSE)},
+  pages     = {1123--1134},
+  year      = {2021},
+  doi       = {10.1109/ICSE43902.2021.00104}
+}
+
+@article{xiao2024expressapr,
+  title   = {Accelerating Patch Validation for Program Repair with
+             Interception-Based Execution Scheduling},
+  author  = {Xiao, Yuan-An and Yang, Chenyang and Wang, Bo and Xiong, Yingfei},
+  journal = {IEEE Transactions on Software Engineering},
+  volume  = {50},
+  number  = {3},
+  pages   = {618--635},
+  year    = {2024},
+  doi     = {10.1109/TSE.2024.3359969}
+}
+
+% ── patch correctness and benchmarks ─────────────────────────────────────
+@inproceedings{xiong2018patchsim,
+  title     = {Identifying Patch Correctness in Test-Based Program Repair},
+  author    = {Xiong, Yingfei and Liu, Xinyuan and Zeng, Muhan and Zhang, Lu and
+               Huang, Gang},
+  booktitle = {Proceedings of the 40th International Conference on Software
+               Engineering (ICSE)},
+  pages     = {789--799},
+  year      = {2018},
+  publisher = {ACM},
+  doi       = {10.1145/3180155.3180182}
+}
+
+@inproceedings{wu2024condefects,
+  title     = {{ConDefects}: A Complementary Dataset to Address the Data Leakage
+               Concern for {LLM}-Based Fault Localization and Program Repair},
+  author    = {Wu, Yonghao and Li, Zheng and Zhang, Jie M. and Liu, Yong},
+  booktitle = {Companion Proceedings of the 32nd ACM International Conference on
+               the Foundations of Software Engineering (FSE Companion)},
+  pages     = {642--646},
+  year      = {2024},
+  publisher = {ACM},
+  doi       = {10.1145/3663529.3663815}
+}
+
+@inproceedings{just2014defects4j,
+  title     = {{Defects4J}: A Database of Existing Faults to Enable Controlled
+               Testing Studies for {Java} Programs},
+  author    = {Just, Ren{\'e} and Jalali, Darioush and Ernst, Michael D.},
+  booktitle = {Proceedings of the 2014 International Symposium on Software
+               Testing and Analysis (ISSTA)},
+  pages     = {437--440},
+  year      = {2014},
+  publisher = {ACM},
+  doi       = {10.1145/2610384.2628055}
+}
+
+@inproceedings{jimenez2024swebench,
+  title        = {{SWE-bench}: Can Language Models Resolve Real-World {GitHub}
+                  Issues?},
+  author       = {Jimenez, Carlos E. and Yang, John and Wettig, Alexander and
+                  Yao, Shunyu and Pei, Kexin and Press, Ofir and
+                  Narasimhan, Karthik},
+  booktitle    = {The Twelfth International Conference on Learning
+                  Representations (ICLR)},
+  year         = {2024},
+  eprint       = {2310.06770},
+  archiveprefix= {arXiv},
+  primaryclass = {cs.CL}
+}
+
+% ── statistics and method ────────────────────────────────────────────────
+@article{vargha2000effect,
+  title   = {A Critique and Improvement of the {CL} Common Language Effect Size
+             Statistics of {McGraw} and {Wong}},
+  author  = {Vargha, Andr{\'a}s and Delaney, Harold D.},
+  journal = {Journal of Educational and Behavioral Statistics},
+  volume  = {25},
+  number  = {2},
+  pages   = {101--132},
+  year    = {2000},
+  doi     = {10.3102/10769986025002101}
+}
+
+@article{benjamini1995fdr,
+  title   = {Controlling the False Discovery Rate: A Practical and Powerful
+             Approach to Multiple Testing},
+  author  = {Benjamini, Yoav and Hochberg, Yosef},
+  journal = {Journal of the Royal Statistical Society: Series B (Methodological)},
+  volume  = {57},
+  number  = {1},
+  pages   = {289--300},
+  year    = {1995},
+  doi     = {10.1111/j.2517-6161.1995.tb02031.x}
+}
+
+@book{law2000simulation,
+  title     = {Simulation Modeling and Analysis},
+  author    = {Law, Averill M. and Kelton, W. David},
+  edition   = {3rd},
+  publisher = {McGraw-Hill},
+  address   = {Boston, MA},
+  year      = {2000},
+  isbn      = {0070592926},
+  note      = {Common random numbers: Chapter 11, Section 11.2}
+}
+
+% ---------------------------------------------------------------------------
+% Added after review: the redundant-validation-avoidance and LLM-CEGIS work
+% the first draft's novelty claim ignored. Metadata verified against
+% publisher records; three corrections worth keeping if these are ever
+% re-imported from a search engine:
+%   weimer2013leveraging      the title carries the subtitle ": Models and
+%                             First Results"; the paper does BOTH candidate
+%                             elimination and adaptive test ordering.
+%   lou2024when               an em dash, not a colon, before "An Extensive".
+%   orvalho2025counterexample published at AAAI 2025, not an arXiv preprint;
+%                             cite the proceedings.
+%   venugopal2020modification the byline is printed family-name-first for the
+%                             2nd and 3rd authors on the publisher's page.
+% ---------------------------------------------------------------------------
+
+@inproceedings{weimer2013leveraging,
+  author    = {Westley Weimer and Zachary P. Fry and Stephanie Forrest},
+  title     = {Leveraging Program Equivalence for Adaptive Program Repair:
+               Models and First Results},
+  booktitle = {2013 28th IEEE/ACM International Conference on Automated
+               Software Engineering (ASE)},
+  pages     = {356--366},
+  year      = {2013},
+  doi       = {10.1109/ASE.2013.6693094}
+}
+
+@article{mechtaev2018testequivalence,
+  author    = {Sergey Mechtaev and Xiang Gao and Shin Hwei Tan and
+               Abhik Roychoudhury},
+  title     = {Test-Equivalence Analysis for Automatic Patch Generation},
+  journal   = {ACM Transactions on Software Engineering and Methodology},
+  volume    = {27},
+  number    = {4},
+  pages     = {1--37},
+  year      = {2018},
+  doi       = {10.1145/3241980}
+}
+
+@inproceedings{qi2013efficient,
+  author    = {Yuhua Qi and Xiaoguang Mao and Yan Lei},
+  title     = {Efficient Automated Program Repair through Fault-Recorded
+               Testing Prioritization},
+  booktitle = {2013 IEEE International Conference on Software Maintenance
+               (ICSM)},
+  pages     = {180--189},
+  year      = {2013},
+  doi       = {10.1109/ICSM.2013.29}
+}
+
+@article{lou2024when,
+  author    = {Yiling Lou and Jun Yang and Samuel Benton and Dan Hao and
+               Lin Tan and Zhenpeng Chen and Lu Zhang and Lingming Zhang},
+  title     = {When Automated Program Repair Meets Regression Testing---An
+               Extensive Study on Two Million Patches},
+  journal   = {ACM Transactions on Software Engineering and Methodology},
+  volume    = {33},
+  number    = {7},
+  pages     = {1--23},
+  year      = {2024},
+  doi       = {10.1145/3672450}
+}
+
+@article{venugopal2020modification,
+  author    = {Yazhini Venugopal and Phung Quang-Ngoc and Lee Eunseok},
+  title     = {Modification Point Aware Test Prioritization and Sampling to
+               Improve Patch Validation in Automatic Program Repair},
+  journal   = {Applied Sciences},
+  volume    = {10},
+  number    = {5},
+  pages     = {1593},
+  year      = {2020},
+  doi       = {10.3390/app10051593}
+}
+
+@inproceedings{orvalho2025counterexample,
+  author    = {Pedro Orvalho and Mikol{\'a}{\v s} Janota and
+               Vasco M. Manquinho},
+  title     = {Counterexample Guided Program Repair Using Zero-Shot Learning
+               and MaxSAT-based Fault Localization},
+  booktitle = {Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume    = {39},
+  number    = {1},
+  pages     = {649--657},
+  year      = {2025},
+  doi       = {10.1609/aaai.v39i1.32046}
+}

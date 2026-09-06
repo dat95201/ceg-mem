@@ -1,0 +1,102 @@
+% ===========================================================================
+% CEGMem - SANER SUBMISSION DRIVER (IEEEtran, 10pt conference)
+%
+%   latexmk -pdf main-ieee.tex
+%
+% SANER 2027 requires, verbatim: "LaTeX users must use
+% \documentclass[10pt,conference]{IEEEtran} without including the compsoc or
+% compsocconf option", and "Submissions should not exceed 10 pages (with 2
+% additional pages for references only)". Format or length violations are
+% "desk-rejected without review", so neither line below may be edited to buy
+% space. Both tracks (Research, and the new Agentic AI4SE) impose the same
+% limit and the same class options.
+%
+% Inputs the identical sections/ and refs.bib as the other drivers.
+% Page-limit discipline is a content decision, not a driver setting: see
+% README.md for what is held out of the submission build and why.
+% ===========================================================================
+\documentclass[10pt,conference]{IEEEtran}
+
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb}
+\usepackage{amsthm}
+\usepackage[hidelinks]{hyperref}
+\usepackage[nameinlink,capitalise]{cleveref}
+\input{preamble}
+\input{preamble-cleveref}
+
+% A 10+2 submission ships proofs and extended tables separately, so every
+% reference to them resolves to the archive rather than to a dangling \cref.
+\suppmattertrue
+
+% IEEEtran defines no theorem environments; declare exactly the ones used.
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% IEEEtran's \paragraph is unnumbered but not run-in by default in every
+% release; the body uses run-in paragraph heads heavily, so pin the shape.
+\makeatletter
+\renewcommand\paragraph{\@startsection{paragraph}{4}{0ex}%
+  {-1.0ex plus -0.5ex minus -0.2ex}%
+  {-0.6em}%
+  {\normalfont\normalsize\bfseries}}
+\makeatother
+
+\begin{document}
+
+\title{Never Twice the Same Mistake: Counterexample-Guided Program Repair\\
+with a Location-Indexed Memory of Refuted Attempts}
+
+% Double-anonymous: names, affiliations and acknowledgements are omitted, and
+% self-citations in the body are written in the third person.
+\author{\IEEEauthorblockN{Anonymous Author(s)}
+\IEEEauthorblockA{Submitted for double-anonymous review}}
+
+\maketitle
+
+\begin{abstract}
+\input{sections/00-abstract}
+\end{abstract}
+
+\begin{IEEEkeywords}
+automated program repair, large language models, agent memory,
+counterexample-guided repair, test execution cost, empirical software
+engineering
+\end{IEEEkeywords}
+
+\input{sections/01-intro}
+\input{sections/02-related}
+\input{sections/03-architecture}
+\input{sections/04-theory}
+\input{sections/05-implementation}
+\input{sections/06-design}
+\input{sections/07-results}
+\input{sections/08-discussion}
+\input{sections/09-threats}
+% Future Work is held out of this build; see the note in main.tex.
+% \input{sections/10-future}
+\input{sections/11-conclusion}
+
+% SANER: a section named "Data Availability", immediately after the Conclusion.
+\input{sections/11b-availability}
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+% Appendices are NOT part of a 10+2 submission: the two extra pages are for
+% references only. Keep this commented for the submission build and uncomment
+% it for the preprint / supplementary archive.
+% \appendix
+% \input{sections/12-appendix}
+
+\end{document}

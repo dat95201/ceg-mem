@@ -1,0 +1,99 @@
+\section{Future Work}
+\label{sec:future}
+
+Our study establishes that a typed refutation store removes verification cost
+and that its prompt-side half does not work at $7$B scale. Two programmes
+follow: a set of baseline arms that would place \CEGMem\ against the mechanisms
+other lines of work actually use, and a set of extensions the negative result
+points at. We describe the first in enough detail to be pre-specified, because
+we think the design rules matter more than the outcomes we would report.
+
+\subsection{Baseline arms, and the rules for running them}
+\label{sec:future-arms}
+
+The comparison we want is not against published \emph{numbers}---other systems
+run other models on other benchmarks, and a reviewer is right to reject that as
+unfair. It is against published \emph{mechanisms}, reimplemented inside this
+harness so that model, corpus, response cache and common-random-number pairing
+are held fixed and only the mechanism varies. \Cref{tab:futurearms} lists the
+five arms; three are implemented and pass a round-1 pairing test, and the
+budget for them is the reason they are future rather than present work.
+
+\input{tables/futurearms}
+
+Four rules govern the family, and we state them before running it rather than
+after.
+
+\emph{Protocol invariance.} No arm may change the model, temperature, output
+budget, test tree or sandbox timeout, and the proposal nonce keeps its
+semantics, so round~1 remains the identical draw in every arm---old and new.
+Each arm ships a test asserting that identity, because an arm that breaks the
+pairing silently converts every comparison in this paper into an unpaired one.
+
+\emph{The primary metric stays the budget curve.} Every arm here lacks a guard
+and therefore loses a total-oracle-call comparison \emph{by construction}. We
+pre-specify repair rate at a matched oracle budget as primary and report total
+calls as descriptive, for the same reason we did in \cref{sec:design}: a
+tautology is not a result, and a reviewer should not have to point that out.
+
+\emph{Multiple comparisons declared in advance.} The family is
+$\{$five arms$\} \times \{$repair at $b{=}8$, oracle calls$\}$ and its
+$p$-values will be Benjamini--Hochberg adjusted~\cite{benjamini1995fdr}
+over the whole family, not per arm.
+
+\emph{A fidelity table per arm.} Each reimplementation states which features of
+the original it ports, which it omits, and why---for instance, our
+conversation arm ports history plus the restart policy but not the request for
+variations around a plausible patch. A mechanism port with an undocumented
+omission is a straw man, and the omission is where a reviewer will look first.
+
+\subsection{Two comparisons that need no new runs}
+Two questions in the literature can be answered from the frozen log.
+\emph{One-shot versus iterative repair}: cutting the steer-only and no-memory
+logs at round~2 recovers exactly the question
+Olausson et al.~\cite{olausson2024selfrepair} ask---is the second attempt, given feedback,
+better than a fresh draw?---paired per cell, at zero cost.
+\emph{Sample-and-verify}: because the no-memory arm's draws are i.i.d.\ samples
+under a fixed nonce, its budget curve \emph{is} the pass@$k$-with-verification
+baseline, and \cref{fig:budget} already plots it. We note both here rather than
+in \cref{sec:results} because neither is a new measurement; they are
+re-readings of the same log against two other papers' framings.
+
+\subsection{Directions the negative result points at}
+\emph{Adaptive steering.} The prompt blocks are worth their $+128\%$ tokens
+only where the baseline is near zero (\cref{sec:discussion}). An arm that
+enables them after $m$ consecutive failures, with $m$ set from the per-band
+anchoring and success measurements, is the cheapest test of whether the
+dead-band gain survives being targeted.
+
+\emph{A guard for partial oracles.} Our guard re-executes a stored
+counterexample, which presumes a counterexample can be stored and replayed
+cheaply. At repository scale, the analogue is a stored \emph{failing test plus
+its environment}, and the interesting question is whether a type map over stack
+traces and changed files concentrates refutations better than $\loc$ does. This is where the
+mechanism would meet SWE-bench-scale work~\cite{jimenez2024swebench,%
+yang2024sweagent,xia2025agentless}, and where the guard's arithmetic is
+most favourable, because each avoided validation is worth minutes rather than
+seconds.
+
+\emph{Composition with faster validation.} A guard removes calls and
+UniAPR-style validation makes the survivors cheap~\cite{chen2021uniapr,%
+xiao2024expressapr}. The two have never been measured together, and the
+product of \fold{5} and \fold{100} is the interesting number.
+
+\subsection{Directions we considered and rejected}
+We record three, with reasons, because each looks attractive and each would
+break something this study depends on.
+\emph{Cross-task retrieval}---sharing memory across faults---breaks the
+independence our corpus is built on and destroys the per-task pairing that
+every $p$-value here rests on; with $99$ unrelated single-file faults the
+expected transfer is also near zero.
+\emph{Greedy decoding} ($T = 0$) would invalidate the response cache and, more
+fundamentally, make redraw-after-block vacuous (\cref{sec:design}); the
+question it is meant to answer---how much of the loop is repeated
+sampling---is already answered by the measured $\pihat = 0.207$ and the
+pass@$1$ of $0.214$ against pass@$20$ of $0.703$.
+\emph{Seed-pooled memory}---accumulating memory across seeds of the same
+task---would raise the block rate but collapse the replication axis the
+statistics are computed over, trading the study's inferential structure for a
+larger single number.

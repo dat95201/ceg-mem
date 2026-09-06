@@ -1,0 +1,33 @@
+\begin{table}[t]
+\centering
+\footnotesize
+\caption{Headline comparisons at both units of analysis, with a task-clustered
+bootstrap interval on the paired difference (\num{10000} resamples of the
+\num{99} tasks). Seeds of one task share a fault, a model and a cache, so the
+cell-level test is anti-conservative and the task-level result carries each
+claim; every comparison keeps its sign and significance there. The supplement
+adds the remaining contrasts and budget points.}
+\label{tab:tasklevel}
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.06}
+\begin{tabular}{@{}L{2.55cm}L{1.75cm}L{1.6cm}L{1.9cm}@{}}
+\toprule
+\textbf{\sig{reference $\to$ treatment}} & \textbf{\sig{per cell}} &
+\textbf{\sig{per task}} & \textbf{\sig{clustered CI}} \\
+\midrule
+Oracle calls, \armnomem\ $\to$ \armtyped &
+  $325/10$ \plt{10^{-80}} & $88/0$ \plt{10^{-26}} & $[-9.07, -6.27]$ \\
+Oracle calls, \armuntyped\ $\to$ \armtyped &
+  $93/59$ \pval{0.007} & $36/19$ \pval{0.030} & $[-0.141, -0.018]$ \\
+Program exec., \armnomem\ $\to$ \armtyped &
+  $251/113$ \plt{10^{-12}} & $63/30$ \pval{0.0008} & $[-84.1, -28.3]$ \\
+Guard sec., \armuntyped\ $\to$ \armguard &
+  $191/40$ \plt{10^{-24}} & $77/20$ \plt{10^{-8}} & $[-6.47, -0.47]$ \\
+Prompt tokens, \armnomem\ $\to$ \armsteer &
+  $64/170$ \plt{10^{-11}} & $22/75$ \plt{10^{-7}} & $[+4113, +7642]$ \\
+\addlinespace[2pt]
+Repair @ $b{=}2$, gain over \armnomem &
+  \multicolumn{2}{l}{\sig{$0.319 \to 0.558$}} & $[+0.184, +0.295]$ \\
+\bottomrule
+\end{tabular}
+\end{table}

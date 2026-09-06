@@ -1,0 +1,105 @@
+% ===========================================================================
+% CEGMem - PORTABLE PREPRINT DRIVER
+%
+% Builds with a plain TeX Live installation: no acmart, no IEEEtran needed.
+%   make            (or: latexmk -pdf main.tex)
+%
+% For submission use main-acmart.tex, which inputs the identical sections/
+% and refs.bib so the two drivers can never drift. See README.md.
+% ===========================================================================
+\documentclass[10pt,twocolumn]{article}
+
+\usepackage[letterpaper,margin=0.72in,columnsep=0.28in]{geometry}
+\usepackage{mathptmx}
+
+% Every font in this driver must be scalable (Type 1 / OpenType): microtype's
+% font expansion aborts the build on a bitmap font, and with T1 encoding the
+% default cmtt/cmss resolve to bitmap ec* unless lmodern or cm-super is
+% installed. Times covers roman and math; these cover the other two families,
+% preferring Latin Modern where the installation has it and falling back to
+% the psnfss URW fonts, which ship with texlive-fonts-recommended.
+\IfFileExists{lmodern.sty}{%
+  \renewcommand{\ttdefault}{lmtt}%
+  \renewcommand{\sfdefault}{lmss}%
+}{%
+  \IfFileExists{courier.sty}{\usepackage{courier}}{}%
+  \IfFileExists{helvet.sty}{\usepackage[scaled=0.92]{helvet}}{}%
+}
+
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{caption}
+\usepackage{titlesec}
+
+% Package order below is load-bearing: amsmath (via preamble) before amsthm,
+% amsthm before hyperref, hyperref before cleveref, and every \newtheorem
+% after cleveref so that cleveref learns the environment names.
+\input{preamble}
+\usepackage{amsthm}
+\usepackage[hidelinks]{hyperref}
+\usepackage[nameinlink,capitalise]{cleveref}
+\input{preamble-cleveref}
+
+% Compact headings, so pagination on this driver rehearses the submission's.
+\titleformat{\section}{\normalfont\large\bfseries}{\thesection}{0.6em}{\MakeUppercase}
+\titleformat{\subsection}{\normalfont\normalsize\bfseries}{\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}{\normalfont\normalsize\itshape}{\thesubsubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{9pt plus 2pt minus 1pt}{4pt}
+\titlespacing*{\subsection}{0pt}{7pt plus 1pt minus 1pt}{3pt}
+\titlespacing*{\subsubsection}{0pt}{6pt plus 1pt minus 1pt}{2pt}
+
+\captionsetup{font=small,labelfont=bf,skip=4pt}
+\setlength{\abovecaptionskip}{5pt}
+\setlength{\belowcaptionskip}{2pt}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\title{\bfseries\large Never Twice the Same Mistake: Counterexample-Guided\\
+Program Repair with a Typed Memory of Refuted Attempts}
+\author{Anonymous Author(s)}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\input{sections/00-abstract}
+\end{abstract}
+
+\input{sections/01-intro}
+\input{sections/02-related}
+\input{sections/03-architecture}
+\input{sections/04-theory}
+\input{sections/05-implementation}
+\input{sections/06-design}
+\input{sections/07-results}
+\input{sections/08-discussion}
+\input{sections/09-threats}
+% Future Work is held out of this build. Uncomment the line to bring it back;
+% the section is self-contained (it owns the only \input of
+% tables/futurearms, and nothing outside it \crefs sec:future,
+% sec:future-arms or tab:futurearms), so this one line is the whole switch.
+% \input{sections/10-future}
+\input{sections/11-conclusion}
+
+% SANER and most SE venues want this section, under this name, immediately
+% after the Conclusion and before the references.
+\input{sections/11b-availability}
+
+% plainnat, not plain: with natbib's [numbers] option the labels stay numeric,
+% but \citet needs author names in the .bbl and plain.bst does not write them.
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\appendix
+\input{sections/12-appendix}
+
+\end{document}

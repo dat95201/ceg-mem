@@ -1,0 +1,63 @@
+\begin{table*}[t]
+\centering
+\scriptsize
+\caption{Where \CEGMem\ sits. The columns are factual properties of each
+mechanism, not a scoring of it. \CEGMem\ shares the last column's value with a
+line a decade older than LLM repair; what is new is the key it orders by, the
+evidence it orders from, and that it needs nothing of the candidate space---%
+exactly what the two \emph{removing} rows require and an LLM cannot supply.}
+\label{tab:positioning}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.05}
+\begin{tabular}{@{}L{2.1cm}L{4.0cm}L{4.6cm}L{3.4cm}L{2.5cm}@{}}
+\toprule
+\textbf{Line of work} & \textbf{Representatives} &
+\textbf{The decision is computed from} &
+\textbf{Requires of the candidate space} &
+\textbf{Effect on validation work} \\
+\midrule
+Candidate equivalence &
+AE~\cite{weimer2013leveraging}; f1x~\cite{mechtaev2018testequivalence} &
+candidates related to \emph{each other}: syntactically, or by the values a
+modified expression takes &
+enumerable; an edit shape the analysis models &
+removes \\
+
+Validation engineering &
+UniAPR~\cite{chen2021uniapr}; ExpressAPR~\cite{xiao2024expressapr} &
+a warm JVM; online patch equivalence, schemata, virtualization &
+mutation-shaped patches, for the equivalence part &
+accelerates; ExpressAPR also removes \\
+
+Test prioritization &
+fault-recorded~\cite{qi2013efficient}; modification-point
+aware~\cite{venugopal2020modification}; AE's
+TestStrat~\cite{weimer2013leveraging}; RTS study~\cite{lou2024when} &
+which of the project's own tests killed earlier candidates, keyed on nothing or
+on the edit location &
+nothing &
+reorders, stops early \\
+
+LLM repair agents &
+RepairAgent~\cite{bouzenia2025repairagent}; SWE-agent~\cite{yang2024sweagent};
+Agentless~\cite{xia2025agentless}; ChatRepair~\cite{xia2024chatrepair};
+ExpeRepair~\cite{mu2026experepair}; \cite{vo2026merit} &
+a flat transcript, or demonstrations and insights, retrieved into the prompt &
+nothing &
+none \\
+
+Counterexample-guided repair &
+\Sketch~\cite{solarlezama2006sketching}; LLM
+CEGIS~\cite{orvalho2025counterexample} &
+counterexamples, as prompt content for the next attempt &
+a complete synthesizer (\Sketch); nothing (LLM) &
+none \\
+\midrule
+\textbf{\CEGMem} & this paper &
+counterexamples \emph{retained across candidates} and re-executed, indexed by
+edit location $\loc$ &
+nothing &
+reorders, stops early \\
+\bottomrule
+\end{tabular}
+\end{table*}

@@ -1,0 +1,38 @@
+\begin{table}[t]
+\centering
+\footnotesize
+\caption{Total program executions per episode, split into the guard's replays
+and the oracle's checks. The guard \emph{does} execute---this is the accounting
+in which ``avoid a validation'' has to pay for itself, and it does. The split
+is conservative against the memory arms: a guard consultation is billed as an
+execution even when per-input deduplication or within-round memoization means
+no process was started, so their guard-side column is an upper bound.}
+\label{tab:testwork}
+\setlength{\tabcolsep}{3.6pt}
+\begin{tabular}{@{}l r S[table-format=3.2] S[table-format=2.2] S[table-format=2.2] r@{}}
+\toprule
+\textbf{Arm} & \textbf{cells} & \multicolumn{1}{c}{\textbf{total}}
+  & \multicolumn{1}{c}{\textbf{guard}} & \multicolumn{1}{c}{\textbf{oracle}}
+  & \multicolumn{1}{c}{\textbf{guard \%}} \\
+\midrule
+\armnomem\   & 495 & 95.68 & 0.00 & 95.68 & 0 \\
+\armsteer\   & 297 & 92.41 & 0.00 & 92.41 & 0 \\
+\armuntyped\ & 495 & 44.45 & 10.20 & 34.25 & 22.9 \\
+\armguard\   & 297 & 43.57 &  9.74 & 33.83 & 22.4 \\
+\armtyped\   & 495 & \bfseries 43.01 & 9.38 & 33.64 & 21.8 \\
+\bottomrule
+\end{tabular}
+
+\vspace{3pt}
+\begin{tabular}{@{}L{8.1cm}@{}}
+\multicolumn{1}{@{}l@{}}{\itshape paired reductions in \emph{total} executions} \\
+\addlinespace[1pt]
+\armnomem\ $\to$ \armtyped: \fold{2.22}; $251/113$ cells (\plt{10^{-12}}),
+  $63/30$ tasks (\pval{0.0008}); task-clustered CI on the paired difference
+  $[-84.1, -28.3]$ executions. \\
+\armuntyped\ $\to$ \armtyped: \fold{1.03}; $170/146$ (\pval{0.20})---typing
+  does \emph{not} reduce total executions, only the time spent consulting
+  memory. \\
+\bottomrule
+\end{tabular}
+\end{table}

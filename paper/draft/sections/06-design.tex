@@ -1,0 +1,107 @@
+\section{Study Design}
+\label{sec:design}
+
+We ask five questions: whether memory reduces the cost of repair and how that
+varies with difficulty (RQ1); whether \emph{typing} the memory beats a flat
+counterexample log, and whether any advantage is attributable to the types
+being right rather than to partitioning at all (RQ2); which operation does the
+work, guarding or steering (RQ3); whether an accepted patch is a repaired
+program and how that depends on oracle depth (RQ4); and whether the theory's
+assumptions hold on real faults, including what typed steering costs when it
+misfires (RQ5).
+
+\subsection{Corpus and protocol}
+We use ConDefects~\cite{wu2024condefects}, whose faults are AtCoder contest
+submissions from 2021--2023, curated to limit the training-data leakage that
+afflicts older benchmarks. Corpus construction is frozen; \appref{tab:attrition}
+{the supplement} gives the count and reason at each stage, from \num{526}
+examined candidates to the \num{99} frozen faults, themselves a strict subset
+of a previously frozen \num{106} so nothing entered on the basis of results.
+Two filters matter. The \emph{oracle gate} admits a fault only if the reference
+reproduces the shipped outputs, at least one shipped case exposes the fault,
+and its natural mutants are caught---this is what makes \cref{as:sound} hold by
+construction. The \emph{slow-reference filter} then drops any fault whose
+reference needs over \SI{10}{\second} on one of its first $20$ cases. It is
+mechanical, pre-declared and arm-independent but \emph{not}
+difficulty-independent---the faults it removed are rated $2042$ against $940$
+for those kept---so it selects away the most expensive oracles
+(\cref{sec:threats}).
+
+\ifsuppmatter\else\input{tables/attrition}\fi
+
+The proposer is \texttt{qwen2.5-coder:7b} (Q4\_K\_M, served locally) at
+temperature $1.0$, budget $\budget = 20$ proposals, oracle depth
+$\oracledepth = 100$, \SI{30}{\second} sandbox timeout;
+\appref{tab:protocol}{the supplement} fixes the rest. Temperature is
+deliberately not lowered for determinism: the loop rests on redraw being
+meaningful, and at low temperature the same prompt returns approximately the
+same patch, so no-memory would loop forever on one wrong patch and
+redraw-after-block would be vacuous---every arm would degenerate rather than
+the comparison becoming cleaner. The cost is that the steering result is scoped
+to $T = 1.0$ (\cref{sec:threats}).
+
+\ifsuppmatter\else\input{tables/protocol}\fi
+
+Tasks are banded by the proposer's own per-round success rate $\pihat$,
+estimated from the no-memory arm run past its first accept so early stopping
+does not bias it: \emph{dead} ($\pihat < 0.02$; $23$ tasks), \emph{hard}
+($17$), \emph{medium} ($13$), \emph{easy} ($25$), \emph{too-easy} ($21$), with
+pooled $\pihat = 0.207$ over \num{9896} scored rounds. Banding on that arm's
+own rate makes per-band comparisons \emph{against} no memory inflated by
+regression to the mean, so we report those columns as descriptive only; the
+typed-versus-untyped contrast within a band is unaffected, since under common
+random numbers the band comes from a draw the two arms share symmetrically.
+
+\subsection{Arms and pairing}
+Five arms switch the two memory operations independently: \armnomem\ (both off,
+run past first accept for an unbiased $\pihat$), \armuntyped\ (unindexed guard,
+no prompt blocks), \armtyped\ (indexed guard $+$ steering), \armguard\ and
+\armsteer\ (one operation each). Four sweeps follow: oracle depth
+$\oracledepth \in \{100, 20, 8, 3\}$; typing coherence $\coh \in \{1.0, 0.9,
+0.75, 0.5, 0.25, 0.0\}$ plus a random-partition control; a redundancy audit
+that pays the oracle on blocked rounds to recover their classes; and a
+free-guarded-rounds condition (\cref{cor:budget}).
+
+The draw nonce is $(\textit{task}, \textit{seed}, \textit{round})$ and
+\emph{omits the arm}. Two arms whose prompt is byte-identical at a given round
+therefore receive the same completion, which pairs them on common random
+numbers~\cite{law2000simulation} rather than buying the same draw repeatedly,
+and makes round~1 identical in every arm since memory is empty there. When
+prompts diverge, the prompt separates the cache keys, so nothing is shared that
+should not be. This is what makes the central comparisons tight rather than
+merely large, and it has a consequence we state plainly: the draw table is
+fixed by construction, so all inference is \emph{conditional} on it and the
+replication axis is tasks $\times$ seeds, not re-sampling of the model.
+
+\subsection{Metrics and statistics}
+Two outcomes on the three main arms are \textbf{confirmatory}: repair rate at a
+matched oracle-call budget, and oracle calls per episode; everything else is
+exploratory. The primary metric is the fraction of cells repaired within $b$
+oracle calls, $b = 1 \dots 20$, pre-specified rather than total calls because
+an arm with no guard loses a total-call comparison \emph{by construction}. On
+the budget curve nothing is guaranteed: spending fewer calls helps only if the
+calls spent still find repairs.
+
+Secondary metrics are oracle calls; \emph{total program executions}---every run
+of a candidate against a case, whether the oracle asked for it or the guard
+did, so guard replays are billed to the arm performing them; \emph{paid} and
+\emph{caught} redundant verifications; guard entries consulted and seconds;
+tokens; and wall-clock. Redundancy is counted the same way in every arm: a
+blocked round carries no class of its own, so we recover it through the pairing
+from the byte-identical no-memory round the oracle already paid for. Where that
+recovery is unavailable---the steered arm, whose draws diverge---we report the
+censored fraction ($52\%$ of typed rounds).
+
+Cells are paired on $(\textit{task}, \textit{seed})$; the default test is the
+exact two-sided sign test with $\Atwelve$~\cite{vargha2000effect} for effect
+size, and because seeds of one task share a fault, every headline comparison is
+also reported per task with a task-clustered bootstrap interval over
+\num{10000} resamples (\cref{tab:main}). Sweep $p$-values are
+Benjamini--Hochberg
+adjusted~\cite{benjamini1995fdr}; audits observing zero failures get an exact
+one-sided Clopper--Pearson upper bound rather than a zero rate. Three
+falsifiers were pre-specified: a guarded arm must neither block a candidate
+the oracle accepts (\cref{thm:sound}) nor differ in repair rate from its
+unguarded twin (\cref{cor:budget}); redundancy \emph{present} must be
+invariant across unconditioned arms, since they draw identically; and the
+random-partition control must \emph{not} reproduce typing's advantage.

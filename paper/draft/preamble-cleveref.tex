@@ -1,0 +1,35 @@
+% ---------------------------------------------------------------------------
+% Shared cleveref configuration. Both drivers \input this *after* loading
+% cleveref (which must itself come after amsmath, amsthm and hyperref), so
+% \cref names cannot drift between the preprint and the submission.
+%
+% Every environment this paper declares itself needs a name here: cleveref
+% treats an unnamed label type as an undefined reference and the build then
+% ends on "There were undefined references" with no line number to chase.
+% ---------------------------------------------------------------------------
+\crefname{assumption}{Assumption}{Assumptions}
+\Crefname{assumption}{Assumption}{Assumptions}
+\crefrangelabelformat{assumption}{#3#1#4--#5#2#6}
+
+\crefname{remark}{Remark}{Remarks}
+\Crefname{remark}{Remark}{Remarks}
+
+% algorithm2e floats carry the label type "algocf".
+\crefname{algocf}{Algorithm}{Algorithms}
+\Crefname{algocf}{Algorithm}{Algorithms}
+
+% ── PDF metadata ──────────────────────────────────────────────────────────
+% An untagged PDF with no title is harder to find and to read with assistive
+% technology, and costs nothing to fix. Kept here because it must run after
+% hyperref, which every driver loads before this file. Author is deliberately
+% empty for double-anonymous review.
+\hypersetup{
+  pdftitle  = {Never Twice the Same Mistake: Counterexample-Guided Program
+               Repair with a Location-Indexed Memory of Refuted Attempts},
+  pdfauthor = {},
+  pdfsubject= {Automated program repair; LLM agents; verification cost},
+  pdfkeywords = {automated program repair, large language models, agent memory,
+    counterexample-guided repair, test execution cost, empirical software
+    engineering},
+  pdfdisplaydoctitle = true,
+}

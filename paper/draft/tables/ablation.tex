@@ -1,0 +1,42 @@
+\begin{table}[t]
+\centering
+\footnotesize
+\caption{The two ablations, each paired against the arm it belongs against, on
+the same \num{297} cells. (a) isolates the \emph{index}: the arms share their
+draws, so episodes should be identical and only bookkeeping may differ---and
+that is what happens. (b) isolates the \emph{prompt blocks}, where nothing
+moves except the bill.}
+\label{tab:ablation}
+\setlength{\tabcolsep}{2.2pt}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{@{}L{2.2cm}rrL{2.9cm}@{}}
+\toprule
+\multicolumn{4}{@{}l}{\bfseries (a) The index: \armguard\ vs.\ \armuntyped} \\
+& \armuntyped & \armguard & \textbf{paired} \\
+\midrule
+Episodes outcome-identical & \multicolumn{2}{c}{$295/297$} &
+  \sig{$2$ exceptions: the timeout-edge fault} \\
+Repair rate & 0.704 & 0.707 &
+  \sig{the $2$ timeout cells only; \cref{cor:budget}} \\
+Entries consulted / ep. & 10.02 & 9.74 &
+  \sig{$19/13$, \pval{0.38}: the \emph{same work}} \\
+Guard seconds / ep. & 6.66 & \bfseries 4.04 &
+  \sig{$\mathbf{-39\%}$; $191/40$; task CI $[-6.5, -0.5]$\,s} \\
+Wall-clock s / ep. & 80.4 & \bfseries 68.9 &
+  \sig{$\mathbf{-14\%}$; $238/57$, \plt{10^{-26}}} \\
+\addlinespace[4pt]
+\multicolumn{4}{@{}l}{\bfseries (b) The prompt blocks: \armsteer\ vs.\ \armnomem} \\
+& \armnomem & \armsteer & \textbf{paired} \\
+\midrule
+Repair @ $\budget{=}20$ & 0.707 & 0.727 &
+  \sig{$23/17$, \pval{0.43}: \textbf{null}} \\
+Oracle calls / ep. & 9.45 & 8.81 & \sig{$80/71$, \pval{0.52}: \textbf{null}} \\
+Re-draw rate, eliminated class & 0.502 & 0.507 &
+  \sig{length-matched: \emph{not obeyed}} \\
+Prompt tokens / ep. & \bfseries 4519 & 10296 &
+  \sig{$\mathbf{+128\%}$; $64/170$, \plt{10^{-11}}} \\
+Round-1 draw $=$ \armnomem & \multicolumn{2}{c}{$297/297$} &
+  \sig{the pairing, verified} \\
+\bottomrule
+\end{tabular}
+\end{table}

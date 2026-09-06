@@ -1,0 +1,39 @@
+\begin{table}[t]
+\centering
+\footnotesize
+\caption{Corpus attrition, recomputed from the frozen screening record. Every
+filter is arm-independent and ran before any treatment, but the
+slow-reference filter is not difficulty-independent, so we report its profile
+and not only its count.}
+\label{tab:attrition}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}L{3.4cm}rL{3.6cm}@{}}
+\toprule
+\textbf{Stage} & \textbf{$n$} & \textbf{Criterion} \\
+\midrule
+Candidates examined & 526 & ConDefects Python faults \\
+\ \ ineligible & $-112$ & reference disagrees with the shipped output or
+  raises (64); reference needs \SI{>10}{\second} on one of its first 20 cases
+  (48) \\
+\ \ unresolved & $-7$ & recorded as neither usable nor ineligible in the
+  frozen counter \\
+Usable & 407 & \\
+\ \ not admitted to the pool & $-112$ & at most one fault per coding task;
+  pool size capped at 295 \\
+Screened pool & 295 & mutant gate: catches ${\ge}0.67$ of scoreable natural
+  mutants; 295/295 passed \\
+\ \ stratum quota not filled & $-196$ & band quotas over the pool: 115
+  targeted, 99 filled \\
+\midrule
+\textbf{Frozen corpus} & \textbf{99} & a strict subset of a previously frozen
+  106, so nothing entered on the basis of results \\
+\bottomrule
+\addlinespace[2.5pt]
+\multicolumn{3}{@{}p{7.5cm}@{}}{\sig{\emph{The 48 the slow-reference filter
+removed, against the 99 kept:} reference worst case \SI{10.02}{\second} vs.\
+\SI{1.16}{\second}, AtCoder rating $2042$ vs.\ $940$, shipped cases $44.2$ vs.\
+$38.9$. It removes the faults whose oracle is most expensive---the regime the
+mechanism should help most---so our cost reductions understate what those
+faults would show, while our repair rates overstate it.}} \\
+\end{tabular}
+\end{table}

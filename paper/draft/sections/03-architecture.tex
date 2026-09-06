@@ -1,0 +1,127 @@
+\section{The \CEGMem\ Architecture}
+\label{sec:arch}
+
+\subsection{Problem setup}
+A repair task is a tuple $(\cand, \spec, \Ok)$: a candidate space of patches, a
+specification, and an oracle. A patch is \emph{semantically correct} iff it
+satisfies $\spec$ on every input in a domain $\mathcal{X}$, and we write
+$\Gstar$ for that set, assumed non-empty. No implementable oracle decides
+membership in $\Gstar$. What we have is a \emph{counterexample oracle at depth
+$\oracledepth$}: a call draws a check set $\Xk$ of
+$\min(\oracledepth, \lvert\mathrm{pool}\rvert)$ inputs from the fault's shipped
+pool and runs them until one separates candidate from reference,
+\begin{equation}
+\Ok(p) =
+\begin{cases}
+x \in \Xk \text{ with } \lnot\spec(p, x) & \text{if a checked input fails},\\
+\textsf{accept} & \text{otherwise}.
+\end{cases}
+\label{eq:oracle}
+\end{equation}
+Write $\Gk$ for what one such call certifies---the patches passing every
+$x \in \Xk$---and $\Gpool$ for those passing the \emph{entire} pool. Two
+properties of $\Xk$ are load-bearing. It is drawn \emph{per call}, so $\Gk$ is
+a family indexed by the draw; but the draw is degenerate whenever
+$\oracledepth \ge \lvert\mathrm{pool}\rvert$, where $\Xk$ is the pool and
+$\Gk = \Gpool$---the case for $97$ of our $99$ faults at the
+$\oracledepth = 100$ every headline number uses. The three
+sets nest, $\Gstar \subseteq \Gpool \subseteq \Gk$, so acceptance is the
+weakest of them and $\Gk \setminus \Gstar$ is \emph{false acceptance};
+\cref{sec:results-depth} measures that gap and never assumes it away. Three budget quantities also stay distinct: the proposal budget
+$\budget$, the oracle budget $b$ against which repair rate is reported, and the
+oracle depth $\oracledepth$.
+
+\ifsuppmatter\else\input{tables/notation}\fi
+
+\subsection{Failure labels, and the key available before execution}
+A refuted candidate $p$ with counterexample $x$ receives a label
+\begin{equation}
+\ttype(p, x) = \big(\loc(p),\ \text{property violated at } x\big) \in \types ,
+\label{eq:type}
+\end{equation}
+where $\loc(p)$ is the patch's \emph{edit location}, obtained by diffing the
+candidate against the buggy source. The two components differ in when they are
+available, and that is load-bearing: $\loc(p)$ needs no execution, while the
+violated property is only defined \emph{after} a failing run and so does not
+exist for a fresh candidate. The guard therefore cannot index on $\ttype$. It
+indexes on $\loc$, and memory's buckets are keyed on it:
+$\mem[\ell] = \{(p', x', \tau') \in \mem : \loc(p') = \ell\}$. The full label
+$\ttype$ is what steering excludes---it names classes already \emph{observed},
+for which the property component exists---and what the coherence sweep
+perturbs. Nothing here requires predicting a violated property before running
+anything.
+
+\begin{definition}[Informativeness and coherence]
+\label{def:coh}
+The oracle is $\info$-\emph{informative} if a counterexample refuting a
+candidate of class $\tau$ refutes every candidate of class $\tau$ with
+probability at least $\info$. Memory is $\coh$-\emph{coherent} if it attributes
+a candidate or counterexample to its true class with probability at least
+$\coh$. The ideal regime is $\info = \coh = 1$.
+\end{definition}
+
+\subsection{Typed memory: guard and steer}
+\CEGMem\ maintains a memory $\mem$ of triples $(p, x, \tau)$ and the induced
+set of eliminated classes $\elim$. It exposes two operations, kept distinct
+because \cref{sec:results} shows they do different jobs and that only one
+works.
+
+\paragraph{Guard.}
+Before paying the oracle, the guard rejects a candidate that a stored
+counterexample still refutes:
+\begin{equation}
+\mathrm{Guard}_\mem(p) = \mathbb{1}\!\left[\exists (p', x', \tau') \in \mem :
+x' \text{ refutes } p\right].
+\label{eq:guard}
+\end{equation}
+Here $x'$ \emph{refutes} $p$ under the oracle's own predicate---$p$ on $x'$
+disagrees with the reference, crashes, or times out---so a block and a
+refutation are the same event, evaluated by different callers.
+An \emph{indexed} guard evaluates \cref{eq:guard} against $\mem[\loc(p)]$ first
+and then the rest of memory---the fallback belongs to the analyzed algorithm
+and to the shipped one, not to one of them---while an \emph{untyped} guard
+walks memory in insertion order. Both short-circuit at the first entry that still refutes and both
+consult all of memory when none does, so their worst cases coincide: the index
+changes the \emph{order} of consultation, not its bound (\Rguardcost). Our
+implementation additionally deduplicates stored counterexamples by input and
+memoizes verdicts within a round, reducing executions at unchanged
+consultations.
+
+Two properties of \cref{eq:guard} are easy to lose. It is a \emph{verified}
+predicate, not a match heuristic: a block happens only when a stored
+counterexample is re-executed and still fails, so widening the search can never
+cost soundness (\cref{thm:sound}). And the index must say where to look
+\emph{first}, not where to \emph{stop}: $\loc$ records where a candidate edits
+while refutation is decided by which input it gets wrong, so a bucket-only
+guard is an unsound stopping rule. \Cref{sec:impl} reports what that cost us.
+
+\paragraph{Steer.}
+Memory also reshapes the proposer. Let $\wmass_s$ be its base mass on class
+$s$, with $\wmass_\top = \pi$ for the correct class and $\wmass_\tau = q_\tau$
+otherwise. The steered proposer renormalizes onto the surviving support:
+\begin{equation}
+\mathbb{P}_{\mathrm{steer}}[s] =
+\frac{\wmass_s \cdot \mathbb{1}[s \notin \elim]}
+     {\pi + \sum_{\tau \notin \elim} q_\tau},
+\qquad s \in \{\top\} \cup \types .
+\label{eq:steer}
+\end{equation}
+This is what a flat transcript cannot do---excluding a class requires having
+one---and it idealizes an operation that, with an LLM, can only be
+\emph{requested}: an exclusion instruction plus class-matched evidence in the
+prompt. Whether the request is honored is empirical;
+\cref{sec:results-ablation} answers no for a 7B proposer, while the same
+renormalization applied on the guard side, by not charging blocked rounds, does
+deliver (\cref{sec:results-e9}).
+
+\subsection{The repair loop}
+Each round draws a steered proposal, guards it against memory, and calls the
+oracle only if it survives; an accepted patch is returned and a refuted one
+stored with its counterexample and label, eliminating that class. The arms in
+\cref{sec:results} switch the two operations independently
+(\appref{alg:cegmem}{the supplement} gives the loop in full). \CEGMem\ adds no
+planner and no controller---the only new state is the memory---which is what
+keeps \cref{sec:theory}'s guarantees properties of \emph{memory}, and so
+independent of the proposer.
+
+\ifsuppmatter\else\input{figures/algorithm}\fi

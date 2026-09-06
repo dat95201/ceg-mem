@@ -1,0 +1,29 @@
+\begin{table}[t]
+\centering
+\small
+\caption{Integrity of the comparison. The first block is the pairing the study
+rests on; the second is the three falsifiers we pre-specified, each of which
+would have invalidated a claim had it failed.}
+\label{tab:integrity}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}L{3.55cm}L{4.35cm}@{}}
+\toprule
+Check & Result \\
+\midrule
+Round-1 draw identical to \armnomem & $495/495$ (\armuntyped, \armtyped);
+  $297/297$ (\armguard, \armsteer) \\
+Frozen grid complete & \num{1485} of \num{1485} cells, $0$ missing \\
+Proposer constant & one model string in every row of every arm \\
+Cache replay exact & same key $\Rightarrow$ same patch, no exception \\
+\midrule
+\emph{F1}: a guarded arm's repair rate equals its unguarded twin's
+  (\cref{cor:budget}) & holds: $0.704$ vs.\ $0.707$; $295/297$ episodes
+  outcome-identical \\
+\emph{F2}: redundancy \emph{present} invariant across unconditioned arms
+  & holds: $4.48$ / $4.50$ (\armnomem, \armuntyped) \\
+\emph{F3}: the random partition must \emph{not} reproduce typing's advantage
+  & holds on the responding column ($9/0$, \pval{0.004}); indistinguishable on
+  the rest \\
+\bottomrule
+\end{tabular}
+\end{table}

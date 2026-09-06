@@ -1,0 +1,27 @@
+\begin{table}[t]
+\centering
+\small
+\caption{Protocol. Everything above the rule is frozen across every arm and
+sweep; the response cache is keyed on the full prompt, so a change to any of
+it would invalidate the cache rather than silently mix two protocols.}
+\label{tab:protocol}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{@{}L{2.3cm}L{5.5cm}@{}}
+\toprule
+Proposer & \texttt{qwen2.5-coder:7b}, Q4\_K\_M, served locally;
+  temperature $1.0$; context \num{32768} \\
+Oracle & differential test over the shipped pool, depth
+  $\oracledepth = 100$ cases, \SI{30}{\second} per case \\
+Type map & fine granularity: (edit line-range) $\times$ (violated property) \\
+Budget & $\budget = 20$ proposals per episode \\
+Corpus & \num{99} ConDefects faults, frozen (\S\ref{sec:design}) \\
+\midrule
+Seeds & $1$--$5$ main grid (\num{495} cells/arm); $1$--$3$ ablations and
+  sweeps (\num{297} and \num{90}) \\
+Scale & \num{1485} pre-specified main-grid cells, $0$ missing;
+  \num{3654} episodes; \num{39147} rounds \\
+Pairing & common random numbers: draw nonce omits the arm \\
+\bottomrule
+\end{tabular}
+\end{table}

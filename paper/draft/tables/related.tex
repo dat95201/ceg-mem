@@ -1,0 +1,38 @@
+\begin{table}[t]
+\centering
+\scriptsize
+\caption{What makes replaying a stored counterexample non-vacuous, and what the
+$\loc$ index does not buy. Every quantity is derived by replaying the frozen
+round log---no program was executed to produce this table
+(\texttt{tools/related\_addenda.py}). The upper block is the opportunity an LLM
+proposer creates and a constrained synthesizer does not; the lower block is why
+we claim no benefit for indexing on this corpus. The last two rows of the upper
+block partition the resolutions; the repeat-proposal row above them cuts across
+that partition.}
+\label{tab:related}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.06}
+\begin{tabular}{@{}L{4.15cm}rrr@{}}
+\toprule
+& \armuntyped & \armtyped & \armguard \\
+\midrule
+\multicolumn{4}{@{}l}{\textit{The proposer repeats itself}} \\
+Rounds the guard resolved & 3785 & 3649 & 2253 \\
+Proposals made by the arm & 4732 & 4557 & 2807 \\
+\quad byte-identical to an earlier one & 24.3\% & 27.1\% & 24.2\% \\
+Of resolutions, a repeat proposal & 30.4\% & 33.9\% & 30.2\% \\
+\quad a patch the store already held & 12.6\% & 13.8\% & 12.8\% \\
+\quad a patch the store never held & 87.4\% & 86.2\% & 87.2\% \\
+\midrule
+\multicolumn{4}{@{}l}{\textit{Memory is too small for order to matter}} \\
+Entries held at resolution, median & 1 & 1 & 1 \\
+\quad maximum observed & 5 & 4 & 3 \\
+Resolutions with one entry or none & 57.5\% & 63.3\% & 60.5\% \\
+Resolutions after one consultation & 83.3\% & 87.6\% & 86.4\% \\
+\midrule
+\multicolumn{4}{@{}l}{\textit{Some evidence is found, not given}} \\
+Distinct stored inputs per episode & 1.53 & 1.44 & 1.47 \\
+Stored inputs beyond the round-1 one & 34.7\% & 30.5\% & 32.0\% \\
+\bottomrule
+\end{tabular}
+\end{table}

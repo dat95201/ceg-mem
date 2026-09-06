@@ -1,0 +1,39 @@
+\begin{table}[t]
+\centering
+\footnotesize
+\caption{Notation. The three horizontal blocks are the distinctions this paper
+depends on and that its earlier drafts blurred: what is correct versus what an
+oracle certifies; what is computable before an execution versus after one; and
+which budget a number is denominated in.}
+\label{tab:notation}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Symbol} & \textbf{Meaning} \\
+\midrule
+$\cand, p$ & candidate space; a candidate patch \\
+$\spec, \mathrm{sat}(p)$ & specification; $p$ satisfies $\spec$ on all of $\mathcal{X}$ \\
+$\prop$ & stochastic proposer (the LLM) \\
+$\pi,\ q_\tau$ & base mass on the correct class; on type $\tau$ \\
+$\wmass_s$ & base mass of class $s$ ($\wmass_\top{=}\pi$, $\wmass_\tau{=}q_\tau$) \\
+\midrule
+$\Gstar \subseteq \cand$ & \emph{semantically} correct patches \\
+$\Gpool$ & patches passing the entire shipped test pool \\
+$\Gk$ & patches the depth-$\oracledepth$ oracle accepts;
+  $\Gstar {\subseteq} \Gpool {\subseteq} \Gk$ \\
+$\Ok(p)$ & counterexample oracle at depth $\oracledepth$ (\cref{eq:oracle}) \\
+\midrule
+$\loc(p)$ & edit location: the key computable \emph{before} execution \\
+$\ttype(p, x) \in \types$ & failure label, defined \emph{after} $x$ refutes $p$ \\
+$\mem,\ \mem[\ell]$ & memory of triples $(p, x, \tau)$; its $\loc{=}\ell$ bucket \\
+$\elim \subseteq \types$ & labels this arm has eliminated \\
+$\elimobs \subseteq \types$ & labels refuted so far, arm-neutral \\
+$\Kreach$ & reachable failure types, $|\{\tau : q_\tau > 0\}|$ \\
+$\info,\ \coh$ & oracle informativeness; typing coherence (\cref{def:coh}) \\
+\midrule
+$\budget$ & \emph{proposal} budget per episode ($20$ throughout) \\
+$b$ & \emph{oracle-call} budget: the reported cost axis \\
+$\oracledepth$ & \emph{oracle depth}: test cases per verification \\
+\bottomrule
+\end{tabular}
+\end{table}

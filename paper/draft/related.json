@@ -1,0 +1,217 @@
+{
+  "_provenance": {
+    "run": "../../runs/2026-09-01",
+    "rule": "arm identity identical to review_addenda.py cfg(); no program was executed to produce any number in this file",
+    "arms": {
+      "untyped": {
+        "mode": "untyped",
+        "guard_on": true,
+        "steer_on": true,
+        "force_full_budget": false,
+        "max_examples": 100,
+        "typing_noise_c": 1.0,
+        "typing_random": false,
+        "free_guarded_rounds": false,
+        "audit_guarded": false
+      },
+      "typed": {
+        "mode": "typed",
+        "guard_on": true,
+        "steer_on": true,
+        "force_full_budget": false,
+        "max_examples": 100,
+        "typing_noise_c": 1.0,
+        "typing_random": false,
+        "free_guarded_rounds": false,
+        "audit_guarded": false
+      },
+      "guard_only": {
+        "mode": "typed",
+        "guard_on": true,
+        "steer_on": false,
+        "force_full_budget": false,
+        "max_examples": 100,
+        "typing_noise_c": 1.0,
+        "typing_random": false,
+        "free_guarded_rounds": false,
+        "audit_guarded": false
+      }
+    }
+  },
+  "nonvacuity": {
+    "guard_only": {
+      "blocks": 2253,
+      "verbatim_redraw": 288,
+      "verbatim_pct": 12.8,
+      "generalized": 1965,
+      "generalized_pct": 87.2,
+      "verbatim_any_earlier": 680,
+      "verbatim_any_earlier_pct": 30.2,
+      "proposals": 2807,
+      "repeat_proposals": 680,
+      "repeat_proposal_pct": 24.2
+    },
+    "typed": {
+      "blocks": 3649,
+      "verbatim_redraw": 503,
+      "verbatim_pct": 13.8,
+      "generalized": 3146,
+      "generalized_pct": 86.2,
+      "verbatim_any_earlier": 1236,
+      "verbatim_any_earlier_pct": 33.9,
+      "proposals": 4557,
+      "repeat_proposals": 1236,
+      "repeat_proposal_pct": 27.1
+    },
+    "untyped": {
+      "blocks": 3785,
+      "verbatim_redraw": 476,
+      "verbatim_pct": 12.6,
+      "generalized": 3309,
+      "generalized_pct": 87.4,
+      "verbatim_any_earlier": 1149,
+      "verbatim_any_earlier_pct": 30.4,
+      "proposals": 4732,
+      "repeat_proposals": 1152,
+      "repeat_proposal_pct": 24.3
+    }
+  },
+  "ordering": {
+    "guard_only": {
+      "blocks": 2253,
+      "mem_size_mean": 1.42,
+      "mem_size_median": 1,
+      "mem_size_max": 3,
+      "mem_le_1_pct": 60.5,
+      "consult_1_pct": 86.4,
+      "consult_hist": {
+        "1": 1946,
+        "2": 302,
+        "3": 5
+      }
+    },
+    "typed": {
+      "blocks": 3649,
+      "mem_size_mean": 1.41,
+      "mem_size_median": 1,
+      "mem_size_max": 4,
+      "mem_le_1_pct": 63.3,
+      "consult_1_pct": 87.6,
+      "consult_hist": {
+        "1": 3197,
+        "2": 432,
+        "3": 20
+      }
+    },
+    "untyped": {
+      "blocks": 3785,
+      "mem_size_mean": 1.48,
+      "mem_size_median": 1,
+      "mem_size_max": 5,
+      "mem_le_1_pct": 57.5,
+      "consult_1_pct": 83.3,
+      "consult_hist": {
+        "1": 3153,
+        "2": 603,
+        "3": 28,
+        "4": 1
+      }
+    }
+  },
+  "discovery": {
+    "guard_only": {
+      "cells": 297,
+      "cells_with_block": 203,
+      "cells_that_stored": 234,
+      "distinct_inputs_mean": 1.47,
+      "distinct_inputs_max": 3,
+      "cells_multi_input": 99,
+      "cells_multi_input_pct": 42.3,
+      "inputs_total": 344,
+      "inputs_beyond_given": 110,
+      "inputs_beyond_given_pct": 32.0
+    },
+    "typed": {
+      "cells": 495,
+      "cells_with_block": 320,
+      "cells_that_stored": 389,
+      "distinct_inputs_mean": 1.44,
+      "distinct_inputs_max": 4,
+      "cells_multi_input": 144,
+      "cells_multi_input_pct": 37.0,
+      "inputs_total": 560,
+      "inputs_beyond_given": 171,
+      "inputs_beyond_given_pct": 30.5
+    },
+    "untyped": {
+      "cells": 495,
+      "cells_with_block": 331,
+      "cells_that_stored": 390,
+      "distinct_inputs_mean": 1.53,
+      "distinct_inputs_max": 6,
+      "cells_multi_input": 174,
+      "cells_multi_input_pct": 44.6,
+      "inputs_total": 597,
+      "inputs_beyond_given": 207,
+      "inputs_beyond_given_pct": 34.7
+    }
+  },
+  "bucket": {
+    "guard_only": {
+      "logged": 2253,
+      "hit_pct": 40.1,
+      "hit_refuted_pct": 37.9
+    },
+    "typed": {
+      "logged": 3649,
+      "hit_pct": 41.0,
+      "hit_refuted_pct": 39.7
+    },
+    "untyped": {
+      "logged": 0,
+      "hit_pct": null,
+      "hit_refuted_pct": null
+    }
+  },
+  "cost_per_round": {
+    "guard_only": {
+      "guard_resolved_rounds": 2253,
+      "exec_per_guard_resolved": 1.14,
+      "oracle_rounds": 554,
+      "exec_per_oracle_round": 18.73
+    },
+    "no_memory": {
+      "guard_resolved_rounds": 0,
+      "exec_per_guard_resolved": null,
+      "oracle_rounds": 9900,
+      "exec_per_oracle_round": 12.49
+    },
+    "typed": {
+      "guard_resolved_rounds": 3649,
+      "exec_per_guard_resolved": 1.13,
+      "oracle_rounds": 908,
+      "exec_per_oracle_round": 18.91
+    },
+    "untyped": {
+      "guard_resolved_rounds": 3785,
+      "exec_per_guard_resolved": 1.17,
+      "oracle_rounds": 947,
+      "exec_per_oracle_round": 18.54
+    }
+  },
+  "soundness": {
+    "corpus_tasks": 99,
+    "pool_size_min": 15,
+    "pool_size_median": 33,
+    "pool_size_max": 144,
+    "tasks_fully_checked_at_k": {
+      "100": 97,
+      "20": 17,
+      "8": 0,
+      "3": 0
+    },
+    "audited_blocked_rounds": 4411,
+    "guard_soundness_violations": 0,
+    "upper95": 0.000679
+  }
+}

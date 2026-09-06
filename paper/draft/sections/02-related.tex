@@ -1,0 +1,102 @@
+\section{Background and Related Work}
+\label{sec:related}
+
+Deciding that one candidate patch needs less validation work than the next is
+not new, and \cref{tab:positioning} sorts the ways it has been done by what the
+decision is computed from and what that demands of the candidate space. We put
+\CEGMem\ in the same row as a mechanism a decade older than LLM repair, and
+then say what is left over.
+
+\input{tables/positioning}
+
+\subsection{Removing validations: candidate equivalence}
+\label{sec:related-avoid}
+One family relates candidates \emph{to each other} and validates one
+representative per class. AE quotients the patch space under an approximate
+program-equivalence relation: on the $45$ defects it and GenProg both repair,
+from a $105$-defect benchmark, it needs $186$ test-suite evaluations against
+$3{,}252$~\cite{weimer2013leveraging}. Test-equivalence analysis partitions
+candidates by the values a modified expression evaluates to during a test, so
+one execution decides an entire class~\cite{mechtaev2018testequivalence}, and
+ExpressAPR detects that equivalence \emph{online}, reporting
+${\approx}137\times$ over plain validation on
+Defects4J~\cite{xiao2024expressapr}. UniAPR, by contrast, purely
+accelerates---it redefines bytecode inside a warm JVM and still runs every
+test~\cite{chen2021uniapr}. The equivalence mechanisms give a stronger
+guarantee than ours, and they need what an LLM does not supply: an enumerable
+candidate space and an edit shape the analysis can model. That is why they do
+not transfer, and it is the only reason.
+
+\subsection{Reordering validations, and where our guard belongs}
+\label{sec:related-order}
+The other family validates every candidate and changes the order in which
+evidence against it is sought. Fault-recorded prioritization runs the tests
+that killed earlier candidates first~\cite{qi2013efficient};
+modification-point--aware prioritization keeps one ordered suite per edit
+location~\cite{venugopal2020modification}; AE's TestStrat---in the same paper as
+its quotient space---takes the test likeliest to fail and stops
+there~\cite{weimer2013leveraging}; and a study of \num{2532915} patches from
+$12$ repair systems on $395$ Defects4J bugs quantifies what selection and
+prioritization save~\cite{lou2024when}.
+
+\textbf{Our guard belongs here, and we state the identity rather than argue
+with it.} Inline the guard into the oracle---stored counterexamples first, stop
+at the first failure---and the executions performed are the same ones, in the
+same order, at the same cost. Nothing is \emph{removed}; a validation is made
+to terminate on its first case. We therefore claim an ordering effect and
+report it as one: in \armtyped\ a round the guard resolves costs $1.13$
+program executions where a round reaching the oracle costs $18.9$, and memory
+turns roughly $7.6$ oracle calls per episode into roughly $7.4$
+early-terminating ones (\cref{sec:results-cost}). What is \emph{not} shared with prior work is the key
+and the evidence. Those tables rank the project's own tests by a failure
+history over candidates; ours holds inputs discovered inside the episode by
+candidates the oracle already refuted, re-executed against a candidate nobody
+has run, indexed by a location a diff supplies. The per-modification-point
+table of~\cite{venugopal2020modification} is the nearest neighbour, and the
+baseline this paper most needs (\cref{sec:threats}).
+
+\subsection{Counterexample-guided repair, and why replay is not vacuous}
+\label{sec:related-cegis}
+That a counterexample should constrain the next candidate is the engine of the
+loop \Sketch\ introduced~\cite{solarlezama2006sketching}, and the loop has been
+run with an LLM in the synthesizer's place over $1{,}431$ student C
+programs~\cite{orvalho2025counterexample}. There, retaining counterexamples and
+replaying them would be \emph{vacuous}: a constrained synthesizer cannot emit a
+candidate one of them refutes, so a guard would never fire. Losing that
+constraint is what creates the opportunity, and an LLM takes it often. In
+\armguard, $24.2\%$ of proposals are byte-identical to an earlier one in the
+same episode and $30.2\%$ of the rounds the guard resolves are such a repeat;
+of those resolutions $12.8\%$ re-propose a patch the store already holds, and
+the remaining $87.2\%$ are patches the store never held, refuted by a stored
+input anyway (\appref{tab:related}{the supplement}). Neither case can arise in
+\Sketch. Orvalho et al.\ use the counterexample as
+prompt content for the next attempt---our \armsteer\ arm, the half we find
+null; we add the second use of the same evidence.
+
+\ifsuppmatter\else\input{tables/related}\fi
+
+\subsection{Memory in LLM repair agents}
+LLMs repair code by conversing: ChatRepair iterates on test
+failures~\cite{xia2024chatrepair}, agentic systems localize, edit and validate
+over many turns~\cite{bouzenia2025repairagent,zhang2024autocoderover,%
+yang2024sweagent}, ``agentless'' pipelines keep a fixed propose--validate
+workflow~\cite{xia2025agentless}, and general frameworks add verbal
+self-reflection~\cite{shinn2023reflexion,chen2024selfdebug}. In all of them the
+record of past attempts is a flat transcript and the cost model is dollars or
+tokens. The closest memory-augmented system,
+ExpeRepair~\cite{mu2026experepair}, retrieves ``concrete repair
+demonstrations'' and ``abstract, reflective insights'' to condition generation
+but never validation; nothing in that index recognizes that a new candidate is
+refuted by an input already in hand. Concurrently, Vo et
+al.~\cite{vo2026merit} type failures for text-to-SQL repair, conditioning
+\emph{retrieval for the prompt} where we condition \emph{the order of
+validation}; their caveat that the typed variant ``is not reliably separated
+from untyped dynamic retrieval'' is, on our reading, what we measure directly
+in \cref{sec:results}. The guard is a property of memory rather than of a
+controller, so it is orthogonal to every agent above. Finally, since a patch
+can pass the visible tests and still be wrong~\cite{xiong2018patchsim} and
+LLM-era benchmarks must worry about leakage, we use
+ConDefects~\cite{wu2024condefects} rather than
+Defects4J~\cite{just2014defects4j} or SWE-bench~\cite{jimenez2024swebench}, and
+treat acceptance as a claim about $\Gk$ audited against $\Gpool$
+(\cref{sec:results-depth}).

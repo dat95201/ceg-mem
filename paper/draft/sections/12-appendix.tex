@@ -1,0 +1,272 @@
+\section{Statements and Proofs}
+\label{app:proofs}
+
+\Cref{sec:theory} states \cref{as:sound,thm:sound,cor:budget} in full and
+summarizes the three results below; this appendix states those three formally
+and proves all of them. Two further assumptions are used here and nowhere in
+the body.
+
+\begin{assumption}[Ideal typing]
+\label{as:ideal}
+$\info = \coh = 1$ (\cref{def:coh}) and refutation is \emph{class-exclusive}: a
+counterexample of class $\tau$ refutes every candidate of class $\tau$, and no
+candidate of any other class.
+\end{assumption}
+
+The exclusivity clause is what makes ``a round calls the oracle iff its type is
+not yet eliminated'' an equivalence rather than an implication, and both
+results below need it: without it a live-type proposal can be blocked by a
+foreign counterexample, eliminating nothing and consuming a round, which
+destroys the proposal bound while leaving the call bound intact. It is also the
+assumption our implementation most clearly violates---$\loc$ records where a
+candidate edits and refutation is decided by which input it gets wrong, and
+\cref{sec:impl} reports the two are close to independent---so
+\cref{thm:nonrep,thm:redund} are directional predictions rather than
+calibrated ones, and \cref{sec:results-assumptions} reports how far the fit
+holds.
+
+\begin{assumption}[Memoryless proposer]
+\label{as:memoryless}
+The type of each proposal is drawn i.i.d.\ with base mass $\wmass_\top = \pi >
+0$ on the correct class and $\wmass_\tau = q_\tau$ on each failure type;
+steering (\cref{eq:steer}) modifies the support but not the relative weights.
+$\Kreach = \lvert\{\tau \in \types : q_\tau > 0\}\rvert$ is the number of
+\emph{reachable} types---the only ones a run can eliminate.
+\end{assumption}
+
+\Cref{as:memoryless} is the conservative modeling choice: it endows the
+proposer with no intrinsic learning, so every improvement proved below is
+attributable to memory alone. It is also close to what a $7$B proposer does---%
+the measured rate at which it re-draws an already-eliminated class is
+statistically indistinguishable with and without an exclusion instruction
+(\cref{sec:results-ablation}).
+
+\begin{theorem}[Non-repetition and round bound]
+\label{thm:nonrep}
+Under \cref{as:sound,as:ideal,as:memoryless}, on an \emph{unbounded} run with
+typed memory: \emph{(i)} the agent never proposes a candidate whose class is
+already eliminated, so no refuted patch is re-proposed; \emph{(ii)} every
+refuting oracle call eliminates a previously live reachable class, so the run
+halts within $\Kreach{+}1$ oracle calls and $\Kreach{+}1$ proposals. Untyped
+memory attains the same call bound but no proposal bound; no memory attains
+neither, issuing $1/\pi$ calls in expectation and unbounded in the worst case.
+\end{theorem}
+
+Three budget quantities stay distinct: oracle calls, generated proposals, and
+\emph{charged} proposals (rounds billed against $\budget$, including blocked
+ones). \Cref{thm:nonrep} bounds the first two on an unbounded run; under a
+finite $\budget$ it becomes the statement that the run repairs if
+$\Kreach{+}1 \le \budget$. When $\Kreach$ exceeds the budget, untyped memory
+can spend arbitrarily many charged blocked rounds and stop at $\budget$ without
+reaching $\Kreach{+}1$ oracle calls.
+
+\begin{definition}[Observed-type history]
+\label{def:eobs}
+$\elimobs_t := \{\ttype(p_u, x_u) : u < t,\ \Ok(p_u) = x_u\}$ is the set of
+classes already refuted this episode before round $t$, \emph{whether or not the
+arm records them}. Under \cref{as:ideal} typed memory has $\elim = \elimobs$;
+untyped memory and no memory have $\elim = \emptyset$ while $\elimobs$ is
+unchanged. Proposal $p_t$ is a \emph{redundant attempt} if
+$\ttype(p_t, \cdot) \in \elimobs_t$; it is \emph{caught} if the guard blocks it
+and \emph{paid} if it reaches the oracle. Defining redundancy this way is what
+makes it measurable in an arm that stores nothing.
+\end{definition}
+
+\begin{theorem}[Redundancy reduction]
+\label{thm:redund}
+Under \cref{as:sound,as:ideal,as:memoryless}, on an unbounded run, with
+$\Dred := \sum_{\tau} q_\tau/(q_\tau + \pi)$:
+\emph{(a)} expected oracle calls are $1/\pi$ with no memory and $1 + \Dred$
+with either memory, and since
+$\frac{1}{\pi} - (1 + \Dred) = \sum_\tau q_\tau(\frac{1}{\pi} -
+\frac{1}{q_\tau + \pi}) \ge 0$, memory strictly reduces them whenever some
+$q_\tau > 0$;
+\emph{(b)} with $\elimobs$ as in \cref{def:eobs}, expected redundant attempts
+\emph{generated} are $1/\pi - 1 - \Dred > 0$ with no memory and with untyped
+memory and $0$ with typed memory, while those \emph{paid} are that same
+quantity with no memory and $0$ with either memory.
+\end{theorem}
+
+\begin{proposition}[Index position and cost]
+\label{prop:guardcost}
+Fix a round on which memory holds $m$ entries at insertion positions
+$1, \dots, m$, and let $R$ be the positions of the entries that still refute
+the candidate. A flat scan performs $\min R$ re-executions, or $m$ if
+$R = \emptyset$. Write $\mathcal{B} = \mem[\loc(p)]$ for the bucket and
+$\mathrm{pos}_\mathcal{B}(j)$ for a position's rank within it. The
+bucket-first guard performs $\min\{\mathrm{pos}_\mathcal{B}(j) : j \in R \cap
+\mathcal{B}\}$ when $R \cap \mathcal{B} \neq \emptyset$; otherwise it performs
+$\lvert\mathcal{B}\rvert + \min R$, or $m$ when $R = \emptyset$. Writing $h$
+for the probability that $R$ meets $\mathcal{B}$, expected re-executions
+therefore fall by the saving $h$ buys inside the bucket \emph{less}
+$(1-h)\,\lvert\mathcal{B}\rvert$ paid on a miss; the index is never
+asymptotically cheaper. Deduplicating stored
+counterexamples by input and memoizing verdicts within a round reduce
+\emph{executions} at unchanged \emph{consultations}.
+\end{proposition}
+
+\begin{lemma}[Competing-geometric race]
+\label{lem:race}
+Under \cref{as:memoryless}, the expected number of distinct failure types the
+proposer draws before its first correct proposal is
+$\Dred = \sum_{\tau \in \types} q_\tau / (q_\tau + \pi)$.
+\end{lemma}
+
+\begin{proof}
+Fix $\tau$. Ignore every draw whose type is neither $\tau$ nor $\top$; the
+remaining subsequence is i.i.d.\ with $\mathbb{P}[\tau] = q_\tau/(q_\tau+\pi)$
+and $\mathbb{P}[\top] = \pi/(q_\tau+\pi)$. Type $\tau$ is drawn at least once
+before the first correct proposal iff the first element of that subsequence is
+$\tau$, which has probability $q_\tau/(q_\tau+\pi)$. Summing the indicator over
+$\tau \in \types$ and applying linearity of expectation gives $\Dred$. The
+races are not independent, but linearity does not require independence.
+\end{proof}
+
+\begin{proof}[Proof of \cref{thm:sound}]
+Suppose $\mathrm{Guard}_\mem(p) = 1$ with witness $x'$. By \cref{eq:guard}
+$x'$ was \emph{re-executed} against $p$ and still failed, so
+$\lnot\spec(p, x')$ holds by \cref{as:sound}. Every stored counterexample was
+returned by an earlier oracle call and therefore lies in the fault's shipped
+pool, so $p$ fails a pool input and $p \notin \Gpool$; since
+$\Gstar \subseteq \Gpool$, also $p \notin \Gstar$. For a particular call, $\Gk$
+is fixed by that call's draw: if $x' \in \Xk$ the call refutes $p$, so
+$p \notin \Gk$ and blocking $p$ discards nothing that call would have
+certified. That is automatic whenever $\Xk$ exhausts the pool, i.e.\
+$\oracledepth \ge \lvert\mathrm{pool}\rvert$; otherwise it is an empirical
+question, which \cref{sec:theory} settles with an audit rather than an
+assumption. For the second clause, \CEGMem\ returns at line~8 of
+\cref{alg:cegmem} only when $\Ok(p_t) = \textsf{accept}$, i.e.\ $p_t$ passed
+every input in that call's $\Xk$. The argument uses only that \cref{eq:guard}
+re-executes $x'$;
+it is independent of how the search over $\mem$ is ordered or restricted,
+which is why widening the guard's search beyond the $\loc$-matched bucket
+(\cref{sec:impl}) cannot break soundness. Nothing here yields
+$\hat p \in \Gstar$: that would require oracle completeness, which we do not
+assume and instead measure (\cref{sec:results-depth}).
+\end{proof}
+
+\begin{proof}[Proof of \cref{thm:nonrep}]
+\emph{(i)} By \cref{as:ideal}, $\coh = 1$, so a stored refutation of type
+$\tau$ places $\tau$ in $\elim$; by \cref{eq:steer} the steered proposer has
+zero mass on $\elim$, so no candidate of an eliminated type is drawn. A refuted
+patch has an eliminated type, hence is never re-proposed.
+\emph{(ii)} Consider an oracle call at round $t$ returning a counterexample
+$x_t$ of type $\tau_t$. By (i), $\tau_t \notin \elim$ before the call, and
+after it $\tau_t \in \elim$, so $|\elim|$ strictly increases at every refuting
+call. Since $|\elim| \le \Kreach$, at most $\Kreach$ refuting calls occur, and
+the run ends on the next call at the latest (either it accepts, or $\elim$ is
+exhausted and $\prop$'s support is $\{\top\}$, so the next draw is correct).
+Hence at most $\Kreach{+}1$ oracle calls, and---because (i) makes every
+proposal reach the oracle---at most $\Kreach{+}1$ proposals. For untyped
+memory, \cref{eq:guard} still blocks any candidate a stored counterexample
+refutes, so the oracle-call bound is unchanged; but the proposer is
+unconditioned, so the number of \emph{proposals} is unbounded. With no memory,
+each round is an independent trial with success probability $\pi$, giving
+$1/\pi$ expected calls and no finite worst case.
+\end{proof}
+
+\begin{proof}[Proof of \cref{thm:redund}]
+\emph{(a)} No memory: rounds are i.i.d.\ Bernoulli($\pi$) and every round calls
+the oracle, so the expected count is $1/\pi$. With memory of either kind, a
+round calls the oracle iff its type is not yet eliminated (blocked rounds do
+not call it, by \cref{eq:guard} and \cref{as:ideal}). The oracle-calling rounds
+are therefore exactly the first draw of each distinct type, plus the terminal
+correct draw: $\Dred + 1$ in expectation by \cref{lem:race}. The inequality
+follows from $q_\tau + \pi \ge \pi$ termwise.
+\emph{(b)} Redundancy is counted against $\elimobs$ (\cref{def:eobs}), which is
+defined from the episode's refutation history and is therefore available in
+every arm, including those that store nothing. An unconditioned proposer draws
+$1/\pi$ proposals in expectation before its first correct one, of which
+$\Dred + 1$ fall in classes not yet in $\elimobs$ (\cref{lem:race}); the
+remaining $1/\pi - 1 - \Dred$ are redundant attempts, and this quantity is
+positive whenever some $q_\tau > 0$ by the inequality in (a). It is the
+expected count for no memory and for untyped memory alike, since neither
+conditions the proposer. With typed memory, (i) of \cref{thm:nonrep} says no
+proposal has a type in $\elim = \elimobs$, so the count is identically $0$.
+Finally, a redundant attempt is \emph{paid} only if it reaches the oracle:
+under \cref{eq:guard} every redundant attempt in a memory arm is blocked, so
+the expected paid count is $1/\pi - 1 - \Dred$ with no memory and $0$ with
+either memory---which is the part of (b) that does not depend on steering.
+\end{proof}
+
+\begin{proof}[Proof of \cref{cor:budget}]
+Both halves use only \cref{thm:sound}, so they hold for any sound guard and in
+particular for untyped memory as well as typed. If blocked rounds are not
+charged, the episode terminates at the first correct \emph{unblocked} draw, and
+blocking removes only draws a stored counterexample refutes---draws that are
+not accepted, by \cref{thm:sound}. Deleting non-terminal elements from a
+sequence cannot postpone the first terminal one, so the success probability
+within $\budget$ charged proposals is non-decreasing. It is strictly larger
+only when deletion moves a terminal draw from beyond $\budget$ to within it,
+which requires a blocked round at some $t < \budget$ in a realization whose
+first accepting draw would otherwise have fallen outside the budget; a block in
+a realization that succeeds anyway changes nothing, which is why the strictness
+condition is about budget position and not about $q_\tau$ alone. If blocked
+rounds \emph{are} charged, the round index of each draw is unchanged and the
+guard alters no draw's outcome, so the index of the first accepting draw is
+invariant; under common random numbers the two arms realize the same draw
+sequence and hence the same index exactly.
+\end{proof}
+
+\begin{proof}[Proof of \cref{prop:guardcost}]
+Both guards evaluate the existential in \cref{eq:guard} by re-executing stored
+counterexamples and stopping at the first that still refutes. A flat scan walks
+memory in insertion order, so it stops at index $\min_{i \in R} i$ if $R \neq
+\emptyset$ and otherwise consults all $m$ entries. The bucket-first guard walks
+$\mathcal{B} = \mem[\loc(p)]$ first: if $R \cap \mathcal{B} \neq \emptyset$ it
+stops within the bucket, at the position of the first refuting bucket entry; if
+not, it has consulted $|\mathcal{B}|$ entries for nothing and then walks the
+remainder, stopping at the first refuting entry there. Neither bound dominates
+the other pointwise, and when $R = \emptyset$ both consult every entry, so the
+worst cases coincide and no asymptotic separation holds. The expected saving is
+therefore the mass $R$ places inside $\mathcal{B}$ weighted by how early it
+appears there, net of the miss penalty---a distributional property of the type
+map, which is what \cref{sec:results-typing} sweeps and finds flat. The last clause is
+immediate: deduplicating $\mem$ by counterexample input and memoizing verdicts
+within a round leave the set of consultations unchanged while reducing the
+number that trigger an execution, so a cost measured in seconds can fall while
+a cost measured in consultations does not.
+\end{proof}
+
+\section{Sensitivity: the timeout-edge fault}
+\label{app:sensitivity}
+
+One fault's candidate patches run at the sandbox's \SI{30}{\second}
+wall-clock limit, so its verdicts are timing-dependent
+(\cref{sec:results-integrity}). \Cref{tab:sensitivity} repeats every headline
+number with that fault removed. The cost and repair results are unmoved---the
+reduction factors change in the second decimal and the budget curve in the
+third---and every episode that remains is outcome-identical ($294/294$ instead
+of $295/297$), which strengthens the pairing claim. One row does move, and we
+flag it rather than bury it: that single fault contributes \SI{1.8}{\second} of
+\armuntyped's \SI{6.66}{\second} guard time, so the guard-second reduction
+falls from $-39\%$ to $-18\%$ ($\num{4.85} \to \num{3.98}$) without it. The
+sign is unchanged ($189/40$) but the magnitude is not robust, which is why
+\cref{sec:results-ablation} reports the clustered interval alongside it.
+
+\begin{table}[!ht]
+\centering
+\footnotesize
+\caption{Headline numbers with the timeout-edge fault excluded
+($98$ faults, \num{490} cells).}
+\label{tab:sensitivity}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+& \textbf{full corpus} & \textbf{excluded} \\
+\midrule
+Oracle calls, \armnomem\ $\to$ \armtyped & \fold{5.17} & \fold{5.18} \\
+Paid redundancy, \armnomem\ $\to$ \armtyped & \fold{56.9} & \fold{56.5} \\
+Repair @ $b{=}2$, \armtyped & $0.558$ & $0.557$ \\
+Repair @ $b{=}2$, \armnomem & $0.319$ & $0.318$ \\
+\armtyped\ vs.\ \armuntyped, oracle & $93/59$ & $90/59$ \\
+Guard sec., \armuntyped\ $\to$ \armguard & $6.66 \to 4.04$ &
+  $4.85 \to 3.98$ \\
+\ \ \emph{reduction} & $-39\%$ & $-18\%$ \\
+\ \ sign test & $191/40$ & $189/40$ \\
+Episodes outcome-identical & $295/297$ & $294/294$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\clearpage

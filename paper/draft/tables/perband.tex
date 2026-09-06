@@ -1,0 +1,36 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{Cost by difficulty band, banded on the no-memory arm's own $\pihat$.
+The \armnomem\ column is descriptive only (\cref{sec:design}); inference is
+confined to the last column, where the band is symmetric between the two
+memory arms.}
+\label{tab:perband}
+\setlength{\tabcolsep}{3.6pt}
+\renewcommand{\arraystretch}{1.06}
+\begin{tabular}{@{}l r S[table-format=2.2] S[table-format=1.2] S[table-format=1.2] r l@{}}
+\toprule
+& & \multicolumn{3}{c}{oracle calls / ep.} & &
+\multicolumn{1}{c}{\armtyped\ vs.} \\
+\cmidrule(lr){3-5}
+Band & \multicolumn{1}{c}{tasks} & {\armnomem} & {\armuntyped} & {\armtyped}
+  & \multicolumn{1}{c}{$\times$} & \multicolumn{1}{c}{\armuntyped} \\
+\midrule
+dead      & 23 & 19.83 & 1.62 & 1.64 & 12.1 & \sig{$18/19$, \pval{1.0}} \\
+hard      & 17 & 13.81 & 2.32 & 2.14 &  6.5 & \sig{$32/17$, \pval{0.044}} \\
+medium    & 13 &  7.66 & 2.28 & 2.19 &  3.5 & \sig{$15/10$, \pval{0.42}} \\
+easy      & 25 &  4.47 & 2.11 & 1.98 &  2.3 & \sig{$24/12$, \pval{0.065}} \\
+too-easy  & 21 &  1.71 & 1.45 & 1.42 &  1.2 & \sig{$4/1$, \pval{0.38}} \\
+\midrule
+\multicolumn{7}{@{}l}{\itshape pooled over the three primary bands
+  (\num{275} cells): $71/39$, \pval{0.0029}} \\
+\addlinespace[2pt]
+\multicolumn{7}{@{}l}{\itshape repair rate in the \emph{dead} band, where
+  steering acts (\cref{sec:results-ablation})} \\
+\multicolumn{2}{@{}l}{\armnomem\ / \armuntyped} & \multicolumn{5}{l}{$0.026$
+  / $0.026$ \quad(identical: the guard cannot change an outcome)} \\
+\multicolumn{2}{@{}l}{\armtyped} & \multicolumn{5}{l}{$\mathbf{0.122}$
+  \quad(per-task \pval{0.047} vs.\ \armuntyped)} \\
+\bottomrule
+\end{tabular}
+\end{table*}
