@@ -210,7 +210,13 @@ def run_candidate(task_name: str, sha: str, source: str,
         "n_fail": len(fails),
         "fails": fails,          # the row's information content; passes are the complement
         "sec": round(time.perf_counter() - t0, 3),
-        "complete": True,
+        # An empty pool is NOT a completed row. With external/ConDefects/Test
+        # absent, `task.test_cases` is empty, every candidate "passes" instantly,
+        # and a row marked complete would make `already_done` skip the pair
+        # forever - the build reports itself finished in minutes and the matrix
+        # says every candidate is correct. Refusing the mark makes the trap
+        # self-healing: unpack Test and the same command fills the rows in.
+        "complete": len(cases) > 0,
     }
 
 
@@ -225,8 +231,22 @@ def main() -> int:
     ap.add_argument("--tasks", nargs="*", default=None, help="restrict to these tasks")
     ap.add_argument("--limit", type=int, default=0, help="stop after N candidates (smoke test)")
     ap.add_argument("--jobs", type=int, default=max(1, (os.cpu_count() or 2) - 1))
+    ap.add_argument("--task-group", type=int, default=4,
+                    help="how many tasks share one worker pool. 1 restores the old "
+                         "task-at-a-time behaviour, whose tail is serial: a task "
+                         "with one 45-minute candidate runs the last stretch on a "
+                         "single core while the other workers idle. Higher values "
+                         "keep the pool fed at the cost of holding that many tasks' "
+                         "test data at once (~84 MB each, worst case)")
     ap.add_argument("--timeout", type=float, default=DEFAULT_TIMEOUT)
     ap.add_argument("--progress-every", type=float, default=60.0)
+    ap.add_argument("--slow-note", type=float, default=300.0,
+                    help="print a line for any candidate that takes longer than "
+                         "this many seconds, as it lands")
+    ap.add_argument("--allow-empty-pools", action="store_true",
+                    help="build even though some task ships no test cases. Only "
+                         "for a deliberate subset; the default refusal is what "
+                         "catches an unpacked-Code-but-missing-Test checkout")
     ap.add_argument("--plan-only", action="store_true",
                     help="print the cost estimate and execute nothing")
     ap.add_argument("--verify", action="store_true",
@@ -237,7 +257,7 @@ def main() -> int:
     out_path = args.out or (paths.DATA_DIR / "verdicts.jsonl")
 
     if args.verify:
-        return verify(args.episodes, out_path)
+        return verify(args.episodes, out_path, tuple(args.modes))
 
     paths.announce("verdict-matrix")
     if not TASKS:
@@ -255,6 +275,17 @@ def main() -> int:
         by_task = {t: v for t, v in by_task.items() if t in TASKS}
 
     pool = {t: len(case_names(TASKS[t].task_id)) for t in by_task}
+    # The Test.zip trap, caught before a core is spent. TASKS is built from the
+    # Code directory, so it is populated even when the Test directory never
+    # arrived - the check above passes and every pool is silently empty.
+    empty = sorted(t for t in by_task if pool[t] == 0)
+    if empty:
+        print(f"{len(empty)}/{len(by_task)} task(s) ship no test cases, e.g. "
+              f"{empty[:3]}", file=sys.stderr)
+        print("external/ConDefects/Test is missing or was unpacked without its "
+              "in/ files. Unpack it and re-run.", file=sys.stderr)
+        if not args.allow_empty_pools:
+            return 2
     n_cand = sum(len(v) for v in by_task.values())
     n_exec = sum(len(v) * pool[t] for t, v in by_task.items())
     # 0.808 s/case is this study's own measured rate: 249,448 case executions in
@@ -278,13 +309,24 @@ def main() -> int:
     if not todo:
         return 0
 
-    # Grouped by task, and the adapter's unbounded case cache is dropped between
-    # tasks. Without that the process holds every task's test data at once - 84 MB
-    # for one AtCoder problem, gigabytes across the corpus - and is killed. The
-    # grouping is also why the reference answers are computed once per task.
+    # Work is handed out in GROUPS of tasks, not one task at a time, and the
+    # adapter's unbounded case cache is dropped between groups.
+    #
+    # Why groups. Holding every task's test data at once is gigabytes and gets
+    # the process killed, so the cache has to be dropped periodically - but
+    # draining one task before starting the next makes every task's TAIL serial.
+    # Measured on this corpus: candidate cost spans p50 15.9 s to max 2,768 s, so
+    # a task whose last candidate is a program that times out on all 104 of its
+    # cases runs 45 minutes on ONE core while the other seven idle. Grouping four
+    # tasks gives the pool ~220 candidates to interleave instead of ~56, which is
+    # enough to keep it fed across that variance. Nothing about a verdict
+    # changes; this is scheduling only.
     by_task_todo: dict[str, list[tuple[str, str, str]]] = collections.defaultdict(list)
     for item in todo:
         by_task_todo[item[0]].append(item)
+    task_names = sorted(by_task_todo)
+    groups = [task_names[i:i + max(1, args.task_group)]
+              for i in range(0, len(task_names), max(1, args.task_group))]
 
     refs_cache: dict[str, dict[str, str]] = {}
     refs_lock = threading.Lock()
@@ -308,8 +350,7 @@ def main() -> int:
         r = reference_values(task_name, args.timeout)
         names = case_names(TASKS[task_name].task_id)
         with refs_lock:
-            refs_cache.clear()                 # one task's references at a time
-            refs_cache[task_name] = r
+            refs_cache[task_name] = r          # cleared per GROUP, not per task
             # `pool` is every case in pool order, which is the universe the
             # oracle's seeded draw samples from; `usable` is the subset with an
             # establishable reference answer, which is what a policy may charge
@@ -331,6 +372,11 @@ def main() -> int:
                 f.write(json.dumps(row) + "\n")
             state["n"] += 1
             state["exec"] += row["n_cases"]
+            # A candidate that times out on its whole pool costs 45 minutes and
+            # used to land in total silence, which reads as a hang. Name it.
+            if row["sec"] >= args.slow_note:
+                print(f"    slow: {row['sec']/60:5.1f} min  {row['n_cases']:3d} cases, "
+                      f"{row['n_fail']} failed  {row['task']}", flush=True)
             now = time.time()
             if now - state["last"] >= args.progress_every:
                 state["last"] = now
@@ -339,12 +385,17 @@ def main() -> int:
                 left = (len(todo) - state["n"]) / rate if rate else float("inf")
                 print(f"  {state['n']}/{len(todo)} candidates  "
                       f"{state['exec']:,} executions  "
-                      f"{el/60:.1f} min elapsed  ~{left/60:.1f} min left", flush=True)
+                      f"{el/60:.1f} min elapsed  ~{left/60:.1f} min left  "
+                      f"[{row['task']}]", flush=True)
 
-    for task_name in sorted(by_task_todo):
+    for gi, group in enumerate(groups, start=1):
+        batch = [item for t in group for item in by_task_todo[t]]
+        print(f"[group {gi}/{len(groups)}] {len(batch)} candidates over "
+              f"{len(group)} tasks: {', '.join(group)}", flush=True)
         with ThreadPoolExecutor(max_workers=args.jobs) as pool_exec:
-            list(pool_exec.map(work, by_task_todo[task_name]))
-        test_cases_for.cache_clear()           # release this task's test data
+            list(pool_exec.map(work, batch))
+        test_cases_for.cache_clear()           # release this group's test data
+        refs_cache.clear()
 
     print(f"done: {state['n']} candidates, {state['exec']:,} executions, "
           f"{(time.time() - state['t0'])/60:.1f} min -> {out_path}")
@@ -374,7 +425,8 @@ def load_matrix(path: pathlib.Path) -> dict[tuple[str, str], set[str]]:
     return m
 
 
-def verify(episodes: pathlib.Path, matrix_path: pathlib.Path) -> int:
+def verify(episodes: pathlib.Path, matrix_path: pathlib.Path,
+           modes: tuple[str, ...] = DEFAULT_MODES) -> int:
     """Replay every logged oracle round against the matrix.
 
     THE ACCEPTANCE GATE for this stage, declared before it was built: the matrix
@@ -382,6 +434,17 @@ def verify(episodes: pathlib.Path, matrix_path: pathlib.Path) -> int:
     of the log's oracle rounds. Anything lower means the sandbox is not
     deterministic beyond timeout jitter, and every policy simulated on top of the
     matrix would be measuring that jitter instead of the policy.
+
+    COVERAGE IS A PRECONDITION, NOT THE CRITERION. The rate above is computed
+    over rounds the matrix can answer, so a matrix that is 10% built and perfect
+    on those 10% would print the same 1.00 as a finished one. Coverage - the
+    share of checkable rounds the matrix holds a row for - is therefore reported
+    and gated separately, and a short matrix exits INCOMPLETE (3) rather than
+    PASS or FAIL. Nothing about the science has been decided at that point.
+
+    Rounds are restricted to `modes`, the same universe the matrix was built
+    over: a round from an arm that was never built is not missing evidence, it
+    is out of scope.
 
     The draw is reproducible: `src.oracle._sample` is
     `random.Random(seed).sample(...)` and `src.loop` calls it with
@@ -393,12 +456,14 @@ def verify(episodes: pathlib.Path, matrix_path: pathlib.Path) -> int:
         print(f"no matrix at {matrix_path} - run without --verify first", file=sys.stderr)
         return 2
     matrix = load_matrix(matrix_path)
-    print(f"matrix rows {len(matrix)}")
+    print(f"matrix rows {len(matrix)}   modes {list(modes)}")
 
     agree = disagree = missing = skipped = 0
     examples: list[str] = []
     rows, _ = stream_rounds(episodes)          # no sources needed: the sha is enough
     for row in rows:
+        if modes and row.get("mode") not in modes:
+            continue
         if row.get("guarded") or not row.get("patch_sha"):
             continue
         if not row.get("counterexample_args"):
@@ -427,12 +492,20 @@ def verify(episodes: pathlib.Path, matrix_path: pathlib.Path) -> int:
 
     total = agree + disagree
     rate = agree / total if total else 0.0
+    checkable = total + missing
+    coverage = total / checkable if checkable else 0.0
     print(f"oracle rounds checked {total}   agree {agree}   disagree {disagree}")
     print(f"rows not in the matrix {missing}   tasks not loaded {skipped}")
-    print(f"reproduction rate {rate:.4f}   gate 0.95   "
-          f"{'PASS' if rate >= 0.95 else 'FAIL'}")
+    print(f"coverage {coverage:.4f} of {checkable} checkable rounds   gate 0.99")
+    print(f"reproduction rate {rate:.4f}   gate 0.95")
     for e in examples:
         print("  mismatch:", e)
+    if coverage < 0.99:
+        print("INCOMPLETE - the matrix does not yet cover the log. The rate above "
+              "is over the part that exists and decides nothing; finish the build "
+              "and re-run.")
+        return 3
+    print("PASS" if rate >= 0.95 else "FAIL")
     return 0 if rate >= 0.95 else 1
 
 
