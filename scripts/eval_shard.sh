@@ -108,6 +108,13 @@ universe_list() {
     # (with the corpus digest header the read-time check below requires).
     live)   echo "$RUN_DATA/live_programs.txt" ;;
     demo)   echo "$RUN_DATA/demo_programs.txt" ;;
+    # The corpus minus its easy end: stratum in {dead, hard, medium}, easy and
+    # too_easy dropped. Drawn for a SECOND, stronger proposer - a task the 7B
+    # proposer already solved easily cannot be one a stronger proposer finds
+    # non-trivial, so those two bands hold no room for the mechanism and every
+    # arm ties on them. Drawn, not generated: scripts/build_second_proposer_universe.py
+    # writes it and it carries the corpus digest the check below reads.
+    hardend) echo "$RUN_DATA/hardend_programs.txt" ;;
     *)      echo "" ;;
   esac
 }
@@ -181,7 +188,12 @@ usage: bash scripts/eval_shard.sh --exp NAME [--from N --to M] [options]
                     NOT in the cell key - a re-run at a higher N tops the same
                     episode up rather than forking a second one.
   --universe NAME   run a preset over a different universe than its own default:
-                    corpus | sweep | live | trial | demo.  `live` is the sweep
+                    corpus | sweep | live | trial | demo | hardend.
+                    `hardend` is the corpus minus its easy end (stratum in
+                    dead/hard/medium) - the universe for a second, stronger
+                    proposer, where easy and too_easy leave every arm tied;
+                    scripts/build_second_proposer_universe.py draws it.
+                    `live` is the sweep
                     minus the dead band - the tasks where extra attempts can
                     actually convert; scripts/build_live_universe.py writes it. `demo` reads
                     @DATA@/demo_programs.txt, which YOU write - the other three are
@@ -575,7 +587,10 @@ fi
 # script with no message at all.
 [[ -f "$LIST_SRC" ]] || {
   echo "$LIST_SRC does not exist." >&2
-  [[ "$UNIVERSE" == demo ]] && echo "A demo universe is a list you draw yourself - see RUNBOOK.md." >&2
+  case "$UNIVERSE" in
+    demo)    echo "A demo universe is a list you draw yourself - see RUNBOOK.md." >&2 ;;
+    hardend) echo "Draw it: python3 scripts/build_second_proposer_universe.py" >&2 ;;
+  esac
   exit 2; }
 # The three generated lists are digest-checked when they are WRITTEN, above. A
 # hand-drawn one never passes through that, so it is checked here, on read: a

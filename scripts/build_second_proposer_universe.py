@@ -38,7 +38,7 @@ file exists to prevent.
 
     python3 scripts/build_second_proposer_universe.py --dry-run
     python3 scripts/build_second_proposer_universe.py --piloted-from '~/o4/episodes_eval_E1_o4-mini_*.jsonl'
-    bash scripts/fleet.sh eval --exp E1 --shards 4 -- --universe demo ...
+    bash scripts/fleet.sh eval --exp E1 --shards 4 -- --universe hardend ...
 """
 from __future__ import annotations
 
@@ -122,7 +122,10 @@ def main() -> int:
     ap.add_argument("--order", type=pathlib.Path, default=None,
                     help="default: <data dir>/eval_order.txt - membership and the digest")
     ap.add_argument("--out", type=pathlib.Path, default=None,
-                    help="default: <data dir>/demo_programs.txt, the hand-drawn universe")
+                    help="default: <data dir>/hardend_programs.txt, read by --universe hardend")
+    ap.add_argument("--frozen", type=pathlib.Path, default=None,
+                    help="the first proposer's frozen task list, for the matched set "
+                         "(default: runs/2026-09-01/tasks.json if present)")
     ap.add_argument("--piloted-from", nargs="*", default=[],
                     help="episode-log globs for the second proposer, to label the pilot")
     ap.add_argument("--dry-run", action="store_true", help="print the draw, write nothing")
@@ -133,7 +136,7 @@ def main() -> int:
     data = paths.DATA_DIR
     corpus_path = args.corpus or (data / "tasks.json")
     order_path = args.order or (data / "eval_order.txt")
-    out_path = args.out or (data / "demo_programs.txt")
+    out_path = args.out or (data / "hardend_programs.txt")
     for p in (corpus_path, order_path):
         if not p.is_file():
             print(f"missing {p} - freeze the corpus first", file=sys.stderr)
@@ -163,6 +166,19 @@ def main() -> int:
     pilot = piloted(args.piloted_from) & set(names) if args.piloted_from else set()
     confirm = [t for t in names if t not in pilot]
 
+    # The matched set. A cross-proposer table may only be built on tasks BOTH
+    # proposers ran, and the frozen run is 99 of the 106 corpus programs, so the
+    # draw and the frozen run are not the same list. Computed here rather than
+    # left to whoever writes the table, because "99 against 70" is the mistake
+    # this whole universe exists to avoid.
+    frozen_path = args.frozen or pathlib.Path("runs/2026-09-01/tasks.json")
+    matched: list[str] = []
+    n_first = 0
+    if frozen_path.is_file():
+        first = {t["name"] for t in json.loads(frozen_path.read_text())["tasks"]}
+        n_first = len(first)
+        matched = [t for t in names if t in first]
+
     full = collections.Counter(stratum[t] for t in corpus)
     print(f"corpus            {len(corpus)}   " +
           "  ".join(f"{b}={full[b]}" for b in
@@ -177,8 +193,14 @@ def main() -> int:
               f"the task-level test belongs to this set")
     print(f"not drawn         {len(corpus) - len(names)}   "
           f"easy/too_easy: 0 of 11 pilot tasks kept any room for the mechanism")
+    if matched:
+        gap = sorted(set(names) - set(matched))
+        print(f"matched            {len(matched)}   also in {frozen_path} "
+              f"({len(matched)}/{n_first} of the first proposer's run) - the ONLY "
+              f"set a cross-proposer table may use")
+        print(f"  no first-proposer result: {len(gap)}  {gap[:4]}")
 
-    body = (f"# demo_programs: {len(names)} programs, strata interleaved evenly\n"
+    body = (f"# hardend_programs: {len(names)} programs, strata interleaved evenly\n"
             f"# drawn by scripts/build_second_proposer_universe.py, "
             f"rule: stratum in {list(SELECT)}\n"
             f"# corpus: {corpus_path.name and 'data/tasks.json'}\n"
@@ -203,6 +225,10 @@ def main() -> int:
             return 2
 
     out_path.write_text(body)
+    # Named after the list, not after `demo`: two drawn universes must not share
+    # a sidecar, or the second draw silently relabels the first one's pilot set.
+    meta_path = out_path.with_name(
+        out_path.stem.replace("_programs", "") + "_universe_meta.json")
     meta = {
         "rule": f"stratum in {list(SELECT)}",
         "rule_source": "data/tasks.json, frozen 2026-07-17",
@@ -215,10 +241,14 @@ def main() -> int:
         "n_drawn": len(names),
         "pilot": sorted(pilot),
         "confirmatory": confirm,
+        "matched_with_first_proposer": matched,
+        "matched_note": ("the first proposer's frozen run covers 99 of the 106 corpus "
+                         "programs, so a cross-proposer table is built on this "
+                         "intersection and on nothing wider"),
     }
-    (out_path.parent / "demo_universe_meta.json").write_text(json.dumps(meta, indent=1))
-    print(f"\nwrote {out_path}  and  {out_path.parent / 'demo_universe_meta.json'}")
-    print("next: bash scripts/fleet.sh eval --exp E1 --shards 4 -- --universe demo ...")
+    meta_path.write_text(json.dumps(meta, indent=1))
+    print(f"\nwrote {out_path}  and  {meta_path}")
+    print("next: bash scripts/fleet.sh eval --exp E1 --shards 4 -- --universe hardend ...")
     return 0
 
 
