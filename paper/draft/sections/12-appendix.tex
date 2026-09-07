@@ -228,6 +228,52 @@ number that trigger an execution, so a cost measured in seconds can fall while
 a cost measured in consultations does not.
 \end{proof}
 
+\section{The Policy Replay}
+\label{app:policies}
+
+Detail behind \cref{sec:results-policies}: the five validation policies
+replayed over one \armnomem\ candidate stream.
+
+\paragraph{Why the comparison is exact.}
+In \armnomem\ the proposer is shown nothing the validator found, so the
+candidate stream does not depend on which cases ran, in what order, or whether
+the run stopped early. Five policies therefore replay over byte-identical
+candidates rather than over separately generated ones. We executed each of the
+\num{5564} distinct \armnomem\ candidates against its task's entire shipped
+pool---\num{221304} case executions, \SI{111}{\hour} of sandbox time---and
+replayed the policies against that matrix offline. No cell was dropped and no
+model was called. The matrix reproduces the counterexample the harness itself
+found in \num{8306} of \num{8312} logged oracle rounds; all six exceptions fall
+on the timeout-edge fault of \cref{sec:results-integrity}.
+
+\paragraph{What the replay does not measure.}
+The replay walks all $20$ rounds instead of stopping at the first acceptance,
+which is what keeps the candidate stream policy-independent. Its per-episode
+levels ($19.99$ oracle rounds, $4.10$ accepts) are therefore not the reported
+arm's ($9.47$ and one), and only ratios within \cref{tab:policies} are meant to
+carry over. Repair rate is a property of the stream and is identical by
+construction; a policy changes only what finding out costs.
+
+\paragraph{How little the axis affords.}
+Among refuted candidates the median share of the shipped pool that refutes is
+$0.58$, so a uniformly random order finds evidence in about $1.7$ executions
+and an ideal order in $1.0$: the whole axis the criterion chose is worth about
+one execution on this corpus. Measured against that floor, \polven\ captures
+$84.6\%$ of the headroom \polk\ leaves and \polguard\ $83.5\%$---a gap of $1.1$
+points, which is the number \cref{sec:results-policies} reports. A corpus of
+sparse, hard-to-hit counterexamples would give the axis room to separate
+mechanisms; this one does not, and we claim nothing about how the loss scales.
+
+\paragraph{The index, measured against its own control.}
+\polguard\ differs from \poldedup\ in one respect, consulting the $\loc$ bucket
+before the rest of the store. Oracle calls and blocked rounds are identical on
+every one of the \num{495} cells, so the index moves nothing on the axis the
+guard is for. It separates only on the execution axes, where the effect is
+signed and negligible: $46/37/16$ tasks on executions to refutation
+(\plt{10^{-4}}, cell-level medians $1.50$ against $1.54$) and $45/39/15$ on the
+total, worth $0.25\%$ of it. That is the shape of the typed-versus-untyped
+result in \cref{tab:tasklevel}, and it points the same way.
+
 \section{Errata in the frozen artifacts}
 \label{app:errata}
 

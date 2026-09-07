@@ -1,0 +1,29 @@
+\begin{table}[t]
+\centering
+\footnotesize
+\caption{Five validation policies replayed over one candidate stream, against a
+complete candidate\,$\times$\,case verdict matrix, with no model call. The
+replay walks all \num{20} rounds instead of stopping at the first
+acceptance---which is what keeps the stream policy-independent---so the levels
+are not \cref{tab:main}'s and only within-table comparisons are meant.
+Executions and accepts are per-episode means; \emph{to refut.}\ is the median
+cell's executions spent reaching a refuting case. The last column is identical
+across all five by construction: a policy changes what finding out costs, not
+what the proposer writes. Task-level comparisons are in
+\cref{sec:results-policies}.}
+\label{tab:policies}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.05}
+\begin{tabular}{@{}L{1.95cm}rrrr@{}}
+\toprule
+\textbf{\sig{Policy}} & \textbf{\sig{Exec./ep}} & \textbf{\sig{To refut.}} &
+\textbf{\sig{Oracle/ep}} & \textbf{\sig{Accepts/ep}} \\
+\midrule
+\polk\ \sig{(reported)} & $248.4$ & $2.91$ & $19.99$ & $4.10$ \\
+\polqi                  & $174.1$ & $1.44$ & $19.99$ & $4.10$ \\
+\polven                 & \best{$173.7$} & \best{$1.38$} & $19.99$ & $4.10$ \\
+\poldedup               & $180.1$ & $1.54$ & \best{$5.85$} & $4.10$ \\
+\polguard               & $179.7$ & $1.50$ & \best{$5.85$} & $4.10$ \\
+\bottomrule
+\end{tabular}
+\end{table}

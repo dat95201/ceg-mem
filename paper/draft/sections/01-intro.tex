@@ -82,7 +82,10 @@ not total calls, which an arm without a guard loses by construction.
 
 Memory cuts oracle calls \fold{5.2} and, counting every guard replay as the
 execution it is, total program executions \fold{2.2}, at unchanged repair rate;
-at a matched two-call budget it lifts repair from $31.9\%$ to $55.8\%$. Two
+at a matched two-call budget it lifts repair from $31.9\%$ to $55.8\%$. Against
+a classical prioritizer replayed on identical candidates the execution saving
+reverses and only the oracle-call reduction survives
+(\cref{sec:results-policies}). Two
 results cut against the architecture as proposed and we report them as primary:
 prompt-side steering is null on every outcome metric while costing $+128\%$
 prompt tokens and making the full agent the slowest of five arms, with no band

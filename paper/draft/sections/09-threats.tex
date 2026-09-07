@@ -49,7 +49,7 @@ this is a population estimate; the paired design is what carries the claims. \em
 memory holds a median of one entry when the guard fires, which is why we claim
 nothing for the index.
 
-\paragraph{Statistical validity, and baselines we did not run.}
+\paragraph{Statistical validity, and what the baseline comparison can bear.}
 A per-cell test overstates precision, so every headline comparison is reported
 at both units with a task-clustered interval (\cref{tab:main}); all keep their
 sign there, with typed-versus-untyped weakening from \pval{0.007} to
@@ -58,11 +58,14 @@ The dead-band result now has the interaction test it lacked
 (\cref{sec:results-ablation}), and the test does not support the reading we
 first gave it. What survives is a difficulty dependence of the \emph{whole}
 agent, one band up and one down on $23$ and $17$ tasks, which we report as
-exploratory. Finally, the comparison a reader will want is against a
-per-modification-point prioritizer~\cite{venugopal2020modification}, the
-mechanism our guard is closest to. We have not implemented or run that arm,
-so \cref{tab:positioning} is argued mechanically rather than measured: the
-boundary it draws is a claim about mechanism, not a measured difference.
+exploratory. Finally, \cref{tab:positioning} is now measured: both classical prioritizers
+run over byte-identical candidates (\cref{sec:results-policies}) and the
+pre-specified criterion failed. Two caveats bound that verdict. The replay sits
+in the \armnomem\ universe at full horizon, so a prioritizer driving a
+\emph{steered} proposer is a different experiment. And the ordering axis is nearly
+saturated here: a random order already refutes in ${\approx}1.7$ executions
+against an ideal order's $1.0$, and every informed policy we ran falls between
+$1.38$ and $1.54$ (\appref{app:policies}{the supplement}).
 
 \paragraph{Reproducibility, and what ``pre-specified'' means.}
 We say \emph{pre-specified} rather than pre-registered: metrics, arms,

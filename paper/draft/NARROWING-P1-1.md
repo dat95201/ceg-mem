@@ -23,16 +23,56 @@ skipped. Matrix gate: coverage 1.0000, reproduction 0.9993 — PASS.
 Task-level, `cegmem-guard` against the better of the two classical policies
 (win / tie / loss of 99):
 
-| Axis | Result | One-sided $p$ |
-|---|---|---|
-| Executions to first refutation | 1 / 18 / 80 | $1.0$ — **criterion NOT MET** |
-| Total program executions | 2 / 5 / 92 | $1.0$ |
-| **Oracle invocations** | **99 / 0 / 0** | $< 10^{-17}$ |
+| Axis | Result | One-sided $p$ | Median penalty |
+|---|---|---|---|
+| Executions to refutation | 1 / 18 / 80 | $1.0$ — **criterion NOT MET** | $+4.6\%$ |
+| Total program executions | 2 / 6 / 91 | $1.0$ | $+4.8\%$ |
+| **Oracle invocations** | **99 / 0 / 0** | $< 10^{-17}$ | $-70.8\%$ |
+
+**Two corrections to the first draft of this file, both verified against
+`policies_cells.json` on 2026-09-07.** Total executions is **2 / 6 / 91**, not
+2 / 5 / 92 — no aggregation (per-task mean, median or sum; cell level; or
+per-task better-of-the-two-classical) reproduces the latter. And the 80th
+"loss" on the criterion axis has a per-task difference of $2.2\times10^{-16}$:
+it is a tie that exact float equality missed. We keep **1 / 18 / 80** because
+that is what `policies.json` records and what the pre-declared script computed;
+changing it after the fact would move a goalpost, harmlessly but visibly.
+Neither correction changes any conclusion.
+
+**The margin, which the first draft omitted and the paper now reports.** The
+loss is unanimous in sign and small in size: the median task pays $+4.6\%$
+($+0.077$ of one execution). An ideal order refutes on its first case, at
+$1.0$ execution; measured against that floor, `venugopal20` captures $84.6\%$
+of the headroom `oracle-k` leaves and `cegmem-guard` $83.5\%$ — a gap of $1.1$
+points. Reporting the sign without the size overstates the damage by an order
+of magnitude, and a reviewer who recomputes it will say so.
+
+**Why the axis affords so little, which is an external-validity limit on the
+verdict itself.** Among refuted candidates the median share of pool cases that
+refute is $0.581$; $21.3\%$ of refuted candidates fail *every* case. A
+uniformly random order therefore finds evidence in ${\approx}1.7$ executions
+against an ideal $1.0$, and all four informed policies land between $1.38$ and
+$1.54$. On this corpus the ordering axis is nearly saturated. That does not
+rescue the guard — it lost — but it bounds what the loss generalizes to, and
+§Threats now says so.
+
+**The horizon difference, which must be stated or the two experiments read as
+contradictory.** The replay walks all 20 rounds instead of stopping at the
+first acceptance — that is what keeps the candidate stream policy-independent.
+So `accepts_per_episode` is $4.10$ (a run that stopped at first accept could
+not exceed $1$) and `oracle_rounds_per_episode` is $19.99$, against the
+reported arm's $9.47$. The reduction here is therefore $\times3.42$, not the
+$\times5.17$ of Table II, and only ratios *within* the replay carry over.
 
 And the index, `cegmem-guard` against `dedup-guard`:
 
 - Oracle calls and blocked rounds: **identical on every one of the 495 cells**.
-- Executions to refutation: 46 / 37 / 16 tasks, $p < 10^{-4}$, medians 1.50 vs 1.54.
+- Executions to refutation: 46 / 37 / 16 tasks, $p = 1.7\times10^{-5}$; medians
+  1.50 vs 1.54 **at the cell level** (task-level medians are 1.57 vs 1.64).
+- Total executions: 45 / 39 / 15 tasks, $p = 1.3\times10^{-5}$, worth $0.25\%$
+  of the total. The first draft said the gain was "confined to executions per
+  refutation"; it is confined to the *execution* axes, both of them, and moves
+  nothing on the oracle axis.
 
 ## 2. The narrowed claim, stated once
 
@@ -57,7 +97,28 @@ Three claims must therefore change:
 
 ---
 
-## 3. Edits, paste-ready
+## 3. Edits, paste-ready — **APPLIED 2026-09-07, and superseded**
+
+Every edit below has been applied, but **not verbatim**: the shipped text is
+shorter (page budget, §6), carries the corrected `2/6/91`, adds the effect size
+and the horizon caveat, and moves the methodology, the index comparison and the
+headroom analysis into a new appendix section `app:policies`. Read the files,
+not this section; it is kept as the record of what was planned.
+
+| Planned here | Actually shipped in |
+|---|---|
+| §3.1 macros | `preamble.tex` — as written |
+| §3.2 `tables/policies.tex` | five rows only, no comparison block, `\fullonly` |
+| §3.3 §VII subsection | `sections/07-results.tex` §`sec:results-policies`, three paragraphs |
+| — | `sections/12-appendix.tex` §`app:policies` (new: methodology, horizon, headroom, index) |
+| §3.4 related work | `sections/02-related.tex` — shorter |
+| §3.5 threats | `sections/09-threats.tex` — two caveats, plus the saturated-axis limit |
+| §3.6 positioning | `tables/positioning.tex` — as written |
+| §3.7 conclusion | `sections/11-conclusion.tex` — as written |
+| §3.8 intro | `sections/01-intro.tex` — as written |
+| — | `sections/00-abstract.tex` (new: the boundary clause) |
+| — | `sections/11b-availability.tex` (new: hand-entered numbers named) |
+
 
 ### 3.1 Macros — add to `preamble.tex` beside the arm names (line ~88)
 
@@ -282,13 +343,47 @@ needs, so that collision is real and belongs to Gate G4, not to the freeze week.
 
 ## 5. Checks before this ships
 
-- [ ] `check_consistency.py` does not yet know about `policies.json`; every number
-      in `tab:policies` is hand-entered from it and unverified by the pipeline.
-      Either extend the checker or state in §Data Availability that this table is
-      checked by hand against a named artifact.
-- [ ] `\num{5564}`, `\num{8306}`, `\num{8312}` need `siunitx` grouping consistent
-      with the rest of the paper.
-- [ ] `sec:results-integrity` and `sec:results-policies` labels must resolve;
-      run `make check` for undefined refs.
-- [ ] The phrase "pre-declared" here must match §Threats' "pre-specified" —
-      pick one word and use it throughout.
+- [x] Every number above and in `tables/policies.tex` recomputed from
+      `policies_cells.json` / `verdicts.jsonl` independently of
+      `simulate_policies.py`. Two disagreed; both are corrected in §1.
+- [x] `tools/` had **no** `check_consistency.py` — the earlier draft of this
+      file named one that does not exist, and `make check` was a grep for
+      undefined refs and TODOs. Closed: `scripts/verify_policies.py` re-derives
+      every figure in `tab:policies` and §`sec:results-policies` from the
+      artifacts, independently of `simulate_policies.py`, and exits non-zero on
+      disagreement. `make check-policies` runs it and `make check` depends on
+      it. All 60 checks pass. §Data Availability names it.
+- [ ] `\num{8306}` / `\num{8312}` (matrix reproduction) is the one claim not
+      reproducible from the four shipped artifacts — it needs
+      `episodes.jsonl` and the `build_verdict_matrix.py --verify` output.
+      Re-check it before submission.
+- [x] "pre-declared" vs "pre-specified": the paper now says *pre-specified*
+      throughout, matching §Threats. `simulate_policies.py`'s docstring still
+      says "PRE-DECLARED CRITERION"; leave it, it is the timestamped artifact.
+- [x] Both drivers build clean: `main.pdf` 18 pp, `main-ieee.pdf` 12 pp, no
+      undefined references or citations, worst overfull box 4.0 pt.
+
+## 6. Page budget — the estimate in §4 was wrong
+
+§4 estimated $+0.40$ page. The honest cost of the treatment as first drafted
+was $\approx +1.15$ pages (678 words of new prose plus the table). After
+pushing the methodology, the index comparison and the headroom analysis into
+`app:policies` and cutting the table to five rows in the full build only, the
+body cost is $\approx +0.45$ page.
+
+The submission build was already at exactly 10.0 content pages with **zero**
+slack, so `main-ieee.pdf` now carries content into page 11's left column: **11
+content pages, one over the SANER limit.** Nothing in the new material can be
+cut further without dropping the pre-specified criterion result itself.
+
+Closing it costs reserve. `CUT-rationale.md` lists $0.50$ page in four items;
+spending $\approx 0.45$ of it lands the paper at 10 pages and leaves $0.05$ for
+F7's second-proposer table, which needs more than that. The collision §4
+predicted is therefore real and unavoidable, and it is a Gate G4 decision, not
+a freeze-week one:
+
+| Option | Cost | Consequence |
+|---|---|---|
+| Spend reserve items 1--4 now | $-0.50$ page | 10 pages today; F7 must find its own space |
+| Leave at 11 pages | $0$ | Desk-reject risk if submitted as-is; fine for the preprint |
+| Cut §VII-x to the criterion + oracle result only | $-0.20$ page | Loses the effect size, which is what keeps the loss honest |

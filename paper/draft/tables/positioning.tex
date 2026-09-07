@@ -3,9 +3,11 @@
 \scriptsize
 \caption{Where \CEGMem\ sits. The columns are factual properties of each
 mechanism, not a scoring of it. \CEGMem\ shares the last column's value with a
-line a decade older than LLM repair; what is new is the key it orders by, the
-evidence it orders from, and that it needs nothing of the candidate space---%
-exactly what the two \emph{removing} rows require and an LLM cannot supply.}
+line a decade older than LLM repair; what is new is not a cheaper
+validation---a classical prioritizer beats ours on executions
+(\cref{sec:results-policies})---but that the same evidence removes oracle
+invocations, which no row above does, from a key that needs nothing of the
+candidate space.}
 \label{tab:positioning}
 \setlength{\tabcolsep}{4pt}
 \renewcommand{\arraystretch}{1.05}
@@ -57,7 +59,7 @@ none \\
 counterexamples \emph{retained across candidates} and re-executed, indexed by
 edit location $\loc$ &
 nothing &
-reorders, stops early \\
+reorders, stops early; \emph{removes oracle invocations} \\
 \bottomrule
 \end{tabular}
 \end{table*}

@@ -256,6 +256,37 @@ the rate is highest in exactly the band where steering helps most ($19.7\%$ in
 \emph{dead}, $0$ in the two easiest). Steering is a high-variance intervention
 worth making only where the baseline is near zero.
 
+\subsection{Against the mechanism the guard resembles}
+\label{sec:results-policies}
+
+\cref{sec:related-order} puts the guard in the same row as fault-recorded
+prioritization~\cite{qi2013efficient} and its modification-point--aware
+refinement~\cite{venugopal2020modification}. We measure the distance rather
+than argue it, and exactly: in \armnomem\ the candidate stream depends on task,
+seed and round alone, so all five policies replay over byte-identical
+candidates against a complete verdict matrix---\num{495} cells, $99$ tasks, no
+model call (\appref{app:policies}{the supplement}).
+
+\paragraph{The pre-specified criterion fails, on an axis with little to win.}
+We fixed beforehand that \polguard\ would reach a refuting case in no more
+executions than the better classical policy on at least $60$ of the $99$ tasks.
+It does so on $1$, ties on $18$, loses on $80$ (\pval{1.0}), and loses on total
+executions too ($2/6/91$ tasks, $179.7$ against \polven's $173.7$ per episode).
+The margin is a separate question: the median task pays $+4.6\%$ more, a gap
+worth $1.1\%$ of the headroom this corpus affords at all
+(\cref{sec:threats}). The sign is not in doubt; the size is small.
+
+\paragraph{What no prioritizer does.}
+Both classical policies leave oracle invocations at $19.99$ per episode: they
+change the order in which a validation seeks evidence, not whether it happens.
+The guard resolves $70.8\%$ of rounds before the oracle is reached, taking
+invocations to $5.85$---$99$ of $99$ tasks, \plt{10^{-17}}---with accepted
+rounds identical across all five policies, so none of it is bought with repair.
+Nor does the index earn anything here: \polguard\ and \poldedup\ block the
+identical rounds on every one of the \num{495} cells.
+
+\fullonly{\input{tables/policies}}
+
 \subsection{Integrity of the comparison}
 \label{sec:results-integrity}
 

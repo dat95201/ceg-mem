@@ -24,7 +24,9 @@ draw in all of them. Memory cuts oracle calls per episode \fold{5.2} and---%
 counting guard replays as the executions they are---total program executions
 \fold{2.2}, at unchanged repair rate; at a matched budget of two oracle calls
 it lifts repair from $31.9\%$ to $55.8\%$ (task-clustered $95\%$ CI on the gain
-$[18.4, 29.5]$\,pp). One result cuts against the architecture as proposed and
+$[18.4, 29.5]$\,pp). Replayed against classical test prioritizers on identical
+candidates the execution saving reverses; what survives, on every task, is the
+oracle-call reduction no prioritizer moves. One result cuts against the architecture as proposed and
 we report it as primary: prompt-side steering is null on every outcome metric
 at $+128\%$ prompt tokens, and no band survives an interaction test. The guard
 alone,

@@ -22,7 +22,9 @@ $+128\%$ prompt tokens, and makes the full agent the slowest of five arms; and
 the $\loc$ \emph{ordering} is indistinguishable from a flat scan on memories
 this small---the typed guard's $39\%$ cheaper seconds come from deduplication,
 not the index. What we recommend is therefore not the
-architecture we set out to validate but the guard alone. Whether it survives a
-per-modification-point prioritizer (\cref{sec:related-order}), another model
-scale, or the expensive-oracle faults we filtered out, are the three questions
-we would want answered next.
+architecture we set out to validate but the guard alone. It does not survive a per-modification-point prioritizer on
+executions---that prioritizer is cheaper on $80$ of $99$ tasks, by a median
+$4.6\%$---and it is the only policy of five that removes oracle invocations, on
+every task (\cref{sec:results-policies}). Whether that holds at another
+model scale, or on the expensive-oracle faults we filtered out, are the two
+questions we would want answered next.

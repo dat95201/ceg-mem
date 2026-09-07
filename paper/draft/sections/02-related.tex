@@ -52,8 +52,12 @@ and the evidence. Those tables rank the project's own tests by a failure
 history over candidates; ours holds inputs discovered inside the episode by
 candidates the oracle already refuted, re-executed against a candidate nobody
 has run, indexed by a location a diff supplies. The per-modification-point
-table of~\cite{venugopal2020modification} is the nearest neighbour, and the
-baseline this paper most needs (\cref{sec:threats}).
+table of~\cite{venugopal2020modification} is the nearest neighbour, and we run
+it: over byte-identical candidates it reaches a refuting case in fewer
+executions than our guard on $80$ of $99$ tasks, by a median $4.6\%$
+(\cref{sec:results-policies}). What separates the two is not the cost of a
+validation but whether one happens: no prioritizer in this line moves oracle
+invocations.
 
 \subsection{Counterexample-guided repair, and why replay is not vacuous}
 \label{sec:related-cegis}

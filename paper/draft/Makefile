@@ -6,6 +6,7 @@
 #   make figures    regenerate figures/*.pdf from numbers.json + figdata.json
 #   make numbers    regenerate numbers.json from a frozen run directory
 #   make check      report anything the text asserts that the log cannot back
+#   make check-policies   re-derive tab:policies from the P1-1 artifacts
 #   make clean      remove build intermediates (keeps the PDFs)
 #   make distclean  remove intermediates and PDFs
 #
@@ -34,7 +35,7 @@ TEXDEPS  := preamble.tex refs.bib \
             figures/algorithm.tex \
             $(wildcard figures/*.pdf)
 
-.PHONY: all acm ieee figures numbers check clean distclean watch
+.PHONY: all acm ieee figures numbers check check-policies clean distclean watch
 
 all: $(MAIN).pdf
 
@@ -74,7 +75,16 @@ numbers:
 	$(PYTHON) tools/figdata.py         $(RUN) figdata.json
 	$(PYTHON) tools/review_addenda.py  $(RUN) addenda.json
 
-check:
+# The policy replay's numbers do not come through extract_numbers.py, so they
+# get their own verifier: it re-derives every figure in tab:policies and
+# sec:results-policies from the shipped artifacts and exits non-zero on any
+# disagreement. Runs with the standard library alone.
+POLICYDATA ?= ../../data/official-2026-09-01
+
+check-policies:
+	$(PYTHON) ../../scripts/verify_policies.py $(POLICYDATA)
+
+check: check-policies
 	@echo "== undefined references / citations =="
 	@grep -h "LaTeX Warning: \(Reference\|Citation\)" $(MAIN).log 2>/dev/null \
 	  | sort -u || echo "  (no log yet: run make first)"
