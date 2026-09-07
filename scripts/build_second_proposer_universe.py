@@ -13,15 +13,21 @@ proposer against band under o4-mini:
     easy        6   0
     too_easy    5   0
 
-Every task that still exercises the mechanism came from `dead` or `medium`.
-`hard`, `easy` and `too_easy` contributed 0 of 16. Running the other 66 corpus
-programs therefore buys ~0 additional usable tasks at ~3x the bill, which is why
-this list is drawn rather than the corpus walked.
+No task from `easy` or `too_easy` survived - 0 of 11 - and that is the cut this
+list makes. `hard` also scored 0, but on 5 tasks: 0/5 against medium's 1/5 is a
+difference of ONE task, and the bands are ordered dead < hard < medium < easy by
+construction, so a rule that drops `hard` while keeping `medium` contradicts the
+band definitions to chase a single observation. It stays in.
 
 THE RULE, STATED BEFORE THE RUN.  Select every corpus program whose frozen
-stratum is `dead` or `medium`. That is a property of data/tasks.json, fixed on
-2026-07-17 and digest-checked here - it is not a property of any o4-mini
-measurement, so the selection cannot be tuned by what the second proposer does.
+stratum is `dead`, `hard` or `medium` - equivalently, drop `easy` and
+`too_easy`. Stated that way the rule needs no pilot at all: a task the 7B
+proposer already solves easily cannot be one a stronger proposer finds
+non-trivial, so those two bands have no room for the mechanism by construction.
+The pilot only confirmed it. That matters for how this is reported: the cut is
+mechanical, not fitted, and it is a property of data/tasks.json, fixed on
+2026-07-17 and digest-checked here - not a property of any o4-mini measurement,
+so the selection cannot be tuned by what the second proposer does.
 
 PILOT AND CONFIRMATORY ARE NOT THE SAME SET.  The rule above was chosen AFTER
 looking at the 27-task pilot, so the pilot tasks inside the selection are not
@@ -50,7 +56,7 @@ from src import paths
 
 # The rule. Two names, written down before the run and not derived from any
 # o4-mini number at run time.
-SELECT = ("dead", "medium")
+SELECT = ("dead", "hard", "medium")
 
 
 def read_list(path: pathlib.Path) -> list[str]:
@@ -170,7 +176,7 @@ def main() -> int:
         print(f"  confirmatory    {len(confirm)}   independent of the rule - "
               f"the task-level test belongs to this set")
     print(f"not drawn         {len(corpus) - len(names)}   "
-          f"contributed 0 of 16 usable tasks in the pilot")
+          f"easy/too_easy: 0 of 11 pilot tasks kept any room for the mechanism")
 
     body = (f"# demo_programs: {len(names)} programs, strata interleaved evenly\n"
             f"# drawn by scripts/build_second_proposer_universe.py, "
@@ -201,6 +207,10 @@ def main() -> int:
         "rule": f"stratum in {list(SELECT)}",
         "rule_source": "data/tasks.json, frozen 2026-07-17",
         "rule_chosen_after_pilot": True,
+        "rule_note": ("stated as 'drop easy and too_easy', the cut follows from the "
+                      "band definitions alone and needs no pilot; it was nonetheless "
+                      "arrived at while looking at the 27-task pilot, so the pilot "
+                      "tasks below are reported as pilot, not as confirmation"),
         "corpus_sha256": digest,
         "n_drawn": len(names),
         "pilot": sorted(pilot),
