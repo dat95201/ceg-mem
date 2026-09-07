@@ -36,9 +36,19 @@ CONFIG = """
 EPISODES = "runs/2026-09-01/episodes.jsonl"
 
 # Sandbox workers for the matrix build. Every candidate-case pair is a
-# subprocess, so this is bounded by CORES, not VRAM - 2 on a Colab CPU, 8 or
-# more on a workstation. It changes nothing measured; only how long it takes.
+# subprocess, so this is bounded by CORES, not VRAM. Set it to `nproc` and no
+# higher: these are CPU-bound children, so over-subscribing only adds context
+# switches. It changes nothing measured; only how long it takes. The build cell
+# prints a warning if this disagrees with the machine.
 MATRIX_JOBS = 2
+
+# How many tasks share one worker pool. The adapter's case cache must be dropped
+# periodically (one AtCoder task's test data reaches 84 MB), but draining ONE
+# task before starting the next makes every task's tail serial - measured on this
+# corpus, a candidate costs p50 15.9 s and max 2,767.7 s, so one task's last
+# candidate can hold a single core for 46 minutes while the rest idle. 4 gives
+# the pool ~220 candidates to interleave. Raise it if you have RAM to spare.
+MATRIX_TASK_GROUP = 4
 """
 
 
@@ -105,8 +115,13 @@ code(HDR + """# STAGE   P1-1 stage 1: cost of the verdict matrix - nothing runs
 # TIME    ~10 s
 # SKIP?   NO. Read the estimate before spending a day of CPU
 """ + HDR + """import os; os.chdir(WORKDIR)
-# EPISODES and MATRIX_JOBS are set in section 1, with everything else.
-!python3 scripts/build_verdict_matrix.py --episodes {EPISODES} --plan-only"""),
+# EPISODES and MATRIX_JOBS are set in section 1, with everything else. --jobs is
+# passed so the "h wall" line is the estimate for the machine you are on.
+# NO MODEL IS CALLED, here or in the build below: the candidates are already in
+# the frozen log. --episodes chooses WHICH RUN's candidates, not which model to
+# call - point it at the run the paper reports, not at whatever is running now.
+!python3 scripts/build_verdict_matrix.py --episodes {EPISODES} \\
+    --jobs {MATRIX_JOBS} --plan-only"""),
 
 code(HDR + """# STAGE   P1-1 stage 1: build the matrix
 # READS   episodes.jsonl, external/ConDefects/Test
@@ -116,11 +131,22 @@ code(HDR + """# STAGE   P1-1 stage 1: build the matrix
 """ + HDR + """import os; os.chdir(WORKDIR)
 RUN_LOGS = f"logs/{RUN_DIR}" if RUN_DIR else "logs"
 os.makedirs(RUN_LOGS, exist_ok=True)
-# MATRIX_JOBS is in section 1. The adapter's case cache is dropped between tasks
-# (one AtCoder task's test data reaches 84 MB), so memory stays flat however long
-# this runs, and a re-run after a disconnect resumes per (task, patch).
+if MATRIX_JOBS != os.cpu_count():
+    print(f"note: MATRIX_JOBS={MATRIX_JOBS} but this machine has {os.cpu_count()} "
+          f"cores. Set it to the core count in section 1 and RE-RUN THAT CELL - "
+          f"editing it is not enough, the kernel keeps the old value.")
+
+# --timeout 30 is HARDCODED, not a section-1 knob, and must stay 30. It is the
+# value the frozen run used (runs/2026-09-01/eval_shards/*.meta.json,
+# protocol.sandbox_timeout_sec). A matrix holding some rows judged at 10 s and
+# some at 30 s is two instruments in one table, and every policy simulated on
+# top would be measuring the mixture.
+#
+# Resumable per (task, patch): a disconnect costs the candidates in flight, not
+# the matrix. Re-run this cell and it prints "already done N".
 !nohup python3 scripts/build_verdict_matrix.py --episodes {EPISODES} \\
-    --jobs {MATRIX_JOBS} --progress-every 120 > {RUN_LOGS}/verdicts.log 2>&1 &
+    --timeout 30 --jobs {MATRIX_JOBS} --task-group {MATRIX_TASK_GROUP} \\
+    --progress-every 120 --slow-note 300 > {RUN_LOGS}/verdicts.log 2>&1 &
 print("launched; watch it with the next cell. Safe to re-run after a disconnect.")"""),
 
 code(HDR + """# STAGE   watch the matrix build
@@ -131,9 +157,29 @@ code(HDR + """# STAGE   watch the matrix build
 """ + HDR + """import os; os.chdir(WORKDIR)
 RUN_DATA = f"data/{RUN_DIR}" if RUN_DIR else "data"
 RUN_LOGS = f"logs/{RUN_DIR}" if RUN_DIR else "logs"
-!pgrep -fa build_verdict_matrix.py | head -1 || echo "not running"
+# [b] so pkill/pgrep patterns never match this shell's own command line.
+!pgrep -fa "[b]uild_verdict_matrix" | head -1 || echo "not running"
 !tail -4 {RUN_LOGS}/verdicts.log
-!wc -l {RUN_DATA}/verdicts.jsonl 2>/dev/null || echo "no rows yet\""""),
+!wc -l {RUN_DATA}/verdicts.jsonl 2>/dev/null || echo "no rows yet"
+# load average should sit near the core count. Near 1.0 with --jobs 8 means the
+# pool has been starved by one task's tail - the thing --task-group fixes.
+!nproc; uptime"""),
+
+code(HDR + """# STAGE   stop the matrix build
+# READS   nothing
+# WRITES  nothing
+# TIME    ~5 s
+# SKIP?   only needed to restart the build cleanly
+""" + HDR + """import os, time; os.chdir(WORKDIR)
+# The build APPENDS to verdicts.jsonl, so it must be gone before the cell above
+# is re-run - two writers can tear a line. A torn line is survivable (the pair
+# just re-runs) but there is no reason to make one.
+#
+# The [b] is not decoration: `pkill -f build_verdict_matrix` matches the shell
+# running the pkill, so it can kill itself before delivering the signal.
+!pkill -f "[b]uild_verdict_matrix"
+time.sleep(5)
+!pgrep -fa "[b]uild_verdict_matrix" || echo 'stopped - safe to re-run the build cell'"""),
 
 code(HDR + """# STAGE   P1-1 stage 1: the acceptance gate
 # READS   episodes.jsonl, data/<RUN_DIR>/verdicts.jsonl
@@ -145,6 +191,12 @@ code(HDR + """# STAGE   P1-1 stage 1: the acceptance gate
 # exactly (src.oracle._sample is random.Random(seed + round_index).sample).
 # The gate is 95%: below that the sandbox is not deterministic beyond timeout
 # jitter, and every policy simulated on top would be measuring the jitter.
+#
+# Two lines to read, in order. COVERAGE first - the rate is computed only over
+# rounds the matrix can answer, so a matrix 1% built and perfect on that 1%
+# would print 1.0000. Below 0.99 coverage the cell prints INCOMPLETE and exits
+# 3, which decides nothing: finish the build and come back. Only then does
+# PASS/FAIL on the 0.95 rate mean anything.
 !python3 scripts/build_verdict_matrix.py --verify --episodes {EPISODES}"""),
 
 code(HDR + """# STAGE   P1-1 stage 2: five policies over one candidate stream
