@@ -20,6 +20,7 @@ No model server and no ollama needed - this is pure argument-surface checking.
 """
 from __future__ import annotations
 
+import json
 import pathlib
 import re
 import subprocess
@@ -35,25 +36,27 @@ def defined_flags() -> set[str]:
 
 
 def preset_flags() -> dict[str, set[str]]:
-    """--exp NAME -> the long options its EXTRA passes through."""
-    sh = (ROOT / "scripts" / "eval_shard.sh").read_text()
-    out: dict[str, set[str]] = {}
-    # A preset is `  NAME)` ... up to the next `;;`, and its flags are whatever
-    # appears in an EXTRA= assignment inside it.
-    for m in re.finditer(r'^  ([A-Za-z0-9][A-Za-z0-9-]*)\)\s*\n(.*?);;', sh, re.S | re.M):
-        name, body = m.group(1), m.group(2)
-        flags: set[str] = set()
-        for e in re.finditer(r'EXTRA="([^"]*)"', body):
-            flags |= set(re.findall(r'(--[a-z0-9-]+)', e.group(1)))
-        out[name] = flags
-    return out
+    """--exp NAME -> the long options its EXTRA passes through.
+
+    The table moved out of eval_shard.sh's `case` block into scripts/presets.py
+    (one table, two readers: the shard script and grid_status.py), so it is
+    read from there - through the same --json CLI eval_shard.sh could use, not
+    by importing, so a syntax error in presets.py fails here too.
+    """
+    r = subprocess.run([sys.executable, str(ROOT / "scripts" / "presets.py"), "--json"],
+                       capture_output=True, text=True, cwd=ROOT)
+    if r.returncode != 0:
+        print(r.stderr)
+        return {}
+    table = json.loads(r.stdout)["presets"]
+    return {name: {tok for tok in p["extra"] if tok.startswith("--")} for name, p in table.items()}
 
 
 def main() -> int:
     defined = defined_flags()
     presets = preset_flags()
     if not presets:
-        print("FAIL: parsed no presets out of eval_shard.sh - the regex is stale")
+        print("FAIL: read no presets out of scripts/presets.py")
         return 1
     bad = {n: sorted(f - defined) for n, f in presets.items() if f - defined}
     for name in sorted(presets):

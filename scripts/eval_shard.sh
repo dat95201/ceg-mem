@@ -347,109 +347,19 @@ fi
 
 # ── the presets ─────────────────────────────────────────────────────────────
 # One driver, many experiments: DESIGN.md steps 6-9 are this same grid with
-# different flags. Encoded here rather than retyped per shard, because a flag
-# retyped wrong on shard 3 of 4 is a cell that never joins the others - it lands
-# in a different cell key and analysis simply reports it missing, days later.
+# different flags. Encoded in ONE table rather than retyped per shard, because a
+# flag retyped wrong on shard 3 of 4 is a cell that never joins the others - it
+# lands in a different cell key and analysis simply reports it missing, days
+# later. The table is scripts/presets.py (the rationale for each arm is in its
+# comments and in the usage text above); scripts/grid_status.py reads the same
+# table to decide which cells of a preset are still missing, so the two can not
+# disagree about what an experiment IS. This sets MODES, EXTRA, UNIVERSE,
+# DEF_SEEDS, DEF_BUDGET, MERGEABLE and - for the trial only, which is a rehearsal
+# that must not skip cells another machine ran - RESUME_MERGED=0.
 UNIVERSE="corpus"; MODES=""; EXTRA=""; DEF_SEEDS="1 2 3"; DEF_BUDGET=20
 EPISODES=""; MERGEABLE=1
-case "$EXP" in
-  trial)
-    MODES="no_memory untyped typed"; EXTRA="--check-overfit"
-    UNIVERSE="trial"; DEF_SEEDS="1"; DEF_BUDGET=5; MERGEABLE=0
-    # A rehearsal that skips cells because another machine already ran them
-    # rehearses nothing. This is the one preset that ignores the merged history.
-    RESUME_MERGED=0 ;;
-  E1)
-    MODES="no_memory"; EXTRA="--force-full-budget"; DEF_SEEDS="1 2 3 4 5" ;;
-  E2)
-    MODES="untyped typed"; EXTRA="--check-overfit"; DEF_SEEDS="1 2 3 4 5" ;;
-  E3-guard-only)
-    MODES="typed"; EXTRA="--steer off" ;;
-  E3-steer-only)
-    MODES="typed"; EXTRA="--guard off" ;;
-  E4-k20) MODES="typed"; EXTRA="--max-examples 20 --check-overfit"; UNIVERSE="sweep" ;;
-  E4-k8)  MODES="typed"; EXTRA="--max-examples 8  --check-overfit"; UNIVERSE="sweep" ;;
-  E4-k3)  MODES="typed"; EXTRA="--max-examples 3  --check-overfit"; UNIVERSE="sweep" ;;
-  E5-c90) MODES="typed"; EXTRA="--typing-noise-c 0.9";  UNIVERSE="sweep" ;;
-  E5-c75) MODES="typed"; EXTRA="--typing-noise-c 0.75"; UNIVERSE="sweep" ;;
-  E5-c50) MODES="typed"; EXTRA="--typing-noise-c 0.5";  UNIVERSE="sweep" ;;
-  # Two more c levels. Four points (1.0 from E2, then .9/.75/.5) give a slope
-  # but not a crossover: c* is where typed stops beating untyped, and nothing
-  # in that range crosses. These reach far enough down that it should.
-  E5-c25) MODES="typed"; EXTRA="--typing-noise-c 0.25"; UNIVERSE="sweep" ;;
-  E5-c00) MODES="typed"; EXTRA="--typing-noise-c 0.0";  UNIVERSE="sweep" ;;
-  # The c axis's NULL, which c=0.00 is not. TypedMemory.store noises only the
-  # location half of a type and the first store of an episode has nowhere else
-  # to file itself, so the bottom of the sweep is a lower bound on the damage
-  # rather than random assignment. This arm files every refutation under a
-  # location drawn uniformly from those seen so far, its own included: memory
-  # still partitions the evidence and the guard is still O(1), but the partition
-  # carries no information about failure type. Without it, "typing helps because
-  # the classes are right" is not separable from "any partition helps" - which
-  # is the first question a reviewer asks about a typed index.
-  E5-random)
-    MODES="typed"; EXTRA="--typing-random"; UNIVERSE="sweep" ;;
-  # ── baseline-comparison arms (branch enhance/method-comparison) ────────────
-  # E10: the ChatRepair-family baseline (ISSTA'24), as a mechanism port: the
-  # prompt carries the whole conversation so far - every failed patch and the
-  # counterexample that killed it - and the conversation RESTARTS (transcript
-  # cleared) after 5 straight fails or ~6k transcript tokens, the half of
-  # ChatRepair reimplementations usually drop. No guard: mode is no_memory, so
-  # round 1 is byte-identical to E1's draw (CRN) and every divergence after it
-  # is the transcript's own doing. Corpus universe at 3 seeds - it pairs with
-  # the E3 ablation arms, not the 5-seed main grid.
-  E10-chat)
-    MODES="no_memory"; EXTRA="--history chat"; DEF_SEEDS="1 2 3" ;;
-  # E11: the CodeT-family baseline (ICLR'23): one cached model call generates
-  # test cases per task, and every proposal must pass them BEFORE the oracle is
-  # paid. The one baseline that attacks oracle cost the way the guard does - by
-  # blocking calls - but with a-priori model knowledge instead of accumulated
-  # refutations. E11b composes it WITH the typed guard (steer off): self-tests
-  # catch a-priori failures, the guard catches repeats.
-  E11-selftest)
-    MODES="no_memory"; EXTRA="--selftest on --check-overfit"; UNIVERSE="sweep" ;;
-  E11b-selftest-guard)
-    MODES="typed"; EXTRA="--selftest on --steer off --check-overfit"; UNIVERSE="sweep" ;;
-  # E12: the control for "To Run or Not to Run" (ISSTA'26): skip oracle calls
-  # AT RANDOM with p=0.37, the typed guard's measured block share of proposals
-  # on the main grid (7.37 blocked of ~20 draws). The guard skips calls it can
-  # prove would fail; this skips blindly at the same rate - the E5-random
-  # falsifier logic, one level up. Success is predicted to DROP; if it did not,
-  # informed skipping would be worthless.
-  E12-randskip)
-    MODES="no_memory"; EXTRA="--oracle-skip-p 0.37"; UNIVERSE="sweep" ;;
-  # Redundancy audit: pay the oracle on guarded rounds too, so a guarded round
-  # carries the failure type it would have had. Without it every type-based
-  # redundancy count is censored in exactly the arms that guard, and an arm
-  # that guards often looks less redundant for procedural reasons. Sweep subset
-  # only - it spends the oracle time E2 exists to show can be saved.
-  E8-audit)
-    MODES="untyped typed"; EXTRA="--audit-guarded"; UNIVERSE="sweep" ;;
-  # E9: the same three arms as E2 under the OTHER budget accounting, where a
-  # guarded round is free. E2 measures what memory saves per attempt; E9 measures
-  # what it buys when the attempts it saves are handed back to the search. The
-  # two are separate cells by construction (--free-guarded-rounds is in the cell
-  # key), so this never overwrites or pools with E2.
-  # E8 over the whole corpus, not the 30-task sweep. Same flag, different
-  # universe, and the reason is a measurement one rather than a cost one: the
-  # CRN join recovers a guarded round's failure type for free in every arm whose
-  # prompt is unconditioned, but the STEERED typed arm diverges from the
-  # no-memory draw sequence and only 13.6% of its guarded rounds pair outside
-  # E8's own 30 tasks. Until this runs, every type-keyed metric for that arm -
-  # FSRR, type entropy, the revisit curve - is valid only on those 30.
-  # Replays E2's cached draws: no model calls, ~2.3 h across 6 shards.
-  E8-corpus)
-    MODES="untyped typed"; EXTRA="--audit-guarded"; UNIVERSE="corpus"
-    DEF_SEEDS="1 2 3" ;;
-  E9-freeguard)
-    MODES="no_memory untyped typed"
-    # cap 3, not the default 10: on this universe the untyped guard blocks ~54%
-    # of candidates, so 3x20 = 60 draws already reaches a 20-attempt budget, and
-    # 10x would spend 46 GPU-hours proving that dead tasks stay dead.
-    EXTRA="--free-guarded-rounds --free-guard-draw-cap 3 --check-overfit"
-    UNIVERSE="live"; DEF_SEEDS="1 2 3" ;;
-  *) echo "unknown --exp: $EXP" >&2; usage >&2; exit 2 ;;
-esac
+PRESET_VARS="$(python3 scripts/presets.py --exp "$EXP" --shell)" || { usage >&2; exit 2; }
+eval "$PRESET_VARS"
 SEEDS="${SEEDS:-$DEF_SEEDS}"
 BUDGET="${BUDGET:-$DEF_BUDGET}"
 # After the preset, so it overrides the preset's own universe rather than being
@@ -484,74 +394,11 @@ fi
 # 85-name variable arrives at argparse as one unknown program.
 mkdir -p "$RUN_DATA/eval_shards" "$RUN_LOGS"
 run_banner "eval ${EXP}"
-python3 - "$TASKS" "$RUN_DATA" <<'PY'
-import hashlib, json, pathlib, sys
-
-# argv[2], not an interpolated $RUN_DATA: this heredoc is quoted (the code below
-# holds f-strings and braces), so the shell substitutes nothing inside it.
-DATA = pathlib.Path(sys.argv[2])
-tasks = json.loads(pathlib.Path(sys.argv[1]).read_text())["tasks"]
-# Name AND stratum: the stratum decides where a task lands in the interleave
-# below, so a re-freeze that kept every name but re-banded one task would leave
-# this digest unchanged while every shard index shifted underneath it.
-digest = hashlib.sha256(
-    "\n".join(f"{t['name']}\t{t['stratum']}" for t in tasks).encode()).hexdigest()
-
-# Interleave the strata, in the frozen order within each. Deterministic, so
-# every machine cuts the same shard from the same index range - and balanced, so
-# any contiguous range holds every stratum in roughly its corpus proportion.
-#
-# Positional, not a plain round-robin cycle: the quotas are unequal by design
-# and a band can under-fill besides, so cycling exhausts the small bands first
-# and leaves a tail drawn from whichever band is largest - making the last shard
-# the least representative one, and quite possibly the band the effect is
-# smallest in. Spacing each band evenly over [0,1) instead keeps every prefix
-# AND every suffix proportional, whatever the counts turn out to be.
-bands = ("dead", "hard", "medium", "easy", "too_easy")
-by = {b: [t["name"] for t in tasks if t["stratum"] == b] for b in bands}
-
-
-def interleave(groups):
-    placed = [((i + 0.5) / len(names), bi, names[i])
-              for bi, (_, names) in enumerate(groups.items()) if names
-              for i in range(len(names))]
-    return [name for _, _, name in sorted(placed)]
-
-
-order = interleave(by)
-
-# The E4/E5 subset: six per band, by name, per DESIGN.md - then put through
-# the same round-robin so a sweep shard is balanced too. Frozen to a file
-# because scripts/freeze_results.py --sweep-programs-from must receive the
-# identical list days later, and its own default is a different set.
-sweep = interleave({b: sorted(by[b])[:6] for b in bands})
-
-# The trial: one task from each of three bands that behave differently - `dead`
-# never accepts, `easy` usually does on the first or second round. An arm that
-# looks identical on all three is an arm whose flags did not take.
-trial = [by[b][0] for b in ("dead", "medium", "easy") if by[b]]
-
-for name, names in (("eval_order", order), ("sweep_programs", sweep),
-                    ("trial_programs", trial)):
-    path = DATA / f"{name}.txt"
-    body = (f"# {name}: {len(names)} programs, strata interleaved evenly\n"
-            f"# corpus: {sys.argv[1]}\n"
-            f"# corpus_sha256: {digest}\n" + "\n".join(names) + "\n")
-    if path.exists():
-        prev = [l for l in path.read_text().splitlines()
-                if l.startswith("# corpus_sha256: ")]
-        if prev and prev[0].split(": ", 1)[1] != digest:
-            sys.exit(
-                f"{path} was cut from a different {sys.argv[1]} "
-                f"({prev[0].split(': ', 1)[1][:12]}... vs {digest[:12]}...).\n"
-                "Every shard index would mean a different task, and episodes\n"
-                "already collected were run against the old list. Move the old\n"
-                f"{DATA}/*_programs.txt, {DATA}/eval_order.txt and the episode logs\n"
-                "aside deliberately, or restore the corpus they belong to.")
-        if path.read_text() == body:
-            continue
-    path.write_text(body)
-PY
+# The interleave that cuts eval_order.txt, sweep_programs.txt and
+# trial_programs.txt from the frozen corpus, with the corpus digest in every
+# header. It lives in its own file so scripts/grid_status.py writes the
+# identical lists; the rationale for the order is in that file's docstring.
+python3 scripts/universes.py "$TASKS" "$RUN_DATA"
 
 LIST_SRC="$(universe_list "$UNIVERSE")"
 [[ -n "$LIST_SRC" ]] || {

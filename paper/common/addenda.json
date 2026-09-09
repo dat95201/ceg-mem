@@ -1,0 +1,713 @@
+{
+ "provenance": {
+  "run": "../../data/official-2026-09-01",
+  "note": "same dedup and arm filters as extract_numbers.py"
+ },
+ "attrition": {
+  "stage1_examined": 526,
+  "stage2_usable": 407,
+  "stage2_ineligible": 112,
+  "stage2_unaccounted": 7,
+  "ineligible_reasons": {
+   "reference disagrees with the shipped output on 00_sample_00.txt": 13,
+   "reference disagrees with the shipped output on 00_sample_01.txt": 8,
+   "reference raised ModuleNotFoundError on 00_sample_00.txt": 4,
+   "reference disagrees with the shipped output on 00-sample-001.txt": 4,
+   "reference disagrees with the shipped output on 00_sample_02.txt": 3,
+   "reference raised ValueError on 00_sample_00.txt": 3,
+   "reference disagrees with the shipped output on 01_sample_01.txt": 3,
+   "reference disagrees with the shipped output on example_00.txt": 3,
+   "reference disagrees with the shipped output on sample_01.txt": 2,
+   "reference needs >10s on test_04.txt (7 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 2,
+   "reference needs >10s on 01_random_00.txt (4 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 2,
+   "reference disagrees with the shipped output on 000.txt": 2,
+   "reference needs >10s on hack_01.txt (1 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 2,
+   "reference disagrees with the shipped output on random_01.txt": 2,
+   "reference needs >10s on 007.txt (8 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 2,
+   "reference needs >10s on hand_00.txt (4 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 2,
+   "reference needs >10s on test_11.txt (14 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 2,
+   "reference needs >10s on testcase05.txt (9 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference needs >10s on 01_test_04.txt (8 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference needs >10s on 02_rnd2_00.txt (6 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference needs >10s on random_17.txt (17 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference disagrees with the shipped output on killer_01.txt": 1,
+   "reference needs >10s on 013.txt (14 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference needs >10s on random_07.txt (7 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference needs >10s on 01_random_1_00.txt (4 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference needs >10s on 01_test_04.txt (6 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "no case in the pool ships an expected output - criterion 2 is unverifiable": 1,
+   "reference needs >10s on 01_srnd_00.txt (4 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference needs >10s on testcase06.txt (10 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference disagrees with the shipped output on 01_small_00.txt": 1,
+   "reference needs >10s on 001.txt (2 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference raised ModuleNotFoundError on hand_01.txt": 1,
+   "reference needs >10s on test_02.txt (5 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference needs >10s on 01-007.txt (8 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference raised EOFError on example_00.txt": 1,
+   "reference disagrees with the shipped output on test_16.txt": 1,
+   "reference needs >10s on test_01.txt (3 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference disagrees with the shipped output on 001.txt": 1,
+   "reference raised ModuleNotFoundError on sample00.txt": 1,
+   "reference needs >10s on 00_sample_02.txt (3 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference needs >10s on 01_random_01.txt (5 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference needs >10s on test_03.txt (6 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference raised ValueError on 000.txt": 1,
+   "reference needs >10s on 01-handmade-003.txt (6 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference needs >10s on 01-007.txt (11 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference disagrees with the shipped output on 00-sample-004.txt": 1,
+   "reference needs >10s on after_contest01.txt (2 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference raised IndexError on 00_sample_00.txt": 1,
+   "reference needs >10s on 02_random2_12.txt (20 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference needs >10s on 02_rnd_00.txt (12 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference raised ValueError on 01_sample_01.txt": 1,
+   "reference needs >10s on 009.txt (10 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference disagrees with the shipped output on test_02.txt": 1,
+   "reference needs >10s on example_03.txt (4 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference needs >10s on 03_rnd_00.txt (14 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference disagrees with the shipped output on in1.txt": 1,
+   "reference needs >10s on 01-006.txt (10 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference needs >10s on 011.txt (12 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference needs >10s on hand_00.txt (3 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference disagrees with the shipped output on case_04.txt": 1,
+   "reference raised ModuleNotFoundError on example_00.txt": 1,
+   "reference disagrees with the shipped output on test_00.txt": 1,
+   "reference needs >10s on 02_max_01.txt (11 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference disagrees with the shipped output on in01.txt": 1,
+   "reference needs >10s on 003.txt (4 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference needs >10s on random_04.txt (14 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference needs >10s on sample_01.txt (1 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference disagrees with the shipped output on test_06.txt": 1,
+   "reference disagrees with the shipped output on 01-002.txt": 1,
+   "reference disagrees with the shipped output on after_contest_01.txt": 1,
+   "reference raised ModuleNotFoundError on sample_01.txt": 1,
+   "reference needs >10s on 01_random_04.txt (8 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference needs >10s on 01-random-002.txt (3 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference raised ModuleNotFoundError on 000.txt": 1,
+   "reference needs >10s on random_01.txt (1 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference needs >10s on test_17.txt (20 of 20 cases in). Every sandbox run in every round of every arm would pay it - see DEFAULT_REFERENCE_TIMEOUT": 1,
+   "reference disagrees with the shipped output on 01.txt": 1
+  },
+  "n_eligible_flag": 295,
+  "stage3_cohort": 295,
+  "stage3_cohort_passing": 295,
+  "mutant_gate": ">= 0.67 of the scoreable natural mutants caught",
+  "corpus_gate": ">= 222/295 programs passing",
+  "n_slow_excluded": 48,
+  "reference_timeout_sec": 10.0,
+  "stage4_corpus": 99,
+  "usability_criterion": "test data present; reference passes its own cases; the faulty version is refuted by the shipped pool; neither version times out",
+  "slow_profile": {
+   "n": 48,
+   "mean_reference_sec_max_slow": 10.017,
+   "mean_reference_sec_max_corpus": 1.164,
+   "mean_n_test_cases_slow": 44.2,
+   "mean_n_test_cases_corpus": 38.9,
+   "mean_difficulty_slow": 2041.5,
+   "mean_difficulty_corpus": 940.3,
+   "note": "the slow filter is arm-independent but not difficulty-independent; these are the two distributions a reviewer should see"
+  }
+ },
+ "test_work": {
+  "no_memory": {
+   "n_cells": 495,
+   "total_executions": 95.685,
+   "guard_side": 0.0,
+   "oracle_side": 95.685,
+   "guard_share": 0.0,
+   "guard_sec": 0.0,
+   "oracle_sec": 72.912
+  },
+  "untyped": {
+   "n_cells": 495,
+   "total_executions": 44.446,
+   "guard_side": 10.198,
+   "oracle_side": 34.248,
+   "guard_share": 0.2294,
+   "guard_sec": 7.114,
+   "oracle_sec": 34.381
+  },
+  "typed": {
+   "n_cells": 495,
+   "total_executions": 43.014,
+   "guard_side": 9.376,
+   "oracle_side": 33.638,
+   "guard_share": 0.218,
+   "guard_sec": 4.2,
+   "oracle_sec": 34.008
+  },
+  "guard_only": {
+   "n_cells": 297,
+   "total_executions": 43.566,
+   "guard_side": 9.737,
+   "oracle_side": 33.828,
+   "guard_share": 0.2235,
+   "guard_sec": 4.044,
+   "oracle_sec": 28.313
+  },
+  "steer_only": {
+   "n_cells": 297,
+   "total_executions": 92.407,
+   "guard_side": 0.0,
+   "oracle_side": 92.407,
+   "guard_share": 0.0,
+   "guard_sec": 0.0,
+   "oracle_sec": 72.21
+  },
+  "no_memory_vs_typed_total_executions": {
+   "fold": 2.224,
+   "sign": {
+    "wins": 251,
+    "losses": 113,
+    "ties": 131,
+    "p": 0.0
+   }
+  },
+  "no_memory_vs_untyped_total_executions": {
+   "fold": 2.153,
+   "sign": {
+    "wins": 212,
+    "losses": 159,
+    "ties": 124,
+    "p": 0.00686
+   }
+  },
+  "untyped_vs_typed_total_executions": {
+   "fold": 1.033,
+   "sign": {
+    "wins": 170,
+    "losses": 146,
+    "ties": 179,
+    "p": 0.195638
+   }
+  }
+ },
+ "task_level": {
+  "oracle_calls_nomem_vs_typed": {
+   "unit_task": {
+    "n_tasks": 99,
+    "sign": {
+     "wins": 88,
+     "losses": 0,
+     "ties": 11,
+     "p": 0.0
+    },
+    "wilcoxon": {
+     "n": 88,
+     "w": 0,
+     "p": 0.0
+    },
+    "mean_reference": 9.4747,
+    "mean_treatment": 1.8343,
+    "a12": 0.8578
+   },
+   "unit_cell": {
+    "n_cells": 495,
+    "sign": {
+     "wins": 325,
+     "losses": 10,
+     "ties": 160,
+     "p": 0.0
+    }
+   },
+   "paired_diff_ci95_task_clustered": {
+    "point": -7.6404,
+    "ci95": [
+     -9.0747,
+     -6.2687
+    ],
+    "n_tasks": 99,
+    "n_cells": 495
+   }
+  },
+  "oracle_calls_nomem_vs_untyped": {
+   "unit_task": {
+    "n_tasks": 99,
+    "sign": {
+     "wins": 88,
+     "losses": 0,
+     "ties": 11,
+     "p": 0.0
+    },
+    "wilcoxon": {
+     "n": 88,
+     "w": 0,
+     "p": 0.0
+    },
+    "mean_reference": 9.4747,
+    "mean_treatment": 1.9131,
+    "a12": 0.8491
+   },
+   "unit_cell": {
+    "n_cells": 495,
+    "sign": {
+     "wins": 329,
+     "losses": 2,
+     "ties": 164,
+     "p": 0.0
+    }
+   },
+   "paired_diff_ci95_task_clustered": {
+    "point": -7.5616,
+    "ci95": [
+     -9.0101,
+     -6.1899
+    ],
+    "n_tasks": 99,
+    "n_cells": 495
+   }
+  },
+  "oracle_calls_untyped_vs_typed": {
+   "unit_task": {
+    "n_tasks": 99,
+    "sign": {
+     "wins": 36,
+     "losses": 19,
+     "ties": 44,
+     "p": 0.030029
+    },
+    "wilcoxon": {
+     "n": 55,
+     "w": 497.5,
+     "p": 0.022669
+    },
+    "mean_reference": 1.9131,
+    "mean_treatment": 1.8343,
+    "a12": 0.554
+   },
+   "unit_cell": {
+    "n_cells": 495,
+    "sign": {
+     "wins": 93,
+     "losses": 59,
+     "ties": 343,
+     "p": 0.007235
+    }
+   },
+   "paired_diff_ci95_task_clustered": {
+    "point": -0.0788,
+    "ci95": [
+     -0.1414,
+     -0.0182
+    ],
+    "n_tasks": 99,
+    "n_cells": 495
+   }
+  },
+  "total_executions_nomem_vs_typed": {
+   "unit_task": {
+    "n_tasks": 99,
+    "sign": {
+     "wins": 63,
+     "losses": 30,
+     "ties": 6,
+     "p": 0.00081
+    },
+    "wilcoxon": {
+     "n": 93,
+     "w": 751.5,
+     "p": 0.0
+    },
+    "mean_reference": 95.6848,
+    "mean_treatment": 43.0141,
+    "a12": 0.6332
+   },
+   "unit_cell": {
+    "n_cells": 495,
+    "sign": {
+     "wins": 251,
+     "losses": 113,
+     "ties": 131,
+     "p": 0.0
+    }
+   },
+   "paired_diff_ci95_task_clustered": {
+    "point": -52.6707,
+    "ci95": [
+     -84.0525,
+     -28.3354
+    ],
+    "n_tasks": 99,
+    "n_cells": 495
+   }
+  },
+  "redundancy_paid_nomem_vs_typed": {
+   "unit_task": {
+    "n_tasks": 99,
+    "sign": {
+     "wins": 80,
+     "losses": 0,
+     "ties": 19,
+     "p": 0.0
+    },
+    "wilcoxon": {
+     "n": 80,
+     "w": 0,
+     "p": 0.0
+    },
+    "mean_reference": 4.4808,
+    "mean_treatment": 0.0788,
+    "a12": 0.8819
+   },
+   "unit_cell": {
+    "n_cells": 495,
+    "sign": {
+     "wins": 277,
+     "losses": 6,
+     "ties": 212,
+     "p": 0.0
+    }
+   },
+   "paired_diff_ci95_task_clustered": {
+    "point": -4.402,
+    "ci95": [
+     -5.3737,
+     -3.5192
+    ],
+    "n_tasks": 99,
+    "n_cells": 495
+   }
+  },
+  "guard_sec_untyped_vs_guardonly": {
+   "unit_task": {
+    "n_tasks": 99,
+    "sign": {
+     "wins": 77,
+     "losses": 20,
+     "ties": 2,
+     "p": 0.0
+    },
+    "wilcoxon": {
+     "n": 97,
+     "w": 786.0,
+     "p": 0.0
+    },
+    "mean_reference": 7.1141,
+    "mean_treatment": 4.0439,
+    "a12": 0.5514
+   },
+   "unit_cell": {
+    "n_cells": 297,
+    "sign": {
+     "wins": 191,
+     "losses": 40,
+     "ties": 66,
+     "p": 0.0
+    }
+   },
+   "paired_diff_ci95_task_clustered": {
+    "point": -2.6188,
+    "ci95": [
+     -6.4692,
+     -0.4738
+    ],
+    "n_tasks": 99,
+    "n_cells": 297
+   }
+  },
+  "wall_sec_untyped_vs_guardonly": {
+   "unit_task": {
+    "n_tasks": 99,
+    "sign": {
+     "wins": 61,
+     "losses": 38,
+     "ties": 0,
+     "p": 0.026525
+    },
+    "wilcoxon": {
+     "n": 99,
+     "w": 1619.0,
+     "p": 0.002827
+    },
+    "mean_reference": 77.6166,
+    "mean_treatment": 68.8658,
+    "a12": 0.528
+   },
+   "unit_cell": {
+    "n_cells": 297,
+    "sign": {
+     "wins": 238,
+     "losses": 57,
+     "ties": 2,
+     "p": 0.0
+    }
+   },
+   "paired_diff_ci95_task_clustered": {
+    "point": -11.5809,
+    "ci95": [
+     -21.4082,
+     -4.703
+    ],
+    "n_tasks": 99,
+    "n_cells": 297
+   }
+  },
+  "tokens_in_nomem_vs_steeronly": {
+   "unit_task": {
+    "n_tasks": 99,
+    "sign": {
+     "wins": 22,
+     "losses": 75,
+     "ties": 2,
+     "p": 0.0
+    },
+    "wilcoxon": {
+     "n": 97,
+     "w": 556.5,
+     "p": 0.0
+    },
+    "mean_reference": 4546.3838,
+    "mean_treatment": 10296.3333,
+    "a12": 0.3843
+   },
+   "unit_cell": {
+    "n_cells": 297,
+    "sign": {
+     "wins": 64,
+     "losses": 170,
+     "ties": 63,
+     "p": 0.0
+    }
+   },
+   "paired_diff_ci95_task_clustered": {
+    "point": 5777.7172,
+    "ci95": [
+     4112.5926,
+     7642.3636
+    ],
+    "n_tasks": 99,
+    "n_cells": 297
+   }
+  },
+  "repair_at_oracle_budget_2_no_memory": {
+   "point": 0.3192,
+   "ci95": [
+    0.2505,
+    0.3879
+   ],
+   "n_tasks": 99,
+   "n_cells": 495
+  },
+  "repair_at_oracle_budget_2_untyped": {
+   "point": 0.5131,
+   "ci95": [
+    0.4384,
+    0.5859
+   ],
+   "n_tasks": 99,
+   "n_cells": 495
+  },
+  "repair_at_oracle_budget_2_typed": {
+   "point": 0.5576,
+   "ci95": [
+    0.4768,
+    0.6364
+   ],
+   "n_tasks": 99,
+   "n_cells": 495
+  },
+  "repair_at_oracle_budget_2_typed_minus_nomem": {
+   "point": 0.2384,
+   "ci95": [
+    0.1838,
+    0.2949
+   ],
+   "n_tasks": 99,
+   "n_cells": 495
+  },
+  "repair_at_oracle_budget_3_no_memory": {
+   "point": 0.3737,
+   "ci95": [
+    0.299,
+    0.4485
+   ],
+   "n_tasks": 99,
+   "n_cells": 495
+  },
+  "repair_at_oracle_budget_3_untyped": {
+   "point": 0.6707,
+   "ci95": [
+    0.5899,
+    0.7495
+   ],
+   "n_tasks": 99,
+   "n_cells": 495
+  },
+  "repair_at_oracle_budget_3_typed": {
+   "point": 0.6788,
+   "ci95": [
+    0.6,
+    0.7556
+   ],
+   "n_tasks": 99,
+   "n_cells": 495
+  },
+  "repair_at_oracle_budget_3_typed_minus_nomem": {
+   "point": 0.3051,
+   "ci95": [
+    0.2485,
+    0.3636
+   ],
+   "n_tasks": 99,
+   "n_cells": 495
+  },
+  "repair_at_oracle_budget_4_no_memory": {
+   "point": 0.4384,
+   "ci95": [
+    0.3616,
+    0.5172
+   ],
+   "n_tasks": 99,
+   "n_cells": 495
+  },
+  "repair_at_oracle_budget_4_untyped": {
+   "point": 0.697,
+   "ci95": [
+    0.6141,
+    0.7758
+   ],
+   "n_tasks": 99,
+   "n_cells": 495
+  },
+  "repair_at_oracle_budget_4_typed": {
+   "point": 0.6949,
+   "ci95": [
+    0.6141,
+    0.7717
+   ],
+   "n_tasks": 99,
+   "n_cells": 495
+  },
+  "repair_at_oracle_budget_4_typed_minus_nomem": {
+   "point": 0.2566,
+   "ci95": [
+    0.202,
+    0.3131
+   ],
+   "n_tasks": 99,
+   "n_cells": 495
+  },
+  "repair_at_oracle_budget_8_no_memory": {
+   "point": 0.5636,
+   "ci95": [
+    0.4828,
+    0.6444
+   ],
+   "n_tasks": 99,
+   "n_cells": 495
+  },
+  "repair_at_oracle_budget_8_untyped": {
+   "point": 0.699,
+   "ci95": [
+    0.6182,
+    0.7778
+   ],
+   "n_tasks": 99,
+   "n_cells": 495
+  },
+  "repair_at_oracle_budget_8_typed": {
+   "point": 0.697,
+   "ci95": [
+    0.6162,
+    0.7737
+   ],
+   "n_tasks": 99,
+   "n_cells": 495
+  },
+  "repair_at_oracle_budget_8_typed_minus_nomem": {
+   "point": 0.1333,
+   "ci95": [
+    0.0909,
+    0.1798
+   ],
+   "n_tasks": 99,
+   "n_cells": 495
+  }
+ },
+ "zero_failure_ci": {
+  "note": "one-sided 95% Clopper-Pearson upper bound. Zero observed failures bounds the rate; it does not establish that the rate is zero.",
+  "overfitting_k100": {
+   "n": 1256,
+   "failures": 0,
+   "upper95": 0.002382,
+   "note": null
+  },
+  "regression_k100": {
+   "n": 939,
+   "failures": 0,
+   "upper95": 0.003185,
+   "note": null
+  },
+  "planted_mutants_missed": {
+   "n": 249,
+   "failures": 0,
+   "upper95": 0.011959,
+   "note": null,
+   "n_equivalent_excluded": 48,
+   "catch_rate_by_depth": {
+    "1": 0.6466,
+    "2": 0.7871,
+    "3": 0.8072,
+    "5": 0.8876,
+    "10": 0.9518,
+    "20": 0.9799,
+    "40": 0.996,
+    "80": 1.0
+   }
+  }
+ },
+ "audit_denoms": {
+  "k100_audited_accepts": 1256,
+  "k100_overfit": 0,
+  "regression_audited": 939,
+  "not_regression_audited": 317,
+  "no_p2p_cases": 317,
+  "regression_inconclusive": 0,
+  "explanation": "the regression audit reports a rate only for an accepted patch that has at least one shipped case the buggy version already passed; a fault whose pool contains no such case cannot regress and carries no regression verdict."
+ },
+ "free_guarded": {
+  "no_memory": {
+   "n_base_cells": 495,
+   "n_free_cells": 60,
+   "n_matched": 60,
+   "free_cells_missing_a_base_twin": [],
+   "matched": {
+    "success_base": 0.8,
+    "success_free": 0.7833,
+    "oracle_base": 8.617,
+    "oracle_free": 8.6,
+    "flips_free_better": 0,
+    "flips_base_better": 1
+   }
+  },
+  "untyped": {
+   "n_base_cells": 495,
+   "n_free_cells": 57,
+   "n_matched": 57,
+   "free_cells_missing_a_base_twin": [],
+   "matched": {
+    "success_base": 0.7719,
+    "success_free": 0.8596,
+    "oracle_base": 2.123,
+    "oracle_free": 2.088,
+    "flips_free_better": 5,
+    "flips_base_better": 0
+   }
+  },
+  "typed": {
+   "n_base_cells": 495,
+   "n_free_cells": 54,
+   "n_matched": 54,
+   "free_cells_missing_a_base_twin": [],
+   "matched": {
+    "success_base": 0.8148,
+    "success_free": 0.8889,
+    "oracle_base": 2.019,
+    "oracle_free": 2.093,
+    "flips_free_better": 4,
+    "flips_base_better": 0
+   }
+  },
+  "target_cells_per_arm": 60,
+  "note": "free-guarded cells exist only where the condition's own run completed; the base twin is the same task/seed WITHOUT the free-round accounting, so a matched comparison uses only cells present in both"
+ }
+}

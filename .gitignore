@@ -1,66 +1,55 @@
+# ── python / editor ───────────────────────────────────────────────────────────
 .venv/
 __pycache__/
 *.pyc
+.pytest_cache/
 .env
-cache/*
-logs/*
-!cache/.gitkeep
-!data/.gitkeep
-external/
 NOTES.md
-paper/*.aux
-paper/*.log
-paper/*.out
-paper/*.bbl
-paper/*.blg
-paper/*.pdf
 .DS_Store
 **/.DS_Store
 .claude/
-paper/*.zip
-.DS_Store
-**/.DS_Store
-.claude/
-data/**/pool_strength_partial.json
-data/pool_strength_partial.json
-data/**/calls.jsonl
-data/calls.jsonl
-paper/*.zip
-data/**/*_smoke.jsonl
-data/*_smoke.jsonl
 _to_delete/
-# scripts/screen_shard.sh keeps the previous report before measure_pi.py
-# rewrites it from scratch. Churn, not an artifact - consolidate_screens.py's
-# glob ignores it too.
-*.json.bak
 
-# Partial Test/ archives for a cloud run - built by hand, tens of GB.
+# ── run outputs: never tracked ───────────────────────────────────────────────
+# data/ holds only source (mutants.py) and the placeholder. Every run writes to
+# data/<RUN_DIR>/ (src/paths.py, scripts/run_dir_paths.sh); the reported runs
+# are shipped as artifacts (scripts/build_artifacts.py) and installed by
+# scripts/fetch_artifacts.py, not committed.
+data/*
+!data/.gitkeep
+!data/mutants.py
+data/repro-*/
+logs/
+cache/*
+!cache/.gitkeep
+
+# the shipped artifacts, unpacked or downloaded by scripts/fetch_artifacts.py
+artifacts/
+artifacts*.zip
+
+# the benchmark checkout (scripts/fetch_condefects.py) and partial Test/ archives
+external/
 /test_*.zip
 
-# Shard program lists, rewritten from data/tasks.json on every run and carrying
-# the corpus digest that produced them. Regenerated, not authored.
-data/shards/
-data/eval_shards/*.txt
-data/**/shards/
-data/**/eval_shards/*.txt
-
-# The universe lists. eval_shard.sh rewrites all four from tasks.json on every
-# run and stamps each with the corpus digest that produced it, so a tracked copy
-# is a stale copy waiting to disagree with the corpus beside it. demo_programs
-# is NOT here: eval_shard.sh's help says that one is a draw you write by hand.
-data/eval_order.txt
-data/sweep_programs.txt
-data/trial_programs.txt
-data/live_programs.txt
-data/**/eval_order.txt
-data/**/sweep_programs.txt
-data/**/trial_programs.txt
-data/**/live_programs.txt
-
-# RUN_DIR: a named run writes to data/<slug>/ and logs/<slug>/ (src/paths.py).
-# logs/ is already ignored wholesale by `logs/*` at the top, so only the data
-# side needs saying - and it is deliberately NOT ignored. This repo tracks its
-# artifacts (133 files under data/), so a run's output should show up in
-# `git status` and be committed or discarded on purpose, exactly like the
-# default run's. The churn rules above are mirrored one level down so a named
-# run ignores the same junk the default run does.
+# ── paper build ──────────────────────────────────────────────────────────────
+# Build products are not tracked, with one exception: paper/main.pdf is the
+# reference build scripts/reproduce.sh must reproduce. The figures under
+# paper/common/figures/ are inputs of the LaTeX build (tools/make_figures.py
+# regenerates them from numbers.json + figdata.json) and stay tracked.
+paper/**/*.pdf
+!paper/main.pdf
+!paper/common/figures/*.pdf
+paper/**/*.aux
+paper/**/*.log
+paper/**/*.out
+paper/**/*.bbl
+paper/**/*.blg
+paper/**/*.fls
+paper/**/*.fdb_latexmk
+paper/**/*.synctex.gz
+paper/**/*.toc
+paper/**/*.lof
+paper/**/*.lot
+paper/**/*.brf
+paper/*.zip
+paper/common/.regen/

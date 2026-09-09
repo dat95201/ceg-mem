@@ -125,7 +125,7 @@ def main() -> int:
                     help="default: <data dir>/hardend_programs.txt, read by --universe hardend")
     ap.add_argument("--frozen", type=pathlib.Path, default=None,
                     help="the first proposer's frozen task list, for the matched set "
-                         "(default: runs/2026-09-01/tasks.json if present)")
+                         "(default: data/official-2026-09-01/tasks.json if present)")
     ap.add_argument("--piloted-from", nargs="*", default=[],
                     help="episode-log globs for the second proposer, to label the pilot")
     ap.add_argument("--dry-run", action="store_true", help="print the draw, write nothing")
@@ -171,7 +171,7 @@ def main() -> int:
     # draw and the frozen run are not the same list. Computed here rather than
     # left to whoever writes the table, because "99 against 70" is the mistake
     # this whole universe exists to avoid.
-    frozen_path = args.frozen or pathlib.Path("runs/2026-09-01/tasks.json")
+    frozen_path = args.frozen or pathlib.Path("data/official-2026-09-01/tasks.json")
     matched: list[str] = []
     n_first = 0
     if frozen_path.is_file():

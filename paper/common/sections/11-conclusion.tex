@@ -1,0 +1,35 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+LLM repair agents run tests indiscriminately and most of that execution does
+not pay~\cite{lin2026run,chen2026rethinking}. Classical repair cuts that work
+either by relating candidate patches to one
+another~\cite{weimer2013leveraging,mechtaev2018testequivalence}, which an
+unenumerable candidate space rules out, or by ordering the evidence so a doomed
+candidate dies on the first
+case~\cite{qi2013efficient,venugopal2020modification}.
+This paper carries the second mechanism into an LLM loop and changes what it
+orders from: counterexamples retained across candidates, where an input already
+in memory \emph{proves} that a candidate reproducing it will fail. Memory cuts
+oracle calls \fold{5.2} at unchanged repair rate and, counting every guard
+replay as the execution it is, total program executions \fold{2.2}. That there
+is anything to intercept is itself a finding: one proposal in four is
+byte-identical to an earlier one, a rate that is zero by construction in the
+synthesis loop the design came from.
+
+The two halves of the architecture depend on different things, and a second
+proposer shows which. The guard is a property of the runtime: under
+\texttt{gpt-4o-mini} it cuts oracle calls \fold{5.8} and paid redundant
+verifications \fold{46} on its own (\fold{93} with steering), again at
+unchanged repair, and its $\loc$
+\emph{ordering} is again indistinguishable from a flat scan on memories this
+small. Steering is a property of the proposer: null at 7B for $+128\%$ prompt
+tokens, worth \pp{+9} repair for $+67\%$ tokens on \texttt{gpt-4o-mini}. What
+we recommend is therefore the guard unconditionally and steering where the
+proposer acts on it. The guard does not survive a per-modification-point
+prioritizer on executions---that prioritizer is cheaper on $80$ of $99$ tasks,
+by a median $4.6\%$---and it is the only policy of five that removes oracle
+invocations, on every task (\cref{sec:results-policies}). Where between two
+proposers steering begins to pay, and whether any of this holds on the
+expensive-oracle faults we filtered out, are the two questions we would want
+answered next.

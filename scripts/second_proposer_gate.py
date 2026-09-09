@@ -75,7 +75,7 @@ def main() -> int:
     ap.add_argument("--meta", type=pathlib.Path, default=None,
                     help="default: <data dir>/hardend_universe_meta.json")
     ap.add_argument("--strata", type=pathlib.Path,
-                    default=pathlib.Path("runs/2026-09-01/strata.json"))
+                    default=pathlib.Path("data/official-2026-09-01/strata.json"))
     ap.add_argument("--floor", type=int, default=FLOOR)
     args = ap.parse_args()
 

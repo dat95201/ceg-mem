@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import math
 import pathlib
 from typing import Any
 
@@ -234,7 +235,12 @@ def _sum_or_none(rows: list[dict], *fields: str) -> float | None:
     """
     if not any(r.get(f) is not None for r in rows for f in fields):
         return None
-    return sum(r.get(f) or 0.0 for r in rows for f in fields)
+    # math.fsum, then a round at the source's own resolution (the loop logs
+    # seconds to 3 decimals): a plain sum() depends on the order the fields are
+    # visited, and 273.803 vs 273.80299999999994 for two byte-identical episodes
+    # turned two exact ties in the untyped-vs-guard-only wall-clock sign test into
+    # one win and one loss. The sum is now the same number whatever the order.
+    return round(math.fsum(r.get(f) or 0.0 for r in rows for f in fields), 6)
 
 
 def build_crn_type_index(rows: list[dict[str, Any]]) -> dict[tuple, str]:

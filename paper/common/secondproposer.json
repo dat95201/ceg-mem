@@ -1,0 +1,3366 @@
+{
+ "_provenance": {
+  "local_run": "../../data/official-2026-09-01",
+  "cloud_run": "../../data/gpto4mini-2026-09-06",
+  "local_model": "qwen2.5-coder:7b",
+  "cloud_model": "gpt-4o-mini",
+  "banding": "../../data/official-2026-09-01/strata.json (frozen 7B banding; PRESPEC section 3/6)",
+  "bootstrap": {
+   "resamples": 10000,
+   "seed": 20260908,
+   "unit": "task"
+  },
+  "permutation": {
+   "n": 20000,
+   "seed": 7
+  },
+  "duplicate_cells_ignored": {
+   "local": {},
+   "cloud": {}
+  }
+ },
+ "cloud": {
+  "all": {
+   "n_cells_per_arm": 495,
+   "n_tasks": 99,
+   "metrics": {
+    "acc20": {
+     "_what": "repair rate at the full budget B=20 (accepted within the episode)",
+     "NM": 0.6808080808080809,
+     "UN": 0.6787878787878788,
+     "TY": 0.7434343434343434,
+     "TY_vs_UN": {
+      "mean_a": 0.7434343434343434,
+      "mean_b": 0.6787878787878788,
+      "diff": 0.06464646464646462,
+      "fold_b_over_a": 0.9130434782608696,
+      "cells": {
+       "wins": 46,
+       "losses": 14,
+       "p": 4.223704562267977e-05
+      },
+      "tasks": {
+       "wins": 16,
+       "losses": 8,
+       "p": 0.15158963203430176
+      },
+      "ci95_diff": [
+       0.01818181818181818,
+       0.11717171717171718
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (higher is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 0.7434343434343434,
+      "mean_b": 0.6808080808080809,
+      "diff": 0.06262626262626259,
+      "fold_b_over_a": 0.9157608695652174,
+      "cells": {
+       "wins": 46,
+       "losses": 15,
+       "p": 8.837556327558754e-05
+      },
+      "tasks": {
+       "wins": 15,
+       "losses": 8,
+       "p": 0.21003961563110352
+      },
+      "ci95_diff": [
+       0.01616161616161616,
+       0.11515151515151516
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (higher is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 0.6787878787878788,
+      "mean_b": 0.6808080808080809,
+      "diff": -0.002020202020202033,
+      "fold_b_over_a": 1.0029761904761905,
+      "cells": {
+       "wins": 0,
+       "losses": 1,
+       "p": 1.0
+      },
+      "tasks": {
+       "wins": 0,
+       "losses": 1,
+       "p": 1.0
+      },
+      "ci95_diff": [
+       -0.006060606060606061,
+       0.0
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = UN better (higher is better)"
+     }
+    },
+    "acc2": {
+     "_what": "repair rate at a matched budget of 2 oracle calls",
+     "NM": 0.503030303030303,
+     "UN": 0.6383838383838384,
+     "TY": 0.6727272727272727,
+     "TY_vs_UN": {
+      "mean_a": 0.6727272727272727,
+      "mean_b": 0.6383838383838384,
+      "diff": 0.03434343434343434,
+      "fold_b_over_a": 0.948948948948949,
+      "cells": {
+       "wins": 38,
+       "losses": 21,
+       "p": 0.036343179957053884
+      },
+      "tasks": {
+       "wins": 19,
+       "losses": 11,
+       "p": 0.20048842206597328
+      },
+      "ci95_diff": [
+       -0.00808080808080808,
+       0.07878787878787878
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (higher is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 0.6727272727272727,
+      "mean_b": 0.503030303030303,
+      "diff": 0.16969696969696968,
+      "fold_b_over_a": 0.7477477477477478,
+      "cells": {
+       "wins": 87,
+       "losses": 3,
+       "p": 1.9641662139013065e-22
+      },
+      "tasks": {
+       "wins": 34,
+       "losses": 1,
+       "p": 2.0954757928848267e-09
+      },
+      "ci95_diff": [
+       0.11515151515151516,
+       0.22828282828282828
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (higher is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 0.6383838383838384,
+      "mean_b": 0.503030303030303,
+      "diff": 0.13535353535353534,
+      "fold_b_over_a": 0.7879746835443038,
+      "cells": {
+       "wins": 67,
+       "losses": 0,
+       "p": 1.3552527156068805e-20
+      },
+      "tasks": {
+       "wins": 30,
+       "losses": 0,
+       "p": 1.862645149230957e-09
+      },
+      "ci95_diff": [
+       0.08888888888888889,
+       0.18585858585858586
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = UN better (higher is better)"
+     }
+    },
+    "oc": {
+     "_what": "oracle calls per episode (truncated at first accept)",
+     "NM": 8.185858585858586,
+     "UN": 1.4202020202020202,
+     "TY": 1.492929292929293,
+     "TY_vs_UN": {
+      "mean_a": 1.492929292929293,
+      "mean_b": 1.4202020202020202,
+      "diff": 0.07272727272727275,
+      "fold_b_over_a": 0.9512855209742895,
+      "cells": {
+       "wins": 32,
+       "losses": 64,
+       "p": 0.001424496094649118
+      },
+      "tasks": {
+       "wins": 15,
+       "losses": 25,
+       "p": 0.1538599441628321
+      },
+      "ci95_diff": [
+       0.012121212121212121,
+       0.13535353535353536
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 1.492929292929293,
+      "mean_b": 8.185858585858586,
+      "diff": -6.692929292929293,
+      "fold_b_over_a": 5.483085250338295,
+      "cells": {
+       "wins": 243,
+       "losses": 3,
+       "p": 4.388753505936642e-68
+      },
+      "tasks": {
+       "wins": 61,
+       "losses": 0,
+       "p": 8.673617379884035e-19
+      },
+      "ci95_diff": [
+       -8.327272727272728,
+       -5.143434343434343
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 1.4202020202020202,
+      "mean_b": 8.185858585858586,
+      "diff": -6.765656565656566,
+      "fold_b_over_a": 5.763869132290185,
+      "cells": {
+       "wins": 242,
+       "losses": 1,
+       "p": 3.452477648802684e-71
+      },
+      "tasks": {
+       "wins": 59,
+       "losses": 0,
+       "p": 3.469446951953614e-18
+      },
+      "ci95_diff": [
+       -8.41010101010101,
+       -5.183838383838384
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    },
+    "sb": {
+     "_what": "program executions per episode (oracle cases + guard replays)",
+     "NM": 83.08080808080808,
+     "UN": 39.2060606060606,
+     "TY": 40.37171717171717,
+     "TY_vs_UN": {
+      "mean_a": 40.37171717171717,
+      "mean_b": 39.2060606060606,
+      "diff": 1.165656565656569,
+      "fold_b_over_a": 0.971126901521217,
+      "cells": {
+       "wins": 94,
+       "losses": 97,
+       "p": 0.8849851393064476
+      },
+      "tasks": {
+       "wins": 23,
+       "losses": 29,
+       "p": 0.48845566937989204
+      },
+      "ci95_diff": [
+       -0.04040404040404041,
+       2.4505050505050505
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 40.37171717171717,
+      "mean_b": 83.08080808080808,
+      "diff": -42.70909090909091,
+      "fold_b_over_a": 2.057896317053643,
+      "cells": {
+       "wins": 174,
+       "losses": 76,
+       "p": 5.160249783572316e-10
+      },
+      "tasks": {
+       "wins": 40,
+       "losses": 20,
+       "p": 0.01348929373119186
+      },
+      "ci95_diff": [
+       -70.11111111111111,
+       -20.68080808080808
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 39.2060606060606,
+      "mean_b": 83.08080808080808,
+      "diff": -43.87474747474748,
+      "fold_b_over_a": 2.119080744061421,
+      "cells": {
+       "wins": 148,
+       "losses": 83,
+       "p": 2.2648514637272522e-05
+      },
+      "tasks": {
+       "wins": 33,
+       "losses": 23,
+       "p": 0.22880554123435617
+      },
+      "ci95_diff": [
+       -71.32727272727273,
+       -21.822222222222223
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    },
+    "redun": {
+     "_what": "paid redundant verifications per episode (CRN-joined)",
+     "NM": 5.806060606060606,
+     "UN": 0.12727272727272726,
+     "TY": 0.06262626262626263,
+     "TY_vs_UN": {
+      "mean_a": 0.06262626262626263,
+      "mean_b": 0.12727272727272726,
+      "diff": -0.06464646464646463,
+      "fold_b_over_a": 2.032258064516129,
+      "cells": {
+       "wins": 32,
+       "losses": 7,
+       "p": 7.025478407740593e-05
+      },
+      "tasks": {
+       "wins": 13,
+       "losses": 3,
+       "p": 0.021270751953125
+      },
+      "ci95_diff": [
+       -0.11313131313131314,
+       -0.024242424242424242
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 0.06262626262626263,
+      "mean_b": 5.806060606060606,
+      "diff": -5.743434343434343,
+      "fold_b_over_a": 92.70967741935483,
+      "cells": {
+       "wins": 232,
+       "losses": 2,
+       "p": 1.9919596156113543e-66
+      },
+      "tasks": {
+       "wins": 57,
+       "losses": 0,
+       "p": 1.3877787807814457e-17
+      },
+      "ci95_diff": [
+       -7.216161616161616,
+       -4.353535353535354
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 0.12727272727272726,
+      "mean_b": 5.806060606060606,
+      "diff": -5.678787878787879,
+      "fold_b_over_a": 45.61904761904762,
+      "cells": {
+       "wins": 231,
+       "losses": 0,
+       "p": 5.795634610449096e-70
+      },
+      "tasks": {
+       "wins": 57,
+       "losses": 0,
+       "p": 1.3877787807814457e-17
+      },
+      "ci95_diff": [
+       -7.133333333333334,
+       -4.298989898989899
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    },
+    "gev": {
+     "_what": "memory entries consulted per episode (guard evaluations)",
+     "NM": 0.0,
+     "UN": 8.195959595959597,
+     "TY": 7.157575757575757,
+     "TY_vs_UN": {
+      "mean_a": 7.157575757575757,
+      "mean_b": 8.195959595959597,
+      "diff": -1.0383838383838393,
+      "fold_b_over_a": 1.1450747953711544,
+      "cells": {
+       "wins": 116,
+       "losses": 71,
+       "p": 0.0012323624959428869
+      },
+      "tasks": {
+       "wins": 32,
+       "losses": 21,
+       "p": 0.16897782228771874
+      },
+      "ci95_diff": [
+       -2.0202020202020203,
+       -0.15757575757575756
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 7.157575757575757,
+      "mean_b": 0.0,
+      "diff": 7.157575757575757,
+      "fold_b_over_a": 0.0,
+      "cells": {
+       "wins": 0,
+       "losses": 273,
+       "p": 1.3177747429038154e-82
+      },
+      "tasks": {
+       "wins": 0,
+       "losses": 64,
+       "p": 1.0842021724855044e-19
+      },
+      "ci95_diff": [
+       5.42020202020202,
+       9.01010101010101
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 8.195959595959597,
+      "mean_b": 0.0,
+      "diff": 8.195959595959597,
+      "fold_b_over_a": 0.0,
+      "cells": {
+       "wins": 0,
+       "losses": 273,
+       "p": 1.3177747429038154e-82
+      },
+      "tasks": {
+       "wins": 0,
+       "losses": 64,
+       "p": 1.0842021724855044e-19
+      },
+      "ci95_diff": [
+       6.343434343434343,
+       10.181818181818182
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    },
+    "pt": {
+     "_what": "prompt tokens per episode",
+     "NM": 3649.480808080808,
+     "UN": 3665.410101010101,
+     "TY": 4373.668686868687,
+     "TY_vs_UN": {
+      "mean_a": 4373.668686868687,
+      "mean_b": 3665.410101010101,
+      "diff": 708.2585858585858,
+      "fold_b_over_a": 0.8380630457937908,
+      "cells": {
+       "wins": 84,
+       "losses": 189,
+       "p": 1.8564553558073367e-10
+      },
+      "tasks": {
+       "wins": 21,
+       "losses": 43,
+       "p": 0.008146902228698568
+      },
+      "ci95_diff": [
+       124.4121212121212,
+       1274.8525252525253
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 4373.668686868687,
+      "mean_b": 3649.480808080808,
+      "diff": 724.1878787878786,
+      "fold_b_over_a": 0.8344209562644402,
+      "cells": {
+       "wins": 84,
+       "losses": 189,
+       "p": 1.8564553558073367e-10
+      },
+      "tasks": {
+       "wins": 21,
+       "losses": 43,
+       "p": 0.008146902228698568
+      },
+      "ci95_diff": [
+       140.34141414141413,
+       1289.169696969697
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 3665.410101010101,
+      "mean_b": 3649.480808080808,
+      "diff": 15.929292929292842,
+      "fold_b_over_a": 0.9956541580640859,
+      "cells": {
+       "wins": 0,
+       "losses": 3,
+       "p": 0.25
+      },
+      "tasks": {
+       "wins": 0,
+       "losses": 3,
+       "p": 0.25
+      },
+      "ci95_diff": [
+       0.0,
+       45.8
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    },
+    "sec": {
+     "_what": "wall-clock seconds per episode (llm + oracle + guard)",
+     "NM": 85.06748686868687,
+     "UN": 54.253719191919195,
+     "TY": 49.47463838383838,
+     "TY_vs_UN": {
+      "mean_a": 49.47463838383838,
+      "mean_b": 54.253719191919195,
+      "diff": -4.779080808080813,
+      "fold_b_over_a": 1.0965965788572993,
+      "cells": {
+       "wins": 295,
+       "losses": 200,
+       "p": 2.263949215130827e-05
+      },
+      "tasks": {
+       "wins": 54,
+       "losses": 45,
+       "p": 0.42152334361577004
+      },
+      "ci95_diff": [
+       -11.999177777777776,
+       1.3585353535353546
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 49.47463838383838,
+      "mean_b": 85.06748686868687,
+      "diff": -35.59284848484849,
+      "fold_b_over_a": 1.7194160411786945,
+      "cells": {
+       "wins": 257,
+       "losses": 238,
+       "p": 0.4185195228464392
+      },
+      "tasks": {
+       "wins": 48,
+       "losses": 51,
+       "p": 0.8408215252256425
+      },
+      "ci95_diff": [
+       -83.79979595959598,
+       -3.5182262626262633
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 54.253719191919195,
+      "mean_b": 85.06748686868687,
+      "diff": -30.813767676767675,
+      "fold_b_over_a": 1.5679567803963055,
+      "cells": {
+       "wins": 204,
+       "losses": 290,
+       "p": 0.00012647868281353186
+      },
+      "tasks": {
+       "wins": 37,
+       "losses": 62,
+       "p": 0.015432364507309008
+      },
+      "ci95_diff": [
+       -73.07156969696969,
+       -2.5778565656565653
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    }
+   },
+   "steer_only": {
+    "n_cells": 297,
+    "n_tasks": 99,
+    "acc20": {
+     "SO": 0.7575757575757576,
+     "NM": 0.6666666666666666,
+     "SO_vs_NM": {
+      "mean_a": 0.7575757575757576,
+      "mean_b": 0.6666666666666666,
+      "diff": 0.09090909090909094,
+      "fold_b_over_a": 0.88,
+      "cells": {
+       "wins": 32,
+       "losses": 5,
+       "p": 7.427530363202095e-06
+      },
+      "tasks": {
+       "wins": 21,
+       "losses": 3,
+       "p": 0.0002771615982055664
+      },
+      "ci95_diff": [
+       0.04040404040404041,
+       0.1447811447811448
+      ],
+      "n_cells": 297,
+      "n_tasks": 99,
+      "_orientation": "wins = SO better (higher is better)"
+     }
+    },
+    "pt": {
+     "SO": 6174.949494949495,
+     "NM": 3698.6195286195284,
+     "ratio": 1.6695281704885798
+    }
+   }
+  },
+  "primary55": {
+   "n_cells_per_arm": 275,
+   "n_tasks": 55,
+   "metrics": {
+    "acc20": {
+     "_what": "repair rate at the full budget B=20 (accepted within the episode)",
+     "NM": 0.7381818181818182,
+     "UN": 0.7345454545454545,
+     "TY": 0.7854545454545454,
+     "TY_vs_UN": {
+      "mean_a": 0.7854545454545454,
+      "mean_b": 0.7345454545454545,
+      "diff": 0.050909090909090904,
+      "fold_b_over_a": 0.9351851851851852,
+      "cells": {
+       "wins": 20,
+       "losses": 6,
+       "p": 0.009355306625366211
+      },
+      "tasks": {
+       "wins": 9,
+       "losses": 4,
+       "p": 0.266845703125
+      },
+      "ci95_diff": [
+       0.0,
+       0.10909090909090909
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (higher is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 0.7854545454545454,
+      "mean_b": 0.7381818181818182,
+      "diff": 0.047272727272727244,
+      "fold_b_over_a": 0.9398148148148149,
+      "cells": {
+       "wins": 20,
+       "losses": 7,
+       "p": 0.0191572904586792
+      },
+      "tasks": {
+       "wins": 8,
+       "losses": 4,
+       "p": 0.3876953125
+      },
+      "ci95_diff": [
+       -0.0036363636363636364,
+       0.10545454545454545
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (higher is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 0.7345454545454545,
+      "mean_b": 0.7381818181818182,
+      "diff": -0.0036363636363636598,
+      "fold_b_over_a": 1.004950495049505,
+      "cells": {
+       "wins": 0,
+       "losses": 1,
+       "p": 1.0
+      },
+      "tasks": {
+       "wins": 0,
+       "losses": 1,
+       "p": 1.0
+      },
+      "ci95_diff": [
+       -0.01090909090909091,
+       0.0
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = UN better (higher is better)"
+     }
+    },
+    "acc2": {
+     "_what": "repair rate at a matched budget of 2 oracle calls",
+     "NM": 0.5236363636363637,
+     "UN": 0.6836363636363636,
+     "TY": 0.6945454545454546,
+     "TY_vs_UN": {
+      "mean_a": 0.6945454545454546,
+      "mean_b": 0.6836363636363636,
+      "diff": 0.01090909090909098,
+      "fold_b_over_a": 0.9842931937172774,
+      "cells": {
+       "wins": 14,
+       "losses": 11,
+       "p": 0.6900379657745361
+      },
+      "tasks": {
+       "wins": 10,
+       "losses": 6,
+       "p": 0.454498291015625
+      },
+      "ci95_diff": [
+       -0.02909090909090909,
+       0.05090909090909091
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (higher is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 0.6945454545454546,
+      "mean_b": 0.5236363636363637,
+      "diff": 0.1709090909090909,
+      "fold_b_over_a": 0.7539267015706806,
+      "cells": {
+       "wins": 50,
+       "losses": 3,
+       "p": 5.519584789226428e-12
+      },
+      "tasks": {
+       "wins": 20,
+       "losses": 1,
+       "p": 2.09808349609375e-05
+      },
+      "ci95_diff": [
+       0.09454545454545454,
+       0.2509090909090909
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (higher is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 0.6836363636363636,
+      "mean_b": 0.5236363636363637,
+      "diff": 0.15999999999999992,
+      "fold_b_over_a": 0.7659574468085107,
+      "cells": {
+       "wins": 44,
+       "losses": 0,
+       "p": 1.1368683772161603e-13
+      },
+      "tasks": {
+       "wins": 19,
+       "losses": 0,
+       "p": 3.814697265625e-06
+      },
+      "ci95_diff": [
+       0.09454545454545454,
+       0.23272727272727273
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = UN better (higher is better)"
+     }
+    },
+    "oc": {
+     "_what": "oracle calls per episode (truncated at first accept)",
+     "NM": 7.338181818181818,
+     "UN": 1.4872727272727273,
+     "TY": 1.5236363636363637,
+     "TY_vs_UN": {
+      "mean_a": 1.5236363636363637,
+      "mean_b": 1.4872727272727273,
+      "diff": 0.036363636363636376,
+      "fold_b_over_a": 0.9761336515513126,
+      "cells": {
+       "wins": 18,
+       "losses": 27,
+       "p": 0.23269319190831084
+      },
+      "tasks": {
+       "wins": 9,
+       "losses": 12,
+       "p": 0.6636238098144531
+      },
+      "ci95_diff": [
+       -0.03636363636363636,
+       0.10909090909090909
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 1.5236363636363637,
+      "mean_b": 7.338181818181818,
+      "diff": -5.8145454545454545,
+      "fold_b_over_a": 4.816229116945107,
+      "cells": {
+       "wins": 130,
+       "losses": 3,
+       "p": 7.203906926418999e-35
+      },
+      "tasks": {
+       "wins": 35,
+       "losses": 0,
+       "p": 5.820766091346741e-11
+      },
+      "ci95_diff": [
+       -7.84,
+       -3.88
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 1.4872727272727273,
+      "mean_b": 7.338181818181818,
+      "diff": -5.850909090909091,
+      "fold_b_over_a": 4.933985330073349,
+      "cells": {
+       "wins": 127,
+       "losses": 1,
+       "p": 7.581938562803754e-37
+      },
+      "tasks": {
+       "wins": 32,
+       "losses": 0,
+       "p": 4.656612873077393e-10
+      },
+      "ci95_diff": [
+       -7.883636363636364,
+       -3.9054545454545453
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    },
+    "sb": {
+     "_what": "program executions per episode (oracle cases + guard replays)",
+     "NM": 56.341818181818184,
+     "UN": 39.77454545454545,
+     "TY": 40.32363636363636,
+     "TY_vs_UN": {
+      "mean_a": 40.32363636363636,
+      "mean_b": 39.77454545454545,
+      "diff": 0.5490909090909071,
+      "fold_b_over_a": 0.9863829019749302,
+      "cells": {
+       "wins": 58,
+       "losses": 44,
+       "p": 0.19778986306808324
+      },
+      "tasks": {
+       "wins": 13,
+       "losses": 16,
+       "p": 0.711071103811264
+      },
+      "ci95_diff": [
+       -0.8218181818181818,
+       1.9963636363636363
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 40.32363636363636,
+      "mean_b": 56.341818181818184,
+      "diff": -16.018181818181823,
+      "fold_b_over_a": 1.3972405086121382,
+      "cells": {
+       "wins": 87,
+       "losses": 45,
+       "p": 0.0003231561316328426
+      },
+      "tasks": {
+       "wins": 20,
+       "losses": 13,
+       "p": 0.296206368599087
+      },
+      "ci95_diff": [
+       -29.36,
+       -5.294545454545455
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 39.77454545454545,
+      "mean_b": 56.341818181818184,
+      "diff": -16.56727272727273,
+      "fold_b_over_a": 1.4165295300786251,
+      "cells": {
+       "wins": 74,
+       "losses": 53,
+       "p": 0.0755305592306964
+      },
+      "tasks": {
+       "wins": 17,
+       "losses": 15,
+       "p": 0.860050065908581
+      },
+      "ci95_diff": [
+       -29.71272727272727,
+       -6.243636363636363
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    },
+    "redun": {
+     "_what": "paid redundant verifications per episode (CRN-joined)",
+     "NM": 4.916363636363636,
+     "UN": 0.14909090909090908,
+     "TY": 0.08,
+     "TY_vs_UN": {
+      "mean_a": 0.08,
+      "mean_b": 0.14909090909090908,
+      "diff": -0.06909090909090908,
+      "fold_b_over_a": 1.8636363636363635,
+      "cells": {
+       "wins": 19,
+       "losses": 6,
+       "p": 0.01463329792022705
+      },
+      "tasks": {
+       "wins": 8,
+       "losses": 2,
+       "p": 0.109375
+      },
+      "ci95_diff": [
+       -0.14181818181818182,
+       -0.01090909090909091
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 0.08,
+      "mean_b": 4.916363636363636,
+      "diff": -4.836363636363636,
+      "fold_b_over_a": 61.454545454545446,
+      "cells": {
+       "wins": 123,
+       "losses": 2,
+       "p": 3.7032774028305346e-34
+      },
+      "tasks": {
+       "wins": 30,
+       "losses": 0,
+       "p": 1.862645149230957e-09
+      },
+      "ci95_diff": [
+       -6.578181818181818,
+       -3.1563636363636363
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 0.14909090909090908,
+      "mean_b": 4.916363636363636,
+      "diff": -4.767272727272727,
+      "fold_b_over_a": 32.97560975609756,
+      "cells": {
+       "wins": 122,
+       "losses": 0,
+       "p": 3.76158192263132e-37
+      },
+      "tasks": {
+       "wins": 30,
+       "losses": 0,
+       "p": 1.862645149230957e-09
+      },
+      "ci95_diff": [
+       -6.469090909090909,
+       -3.1236363636363635
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    },
+    "gev": {
+     "_what": "memory entries consulted per episode (guard evaluations)",
+     "NM": 0.0,
+     "UN": 7.461818181818182,
+     "TY": 6.127272727272727,
+     "TY_vs_UN": {
+      "mean_a": 6.127272727272727,
+      "mean_b": 7.461818181818182,
+      "diff": -1.334545454545455,
+      "fold_b_over_a": 1.2178041543026707,
+      "cells": {
+       "wins": 66,
+       "losses": 36,
+       "p": 0.003865583588338324
+      },
+      "tasks": {
+       "wins": 17,
+       "losses": 13,
+       "p": 0.584664711728692
+      },
+      "ci95_diff": [
+       -2.68,
+       -0.12727272727272726
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 6.127272727272727,
+      "mean_b": 0.0,
+      "diff": 6.127272727272727,
+      "fold_b_over_a": 0.0,
+      "cells": {
+       "wins": 0,
+       "losses": 151,
+       "p": 7.006492321624085e-46
+      },
+      "tasks": {
+       "wins": 0,
+       "losses": 36,
+       "p": 2.9103830456733704e-11
+      },
+      "ci95_diff": [
+       4.065454545454545,
+       8.34909090909091
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 7.461818181818182,
+      "mean_b": 0.0,
+      "diff": 7.461818181818182,
+      "fold_b_over_a": 0.0,
+      "cells": {
+       "wins": 0,
+       "losses": 151,
+       "p": 7.006492321624085e-46
+      },
+      "tasks": {
+       "wins": 0,
+       "losses": 36,
+       "p": 2.9103830456733704e-11
+      },
+      "ci95_diff": [
+       5.0,
+       10.036363636363637
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    },
+    "pt": {
+     "_what": "prompt tokens per episode",
+     "NM": 3738.287272727273,
+     "UN": 3763.4254545454546,
+     "TY": 4104.385454545454,
+     "TY_vs_UN": {
+      "mean_a": 4104.385454545454,
+      "mean_b": 3763.4254545454546,
+      "diff": 340.9599999999996,
+      "fold_b_over_a": 0.9169278802451658,
+      "cells": {
+       "wins": 53,
+       "losses": 98,
+       "p": 0.0003124246799664644
+      },
+      "tasks": {
+       "wins": 13,
+       "losses": 23,
+       "p": 0.13249816396273673
+      },
+      "ci95_diff": [
+       -506.9563636363636,
+       1150.581818181818
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 4104.385454545454,
+      "mean_b": 3738.287272727273,
+      "diff": 366.0981818181813,
+      "fold_b_over_a": 0.9108031675210375,
+      "cells": {
+       "wins": 53,
+       "losses": 98,
+       "p": 0.0003124246799664644
+      },
+      "tasks": {
+       "wins": 13,
+       "losses": 23,
+       "p": 0.13249816396273673
+      },
+      "ci95_diff": [
+       -488.5490909090909,
+       1182.469090909091
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 3763.4254545454546,
+      "mean_b": 3738.287272727273,
+      "diff": 25.138181818181693,
+      "fold_b_over_a": 0.9933203986310344,
+      "cells": {
+       "wins": 0,
+       "losses": 2,
+       "p": 0.5
+      },
+      "tasks": {
+       "wins": 0,
+       "losses": 2,
+       "p": 0.5
+      },
+      "ci95_diff": [
+       0.0,
+       74.22181818181818
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    },
+    "sec": {
+     "_what": "wall-clock seconds per episode (llm + oracle + guard)",
+     "NM": 59.17142545454546,
+     "UN": 56.90409090909091,
+     "TY": 55.23611636363636,
+     "TY_vs_UN": {
+      "mean_a": 55.23611636363636,
+      "mean_b": 56.90409090909091,
+      "diff": -1.6679745454545483,
+      "fold_b_over_a": 1.0301971727062373,
+      "cells": {
+       "wins": 168,
+       "losses": 107,
+       "p": 0.0002816419308826485
+      },
+      "tasks": {
+       "wins": 29,
+       "losses": 26,
+       "p": 0.7877061896700435
+      },
+      "ci95_diff": [
+       -8.332603636363636,
+       5.785145454545456
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 55.23611636363636,
+      "mean_b": 59.17142545454546,
+      "diff": -3.9353090909090938,
+      "fold_b_over_a": 1.0712452168976137,
+      "cells": {
+       "wins": 128,
+       "losses": 147,
+       "p": 0.2777011466280837
+      },
+      "tasks": {
+       "wins": 25,
+       "losses": 30,
+       "p": 0.5900533317766357
+      },
+      "ci95_diff": [
+       -12.348087272727277,
+       3.249945454545453
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 56.90409090909091,
+      "mean_b": 59.17142545454546,
+      "diff": -2.2673345454545455,
+      "fold_b_over_a": 1.0398448425979918,
+      "cells": {
+       "wins": 92,
+       "losses": 183,
+       "p": 4.352523795988513e-08
+      },
+      "tasks": {
+       "wins": 17,
+       "losses": 38,
+       "p": 0.006455803109956637
+      },
+      "ci95_diff": [
+       -11.289440000000003,
+       5.409127272727274
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    }
+   },
+   "steer_only": {
+    "n_cells": 165,
+    "n_tasks": 55,
+    "acc20": {
+     "SO": 0.793939393939394,
+     "NM": 0.7272727272727273,
+     "SO_vs_NM": {
+      "mean_a": 0.793939393939394,
+      "mean_b": 0.7272727272727273,
+      "diff": 0.06666666666666665,
+      "fold_b_over_a": 0.916030534351145,
+      "cells": {
+       "wins": 15,
+       "losses": 4,
+       "p": 0.0192108154296875
+      },
+      "tasks": {
+       "wins": 13,
+       "losses": 2,
+       "p": 0.00738525390625
+      },
+      "ci95_diff": [
+       0.006060606060606061,
+       0.12727272727272726
+      ],
+      "n_cells": 165,
+      "n_tasks": 55,
+      "_orientation": "wins = SO better (higher is better)"
+     }
+    },
+    "pt": {
+     "SO": 5726.963636363636,
+     "NM": 3737.012121212121,
+     "ratio": 1.5324980092668425
+    }
+   }
+  }
+ },
+ "local_on_same_universes": {
+  "all": {
+   "n_cells_per_arm": 495,
+   "n_tasks": 99,
+   "metrics": {
+    "acc20": {
+     "_what": "repair rate at the full budget B=20 (accepted within the episode)",
+     "NM": 0.703030303030303,
+     "UN": 0.6989898989898989,
+     "TY": 0.696969696969697,
+     "TY_vs_UN": {
+      "mean_a": 0.696969696969697,
+      "mean_b": 0.6989898989898989,
+      "diff": -0.002020202020201922,
+      "fold_b_over_a": 1.0028985507246375,
+      "cells": {
+       "wins": 36,
+       "losses": 37,
+       "p": 1.0
+      },
+      "tasks": {
+       "wins": 16,
+       "losses": 16,
+       "p": 1.0
+      },
+      "ci95_diff": [
+       -0.046464646464646465,
+       0.04040404040404041
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (higher is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 0.696969696969697,
+      "mean_b": 0.703030303030303,
+      "diff": -0.006060606060605989,
+      "fold_b_over_a": 1.008695652173913,
+      "cells": {
+       "wins": 34,
+       "losses": 37,
+       "p": 0.8125886494061618
+      },
+      "tasks": {
+       "wins": 16,
+       "losses": 16,
+       "p": 1.0
+      },
+      "ci95_diff": [
+       -0.048484848484848485,
+       0.03636363636363636
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (higher is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 0.6989898989898989,
+      "mean_b": 0.703030303030303,
+      "diff": -0.004040404040404066,
+      "fold_b_over_a": 1.0057803468208093,
+      "cells": {
+       "wins": 0,
+       "losses": 2,
+       "p": 0.5
+      },
+      "tasks": {
+       "wins": 0,
+       "losses": 1,
+       "p": 1.0
+      },
+      "ci95_diff": [
+       -0.012121212121212121,
+       0.0
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = UN better (higher is better)"
+     }
+    },
+    "acc2": {
+     "_what": "repair rate at a matched budget of 2 oracle calls",
+     "NM": 0.3191919191919192,
+     "UN": 0.5131313131313131,
+     "TY": 0.5575757575757576,
+     "TY_vs_UN": {
+      "mean_a": 0.5575757575757576,
+      "mean_b": 0.5131313131313131,
+      "diff": 0.04444444444444451,
+      "fold_b_over_a": 0.9202898550724636,
+      "cells": {
+       "wins": 59,
+       "losses": 37,
+       "p": 0.03154812025373352
+      },
+      "tasks": {
+       "wins": 34,
+       "losses": 16,
+       "p": 0.015346677832630107
+      },
+      "ci95_diff": [
+       -0.00202020202020202,
+       0.09292929292929293
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (higher is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 0.5575757575757576,
+      "mean_b": 0.3191919191919192,
+      "diff": 0.23838383838383842,
+      "fold_b_over_a": 0.572463768115942,
+      "cells": {
+       "wins": 127,
+       "losses": 9,
+       "p": 8.260011277058911e-28
+      },
+      "tasks": {
+       "wins": 57,
+       "losses": 4,
+       "p": 4.85494457136415e-13
+      },
+      "ci95_diff": [
+       0.18585858585858586,
+       0.29292929292929293
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (higher is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 0.5131313131313131,
+      "mean_b": 0.3191919191919192,
+      "diff": 0.1939393939393939,
+      "fold_b_over_a": 0.6220472440944882,
+      "cells": {
+       "wins": 97,
+       "losses": 1,
+       "p": 6.2477783693504135e-28
+      },
+      "tasks": {
+       "wins": 53,
+       "losses": 1,
+       "p": 6.106226635438361e-15
+      },
+      "ci95_diff": [
+       0.1494949494949495,
+       0.2404040404040404
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = UN better (higher is better)"
+     }
+    },
+    "oc": {
+     "_what": "oracle calls per episode (truncated at first accept)",
+     "NM": 9.474747474747474,
+     "UN": 1.9131313131313132,
+     "TY": 1.8343434343434344,
+     "TY_vs_UN": {
+      "mean_a": 1.8343434343434344,
+      "mean_b": 1.9131313131313132,
+      "diff": -0.07878787878787885,
+      "fold_b_over_a": 1.0429515418502202,
+      "cells": {
+       "wins": 93,
+       "losses": 59,
+       "p": 0.007234542621729949
+      },
+      "tasks": {
+       "wins": 36,
+       "losses": 19,
+       "p": 0.030028945411892494
+      },
+      "ci95_diff": [
+       -0.14343434343434344,
+       -0.01818181818181818
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 1.8343434343434344,
+      "mean_b": 9.474747474747474,
+      "diff": -7.640404040404039,
+      "fold_b_over_a": 5.165198237885462,
+      "cells": {
+       "wins": 325,
+       "losses": 10,
+       "p": 1.2625691381564596e-82
+      },
+      "tasks": {
+       "wins": 88,
+       "losses": 0,
+       "p": 6.462348535570529e-27
+      },
+      "ci95_diff": [
+       -9.096969696969698,
+       -6.246464646464647
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 1.9131313131313132,
+      "mean_b": 9.474747474747474,
+      "diff": -7.561616161616161,
+      "fold_b_over_a": 4.95248152059134,
+      "cells": {
+       "wins": 329,
+       "losses": 2,
+       "p": 2.5121491275514865e-95
+      },
+      "tasks": {
+       "wins": 88,
+       "losses": 0,
+       "p": 6.462348535570529e-27
+      },
+      "ci95_diff": [
+       -9.008080808080807,
+       -6.16969696969697
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    },
+    "sb": {
+     "_what": "program executions per episode (oracle cases + guard replays)",
+     "NM": 95.68484848484849,
+     "UN": 44.44646464646465,
+     "TY": 43.01414141414141,
+     "TY_vs_UN": {
+      "mean_a": 43.01414141414141,
+      "mean_b": 44.44646464646465,
+      "diff": -1.4323232323232347,
+      "fold_b_over_a": 1.03329889160248,
+      "cells": {
+       "wins": 170,
+       "losses": 146,
+       "p": 0.19563772180533845
+      },
+      "tasks": {
+       "wins": 52,
+       "losses": 35,
+       "p": 0.08568897435916663
+      },
+      "ci95_diff": [
+       -3.56969696969697,
+       0.4808080808080808
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 43.01414141414141,
+      "mean_b": 95.68484848484849,
+      "diff": -52.670707070707074,
+      "fold_b_over_a": 2.2244974638361827,
+      "cells": {
+       "wins": 251,
+       "losses": 113,
+       "p": 3.6362245229970354e-13
+      },
+      "tasks": {
+       "wins": 63,
+       "losses": 30,
+       "p": 0.0008100087738623599
+      },
+      "ci95_diff": [
+       -82.90505050505051,
+       -28.42222222222222
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 44.44646464646465,
+      "mean_b": 95.68484848484849,
+      "diff": -51.23838383838384,
+      "fold_b_over_a": 2.1528112358529157,
+      "cells": {
+       "wins": 212,
+       "losses": 159,
+       "p": 0.006860414948375749
+      },
+      "tasks": {
+       "wins": 52,
+       "losses": 40,
+       "p": 0.25132210347485445
+      },
+      "ci95_diff": [
+       -81.84040404040404,
+       -26.858585858585858
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    },
+    "redun": {
+     "_what": "paid redundant verifications per episode (CRN-joined)",
+     "NM": 4.480808080808081,
+     "UN": 0.10101010101010101,
+     "TY": 0.07878787878787878,
+     "TY_vs_UN": {
+      "mean_a": 0.07878787878787878,
+      "mean_b": 0.10101010101010101,
+      "diff": -0.022222222222222227,
+      "fold_b_over_a": 1.2820512820512822,
+      "cells": {
+       "wins": 25,
+       "losses": 16,
+       "p": 0.21102359760880063
+      },
+      "tasks": {
+       "wins": 14,
+       "losses": 9,
+       "p": 0.4048728942871094
+      },
+      "ci95_diff": [
+       -0.052525252525252523,
+       0.006060606060606061
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 0.07878787878787878,
+      "mean_b": 4.480808080808081,
+      "diff": -4.402020202020202,
+      "fold_b_over_a": 56.871794871794876,
+      "cells": {
+       "wins": 277,
+       "losses": 6,
+       "p": 8.896064800445623e-74
+      },
+      "tasks": {
+       "wins": 80,
+       "losses": 0,
+       "p": 1.6543612251060553e-24
+      },
+      "ci95_diff": [
+       -5.361616161616162,
+       -3.4686868686868686
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 0.10101010101010101,
+      "mean_b": 4.480808080808081,
+      "diff": -4.37979797979798,
+      "fold_b_over_a": 44.36,
+      "cells": {
+       "wins": 278,
+       "losses": 1,
+       "p": 5.765264500204192e-82
+      },
+      "tasks": {
+       "wins": 80,
+       "losses": 0,
+       "p": 1.6543612251060553e-24
+      },
+      "ci95_diff": [
+       -5.335353535353535,
+       -3.4505050505050505
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    },
+    "gev": {
+     "_what": "memory entries consulted per episode (guard evaluations)",
+     "NM": 0.0,
+     "UN": 10.197979797979798,
+     "TY": 9.375757575757575,
+     "TY_vs_UN": {
+      "mean_a": 9.375757575757575,
+      "mean_b": 10.197979797979798,
+      "diff": -0.8222222222222229,
+      "fold_b_over_a": 1.087696617108382,
+      "cells": {
+       "wins": 163,
+       "losses": 131,
+       "p": 0.07043202093360511
+      },
+      "tasks": {
+       "wins": 48,
+       "losses": 39,
+       "p": 0.3911909653007528
+      },
+      "ci95_diff": [
+       -1.7696969696969698,
+       0.06868686868686869
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 9.375757575757575,
+      "mean_b": 0.0,
+      "diff": 9.375757575757575,
+      "fold_b_over_a": 0.0,
+      "cells": {
+       "wins": 0,
+       "losses": 389,
+       "p": 1.5862136483222808e-117
+      },
+      "tasks": {
+       "wins": 0,
+       "losses": 97,
+       "p": 1.262177448353619e-29
+      },
+      "ci95_diff": [
+       7.753535353535353,
+       11.012121212121212
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 10.197979797979798,
+      "mean_b": 0.0,
+      "diff": 10.197979797979798,
+      "fold_b_over_a": 0.0,
+      "cells": {
+       "wins": 0,
+       "losses": 390,
+       "p": 7.931068241611404e-118
+      },
+      "tasks": {
+       "wins": 0,
+       "losses": 97,
+       "p": 1.262177448353619e-29
+      },
+      "ci95_diff": [
+       8.486868686868688,
+       11.951515151515151
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    },
+    "pt": {
+     "_what": "prompt tokens per episode",
+     "NM": 4546.383838383838,
+     "UN": 4592.4565656565655,
+     "TY": 6726.7252525252525,
+     "TY_vs_UN": {
+      "mean_a": 6726.7252525252525,
+      "mean_b": 4592.4565656565655,
+      "diff": 2134.268686868687,
+      "fold_b_over_a": 0.682718022998268,
+      "cells": {
+       "wins": 106,
+       "losses": 284,
+       "p": 7.023232693730123e-20
+      },
+      "tasks": {
+       "wins": 22,
+       "losses": 75,
+       "p": 6.073393488182724e-08
+      },
+      "ci95_diff": [
+       1496.6020202020202,
+       2809.719191919192
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 6726.7252525252525,
+      "mean_b": 4546.383838383838,
+      "diff": 2180.341414141414,
+      "fold_b_over_a": 0.6758688169517699,
+      "cells": {
+       "wins": 105,
+       "losses": 284,
+       "p": 3.796922843927133e-20
+      },
+      "tasks": {
+       "wins": 22,
+       "losses": 75,
+       "p": 6.073393488182724e-08
+      },
+      "ci95_diff": [
+       1574.2282828282828,
+       2839.4747474747473
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 4592.4565656565655,
+      "mean_b": 4546.383838383838,
+      "diff": 46.07272727272721,
+      "fold_b_over_a": 0.9899677380473733,
+      "cells": {
+       "wins": 0,
+       "losses": 3,
+       "p": 0.25
+      },
+      "tasks": {
+       "wins": 0,
+       "losses": 1,
+       "p": 1.0
+      },
+      "ci95_diff": [
+       0.0,
+       138.21818181818182
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    },
+    "sec": {
+     "_what": "wall-clock seconds per episode (llm + oracle + guard)",
+     "NM": 108.80172727272728,
+     "UN": 77.61663232323232,
+     "TY": 140.46259191919194,
+     "TY_vs_UN": {
+      "mean_a": 140.46259191919194,
+      "mean_b": 77.61663232323232,
+      "diff": 62.84595959595961,
+      "fold_b_over_a": 0.5525786706818363,
+      "cells": {
+       "wins": 224,
+       "losses": 270,
+       "p": 0.04279484590789497
+      },
+      "tasks": {
+       "wins": 41,
+       "losses": 58,
+       "p": 0.1073515865331888
+      },
+      "ci95_diff": [
+       30.32243434343433,
+       97.53723232323229
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 140.46259191919194,
+      "mean_b": 108.80172727272728,
+      "diff": 31.66086464646466,
+      "fold_b_over_a": 0.7745957538311756,
+      "cells": {
+       "wins": 198,
+       "losses": 297,
+       "p": 9.933520901782687e-06
+      },
+      "tasks": {
+       "wins": 39,
+       "losses": 60,
+       "p": 0.0438752935870152
+      },
+      "ci95_diff": [
+       -27.149599999999996,
+       80.89626666666668
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 77.61663232323232,
+      "mean_b": 108.80172727272728,
+      "diff": -31.185094949494953,
+      "fold_b_over_a": 1.4017836643520616,
+      "cells": {
+       "wins": 221,
+       "losses": 274,
+       "p": 0.019336028974336703
+      },
+      "tasks": {
+       "wins": 47,
+       "losses": 52,
+       "p": 0.6878853435796911
+      },
+      "ci95_diff": [
+       -81.25048686868686,
+       2.060983838383838
+      ],
+      "n_cells": 495,
+      "n_tasks": 99,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    }
+   },
+   "steer_only": {
+    "n_cells": 297,
+    "n_tasks": 99,
+    "acc20": {
+     "SO": 0.7272727272727273,
+     "NM": 0.7070707070707071,
+     "SO_vs_NM": {
+      "mean_a": 0.7272727272727273,
+      "mean_b": 0.7070707070707071,
+      "diff": 0.02020202020202022,
+      "fold_b_over_a": 0.9722222222222222,
+      "cells": {
+       "wins": 23,
+       "losses": 17,
+       "p": 0.42959050784338615
+      },
+      "tasks": {
+       "wins": 11,
+       "losses": 8,
+       "p": 0.6476058959960938
+      },
+      "ci95_diff": [
+       -0.02356902356902357,
+       0.06397306397306397
+      ],
+      "n_cells": 297,
+      "n_tasks": 99,
+      "_orientation": "wins = SO better (higher is better)"
+     }
+    },
+    "pt": {
+     "SO": 10296.333333333334,
+     "NM": 4518.616161616162,
+     "ratio": 2.2786474807921437
+    }
+   }
+  },
+  "primary55": {
+   "n_cells_per_arm": 275,
+   "n_tasks": 55,
+   "metrics": {
+    "acc20": {
+     "_what": "repair rate at the full budget B=20 (accepted within the episode)",
+     "NM": 0.8727272727272727,
+     "UN": 0.8654545454545455,
+     "TY": 0.8218181818181818,
+     "TY_vs_UN": {
+      "mean_a": 0.8218181818181818,
+      "mean_b": 0.8654545454545455,
+      "diff": -0.043636363636363695,
+      "fold_b_over_a": 1.0530973451327434,
+      "cells": {
+       "wins": 22,
+       "losses": 34,
+       "p": 0.14089542359848076
+      },
+      "tasks": {
+       "wins": 9,
+       "losses": 15,
+       "p": 0.30745625495910645
+      },
+      "ci95_diff": [
+       -0.10909090909090909,
+       0.02181818181818182
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (higher is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 0.8218181818181818,
+      "mean_b": 0.8727272727272727,
+      "diff": -0.050909090909090904,
+      "fold_b_over_a": 1.0619469026548674,
+      "cells": {
+       "wins": 20,
+       "losses": 34,
+       "p": 0.07590472948910143
+      },
+      "tasks": {
+       "wins": 9,
+       "losses": 15,
+       "p": 0.30745625495910645
+      },
+      "ci95_diff": [
+       -0.11272727272727273,
+       0.01090909090909091
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (higher is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 0.8654545454545455,
+      "mean_b": 0.8727272727272727,
+      "diff": -0.0072727272727272085,
+      "fold_b_over_a": 1.0084033613445378,
+      "cells": {
+       "wins": 0,
+       "losses": 2,
+       "p": 0.5
+      },
+      "tasks": {
+       "wins": 0,
+       "losses": 1,
+       "p": 1.0
+      },
+      "ci95_diff": [
+       -0.02181818181818182,
+       0.0
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = UN better (higher is better)"
+     }
+    },
+    "acc2": {
+     "_what": "repair rate at a matched budget of 2 oracle calls",
+     "NM": 0.26181818181818184,
+     "UN": 0.56,
+     "TY": 0.5890909090909091,
+     "TY_vs_UN": {
+      "mean_a": 0.5890909090909091,
+      "mean_b": 0.56,
+      "diff": 0.029090909090909056,
+      "fold_b_over_a": 0.9506172839506174,
+      "cells": {
+       "wins": 43,
+       "losses": 35,
+       "p": 0.4282070357175808
+      },
+      "tasks": {
+       "wins": 24,
+       "losses": 14,
+       "p": 0.14330665429588407
+      },
+      "ci95_diff": [
+       -0.04727272727272727,
+       0.10181818181818182
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (higher is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 0.5890909090909091,
+      "mean_b": 0.26181818181818184,
+      "diff": 0.32727272727272727,
+      "fold_b_over_a": 0.4444444444444445,
+      "cells": {
+       "wins": 98,
+       "losses": 8,
+       "p": 8.079958819833451e-21
+      },
+      "tasks": {
+       "wins": 40,
+       "losses": 4,
+       "p": 1.7051434042514302e-08
+      },
+      "ci95_diff": [
+       0.24727272727272728,
+       0.4072727272727273
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (higher is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 0.56,
+      "mean_b": 0.26181818181818184,
+      "diff": 0.2981818181818182,
+      "fold_b_over_a": 0.4675324675324675,
+      "cells": {
+       "wins": 83,
+       "losses": 1,
+       "p": 8.788794008375919e-24
+      },
+      "tasks": {
+       "wins": 42,
+       "losses": 1,
+       "p": 1.000444171950221e-11
+      },
+      "ci95_diff": [
+       0.23272727272727273,
+       0.36363636363636365
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = UN better (higher is better)"
+     }
+    },
+    "oc": {
+     "_what": "oracle calls per episode (truncated at first accept)",
+     "NM": 8.112727272727273,
+     "UN": 2.2145454545454544,
+     "TY": 2.076363636363636,
+     "TY_vs_UN": {
+      "mean_a": 2.076363636363636,
+      "mean_b": 2.2145454545454544,
+      "diff": -0.13818181818181818,
+      "fold_b_over_a": 1.0665499124343258,
+      "cells": {
+       "wins": 71,
+       "losses": 39,
+       "p": 0.0029436388593452253
+      },
+      "tasks": {
+       "wins": 28,
+       "losses": 12,
+       "p": 0.01658900337497471
+      },
+      "ci95_diff": [
+       -0.23636363636363636,
+       -0.04
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 2.076363636363636,
+      "mean_b": 8.112727272727273,
+      "diff": -6.036363636363637,
+      "fold_b_over_a": 3.9071803852889673,
+      "cells": {
+       "wins": 192,
+       "losses": 9,
+       "p": 8.030061032932152e-46
+      },
+      "tasks": {
+       "wins": 54,
+       "losses": 0,
+       "p": 1.1102230246251565e-16
+      },
+      "ci95_diff": [
+       -7.261818181818182,
+       -4.8545454545454545
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 2.2145454545454544,
+      "mean_b": 8.112727272727273,
+      "diff": -5.898181818181818,
+      "fold_b_over_a": 3.6633825944170777,
+      "cells": {
+       "wins": 197,
+       "losses": 2,
+       "p": 4.953769081788583e-56
+      },
+      "tasks": {
+       "wins": 54,
+       "losses": 0,
+       "p": 1.1102230246251565e-16
+      },
+      "ci95_diff": [
+       -7.1054545454545455,
+       -4.741818181818182
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    },
+    "sb": {
+     "_what": "program executions per episode (oracle cases + guard replays)",
+     "NM": 68.34181818181818,
+     "UN": 49.67636363636364,
+     "TY": 45.985454545454544,
+     "TY_vs_UN": {
+      "mean_a": 45.985454545454544,
+      "mean_b": 49.67636363636364,
+      "diff": -3.690909090909095,
+      "fold_b_over_a": 1.080262533607465,
+      "cells": {
+       "wins": 120,
+       "losses": 100,
+       "p": 0.200092229028271
+      },
+      "tasks": {
+       "wins": 34,
+       "losses": 21,
+       "p": 0.10478948242660335
+      },
+      "ci95_diff": [
+       -6.865454545454545,
+       -0.9018181818181819
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 45.985454545454544,
+      "mean_b": 68.34181818181818,
+      "diff": -22.35636363636364,
+      "fold_b_over_a": 1.486161632136644,
+      "cells": {
+       "wins": 140,
+       "losses": 84,
+       "p": 0.00022221771173715923
+      },
+      "tasks": {
+       "wins": 38,
+       "losses": 15,
+       "p": 0.0021901868838920535
+      },
+      "ci95_diff": [
+       -35.04727272727273,
+       -11.872727272727273
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 49.67636363636364,
+      "mean_b": 68.34181818181818,
+      "diff": -18.665454545454544,
+      "fold_b_over_a": 1.3757411609691823,
+      "cells": {
+       "wins": 105,
+       "losses": 121,
+       "p": 0.3183853694138851
+      },
+      "tasks": {
+       "wins": 29,
+       "losses": 24,
+       "p": 0.5831321542611763
+      },
+      "ci95_diff": [
+       -29.923636363636362,
+       -9.389090909090909
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    },
+    "redun": {
+     "_what": "paid redundant verifications per episode (CRN-joined)",
+     "NM": 3.4145454545454546,
+     "UN": 0.11272727272727273,
+     "TY": 0.10181818181818182,
+     "TY_vs_UN": {
+      "mean_a": 0.10181818181818182,
+      "mean_b": 0.11272727272727273,
+      "diff": -0.01090909090909091,
+      "fold_b_over_a": 1.1071428571428572,
+      "cells": {
+       "wins": 15,
+       "losses": 14,
+       "p": 1.0
+      },
+      "tasks": {
+       "wins": 7,
+       "losses": 8,
+       "p": 1.0
+      },
+      "ci95_diff": [
+       -0.06181818181818182,
+       0.03636363636363636
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 0.10181818181818182,
+      "mean_b": 3.4145454545454546,
+      "diff": -3.3127272727272725,
+      "fold_b_over_a": 33.535714285714285,
+      "cells": {
+       "wins": 152,
+       "losses": 6,
+       "p": 1.1179820081105092e-37
+      },
+      "tasks": {
+       "wins": 49,
+       "losses": 0,
+       "p": 3.552713678800501e-15
+      },
+      "ci95_diff": [
+       -4.178181818181818,
+       -2.4909090909090907
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 0.11272727272727273,
+      "mean_b": 3.4145454545454546,
+      "diff": -3.3018181818181818,
+      "fold_b_over_a": 30.29032258064516,
+      "cells": {
+       "wins": 154,
+       "losses": 1,
+       "p": 6.831330013583483e-45
+      },
+      "tasks": {
+       "wins": 50,
+       "losses": 0,
+       "p": 1.7763568394002505e-15
+      },
+      "ci95_diff": [
+       -4.174545454545455,
+       -2.4763636363636365
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    },
+    "gev": {
+     "_what": "memory entries consulted per episode (guard evaluations)",
+     "NM": 0.0,
+     "UN": 8.967272727272727,
+     "TY": 8.26909090909091,
+     "TY_vs_UN": {
+      "mean_a": 8.26909090909091,
+      "mean_b": 8.967272727272727,
+      "diff": -0.6981818181818173,
+      "fold_b_over_a": 1.0844327176781001,
+      "cells": {
+       "wins": 109,
+       "losses": 100,
+       "p": 0.5801148614761713
+      },
+      "tasks": {
+       "wins": 25,
+       "losses": 30,
+       "p": 0.5900533317766357
+      },
+      "ci95_diff": [
+       -2.2836363636363637,
+       0.8181818181818182
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 8.26909090909091,
+      "mean_b": 0.0,
+      "diff": 8.26909090909091,
+      "fold_b_over_a": 0.0,
+      "cells": {
+       "wins": 0,
+       "losses": 233,
+       "p": 1.448908652612274e-70
+      },
+      "tasks": {
+       "wins": 0,
+       "losses": 55,
+       "p": 5.551115123125783e-17
+      },
+      "ci95_diff": [
+       6.672727272727273,
+       10.021818181818182
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 8.967272727272727,
+      "mean_b": 0.0,
+      "diff": 8.967272727272727,
+      "fold_b_over_a": 0.0,
+      "cells": {
+       "wins": 0,
+       "losses": 234,
+       "p": 7.24454326306137e-71
+      },
+      "tasks": {
+       "wins": 0,
+       "losses": 55,
+       "p": 5.551115123125783e-17
+      },
+      "ci95_diff": [
+       7.36,
+       10.66909090909091
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    },
+    "pt": {
+     "_what": "prompt tokens per episode",
+     "NM": 4426.84,
+     "UN": 4509.770909090909,
+     "TY": 6421.145454545454,
+     "TY_vs_UN": {
+      "mean_a": 6421.145454545454,
+      "mean_b": 4509.770909090909,
+      "diff": 1911.3745454545451,
+      "fold_b_over_a": 0.7023312181627182,
+      "cells": {
+       "wins": 86,
+       "losses": 148,
+       "p": 6.087468863169653e-05
+      },
+      "tasks": {
+       "wins": 18,
+       "losses": 37,
+       "p": 0.014453833533827731
+      },
+      "ci95_diff": [
+       977.8763636363636,
+       2913.4945454545455
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 6421.145454545454,
+      "mean_b": 4426.84,
+      "diff": 1994.3054545454543,
+      "fold_b_over_a": 0.6894159354179232,
+      "cells": {
+       "wins": 85,
+       "losses": 148,
+       "p": 4.410233423687036e-05
+      },
+      "tasks": {
+       "wins": 18,
+       "losses": 37,
+       "p": 0.014453833533827731
+      },
+      "ci95_diff": [
+       1099.2363636363636,
+       2961.7927272727275
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 4509.770909090909,
+      "mean_b": 4426.84,
+      "diff": 82.93090909090915,
+      "fold_b_over_a": 0.9816108377204406,
+      "cells": {
+       "wins": 0,
+       "losses": 3,
+       "p": 0.25
+      },
+      "tasks": {
+       "wins": 0,
+       "losses": 1,
+       "p": 1.0
+      },
+      "ci95_diff": [
+       0.0,
+       248.79272727272726
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    },
+    "sec": {
+     "_what": "wall-clock seconds per episode (llm + oracle + guard)",
+     "NM": 85.30076,
+     "UN": 91.63650545454546,
+     "TY": 142.4135090909091,
+     "TY_vs_UN": {
+      "mean_a": 142.4135090909091,
+      "mean_b": 91.63650545454546,
+      "diff": 50.77700363636363,
+      "fold_b_over_a": 0.6434537428331302,
+      "cells": {
+       "wins": 125,
+       "losses": 150,
+       "p": 0.14769147782971262
+      },
+      "tasks": {
+       "wins": 25,
+       "losses": 30,
+       "p": 0.5900533317766357
+      },
+      "ci95_diff": [
+       16.338734545454543,
+       91.34716
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "TY_vs_NM": {
+      "mean_a": 142.4135090909091,
+      "mean_b": 85.30076,
+      "diff": 57.11274909090909,
+      "fold_b_over_a": 0.5989653688369451,
+      "cells": {
+       "wins": 101,
+       "losses": 174,
+       "p": 1.2662814794947509e-05
+      },
+      "tasks": {
+       "wins": 23,
+       "losses": 32,
+       "p": 0.2806097176983542
+      },
+      "ci95_diff": [
+       21.867712727272725,
+       98.3345890909091
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = TY better (lower is better)"
+     },
+     "UN_vs_NM": {
+      "mean_a": 91.63650545454546,
+      "mean_b": 85.30076,
+      "diff": 6.33574545454546,
+      "fold_b_over_a": 0.9308600276372587,
+      "cells": {
+       "wins": 103,
+       "losses": 172,
+       "p": 3.77800224012375e-05
+      },
+      "tasks": {
+       "wins": 24,
+       "losses": 31,
+       "p": 0.41875418826901556
+      },
+      "ci95_diff": [
+       -2.3123018181818185,
+       15.832720000000002
+      ],
+      "n_cells": 275,
+      "n_tasks": 55,
+      "_orientation": "wins = UN better (lower is better)"
+     }
+    }
+   },
+   "steer_only": {
+    "n_cells": 165,
+    "n_tasks": 55,
+    "acc20": {
+     "SO": 0.8848484848484849,
+     "NM": 0.8727272727272727,
+     "SO_vs_NM": {
+      "mean_a": 0.8848484848484849,
+      "mean_b": 0.8727272727272727,
+      "diff": 0.0121212121212122,
+      "fold_b_over_a": 0.9863013698630136,
+      "cells": {
+       "wins": 16,
+       "losses": 14,
+       "p": 0.855535551905632
+      },
+      "tasks": {
+       "wins": 8,
+       "losses": 6,
+       "p": 0.79052734375
+      },
+      "ci95_diff": [
+       -0.048484848484848485,
+       0.07272727272727272
+      ],
+      "n_cells": 165,
+      "n_tasks": 55,
+      "_orientation": "wins = SO better (higher is better)"
+     }
+    },
+    "pt": {
+     "SO": 7922.024242424242,
+     "NM": 4396.848484848485,
+     "ratio": 1.8017505651430776
+    }
+   }
+  }
+ },
+ "band_profile": {
+  "cloud": {
+   "bands": {
+    "dead": {
+     "n_tasks": 23,
+     "acc20": {
+      "NM": 0.34782608695652173,
+      "UN": 0.34782608695652173,
+      "TY": 0.46956521739130436,
+      "TY_vs_UN": {
+       "mean_a": 0.46956521739130436,
+       "mean_b": 0.34782608695652173,
+       "diff": 0.12173913043478263,
+       "fold_b_over_a": 0.7407407407407407,
+       "cells": {
+        "wins": 20,
+        "losses": 6,
+        "p": 0.009355306625366211
+       },
+       "tasks": {
+        "wins": 6,
+        "losses": 3,
+        "p": 0.5078125
+       },
+       "ci95_diff": [
+        -0.017391304347826087,
+        0.26956521739130435
+       ],
+       "n_cells": 115,
+       "n_tasks": 23,
+       "_orientation": "wins = TY better (higher is better)"
+      }
+     },
+     "oc": {
+      "TY_vs_UN": {
+       "mean_a": 1.5739130434782609,
+       "mean_b": 1.4086956521739131,
+       "diff": 0.16521739130434776,
+       "fold_b_over_a": 0.8950276243093923,
+       "cells": {
+        "wins": 10,
+        "losses": 27,
+        "p": 0.007632078602910042
+       },
+       "tasks": {
+        "wins": 4,
+        "losses": 9,
+        "p": 0.266845703125
+       },
+       "ci95_diff": [
+        0.008695652173913044,
+        0.3391304347826087
+       ],
+       "n_cells": 115,
+       "n_tasks": 23,
+       "_orientation": "wins = TY better (lower is better)"
+      }
+     }
+    },
+    "hard": {
+     "n_tasks": 17,
+     "acc20": {
+      "NM": 0.5882352941176471,
+      "UN": 0.5882352941176471,
+      "TY": 0.6941176470588235,
+      "TY_vs_UN": {
+       "mean_a": 0.6941176470588235,
+       "mean_b": 0.5882352941176471,
+       "diff": 0.10588235294117643,
+       "fold_b_over_a": 0.8474576271186441,
+       "cells": {
+        "wins": 11,
+        "losses": 2,
+        "p": 0.0224609375
+       },
+       "tasks": {
+        "wins": 3,
+        "losses": 1,
+        "p": 0.625
+       },
+       "ci95_diff": [
+        -0.011764705882352941,
+        0.27058823529411763
+       ],
+       "n_cells": 85,
+       "n_tasks": 17,
+       "_orientation": "wins = TY better (higher is better)"
+      }
+     },
+     "oc": {
+      "TY_vs_UN": {
+       "mean_a": 1.7176470588235293,
+       "mean_b": 1.6470588235294117,
+       "diff": 0.07058823529411762,
+       "fold_b_over_a": 0.9589041095890412,
+       "cells": {
+        "wins": 7,
+        "losses": 13,
+        "p": 0.26317596435546875
+       },
+       "tasks": {
+        "wins": 3,
+        "losses": 4,
+        "p": 1.0
+       },
+       "ci95_diff": [
+        -0.07058823529411765,
+        0.23529411764705882
+       ],
+       "n_cells": 85,
+       "n_tasks": 17,
+       "_orientation": "wins = TY better (lower is better)"
+      }
+     }
+    },
+    "medium": {
+     "n_tasks": 13,
+     "acc20": {
+      "NM": 0.8153846153846154,
+      "UN": 0.8153846153846154,
+      "TY": 0.8153846153846154,
+      "TY_vs_UN": {
+       "mean_a": 0.8153846153846154,
+       "mean_b": 0.8153846153846154,
+       "diff": 0.0,
+       "fold_b_over_a": 1.0,
+       "cells": {
+        "wins": 1,
+        "losses": 1,
+        "p": 1.0
+       },
+       "tasks": {
+        "wins": 1,
+        "losses": 1,
+        "p": 1.0
+       },
+       "ci95_diff": [
+        -0.046153846153846156,
+        0.046153846153846156
+       ],
+       "n_cells": 65,
+       "n_tasks": 13,
+       "_orientation": "wins = TY better (higher is better)"
+      }
+     },
+     "oc": {
+      "TY_vs_UN": {
+       "mean_a": 1.6923076923076923,
+       "mean_b": 1.6615384615384616,
+       "diff": 0.03076923076923066,
+       "fold_b_over_a": 0.9818181818181819,
+       "cells": {
+        "wins": 2,
+        "losses": 4,
+        "p": 0.6875
+       },
+       "tasks": {
+        "wins": 2,
+        "losses": 3,
+        "p": 1.0
+       },
+       "ci95_diff": [
+        -0.046153846153846156,
+        0.12307692307692308
+       ],
+       "n_cells": 65,
+       "n_tasks": 13,
+       "_orientation": "wins = TY better (lower is better)"
+      }
+     }
+    },
+    "easy": {
+     "n_tasks": 25,
+     "acc20": {
+      "NM": 0.8,
+      "UN": 0.792,
+      "TY": 0.832,
+      "TY_vs_UN": {
+       "mean_a": 0.832,
+       "mean_b": 0.792,
+       "diff": 0.039999999999999925,
+       "fold_b_over_a": 0.951923076923077,
+       "cells": {
+        "wins": 8,
+        "losses": 3,
+        "p": 0.2265625
+       },
+       "tasks": {
+        "wins": 5,
+        "losses": 2,
+        "p": 0.453125
+       },
+       "ci95_diff": [
+        -0.024,
+        0.104
+       ],
+       "n_cells": 125,
+       "n_tasks": 25,
+       "_orientation": "wins = TY better (higher is better)"
+      }
+     },
+     "oc": {
+      "TY_vs_UN": {
+       "mean_a": 1.304,
+       "mean_b": 1.288,
+       "diff": 0.016000000000000014,
+       "fold_b_over_a": 0.9877300613496932,
+       "cells": {
+        "wins": 9,
+        "losses": 10,
+        "p": 1.0
+       },
+       "tasks": {
+        "wins": 4,
+        "losses": 5,
+        "p": 1.0
+       },
+       "ci95_diff": [
+        -0.104,
+        0.12
+       ],
+       "n_cells": 125,
+       "n_tasks": 25,
+       "_orientation": "wins = TY better (lower is better)"
+      }
+     }
+    },
+    "too_easy": {
+     "n_tasks": 21,
+     "acc20": {
+      "NM": 0.8952380952380953,
+      "UN": 0.8952380952380953,
+      "TY": 0.9333333333333333,
+      "TY_vs_UN": {
+       "mean_a": 0.9333333333333333,
+       "mean_b": 0.8952380952380953,
+       "diff": 0.03809523809523807,
+       "fold_b_over_a": 0.9591836734693878,
+       "cells": {
+        "wins": 6,
+        "losses": 2,
+        "p": 0.2890625
+       },
+       "tasks": {
+        "wins": 1,
+        "losses": 1,
+        "p": 1.0
+       },
+       "ci95_diff": [
+        -0.02857142857142857,
+        0.14285714285714285
+       ],
+       "n_cells": 105,
+       "n_tasks": 21,
+       "_orientation": "wins = TY better (higher is better)"
+      }
+     },
+     "oc": {
+      "TY_vs_UN": {
+       "mean_a": 1.3238095238095238,
+       "mean_b": 1.2571428571428571,
+       "diff": 0.06666666666666665,
+       "fold_b_over_a": 0.9496402877697842,
+       "cells": {
+        "wins": 4,
+        "losses": 10,
+        "p": 0.1795654296875
+       },
+       "tasks": {
+        "wins": 2,
+        "losses": 4,
+        "p": 0.6875
+       },
+       "ci95_diff": [
+        -0.01904761904761905,
+        0.18095238095238095
+       ],
+       "n_cells": 105,
+       "n_tasks": 21,
+       "_orientation": "wins = TY better (lower is better)"
+      }
+     }
+    }
+   },
+   "interaction_TY_vs_UN_acc20": {
+    "p": 0.584470776461177,
+    "band_means": {
+     "dead": {
+      "mean_diff": 0.1217391304347826,
+      "n_tasks": 23
+     },
+     "hard": {
+      "mean_diff": 0.10588235294117647,
+      "n_tasks": 17
+     },
+     "medium": {
+      "mean_diff": -8.540177112501205e-18,
+      "n_tasks": 13
+     },
+     "easy": {
+      "mean_diff": 0.04,
+      "n_tasks": 25
+     },
+     "too_easy": {
+      "mean_diff": 0.03809523809523809,
+      "n_tasks": 21
+     }
+    },
+    "n_permutations": 20000,
+    "statistic": "between-band weighted SS of per-task mean differences"
+   },
+   "interaction_TY_vs_NM_acc20": {
+    "p": 0.5546222688865556,
+    "band_means": {
+     "dead": {
+      "mean_diff": 0.1217391304347826,
+      "n_tasks": 23
+     },
+     "hard": {
+      "mean_diff": 0.10588235294117647,
+      "n_tasks": 17
+     },
+     "medium": {
+      "mean_diff": -8.540177112501205e-18,
+      "n_tasks": 13
+     },
+     "easy": {
+      "mean_diff": 0.032,
+      "n_tasks": 25
+     },
+     "too_easy": {
+      "mean_diff": 0.03809523809523809,
+      "n_tasks": 21
+     }
+    },
+    "n_permutations": 20000,
+    "statistic": "between-band weighted SS of per-task mean differences"
+   },
+   "interaction_SO_vs_NM_acc20": {
+    "p": 0.15819209039548024,
+    "band_means": {
+     "dead": {
+      "mean_diff": 0.2028985507246377,
+      "n_tasks": 23
+     },
+     "hard": {
+      "mean_diff": 0.07843137254901962,
+      "n_tasks": 17
+     },
+     "medium": {
+      "mean_diff": 4.270088556250602e-18,
+      "n_tasks": 13
+     },
+     "easy": {
+      "mean_diff": 0.09333333333333334,
+      "n_tasks": 25
+     },
+     "too_easy": {
+      "mean_diff": 0.031746031746031744,
+      "n_tasks": 21
+     }
+    },
+    "n_permutations": 20000,
+    "statistic": "between-band weighted SS of per-task mean differences"
+   }
+  },
+  "local": {
+   "bands": {
+    "dead": {
+     "n_tasks": 23,
+     "acc20": {
+      "NM": 0.02608695652173913,
+      "UN": 0.02608695652173913,
+      "TY": 0.12173913043478261,
+      "TY_vs_UN": {
+       "mean_a": 0.12173913043478261,
+       "mean_b": 0.02608695652173913,
+       "diff": 0.09565217391304348,
+       "fold_b_over_a": 0.21428571428571427,
+       "cells": {
+        "wins": 14,
+        "losses": 3,
+        "p": 0.012725830078125
+       },
+       "tasks": {
+        "wins": 7,
+        "losses": 1,
+        "p": 0.0703125
+       },
+       "ci95_diff": [
+        0.017391304347826087,
+        0.19130434782608696
+       ],
+       "n_cells": 115,
+       "n_tasks": 23,
+       "_orientation": "wins = TY better (higher is better)"
+      }
+     },
+     "oc": {
+      "TY_vs_UN": {
+       "mean_a": 1.6347826086956523,
+       "mean_b": 1.617391304347826,
+       "diff": 0.01739130434782621,
+       "fold_b_over_a": 0.9893617021276595,
+       "cells": {
+        "wins": 18,
+        "losses": 19,
+        "p": 1.0
+       },
+       "tasks": {
+        "wins": 5,
+        "losses": 6,
+        "p": 1.0
+       },
+       "ci95_diff": [
+        -0.06956521739130435,
+        0.11304347826086956
+       ],
+       "n_cells": 115,
+       "n_tasks": 23,
+       "_orientation": "wins = TY better (lower is better)"
+      }
+     }
+    },
+    "hard": {
+     "n_tasks": 17,
+     "acc20": {
+      "NM": 0.6705882352941176,
+      "UN": 0.6705882352941176,
+      "TY": 0.5529411764705883,
+      "TY_vs_UN": {
+       "mean_a": 0.5529411764705883,
+       "mean_b": 0.6705882352941176,
+       "diff": -0.11764705882352933,
+       "fold_b_over_a": 1.2127659574468084,
+       "cells": {
+        "wins": 13,
+        "losses": 23,
+        "p": 0.13249816396273673
+       },
+       "tasks": {
+        "wins": 5,
+        "losses": 9,
+        "p": 0.4239501953125
+       },
+       "ci95_diff": [
+        -0.2823529411764706,
+        0.047058823529411764
+       ],
+       "n_cells": 85,
+       "n_tasks": 17,
+       "_orientation": "wins = TY better (higher is better)"
+      }
+     },
+     "oc": {
+      "TY_vs_UN": {
+       "mean_a": 2.1411764705882352,
+       "mean_b": 2.3176470588235296,
+       "diff": -0.17647058823529438,
+       "fold_b_over_a": 1.0824175824175826,
+       "cells": {
+        "wins": 32,
+        "losses": 17,
+        "p": 0.04438416098714981
+       },
+       "tasks": {
+        "wins": 8,
+        "losses": 5,
+        "p": 0.5810546875
+       },
+       "ci95_diff": [
+        -0.3764705882352941,
+        0.011764705882352941
+       ],
+       "n_cells": 85,
+       "n_tasks": 17,
+       "_orientation": "wins = TY better (lower is better)"
+      }
+     }
+    },
+    "medium": {
+     "n_tasks": 13,
+     "acc20": {
+      "NM": 0.9230769230769231,
+      "UN": 0.9230769230769231,
+      "TY": 0.8615384615384616,
+      "TY_vs_UN": {
+       "mean_a": 0.8615384615384616,
+       "mean_b": 0.9230769230769231,
+       "diff": -0.06153846153846154,
+       "fold_b_over_a": 1.0714285714285714,
+       "cells": {
+        "wins": 5,
+        "losses": 9,
+        "p": 0.4239501953125
+       },
+       "tasks": {
+        "wins": 2,
+        "losses": 4,
+        "p": 0.6875
+       },
+       "ci95_diff": [
+        -0.2,
+        0.06153846153846154
+       ],
+       "n_cells": 65,
+       "n_tasks": 13,
+       "_orientation": "wins = TY better (higher is better)"
+      }
+     },
+     "oc": {
+      "TY_vs_UN": {
+       "mean_a": 2.1846153846153844,
+       "mean_b": 2.276923076923077,
+       "diff": -0.09230769230769242,
+       "fold_b_over_a": 1.0422535211267607,
+       "cells": {
+        "wins": 15,
+        "losses": 10,
+        "p": 0.42435622215270996
+       },
+       "tasks": {
+        "wins": 7,
+        "losses": 3,
+        "p": 0.34375
+       },
+       "ci95_diff": [
+        -0.27692307692307694,
+        0.09230769230769231
+       ],
+       "n_cells": 65,
+       "n_tasks": 13,
+       "_orientation": "wins = TY better (lower is better)"
+      }
+     }
+    },
+    "easy": {
+     "n_tasks": 25,
+     "acc20": {
+      "NM": 0.984,
+      "UN": 0.968,
+      "TY": 0.984,
+      "TY_vs_UN": {
+       "mean_a": 0.984,
+       "mean_b": 0.968,
+       "diff": 0.016000000000000014,
+       "fold_b_over_a": 0.983739837398374,
+       "cells": {
+        "wins": 4,
+        "losses": 2,
+        "p": 0.6875
+       },
+       "tasks": {
+        "wins": 2,
+        "losses": 2,
+        "p": 1.0
+       },
+       "ci95_diff": [
+        -0.032,
+        0.08
+       ],
+       "n_cells": 125,
+       "n_tasks": 25,
+       "_orientation": "wins = TY better (higher is better)"
+      }
+     },
+     "oc": {
+      "TY_vs_UN": {
+       "mean_a": 1.976,
+       "mean_b": 2.112,
+       "diff": -0.13600000000000012,
+       "fold_b_over_a": 1.0688259109311742,
+       "cells": {
+        "wins": 24,
+        "losses": 12,
+        "p": 0.06524533522315323
+       },
+       "tasks": {
+        "wins": 13,
+        "losses": 4,
+        "p": 0.049041748046875
+       },
+       "ci95_diff": [
+        -0.288,
+        0.0
+       ],
+       "n_cells": 125,
+       "n_tasks": 25,
+       "_orientation": "wins = TY better (lower is better)"
+      }
+     }
+    },
+    "too_easy": {
+     "n_tasks": 21,
+     "acc20": {
+      "NM": 1.0,
+      "UN": 1.0,
+      "TY": 1.0,
+      "TY_vs_UN": {
+       "mean_a": 1.0,
+       "mean_b": 1.0,
+       "diff": 0.0,
+       "fold_b_over_a": 1.0,
+       "cells": {
+        "wins": 0,
+        "losses": 0,
+        "p": 1.0
+       },
+       "tasks": {
+        "wins": 0,
+        "losses": 0,
+        "p": 1.0
+       },
+       "ci95_diff": [
+        0.0,
+        0.0
+       ],
+       "n_cells": 105,
+       "n_tasks": 21,
+       "_orientation": "wins = TY better (higher is better)"
+      }
+     },
+     "oc": {
+      "TY_vs_UN": {
+       "mean_a": 1.4190476190476191,
+       "mean_b": 1.4476190476190476,
+       "diff": -0.02857142857142847,
+       "fold_b_over_a": 1.0201342281879193,
+       "cells": {
+        "wins": 4,
+        "losses": 1,
+        "p": 0.375
+       },
+       "tasks": {
+        "wins": 3,
+        "losses": 1,
+        "p": 0.625
+       },
+       "ci95_diff": [
+        -0.0761904761904762,
+        0.01904761904761905
+       ],
+       "n_cells": 105,
+       "n_tasks": 21,
+       "_orientation": "wins = TY better (lower is better)"
+      }
+     }
+    }
+   },
+   "interaction_TY_vs_UN_acc20": {
+    "p": 0.030348482575871208,
+    "band_means": {
+     "dead": {
+      "mean_diff": 0.09565217391304348,
+      "n_tasks": 23
+     },
+     "hard": {
+      "mean_diff": -0.11764705882352941,
+      "n_tasks": 17
+     },
+     "medium": {
+      "mean_diff": -0.06153846153846154,
+      "n_tasks": 13
+     },
+     "easy": {
+      "mean_diff": 0.016,
+      "n_tasks": 25
+     },
+     "too_easy": {
+      "mean_diff": 0.0,
+      "n_tasks": 21
+     }
+    },
+    "n_permutations": 20000,
+    "statistic": "between-band weighted SS of per-task mean differences"
+   },
+   "interaction_TY_vs_NM_acc20": {
+    "p": 0.023398830058497074,
+    "band_means": {
+     "dead": {
+      "mean_diff": 0.09565217391304348,
+      "n_tasks": 23
+     },
+     "hard": {
+      "mean_diff": -0.11764705882352941,
+      "n_tasks": 17
+     },
+     "medium": {
+      "mean_diff": -0.06153846153846154,
+      "n_tasks": 13
+     },
+     "easy": {
+      "mean_diff": 0.0,
+      "n_tasks": 25
+     },
+     "too_easy": {
+      "mean_diff": 0.0,
+      "n_tasks": 21
+     }
+    },
+    "n_permutations": 20000,
+    "statistic": "between-band weighted SS of per-task mean differences"
+   },
+   "interaction_SO_vs_NM_acc20": {
+    "p": 0.8725563721813909,
+    "band_means": {
+     "dead": {
+      "mean_diff": 0.05797101449275362,
+      "n_tasks": 23
+     },
+     "hard": {
+      "mean_diff": 0.039215686274509824,
+      "n_tasks": 17
+     },
+     "medium": {
+      "mean_diff": 0.0,
+      "n_tasks": 13
+     },
+     "easy": {
+      "mean_diff": 0.0,
+      "n_tasks": 25
+     },
+     "too_easy": {
+      "mean_diff": 0.0,
+      "n_tasks": 21
+     }
+    },
+    "n_permutations": 20000,
+    "statistic": "between-band weighted SS of per-task mean differences"
+   }
+  }
+ },
+ "criteria_F7": {
+  "universe": "the 55 tasks the frozen banding places in hard/medium/easy",
+  "a_guard_oracle_reduction": {
+   "threshold": 3.0,
+   "untyped_fold": 4.933985330073349,
+   "typed_fold": 4.816229116945107,
+   "held": true
+  },
+  "b_steer_only_repair_ci_contains_zero": {
+   "diff_pp": 6.666666666666665,
+   "ci95_pp": [
+    0.6060606060606061,
+    12.727272727272727
+   ],
+   "tasks": {
+    "wins": 13,
+    "losses": 2,
+    "p": 0.00738525390625
+   },
+   "held": false
+  }
+ },
+ "headline": {
+  "oracle_fold_untyped": 5.763869132290185,
+  "oracle_fold_typed": 5.483085250338295,
+  "exec_fold_untyped": 2.119080744061421,
+  "exec_fold_typed": 2.057896317053643,
+  "paid_fold_untyped": 45.61904761904762,
+  "paid_fold_typed": 92.70967741935483,
+  "typed_prompt_tokens_over_untyped": 1.1932276515698492,
+  "typed_wall_over_untyped": 0.9119123835330973,
+  "steer_only_prompt_tokens_over_no_memory": 1.6695281704885798,
+  "typed_prompt_tokens_over_untyped_primary55": 1.0905983137219282,
+  "n_cloud_episodes": 1782,
+  "n_local_episodes": 3654,
+  "rounds_logged": {
+   "local": 39147,
+   "cloud": 19768
+  }
+ }
+}

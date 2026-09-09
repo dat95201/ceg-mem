@@ -1,0 +1,173 @@
+% ===========================================================================
+% CEGMem - FSE 2027 SUBMISSION DRIVER (acmart, acmsmall single column, PACMSE)
+%
+%   make            (in this directory; or: latexmk -pdf main-fse-2027.tex)
+%
+% Lives in paper/fse2027/; the shared body (sections/, tables/, figures/,
+% preamble*.tex, refs.bib) lives in paper/common/ and is reached through
+% \input@path and \graphicspath below, so the body files keep their plain
+% "sections/..." paths and every venue driver inputs the identical files.
+%
+% FSE 2027 Research Papers track, conf.researchr.org/track/fse-2027/fse-2027-papers
+% (retrieved 2026-09-09):
+%   * template, verbatim:  \documentclass[acmsmall,screen,review,anonymous]{acmart}
+%     "It is a single-column page layout."
+%   * length: "no more than 18 pages for all text and figures, plus 4 pages for
+%     references" at submission; "20 pages ... plus 4 pages for references" for
+%     a major revision
+%   * double-anonymous: no names/affiliations, self-citations in the third
+%     person, no author-revealing URLs, no acknowledgements at submission
+%   * "a section named Data Availability after the Conclusion section" - it
+%     does not count toward the page limit
+%   * a replication package (upload or private/public link) must be made
+%     available to the PC at submission, or its absence explained
+%   * full-paper deadline Friday 2 October 2026 (AoE); author response
+%     14-18 December 2026; notification 22 January 2027; major revision due
+%     5 March 2027; conference Shenzhen, 12-16 July 2027
+%
+% Inputs the identical sections/, tables/, figures/ and refs.bib as
+% ../common/main.tex (preprint) and ../saner2027/main-saner-2027.tex. The appendix counts toward FSE's
+% 18 content pages and does not fit (with it and the extended tables inline the
+% build reaches ~27 pages), so this driver, like the SANER one, sets
+% \suppmattertrue: proofs and extended tables go to the supplementary archive.
+% ===========================================================================
+\documentclass[acmsmall,screen,review,anonymous]{acmart}
+
+% Shared body in ../common/ (see the header).
+\makeatletter
+\def\input@path{{../common/}}
+\makeatother
+\graphicspath{{../common/}}
+
+\AtBeginDocument{%
+  \providecommand\BibTeX{{\normalfont B\kern-0.5em{\scshape i\kern-0.25em b}\kern-0.8em\TeX}}}
+
+% PACMSE front matter. Placeholders until acceptance; the review build prints
+% them only in the running footer.
+\setcopyright{none}
+\acmJournal{PACMSE}
+\acmYear{2027}
+\acmVolume{4}
+\acmNumber{FSE}
+\acmArticle{0}
+\acmMonth{7}
+\acmDOI{10.1145/nnnnnnn.nnnnnnn}
+
+% acmart's newtxmath already supplies the AMS symbol set, and loading amssymb
+% on top of it fails on \Bbbk ("Command already defined"); the shared
+% preamble's \usepackage{amssymb} is therefore made a no-op in this driver.
+\expandafter\def\csname ver@amssymb.sty\endcsname{2013/01/14}
+\input{preamble}
+% acmart loads amsmath, amsthm and hyperref itself; cleveref must follow all
+% three and precede every \newtheorem it is to learn.
+\usepackage[nameinlink,capitalise]{cleveref}
+\input{preamble-cleveref}
+
+% 18 content pages is the limit and the appendix counts toward it, so the
+% submission build ships the body alone, as the SANER driver does; proofs, the
+% policy replay, errata and the extended tables go to the supplementary
+% archive, and every reference to them resolves to that phrase.
+\suppmattertrue
+
+% Single column: the text block is 395.8pt (13.9cm) wide, and three tables set
+% for a 7in two-column spread (Table I, Table II, the primary-band table)
+% overflow it by 82-108pt. Until they are re-set for acmsmall, any tabular
+% wider than the text block is scaled down to fit; narrower ones are untouched.
+\usepackage{etoolbox}
+\usepackage{adjustbox}
+\BeforeBeginEnvironment{tabular}{\begin{adjustbox}{max width=\textwidth}}
+\AfterEndEnvironment{tabular}{\end{adjustbox}}
+
+% acmart defines theorem, lemma, proposition, corollary and definition, but
+% only at \begin{document}, so the two environments the body adds must be
+% declared there too (after acmart's, which registered first) - the `theorem'
+% counter that `remark' shares does not exist any earlier. Guarded against a
+% future acmart that defines them itself.
+\makeatletter
+\AtBeginDocument{%
+  \@ifundefined{assumption}{%
+    \theoremstyle{acmdefinition}\newtheorem{assumption}{Assumption}}{}%
+  \@ifundefined{remark}{%
+    \theoremstyle{acmdefinition}\newtheorem{remark}[theorem]{Remark}}{}}
+\makeatother
+
+% The body uses run-in paragraph heads throughout; acmart's \paragraph is
+% already run-in, so nothing to pin here (unlike the IEEEtran driver).
+
+\begin{document}
+
+\title{Never Twice the Same Mistake: Counterexample-Guided Program Repair
+  with a Location-Indexed Memory of Refuted Attempts}
+
+% Double-anonymous: the anonymous option suppresses this block in the PDF;
+% acmart still requires one \author.
+\author{Anonymous Author(s)}
+\affiliation{%
+  \institution{Anonymous Institution}
+  \city{}
+  \country{}
+}
+
+\begin{abstract}
+\input{sections/00-abstract}
+\end{abstract}
+
+\begin{CCSXML}
+<ccs2012>
+<concept>
+<concept_id>10011007.10011074.10011099</concept_id>
+<concept_desc>Software and its engineering~Software verification and validation</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10011007.10011006.10011072</concept_id>
+<concept_desc>Software and its engineering~Automatic programming</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10010147.10010178</concept_id>
+<concept_desc>Computing methodologies~Artificial intelligence</concept_desc>
+<concept_significance>300</concept_significance>
+</concept>
+</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Software and its engineering~Software verification and validation}
+\ccsdesc[500]{Software and its engineering~Automatic programming}
+\ccsdesc[300]{Computing methodologies~Artificial intelligence}
+
+\keywords{automated program repair, large language models, agent memory,
+  counterexample-guided repair, test execution cost, empirical software
+  engineering}
+
+\maketitle
+
+\input{sections/01-intro}
+\input{sections/02-related}
+\input{sections/03-architecture}
+\input{sections/04-theory}
+\input{sections/05-implementation}
+\input{sections/06-design}
+\input{sections/07-results}
+\input{sections/08-discussion}
+\input{sections/09-threats}
+% Future Work is held out of every submission build; see the note in main.tex.
+% \input{sections/10-future}
+\input{sections/11-conclusion}
+
+% FSE 2027: "a section named Data Availability after the Conclusion section";
+% it does not count toward the 18-page limit.
+\input{sections/11b-availability}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{../common/refs}
+
+% The appendix counts toward the 18 pages ("all text and figures"), and with it
+% and the extended tables inline the build runs to ~27 content pages; with
+% \suppmattertrue (set above) the same body as the SANER driver comes in under
+% the limit and every \appref reads "the supplementary material". Uncomment
+% for the supplementary archive / preprint build.
+% \appendix
+% \input{sections/12-appendix}
+
+\end{document}

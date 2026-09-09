@@ -1,0 +1,92 @@
+\section{Threats to Validity}
+\label{sec:threats}
+
+\paragraph{Construct validity.}
+Our primary metric counts \emph{oracle calls}, the resource recent measurement
+identifies as squandered~\cite{lin2026run,chen2026rethinking}. It is not the
+only cost model---an agent billed per token, or one whose suite is cheap, would
+rank the arms differently, and our own wall-clock row shows the full typed
+agent losing under a latency-weighted one---so we report oracle calls, program
+executions, tokens and wall-clock separately and name the resource each claim
+is about. Guard replays are billed as executions and we claim no avoided
+execution: a full $\Xk$ validation is replaced by one that terminates on its
+first case, an ordering effect (\cref{sec:related-order}) that survives the
+accounting. And ``repair'' is acceptance, a claim about $\Gk$ rather than a
+fact about $\Gstar$; we audit it against $\Gpool$ with exact bounds, and no
+test-based procedure can certify $\Gstar$.
+
+\paragraph{Internal validity.}
+Common random numbers make the comparison tight but make all inference
+\emph{conditional on a fixed draw table}: the replication axis is tasks
+$\times$ seeds, not re-sampling of the model. Difficulty bands come from the
+no-memory arm's own $\pihat$, so per-band comparisons against no memory are
+inflated by regression to the mean and are descriptive only. The timeout-edge
+fault of \cref{sec:results-integrity} accounts for every cross-arm
+inconsistency; removing it leaves the cost and repair results unmoved but cuts
+the guard-second reduction from $-39\%$ to $-18\%$
+(\appref{app:sensitivity}{the supplement}), so that magnitude rests on one
+fault and we do not lean on it. Typed's \emph{caught}-redundancy count is
+$52\%$ censored, because a blocked round in the steered arm has no paired
+no-memory draw to recover its class from; the claim in \cref{tab:main} rests on
+\emph{paid} redundancy, uncensored in every arm.
+
+\paragraph{External validity.}
+Scope is the strongest limitation. \emph{Two proposers, one temperature}: the
+main grid is \texttt{qwen2.5-coder:7b} at $T = 1.0$ and the main arms are
+repeated under \texttt{gpt-4o-mini} (\cref{sec:results-scale}). That repeat
+tested two predictions fixed before it ran: that the guard result transfers,
+being a property of the runtime, and that the steering null might not, being a
+property of what a proposer does with an instruction. Both held---the guard's
+fold is \fold{4.8}--\fold{5.8} on both, and steering is null at 7B and
+\pp{+9} on \texttt{gpt-4o-mini}---so the recommendation is scoped by proposer
+rather than stated once. Two proposers are not a scaling law; we make no claim
+about where between them, or beyond them, steering starts to pay. The second
+run also shows why the corpus's bands do not travel: under \texttt{gpt-4o-mini}
+$47$ of $99$ faults sit in the \emph{too-easy} band and $29$ in \emph{dead},
+leaving $23$ in the primary bands where the frozen banding placed $55$
+(\cref{sec:design}), so per-band comparisons on the second proposer are
+descriptive only. \emph{One fault distribution, and a filtered one}:
+ConDefects faults are single-file competitive-programming submissions with a
+rich shipped pool, which is what makes a clean counterexample oracle possible
+and is unlike a repository-scale issue. The slow-reference filter thinned the
+harder faults; rather than assert which way that biases us we measure it inside
+the kept corpus, where oracle cost still spans a factor of \num{1800}: the
+saving in sandbox seconds is \fold{1.00} in the cheapest third of faults and
+\fold{2.07} in the dearest (\cref{sec:results-cost}), so the aggregate sits in
+exactly the regime the filter thinned, and the dropped faults would have
+deepened it rather than reversed it. Because the corpus is a quota sample (\cref{sec:design}), none of
+this is a population estimate; the paired design is what carries the claims. \emph{One scale of memory}: episodes run at most $20$ rounds and
+memory holds a median of one entry when the guard fires, which is why we claim
+nothing for the index.
+
+\paragraph{Statistical validity, and what the baseline comparison can bear.}
+A per-cell test overstates precision, so every headline comparison is reported
+at both units with a task-clustered interval (\cref{tab:main}); all keep their
+sign there, with typed-versus-untyped weakening from \pval{0.007} to
+\pval{0.030} as it should. Only two outcomes on three arms, and the two
+second-proposer criteria of \cref{sec:results-scale}, are confirmatory; one of
+those criteria failed and we report the failure as the finding it is.
+The dead-band result now has the interaction test it lacked
+(\cref{sec:results-ablation}), and the test does not support the reading we
+first gave it. What survives is a difficulty dependence of the \emph{whole}
+agent, one band up and one down on $23$ and $17$ tasks, which we report as
+exploratory. Finally, \cref{tab:positioning} is now measured: both classical prioritizers
+run over byte-identical candidates (\cref{sec:results-policies}) and the
+pre-specified criterion failed. Two caveats bound that verdict. The replay sits
+in the \armnomem\ universe at full horizon, so a prioritizer driving a
+\emph{steered} proposer is a different experiment. And the ordering axis is nearly
+saturated here: a random order already refutes in ${\approx}1.7$ executions
+against an ideal order's $1.0$, and every informed policy we ran falls between
+$1.38$ and $1.54$ (\appref{app:policies}{the supplement}).
+
+\paragraph{Reproducibility, and what ``pre-specified'' means.}
+We say \emph{pre-specified} rather than pre-registered: metrics, arms,
+falsifiers and the banding rule were fixed in a design document and in the
+frozen corpus and protocol artifacts before the reported run, timestamped in
+the archive, but there is no third-party registry entry. Two chronologies bear
+on that. The guard correction of \cref{sec:impl} was made after inspecting an
+\emph{earlier} run's accounting and \emph{before} the reported run. And the two
+second-proposer criteria were committed before that run started, but the
+proposer itself changed: the register named a 14B model of the same family, and
+availability substituted \texttt{gpt-4o-mini}, so the criteria were fixed but
+the model they were applied to was not.

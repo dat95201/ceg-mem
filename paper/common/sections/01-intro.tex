@@ -1,0 +1,116 @@
+\section{Introduction}
+\label{sec:intro}
+
+Automated program repair has moved from search- and template-based systems to
+agents built on large language models that repair real projects by interacting
+with an environment: localize a fault, propose an edit, run the test suite,
+read the failure, revise~\cite{bouzenia2025repairagent,zhang2024autocoderover,%
+yang2024sweagent,xia2025agentless,xia2024chatrepair}. That loop is
+counterexample-guided repair by another name---each failing test is a
+counterexample that ought to constrain the next proposal, exactly as a failing
+input drives the synthesis loop of
+\Sketch~\cite{solarlezama2006sketching}.
+
+\paragraph{The cost of that loop is now measured.}
+Analyzing $7{,}745$ SWE-bench agent traces and $3{,}000$ end-to-end repair
+runs, Lin et al.~\cite{lin2026run} report that agents average $8.8$ test
+executions per task, that the benefit concentrates on a minority of instances,
+and that restricting execution entirely costs only $1.25$ percentage points of
+resolve rate; their conclusion is that ``current agents apply execution
+indiscriminately, paying their cost on instances where it provides little
+benefit.'' Agent-authored tests likewise ``mimic a familiar
+software-development practice while consuming interaction
+budget''~\cite{chen2026rethinking}, and counting iteration honestly makes
+self-repair's gains ``often modest''~\cite{olausson2024selfrepair}.
+
+Three responses exist. Systems work makes each validation
+cheaper~\cite{chen2021uniapr,xiao2024expressapr}; scaling work buys accuracy
+with money, most explicitly CodeMonkeys at ${\approx}\$2{,}300$ for $57.4\%$ of
+SWE-bench Verified~\cite{ehrlich2025codemonkeys}; and classical
+generate-and-validate APR cuts the work itself, either by relating candidates
+to each other~\cite{weimer2013leveraging,mechtaev2018testequivalence}, which
+needs an enumerable candidate space an LLM does not supply, or by ordering the
+tests so a doomed candidate dies on the
+first~\cite{qi2013efficient,venugopal2020modification,lou2024when}, which needs
+nothing of the candidate space at all. The second mechanism transfers. Our
+question is what it should order from when the generator is a language model.
+
+\paragraph{A refutation you already hold is such a criterion.}
+If memory contains a counterexample $x$ that a candidate $p$ still fails, $p$
+is refuted and validating it further buys nothing. In the synthesis loop this
+idea comes from, the criterion could never fire---a constrained synthesizer
+cannot emit a candidate that its accumulated counterexamples refute---but an
+LLM proposer is under no such obligation and repeats itself in one proposal out
+of four (\cref{sec:related-cegis}). The obstacle is that today's agents keep a
+flat conversational transcript~\cite{xia2024chatrepair,shinn2023reflexion,%
+chen2024selfdebug}, which neither \emph{retrieves}---it dilutes as the dialogue
+grows---nor \emph{generalizes}: it records that patch $p_3$ failed test $t$,
+not that every patch sharing $p_3$'s defect will fail the same way.
+
+\paragraph{Our approach: keep the evidence, index it by where the patch edits.}
+When a proposal $p$ is refuted by counterexample $x$, \CEGMem\ stores
+$(p, x, \tau)$ where $\tau = \ttype(p,x)$ pairs $p$'s edit location with the
+property the execution violated. The halves are available at different times,
+and the mechanism rests on that: $\loc(p)$ is a diff against the buggy source
+and needs no execution, while the violated property exists only after a failing
+run. So the store is
+\emph{indexed by $\loc$} and can be consulted for a candidate nobody has run.
+
+That buys two operations. The agent can \emph{guard}: re-execute a stored
+counterexample against the new candidate and, if it still fails, resolve the
+round without calling the oracle---a decision that is verified rather than
+predicted, since the candidate is blocked only after failing an input the
+oracle itself produced. Inlined into
+the oracle this is a prioritization discipline that stops on the first failing
+case, and we claim no more than that; what is new is that the order comes from
+counterexamples the loop discovered itself and kept across candidates. And it
+can \emph{steer}: remove already-refuted classes from the proposer's support.
+Our study finds the first carries its value on every proposer we ran and the
+second only on one of them, which is not what we set out to show.
+
+\paragraph{This paper.}
+We give \CEGMem\ a formal core (\cref{sec:theory}) and run it on real faults
+rather than the simulation the design was first argued from: $99$ ConDefects
+faults, a local \texttt{qwen2.5-coder:7b} proposer at $T = 1.0$, a differential
+oracle over the shipped pool, five arms and four sweeps, \num{1485}
+pre-specified main-grid cells and \num{3654} episodes, and the main arms
+repeated under \texttt{gpt-4o-mini} (\num{1782} further episodes). Two
+commitments make the
+comparison tight: every arm is paired by \emph{common random
+numbers}~\cite{law2000simulation}, so round~1 is the byte-identical draw in
+every arm and later divergence is the treatment's own doing; and the primary
+metric is pre-specified as repair rate at a matched \emph{oracle-call} budget,
+not total calls, which an arm without a guard loses by construction.
+
+Memory cuts oracle calls \fold{5.2} and, counting every guard replay as the
+execution it is, total program executions \fold{2.2}, at unchanged repair rate;
+at a matched two-call budget it lifts repair from $31.9\%$ to $55.8\%$. Against
+a classical prioritizer replayed on identical candidates the execution saving
+reverses and only the oracle-call reduction survives
+(\cref{sec:results-policies}). We then repeat the main arms under a second
+proposer, \texttt{gpt-4o-mini}, against two criteria fixed in advance
+(\cref{sec:results-scale}). The guard's reduction transfers intact---\fold{5.8}
+fewer oracle calls and \fold{46} fewer paid redundant verifications on its own,
+\fold{93} in the full typed agent, repair unchanged. The prompt-side half does
+not behave the same way: at 7B, steering
+is null on every outcome metric while costing $+128\%$ prompt tokens and making
+the full agent the slowest of five arms; on \texttt{gpt-4o-mini} it lifts
+repair by \pp{+9} for $+67\%$ tokens. The pre-specified failure rule for that
+criterion fires, and the recommendation is consequently the guard
+unconditionally, with steering only where the proposer acts on it.
+
+\paragraph{Contributions.}
+\emph{(i)} An architecture separating verification-side guarding from
+prompt-side steering into independently analyzable operators
+(\cref{sec:arch}).
+\emph{(ii)} A formal core stated against a \emph{finite} oracle: guard
+soundness, a $\Kreach{+}1$ round bound, strict redundancy reduction, and an
+explicit account of what indexing does and does not buy (\cref{sec:theory}).
+\emph{(iii)} A controlled execution of that loop on real faults under common
+random numbers, with pre-specified metrics, falsifiers and a random-partition
+control, replicated under a second proposer (\cref{sec:design,sec:results}).
+\emph{(iv)} A separation of the two halves by what they depend on: the guard's
+saving is a property of the runtime and transfers across proposers; steering's
+value is a property of the proposer, null at 7B and positive on
+\texttt{gpt-4o-mini}, which is what relocates the unconditional
+recommendation onto the guard (\cref{sec:results-scale,sec:discussion}).

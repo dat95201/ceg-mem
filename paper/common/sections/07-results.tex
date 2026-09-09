@@ -1,0 +1,365 @@
+\section{Results}
+\label{sec:results}
+
+All numbers come from the two frozen logs via the extractors in the artifact
+(\cref{sec:availability}); $p$-values are exact two-sided sign tests. Five
+seeds of one task share a fault, a model and a cache, so the cell is not an
+independent replication: \cref{tab:main} carries every headline comparison at
+both units with a task-clustered bootstrap interval, and the task-level result
+carries the claim. The confirmatory family is repair at a matched oracle budget
+and oracle calls, on the three main arms, plus the two pre-specified criteria
+of the second-proposer study (\cref{sec:results-scale}); everything else is
+exploratory. \Cref{sec:results-cost,sec:results-typing,sec:results-ablation,%
+sec:results-depth,sec:results-assumptions,sec:results-policies} are the
+\texttt{qwen2.5-coder:7b} grid; \cref{sec:results-scale} repeats the main arms
+under \texttt{gpt-4o-mini}.
+
+\subsection{RQ1: what memory buys}
+\label{sec:results-cost}
+
+\input{tables/main}
+
+Over all \num{495} paired cells of the 7B block of \cref{tab:main}, memory cuts oracle calls per
+episode from $9.47$ to $1.91$ (untyped) and $1.83$ (typed)---\fold{4.95} and
+\fold{5.17}---and \emph{paid} redundant verifications, where a proposal whose
+class was already refuted still reaches the oracle, from $4.48$ to $0.101$ and
+$0.079$. Repair rate is unchanged ($0.703$, $0.699$, $0.697$; flips $36/37$,
+\pval{1.0}), so this is not accuracy traded for cost.
+
+\paragraph{The guard executes, and the accounting says so.}
+A guard that declines a validation still runs a stored counterexample, so a
+comparison denominated only in oracle calls would hide its cost. Ours does not:
+the execution counter bills every guard replay in every arm. Counting that way,
+total executions fall from $95.68$ to $43.01$, \fold{2.22}, on $251$ of $364$
+discordant cells and $63$ of $93$ discordant tasks (\pval{0.0008}), with the
+guard's share at $22\%$; in seconds the same comparison is $72.9 \to 38.2$, so
+the reduction is not an artifact of the unit. The split is conservative against
+the memory arms: a consultation is billed as an execution even when
+deduplication or memoization means no process started. Per round the trade is
+legible, and it is an ordering trade (\cref{sec:related-order}): in \armtyped\
+a round the guard resolves costs $1.13$ executions against $18.9$ for one that
+reaches the oracle. Those surviving calls are dearer than no memory's ($12.5$)
+because the cheap refutations are what the guard reaches first---a selection
+effect that flatters neither arm, since both totals are reported. Typing does
+\emph{not} reduce total executions against a flat log ($44.45$ vs.\ $43.01$;
+$170/146$, \pval{0.20}); it reduces the time those consultations take.
+\appref{tab:testwork}{The supplement} gives both units per arm.
+
+\paragraph{The saving is not spread evenly.}
+One oracle call costs between \SI{0.06}{\second} and \SI{110}{\second}
+depending on the fault, and the reduction tracks that. In terciles of oracle
+expense, sandbox seconds fall \fold{1.00}, \fold{1.15} and \fold{2.07}: where
+validation is cheap the guard's replays cost about what they displace, so no
+time is saved at all. Executions fall in every tercile (\fold{1.68} to
+\fold{2.66}) because that unit does not price a case
+(\appref{tab:expense}{the supplement}). The mechanism buys \emph{time} only
+where validation is expensive, which is also what makes the slow-reference
+filter's bias measurable (\cref{sec:threats}).
+
+\ifsuppmatter\else\input{tables/expense}\fi
+
+\ifsuppmatter\else\input{tables/testwork}\fi
+\ifsuppmatter\else\input{tables/tasklevel}\fi
+
+\paragraph{The primary metric.}
+\Cref{fig:budget} gives repair rate against a matched oracle-call budget. The
+arms coincide at $b = 1$ up to the timeout-edge cell. At $b = 2$ they
+separate---$31.9\%$
+(no memory) against $51.3\%$ (untyped) and $55.8\%$ (typed)---and the memory
+arms are within $0.3$\,pp of their asymptote by $b = 4$, where no memory has
+reached $43.8\%$. No memory needs the full $b = 20$ to reach $70.3\%$;
+\armguard\ reaches $70.7\%$ at $b = 4$. The gain survives the conservative
+unit: the task-clustered interval on the paired difference at $b = 2$ is
+$[18.4, 29.5]$\,pp.
+
+\begin{figure}[t]
+\centering
+\includegraphics{figures/fig-budget-curve.pdf}
+\caption{The pre-specified primary metric: repair rate at a matched
+\emph{oracle-call} budget $b$, five arms, \num{495} main and \num{297} ablation
+cells. Memory saturates by $b = 4$; no memory needs $b = 20$ for the same rate.
+\armsteer\ tracks no memory, which is \cref{sec:results-ablation}'s finding in
+one line.}
+\label{fig:budget}
+\end{figure}
+
+Counted in \emph{proposals} rather than oracle calls the arms nearly coincide
+($0.564$ / $0.560$ / $0.578$ at eight charged proposals), exactly as
+\cref{cor:budget} predicts
+when blocked rounds are charged: memory converts the expensive resource into
+repairs, it does not make the model smarter.
+
+\textbf{RQ1.} Memory converts verification budget into repairs: \fold{5.2}
+fewer oracle calls, \fold{2.2} fewer program executions counting guard replays,
+and \pp{+23.8} repair at a two-call budget, at unchanged repair rate.
+
+\subsection{RQ2: does typing beat a flat log?}
+\label{sec:results-typing}
+
+Typed uses fewer oracle calls than untyped on $93$ of $152$ discordant cells
+(\pval{0.007}, $\Atwelve = 0.524$) and on $36$ of $55$ discordant tasks
+(\pval{0.030}; signed-rank \pval{0.023}), with a clustered interval on the
+paired difference of $[-0.141, -0.018]$ calls. On the $55$ tasks of the three
+primary bands---the pre-specified universe of \cref{sec:results-scale}---the
+margin is $71/39$ cells (\pval{0.0029}) and $28/12$ tasks (\pval{0.017}),
+interval $[-0.24, -0.04]$ calls, and total program executions follow
+($[-6.9, -0.9]$ per episode; \appref{tab:primaryband}{the supplement}). The
+task-level version is the claim: real, signed, and small---$1.83$ against
+$1.91$ calls.
+
+One caveat: \armtyped\ differs from \armuntyped\ in two ways at once---indexing
+the guard by $\loc$ \emph{and} putting exclusion blocks in the prompt---so the
+difference above is the package's, and \cref{sec:results-ablation} separates
+them.
+
+\paragraph{Is it the types, or just partitioning?}
+Any typed index invites the objection that \emph{any} partition would do, so
+the pre-specified control files each refutation under a location drawn
+uniformly from those seen so far---memory still partitions, but the partition
+carries no information about failure class. On the same \num{90} paired sweep
+cells exactly one quantity responds: the redundant proposals the guard
+\emph{recognizes}, $4.80$ at $\coh = 1.0$ against $4.47$ for the control and
+$4.04$ at $\coh = 0$, correct typing winning $9/9$ (\pval{0.004}). Nothing else
+moves---paid redundancy ties on all $90$; guard seconds, entries consulted,
+oracle calls and repair rate all give $p > 0.6$; and the bucket-only resolution
+rate is flat in $\coh$ ($33.1$--$35.3\%$) with the control inside it, because
+an uninformative partition still \emph{fills} buckets.
+
+\textbf{RQ2.} The licensed claim is narrower than ``typing helps'': typing
+determines \emph{which} redundant proposals the guard recognizes, does not
+affect blocking correctness (guaranteed by the fallback scan,
+\cref{thm:sound}), and on this sweep does not measurably affect guard time.
+
+\subsection{RQ3: which operation does the work?}
+\label{sec:results-ablation}
+
+\ifsuppmatter\else\input{tables/ablation}\fi
+
+\paragraph{The guard: identical outcomes, cheaper answers.}
+\armguard\ and \armuntyped\ share their draws, so they should produce identical
+episodes and differ only in bookkeeping---and they do, on $295$ of $297$ cells,
+the two exceptions being the timeout-edge task (\cref{sec:results-integrity}).
+The indexed arm repairs $0.707$ against $0.704$ and consults $9.74$ against
+$10.02$ ($19/13$, \pval{0.38}), while guard seconds fall $6.66 \to 4.04$ on
+$191$ of $231$ episodes (\plt{10^{-24}}). The \emph{sign} is solid, the
+\emph{magnitude} is not: the task-clustered interval is $[-6.5, -0.5]$\,s and
+one fault supplies \SI{1.8}{\second} of the baseline
+(\appref{app:sensitivity}{the supplement}). Holding the episode fixed isolates
+\Rguardcost---the same work, answered faster---but the $35\%$ of decisions the
+$\loc$ bucket settles is a rate the random-partition control also reaches, so
+the clock records deduplication, not the index.
+
+\paragraph{Steering: null on every outcome, and expensive.}
+\armsteer\ keeps the prompt blocks and drops the guard. Round~1 matches no
+memory on all $297$ cells and trajectories diverge where the first evidence
+block enters; after that nothing moves: repair $0.707 \to 0.727$ ($23/17$,
+\pval{0.43}), oracle calls $9.45 \to 8.81$ ($80/71$, \pval{0.52}), paid
+redundancy $4.43 \to 4.16$. What
+moves is the bill: prompt tokens $4519 \to \num{10296}$, $+128\%$ ($64/170$,
+\plt{10^{-11}}), growing $+5.9$ per round against untyped's $-1.2$.
+
+The mechanism-level null is sharper than the outcome-level one. Length-matched
+by failed-round position, the rate at which the proposer re-draws an
+\emph{already-eliminated} class is $50.2\%$ without the exclusion block and
+$50.7\%$ with it. The model conditions on the block---trajectories shift
+immediately---but does not avoid the classes it names.
+\Cref{eq:steer}'s renormalization is requested and not granted.
+
+The consequence is an ordering on the clock. Over the $297$ shared cells:
+\armguard\ \SI{68.9}{\second} per episode, \armuntyped\ $80.4$, \armsteer\
+$98.2$, \armnomem\ $110.8$, \armtyped\ $155.0$. On a local 7B prompt length is
+latency, so typed's prompt tokens become $+93\%$ wall-clock over untyped on
+these cells, and $+81\%$ on the main grid, where the paired test is
+$224$ wins to $270$ (\pval{0.043}). The arm that dominates every other on
+wall-clock, oracle calls and tokens at once is \armguard---the index without
+the prompt blocks.
+
+\paragraph{Difficulty, and free guarded rounds.}
+Two exploratory readings do not survive their tests and we report neither as a
+finding. Band-wise, the \emph{dead} band suggested a steering bonus; a
+task-level interaction test (\num{20000} permutations of band labels) finds a
+difficulty dependence of the \emph{whole} agent (\pval{0.023}; \emph{dead}
+\pp{+9.6}, \emph{hard} \pp{-11.8}) and none for \armsteer\ alone
+(\pval{0.87}), so the gain is not the prompt's. And charging a blocked round no
+budget unit lifts both memory arms' repair (untyped $0.772 \to 0.860$, typed
+$0.815 \to 0.889$) while the guardless control is inert, but the flips come
+from $19$ tasks and a task-level permutation gives \pval{0.061}
+(\appref{tab:perband}{the supplement}; \appref{tab:freeguard}{the
+supplement}).
+
+\ifsuppmatter\else\input{tables/perband}\fi
+\ifsuppmatter\else\input{tables/freeguard}\fi
+\ifsuppmatter\else\input{tables/primaryband}\fi
+
+\textbf{RQ3.} On this proposer the guard carries the value---identical
+episodes, cheaper guard time, $14\%$ less wall-clock than untyped, no token
+overhead---while prompt-side steering moves no outcome metric at $+128\%$
+prompt tokens. \armguard\ is the configuration to deploy \emph{at this scale};
+\cref{sec:results-scale} tests the qualifier.
+
+\subsection{RQ4: is an accepted patch a repair?}
+\label{sec:results-depth}
+
+Every accepted patch is re-scored against the whole shipped pool. Because $\Xk$
+exhausts that pool for $97$ of the $99$ faults at $\oracledepth = 100$
+(\cref{sec:arch}), acceptance there usually already \emph{is} pool adequacy:
+all \num{1256} audited acceptances pass with $0$ overfitting, and $0$ of the
+\num{939} carrying a regression verdict break a
+case the buggy version passed---the denominators differ because a regression
+verdict needs at least one such case and $317$ acceptances belong to faults
+with none. A planted-mutant study finds $249/249$ non-equivalent mutants caught
+($48$ of $297$ plants were equivalent). Three zero counts are not three zero
+rates: the one-sided $95\%$ upper limits are $0.24\%$, $0.32\%$ and $1.2\%$.
+What this establishes is membership in $\Gpool$, not $\Gstar$.
+
+Sweeping the depth shows why that matters. Raw acceptance \emph{rises} as the
+oracle gets shallower, $0.678$ at $\oracledepth = 100$ to $0.867$ at
+$\oracledepth = 3$, and the audit says why: overfitting climbs $0\%$, $7.6\%$,
+$20.8\%$, $39.7\%$ as the depth falls $100, 20, 8, 3$. Full-pool repair is
+monotone, with \emph{no difference} between the two deepest ($0.678$ at both
+$20$ and $100$, at $55\%$ of the executions) while $\oracledepth \le 8$ is
+unsafe ($0.633$, then $0.522$). Below $\oracledepth = 100$, $\Xk$ is a proper
+subset of most pools, and that is also where \cref{thm:sound}'s second clause
+is unaudited.
+
+\textbf{RQ4.} At the reported depth acceptance means pool adequacy; a five-fold
+shallower oracle preserves it, and at $\oracledepth = 3$ two of five
+acceptances are false.
+
+\subsection{RQ5: assumptions, and what steering costs when it misfires}
+\label{sec:results-assumptions}
+
+\paragraph{Informativeness measured, coherence not.}
+An offline study re-executes stored counterexamples against other candidates of
+the same label: the cross-refutation rate is $0.908$ ($95\%$ CI
+$[0.884, 0.929]$) at fine granularity and $0.822$ $[0.790, 0.852]$ at coarse,
+over \num{26048} executions. This estimates $\info$---how far a counterexample
+generalizes---which is what the guard's usefulness depends on. It is \emph{not}
+an estimate of $\coh$, the rate at which memory attributes a candidate to its
+true class; that needs a ground-truth labelling the corpus does not supply, so
+we perturb $\coh$ directly instead (\cref{sec:results-typing}). Earlier drafts
+called this a coherence check; it is not, and only $\info$ is validated here.
+
+\paragraph{The theory is directional, not calibrated.}
+Fitting \Rredund's no-memory form across $79$ tasks gives $r = 0.657$ with
+relative MAE $1.33$, an order-of-magnitude prediction the data respects in
+shape; the memory-arm form could not be fit at all, its predicted spread being
+smaller than the sampling noise. Their
+i.i.d.\ assumption is what a real proposer violates, and the violation is the
+redundancy a guard exists to intercept (\cref{sec:related-cegis}).
+
+\paragraph{Anchoring: the cost of excluding a class.}
+Typed steering can exclude the class the \emph{correct} fix belongs to. Over
+\num{1503} steered episodes at $\coh = 1.0$ the correct patch's edit location
+had entered the exclusion block in $5.7\%$ of episodes that then failed, and
+the rate is highest in exactly the band where steering helps most ($19.7\%$ in
+\emph{dead}, $0$ in the two easiest). Steering is a high-variance intervention
+worth making only where the baseline is near zero.
+
+\subsection{Against the mechanism the guard resembles}
+\label{sec:results-policies}
+
+\cref{sec:related-order} puts the guard in the same row as fault-recorded
+prioritization~\cite{qi2013efficient} and its modification-point--aware
+refinement~\cite{venugopal2020modification}. We measure the distance rather
+than argue it, and exactly: in \armnomem\ the candidate stream depends on task,
+seed and round alone, so all five policies replay over byte-identical
+candidates against a complete verdict matrix---\num{495} cells, $99$ tasks, no
+model call (\appref{app:policies}{the supplement}).
+
+\paragraph{The pre-specified criterion fails, on an axis with little to win.}
+We fixed beforehand that \polguard\ would reach a refuting case in no more
+executions than the better classical policy on at least $60$ of the $99$ tasks.
+It does so on $1$, ties on $18$, loses on $80$ (\pval{1.0}), and loses on total
+executions too ($2/6/91$ tasks, $179.7$ against \polven's $173.7$ per episode).
+The margin is a separate question: the median task pays $+4.6\%$ more, a gap
+worth $1.1\%$ of the headroom this corpus affords at all
+(\cref{sec:threats}). The sign is not in doubt; the size is small.
+
+\paragraph{What no prioritizer does.}
+Both classical policies leave oracle invocations at $19.99$ per episode: they
+change the order in which a validation seeks evidence, not whether it happens.
+The guard resolves $70.8\%$ of rounds before the oracle is reached, taking
+invocations to $5.85$---$99$ of $99$ tasks, \plt{10^{-17}}---with accepted
+rounds identical across all five policies, so none of it is bought with repair.
+Nor does the index earn anything here: \polguard\ and \poldedup\ block the
+identical rounds on every one of the \num{495} cells.
+
+\fullonly{\input{tables/policies}}
+
+\subsection{RQ6: does the answer survive a second proposer?}
+\label{sec:results-scale}
+
+Every number so far is the left block of \cref{tab:main}. \Cref{sec:threats} predicted that the guard
+result transfers, being a property of the runtime, and that the steering null
+might not, being a property of what a model does with an instruction. Both
+predictions were fixed as a falsifier before the run (\cref{sec:threats}): on a
+second proposer, over the $55$ tasks the frozen banding places in the primary
+bands, (a) the guard's oracle-call reduction must be at least \fold{3.0}, and
+(b) the task-clustered interval on the \armsteer\ repair difference must
+contain zero. We ran the three main arms and \armsteer\ under
+\texttt{gpt-4o-mini}, same corpus, same seeds, same nonces, same oracle, and
+the same pairing---memoization on prompt and nonce, so round~$1$ is one draw
+shared by every arm.
+
+\paragraph{The guard transfers.}
+Criterion (a) holds with room: \fold{4.93} (untyped) and \fold{4.82} (typed) on
+the pre-specified $55$ tasks, \fold{5.76} and \fold{5.48} on all $99$
+(right block of \cref{tab:main}), against \fold{5.17} at 7B. Every task moves the
+same way ($59/0$ and $61/0$, \plt{10^{-17}}). Program executions fall
+\fold{2.06}, paid redundant verifications \fold{92.7}---the largest fold in
+either study---and repair is unchanged between \armnomem\ and \armuntyped\
+($0.681$ vs.\ $0.679$). What the 7B study attributed to the runtime, the second
+proposer confirms is the runtime's.
+
+\paragraph{The steering null does not.}
+Criterion (b) fails. On the $55$ pre-specified tasks \armsteer\ repairs
+$0.794$ against \armnomem's $0.727$, a task-clustered interval of
+$[+0.6, +12.7]$\,pp that excludes zero, $13$ tasks up and $2$ down
+(\pval{0.007}); on all $99$ it is \pp{+9.1}, $[+4.0, +14.5]$, $21/3$
+(\pval{0.0003}). The same arm on the same $55$ tasks under the 7B proposer gives
+\pp{+1.2}, $[-4.8, +7.3]$---the null \cref{sec:results-ablation} reports. The
+prompt half is therefore not inert; it is inert \emph{for a proposer that does
+not act on it}. The cost is unchanged in kind: $+67\%$ prompt tokens for
+\armsteer, $+19\%$ for the full \armtyped\ ($+9\%$ on the primary-band tasks,
+interval including zero), which now repairs $0.743$ against
+\armuntyped's $0.679$ ($46/14$ cells, \plt{10^{-4}}; $16/8$ tasks,
+\pval{0.15}; CI $[+1.8, +11.7]$\,pp). That gain is not a band artefact: on the
+frozen banding every band's typed-minus-untyped repair difference is
+non-negative (\emph{dead} \pp{+12.2}, \emph{hard} \pp{+10.6}, \emph{medium}
+$0.0$, \emph{easy} \pp{+4.0}, \emph{too-easy} \pp{+3.8}), and the task-level
+interaction test that found a two-signed profile for this contrast at 7B
+(\pval{0.03}) finds none here (\pval{0.58}); on the $55$ primary-band tasks the
+difference is \pp{+5.1}, $[+0.0, +10.9]$ (\appref{tab:primaryband}{the
+supplement}).
+
+\paragraph{What did not change.}
+The index still buys no oracle calls (\armtyped\ $1.49$ vs.\ \armuntyped\
+$1.42$; $15/25$ tasks, \pval{0.15}). Typing does show on the one axis
+\cref{sec:results-typing} licensed for it: \armtyped\ pays for fewer redundant
+verifications than \armuntyped\ on $13/3$ tasks (\pval{0.021}, CI
+$[-0.11, -0.02]$), a contrast that was signed but not significant at 7B. And the
+wall-clock ordering inverts for the reason \cref{sec:results-ablation} gave: on
+a hosted API prompt length is not latency, so \armtyped\ is the fastest arm
+(\SI{49.5}{\second}) rather than the slowest.
+
+\textbf{RQ6.} The guard is model-independent infrastructure: \fold{4.8}--\fold{5.8}
+fewer oracle calls at unchanged repair on both proposers. Steering is a
+model-capability question: null at 7B, \pp{+7} to \pp{+9} repair at $+67\%$
+tokens on \texttt{gpt-4o-mini}. The pre-specified failure rule applies and the
+recommendation narrows to \emph{the guard unconditionally; steering where the
+proposer follows it}.
+
+\subsection{Integrity of the comparison}
+\label{sec:results-integrity}
+
+Common random numbers hold exactly: round~1 is byte-identical to the no-memory
+arm on $495/495$ main-grid and $297/297$ ablation cells in all four treatment
+arms, the frozen grid has $0$ missing cells of \num{1485}, and the three
+pre-specified falsifiers behave. A single fault whose candidates run at the
+\SI{30}{\second} sandbox edge produces every cross-arm inconsistency in the
+study, including the two non-identical guard-only episodes. We left the frozen
+timeout unchanged and repeat the headline numbers without it in
+\appref{app:sensitivity}{the supplement}.
+
+\ifsuppmatter\else\input{tables/integrity}\fi
